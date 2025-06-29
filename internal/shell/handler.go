@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"log"
 	"strings"
 
 	"github.com/abiosoft/ishell/v2"
@@ -8,6 +9,7 @@ import (
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
 	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
+	"neuroshell/internal/services"
 )
 
 func ProcessInput(c *ishell.Context) {
@@ -30,6 +32,29 @@ func ProcessInput(c *ishell.Context) {
 
 // Global context instance to persist across commands
 var globalCtx = context.New()
+
+func InitializeServices() error {
+	// Register all pure services
+	if err := services.GlobalRegistry.RegisterService(services.NewScriptService()); err != nil {
+		return err
+	}
+	
+	if err := services.GlobalRegistry.RegisterService(services.NewVariableService()); err != nil {
+		return err
+	}
+	
+	if err := services.GlobalRegistry.RegisterService(services.NewExecutorService()); err != nil {
+		return err
+	}
+
+	// Initialize all services with the global context
+	if err := services.GlobalRegistry.InitializeAll(globalCtx); err != nil {
+		return err
+	}
+
+	log.Println("All services initialized successfully")
+	return nil
+}
 
 func executeCommand(c *ishell.Context, cmd *parser.Command) {
 	// Prepare args and input for the new interface

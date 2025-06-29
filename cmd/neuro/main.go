@@ -1,11 +1,18 @@
 package main
 
 import (
+	"log"
+
 	"github.com/abiosoft/ishell/v2"
 	"neuroshell/internal/shell"
 )
 
 func main() {
+	// Initialize services before starting shell
+	if err := shell.InitializeServices(); err != nil {
+		log.Fatal("Failed to initialize services:", err)
+	}
+
 	sh := ishell.New()
 	
 	// Remove built-in commands so they become user messages or Neuro commands

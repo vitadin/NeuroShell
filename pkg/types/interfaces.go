@@ -34,6 +34,7 @@ type ServiceRegistry interface {
 	RegisterService(service Service) error
 }
 
+
 type Message struct {
 	ID        string    `json:"id"`
 	Role      string    `json:"role"`

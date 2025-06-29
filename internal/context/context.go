@@ -12,16 +12,20 @@ import (
 )
 
 type NeuroContext struct {
-	variables map[string]string
-	history   []types.Message
-	sessionID string
+	variables      map[string]string
+	history        []types.Message
+	sessionID      string
+	executionQueue []string
+	scriptMetadata map[string]interface{}
 }
 
 func New() *NeuroContext {
 	return &NeuroContext{
-		variables: make(map[string]string),
-		history:   make([]types.Message, 0),
-		sessionID: fmt.Sprintf("session_%d", time.Now().Unix()),
+		variables:      make(map[string]string),
+		history:        make([]types.Message, 0),
+		sessionID:      fmt.Sprintf("session_%d", time.Now().Unix()),
+		executionQueue: make([]string, 0),
+		scriptMetadata: make(map[string]interface{}),
 	}
 }
 
@@ -120,4 +124,48 @@ func (ctx *NeuroContext) InterpolateVariables(text string) string {
 	})
 	
 	return result
+}
+
+// Queue management methods
+func (ctx *NeuroContext) QueueCommand(command string) {
+	ctx.executionQueue = append(ctx.executionQueue, command)
+}
+
+func (ctx *NeuroContext) DequeueCommand() (string, bool) {
+	if len(ctx.executionQueue) == 0 {
+		return "", false
+	}
+	
+	command := ctx.executionQueue[0]
+	ctx.executionQueue = ctx.executionQueue[1:]
+	return command, true
+}
+
+func (ctx *NeuroContext) GetQueueSize() int {
+	return len(ctx.executionQueue)
+}
+
+func (ctx *NeuroContext) ClearQueue() {
+	ctx.executionQueue = make([]string, 0)
+}
+
+func (ctx *NeuroContext) PeekQueue() []string {
+	// Return a copy to prevent external modification
+	result := make([]string, len(ctx.executionQueue))
+	copy(result, ctx.executionQueue)
+	return result
+}
+
+// Script metadata methods
+func (ctx *NeuroContext) SetScriptMetadata(key string, value interface{}) {
+	ctx.scriptMetadata[key] = value
+}
+
+func (ctx *NeuroContext) GetScriptMetadata(key string) (interface{}, bool) {
+	value, exists := ctx.scriptMetadata[key]
+	return value, exists
+}
+
+func (ctx *NeuroContext) ClearScriptMetadata() {
+	ctx.scriptMetadata = make(map[string]interface{})
 }
