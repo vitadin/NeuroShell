@@ -59,31 +59,6 @@ func (v *VariableService) InterpolateString(text string, ctx types.Context) (str
 	return neuroCtx.InterpolateVariables(text), nil
 }
 
-// ProcessQueue interpolates variables in all queued commands
-func (v *VariableService) ProcessQueue(ctx types.Context) error {
-	if !v.initialized {
-		return fmt.Errorf("variable service not initialized")
-	}
-
-	neuroCtx, ok := ctx.(*context.NeuroContext)
-	if !ok {
-		return fmt.Errorf("context is not a NeuroContext")
-	}
-
-	// Get all queued commands
-	queue := neuroCtx.PeekQueue()
-	
-	// Clear the current queue
-	neuroCtx.ClearQueue()
-
-	// Process each command and re-queue it
-	for _, command := range queue {
-		interpolated := neuroCtx.InterpolateVariables(command)
-		neuroCtx.QueueCommand(interpolated)
-	}
-
-	return nil
-}
 
 // GetAllVariables returns all variables from context (useful for debugging)
 func (v *VariableService) GetAllVariables(ctx types.Context) (map[string]string, error) {

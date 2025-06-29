@@ -108,10 +108,31 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 }
 
 func (ctx *NeuroContext) InterpolateVariables(text string) string {
-	// Simple variable interpolation: ${var_name}
+	// Early exit optimization - if no variables detected, return as-is
+	if !strings.Contains(text, "${") {
+		return text
+	}
+	
+	// Iterative nested interpolation with safety limit
+	maxIterations := 10 // Prevent infinite loops
+	for i := 0; i < maxIterations; i++ {
+		before := text
+		text = ctx.interpolateOnce(text)
+		
+		// If no changes or no more variables, we're done
+		if text == before || !strings.Contains(text, "${") {
+			break
+		}
+	}
+	
+	return text
+}
+
+// interpolateOnce performs a single pass of variable interpolation
+func (ctx *NeuroContext) interpolateOnce(text string) string {
 	re := regexp.MustCompile(`\$\{([^}]+)\}`)
 	
-	result := re.ReplaceAllStringFunc(text, func(match string) string {
+	return re.ReplaceAllStringFunc(text, func(match string) string {
 		// Extract variable name (remove ${})
 		varName := match[2 : len(match)-1]
 		
@@ -119,11 +140,9 @@ func (ctx *NeuroContext) InterpolateVariables(text string) string {
 			return value
 		}
 		
-		// Return original if variable not found
-		return match
+		// Graceful handling: missing variables become empty string
+		return ""
 	})
-	
-	return result
 }
 
 // Queue management methods

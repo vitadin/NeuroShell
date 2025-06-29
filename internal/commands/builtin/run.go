@@ -63,12 +63,8 @@ func (c *RunCommand) Execute(args map[string]string, input string, ctx types.Con
 		return fmt.Errorf("failed to load script: %w", err)
 	}
 
-	// Phase 2: Process variables in all queued commands
-	if err := vs.ProcessQueue(ctx); err != nil {
-		return fmt.Errorf("failed to process variables: %w", err)
-	}
-
-	// Phase 3: Execute all commands in the queue
+	// Phase 2: Execute all commands in the queue
+	// Note: Variable interpolation now happens per-command in executeCommand
 	for {
 		// Get next command from queue
 		cmd, err := es.GetNextCommand(ctx)
@@ -100,7 +96,7 @@ func (c *RunCommand) Execute(args map[string]string, input string, ctx types.Con
 		es.MarkCommandExecuted(ctx)
 	}
 
-	// Phase 4: Mark successful completion
+	// Phase 3: Mark successful completion
 	es.MarkExecutionComplete(ctx)
 
 	// Set success status in context variables

@@ -1,0 +1,5 @@
+# Test dynamic variable updates
+\set[env="dev"]
+\set[message="Environment: ${env}"]
+\set[env="prod"]
+\send ${message}
