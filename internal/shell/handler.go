@@ -35,7 +35,10 @@ var globalCtx = context.New()
 
 
 
-func InitializeServices() error {
+func InitializeServices(testMode bool) error {
+	// Set test mode on global context
+	globalCtx.SetTestMode(testMode)
+	
 	// Register all pure services
 	if err := services.GlobalRegistry.RegisterService(services.NewScriptService()); err != nil {
 		return err

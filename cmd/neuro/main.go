@@ -83,7 +83,7 @@ func runShell(cmd *cobra.Command, args []string) {
 	logger.Info("Starting NeuroShell", "version", version)
 	
 	// Initialize services before starting shell
-	if err := shell.InitializeServices(); err != nil {
+	if err := shell.InitializeServices(testMode); err != nil {
 		logger.Fatal("Failed to initialize services", "error", err)
 	}
 	
