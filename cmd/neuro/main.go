@@ -14,6 +14,7 @@ func main() {
 	}
 
 	sh := ishell.New()
+	sh.SetPrompt("neuro> ")
 	
 	// Remove built-in commands so they become user messages or Neuro commands
 	sh.DeleteCmd("exit")
