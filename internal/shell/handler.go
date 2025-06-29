@@ -23,8 +23,15 @@ func ProcessInput(c *ishell.Context) {
 	// Debug: print what we received
 	// c.Printf("DEBUG: RawArgs=%v, rawInput='%s'\n", c.RawArgs, rawInput)
 	
-	// Parse input - this never fails, always returns a valid command
-	cmd := parser.ParseInput(rawInput)
+	// Interpolate variables in the raw input before parsing
+	interpolatedInput, err := interpolateVariables(rawInput)
+	if err != nil {
+		c.Printf("Variable interpolation error: %s\n", err.Error())
+		return
+	}
+	
+	// Parse the interpolated input
+	cmd := parser.ParseInput(interpolatedInput)
 	
 	// Execute the command
 	executeCommand(c, cmd)
@@ -32,6 +39,26 @@ func ProcessInput(c *ishell.Context) {
 
 // Global context instance to persist across commands
 var globalCtx = context.New()
+
+// interpolateVariables performs variable interpolation on raw input using VariableService
+func interpolateVariables(input string) (string, error) {
+	// Get variable service from global registry
+	variableService, err := services.GlobalRegistry.GetService("variable")
+	if err != nil {
+		// If variable service is not available, return input unchanged
+		// This allows the system to work even if services fail to initialize
+		return input, nil
+	}
+
+	// Cast to VariableService and interpolate
+	vs := variableService.(*services.VariableService)
+	interpolated, err := vs.InterpolateString(input, globalCtx)
+	if err != nil {
+		return input, err
+	}
+
+	return interpolated, nil
+}
 
 func InitializeServices() error {
 	// Register all pure services
