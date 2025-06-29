@@ -8,8 +8,12 @@ import (
 func main() {
 	sh := ishell.New()
 	
+	// Remove built-in commands so they become user messages or Neuro commands
+	sh.DeleteCmd("exit")
+	sh.DeleteCmd("help")
+	
 	sh.Println("Neuro Shell v0.1.0 - LLM-integrated shell environment")
-	sh.Println("Type '\\help' for Neuro commands or 'exit' to quit.")
+	sh.Println("Type '\\help' for Neuro commands or '\\exit' to quit.")
 	
 	sh.NotFound(shell.ProcessInput)
 	

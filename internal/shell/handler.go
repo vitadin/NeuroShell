@@ -35,6 +35,8 @@ func executeCommand(c *ishell.Context, cmd *parser.Command) {
 		handleGetCommand(c, cmd)
 	case "bash":
 		handleBashCommand(c, cmd)
+	case "exit":
+		handleExitCommand(c, cmd)
 	case "help":
 		handleHelpCommand(c, cmd)
 	default:
@@ -117,12 +119,18 @@ func handleBashCommand(c *ishell.Context, cmd *parser.Command) {
 	c.Printf("Executing: %s (not implemented yet)\n", command)
 }
 
+func handleExitCommand(c *ishell.Context, cmd *parser.Command) {
+	c.Println("Goodbye!")
+	c.Stop()
+}
+
 func handleHelpCommand(c *ishell.Context, cmd *parser.Command) {
 	c.Println("Neuro Shell Commands:")
 	c.Println("  \\send message          - Send message to LLM agent")
 	c.Println("  \\set[var=value]        - Set a variable")
 	c.Println("  \\get[var]              - Get a variable")
 	c.Println("  \\bash[command]         - Execute system command")
+	c.Println("  \\exit                  - Exit the shell")
 	c.Println("  \\help                  - Show this help")
 	c.Println("")
 	c.Println("Examples:")

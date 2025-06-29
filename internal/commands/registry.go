@@ -36,6 +36,12 @@ var CommandRegistry = map[string]CommandInfo{
 		Description: "Execute system command",
 		Usage:       "\\bash[command] or \\bash command",
 	},
+	"exit": {
+		Name:        "exit",
+		ParseMode:   parser.ParseModeKeyValue,
+		Description: "Exit the shell",
+		Usage:       "\\exit",
+	},
 	"help": {
 		Name:        "help",
 		ParseMode:   parser.ParseModeKeyValue,
