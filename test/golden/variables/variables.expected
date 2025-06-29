@@ -1,0 +1,5 @@
+Setting greeting = Hello
+Setting name = World
+Setting message = Hello, World!
+message = Hello, World!
+#test_mode = true

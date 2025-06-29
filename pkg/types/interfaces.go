@@ -14,6 +14,8 @@ type Context interface {
 	SetVariable(name string, value string) error
 	GetMessageHistory(n int) []Message
 	GetSessionState() SessionState
+	SetTestMode(testMode bool)
+	IsTestMode() bool
 }
 
 type Service interface {

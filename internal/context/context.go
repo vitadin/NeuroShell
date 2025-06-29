@@ -17,6 +17,7 @@ type NeuroContext struct {
 	sessionID      string
 	executionQueue []string
 	scriptMetadata map[string]interface{}
+	testMode       bool
 }
 
 func New() *NeuroContext {
@@ -26,6 +27,7 @@ func New() *NeuroContext {
 		sessionID:      fmt.Sprintf("session_%d", time.Now().Unix()),
 		executionQueue: make([]string, 0),
 		scriptMetadata: make(map[string]interface{}),
+		testMode:       false,
 	}
 }
 
@@ -96,6 +98,11 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		return ctx.sessionID, true
 	case "#message_count":
 		return fmt.Sprintf("%d", len(ctx.history)), true
+	case "#test_mode":
+		if ctx.testMode {
+			return "true", true
+		}
+		return "false", true
 	}
 	
 	// Handle message history variables: ${1}, ${2}, etc.
@@ -187,4 +194,13 @@ func (ctx *NeuroContext) GetScriptMetadata(key string) (interface{}, bool) {
 
 func (ctx *NeuroContext) ClearScriptMetadata() {
 	ctx.scriptMetadata = make(map[string]interface{})
+}
+
+// Test mode methods
+func (ctx *NeuroContext) SetTestMode(testMode bool) {
+	ctx.testMode = testMode
+}
+
+func (ctx *NeuroContext) IsTestMode() bool {
+	return ctx.testMode
 }
