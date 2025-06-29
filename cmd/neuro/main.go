@@ -1,17 +1,20 @@
 package main
 
 import (
-	"log"
-
 	"github.com/abiosoft/ishell/v2"
+	"neuroshell/internal/logger"
 	"neuroshell/internal/shell"
 )
 
 func main() {
+	logger.Info("Starting NeuroShell v0.1.0")
+	
 	// Initialize services before starting shell
 	if err := shell.InitializeServices(); err != nil {
-		log.Fatal("Failed to initialize services:", err)
+		logger.Fatal("Failed to initialize services", "error", err)
 	}
+	
+	logger.Info("Services initialized successfully")
 
 	sh := ishell.New()
 	sh.SetPrompt("neuro> ")

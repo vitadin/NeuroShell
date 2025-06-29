@@ -13,7 +13,7 @@ build:
 # Run the application
 run: build
     @echo "Running NeuroShell..."
-    ./bin/neuro
+    NEURO_LOG_LEVEL=debug ./bin/neuro
 
 # Run tests with coverage
 test:

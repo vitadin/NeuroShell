@@ -1,13 +1,13 @@
 package shell
 
 import (
-	"log"
 	"strings"
 
 	"github.com/abiosoft/ishell/v2"
 	"neuroshell/internal/commands"
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
 	"neuroshell/internal/context"
+	"neuroshell/internal/logger"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
 )
@@ -20,11 +20,11 @@ func ProcessInput(c *ishell.Context) {
 	rawInput := strings.Join(c.RawArgs, " ")
 	rawInput = strings.TrimSpace(rawInput)
 	
-	// Debug: print what we received
-	// c.Printf("DEBUG: RawArgs=%v, rawInput='%s'\n", c.RawArgs, rawInput)
+	logger.Debug("Processing user input", "input", rawInput)
 	
 	// Parse input - interpolation will happen later at execution time
 	cmd := parser.ParseInput(rawInput)
+	logger.Debug("Parsed command", "name", cmd.Name, "message", cmd.Message, "options", cmd.Options)
 	
 	// Execute the command
 	executeCommand(c, cmd)
@@ -58,14 +58,17 @@ func InitializeServices() error {
 		return err
 	}
 
-	log.Println("All services initialized successfully")
+	logger.Info("All services initialized successfully")
 	return nil
 }
 
 func executeCommand(c *ishell.Context, cmd *parser.Command) {
+	logger.CommandExecution(cmd.Name, cmd.Options)
+	
 	// Get interpolation service
 	interpolationService, err := services.GlobalRegistry.GetService("interpolation")
 	if err != nil {
+		logger.Error("Interpolation service not available", "error", err)
 		c.Printf("Error: interpolation service not available: %s\n", err.Error())
 		return
 	}
@@ -75,9 +78,12 @@ func executeCommand(c *ishell.Context, cmd *parser.Command) {
 	// Interpolate command components using service
 	interpolatedCmd, err := is.InterpolateCommand(cmd, globalCtx)
 	if err != nil {
+		logger.Error("Command interpolation failed", "command", cmd.Name, "error", err)
 		c.Printf("Error: interpolation failed: %s\n", err.Error())
 		return
 	}
+	
+	logger.InterpolationStep(cmd.Message, interpolatedCmd.Message)
 
 	// Prepare input for execution
 	input := interpolatedCmd.Message
@@ -88,10 +94,13 @@ func executeCommand(c *ishell.Context, cmd *parser.Command) {
 	// Execute command with interpolated values
 	err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, input, globalCtx)
 	if err != nil {
+		logger.Error("Command execution failed", "command", interpolatedCmd.Name, "error", err)
 		c.Printf("Error: %s\\n", err.Error())
 		if cmd.Name != "help" {
 			c.Println("Type \\help for available commands")
 		}
+	} else {
+		logger.Debug("Command executed successfully", "command", interpolatedCmd.Name)
 	}
 }
 
