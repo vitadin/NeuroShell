@@ -1,0 +1,123 @@
+package context
+
+import (
+	"fmt"
+	"os"
+	"os/user"
+	"regexp"
+	"strings"
+	"time"
+
+	"neuroshell/pkg/types"
+)
+
+type NeuroContext struct {
+	variables map[string]string
+	history   []types.Message
+	sessionID string
+}
+
+func New() *NeuroContext {
+	return &NeuroContext{
+		variables: make(map[string]string),
+		history:   make([]types.Message, 0),
+		sessionID: fmt.Sprintf("session_%d", time.Now().Unix()),
+	}
+}
+
+func (ctx *NeuroContext) GetVariable(name string) (string, error) {
+	// Handle special variables
+	if value, ok := ctx.getSystemVariable(name); ok {
+		return value, nil
+	}
+	
+	// Handle user variables
+	if value, ok := ctx.variables[name]; ok {
+		return value, nil
+	}
+	
+	return "", fmt.Errorf("variable %s not found", name)
+}
+
+func (ctx *NeuroContext) SetVariable(name string, value string) error {
+	// Don't allow setting system variables
+	if strings.HasPrefix(name, "@") || strings.HasPrefix(name, "#") || strings.HasPrefix(name, "_") {
+		return fmt.Errorf("cannot set system variable: %s", name)
+	}
+	
+	ctx.variables[name] = value
+	return nil
+}
+
+func (ctx *NeuroContext) GetMessageHistory(n int) []types.Message {
+	if n <= 0 || n > len(ctx.history) {
+		return ctx.history
+	}
+	
+	start := len(ctx.history) - n
+	return ctx.history[start:]
+}
+
+func (ctx *NeuroContext) GetSessionState() types.SessionState {
+	return types.SessionState{
+		ID:        ctx.sessionID,
+		Variables: ctx.variables,
+		History:   ctx.history,
+		CreatedAt: time.Now(), // Simplified for now
+		UpdatedAt: time.Now(),
+	}
+}
+
+func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
+	switch name {
+	case "@pwd":
+		if pwd, err := os.Getwd(); err == nil {
+			return pwd, true
+		}
+	case "@user":
+		if u, err := user.Current(); err == nil {
+			return u.Username, true
+		}
+	case "@home":
+		if home, err := os.UserHomeDir(); err == nil {
+			return home, true
+		}
+	case "@date":
+		return time.Now().Format("2006-01-02"), true
+	case "@time":
+		return time.Now().Format("15:04:05"), true
+	case "@os":
+		return fmt.Sprintf("%s/%s", os.Getenv("GOOS"), os.Getenv("GOARCH")), true
+	case "#session_id":
+		return ctx.sessionID, true
+	case "#message_count":
+		return fmt.Sprintf("%d", len(ctx.history)), true
+	}
+	
+	// Handle message history variables: ${1}, ${2}, etc.
+	if matched, _ := regexp.MatchString(`^\d+$`, name); matched {
+		// TODO: Implement message history access
+		return fmt.Sprintf("message_%s_placeholder", name), true
+	}
+	
+	return "", false
+}
+
+func (ctx *NeuroContext) InterpolateVariables(text string) string {
+	// Simple variable interpolation: ${var_name}
+	re := regexp.MustCompile(`\$\{([^}]+)\}`)
+	
+	result := re.ReplaceAllStringFunc(text, func(match string) string {
+		// Extract variable name (remove ${})
+		varName := match[2 : len(match)-1]
+		
+		if value, err := ctx.GetVariable(varName); err == nil {
+			return value
+		}
+		
+		// Return original if variable not found
+		return match
+	})
+	
+	return result
+}

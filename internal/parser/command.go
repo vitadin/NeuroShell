@@ -2,71 +2,108 @@ package parser
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
+
+	"github.com/alecthomas/participle/v2"
+	"github.com/alecthomas/participle/v2/lexer"
 )
 
 type Command struct {
-	Name    string
-	Options map[string]string
-	Message string
+	Name          string
+	BracketContent string
+	Options       map[string]string
+	Message       string
+	ParseMode     ParseMode
 }
 
-func ParseCommand(input string) (*Command, error) {
+type ParseMode int
+
+const (
+	ParseModeKeyValue ParseMode = iota // Default: parse as key=value pairs
+	ParseModeRaw                       // Raw content for commands like \bash
+)
+
+type RawCommand struct {
+	Name           string `parser:"'\\' @Ident"`
+	BracketContent string `parser:"( '[' @BracketContent ']' )?"`
+	Message        string `parser:"@Rest?"`
+}
+
+var commandLexer = lexer.MustSimple([]lexer.SimpleRule{
+	{Name: "Ident", Pattern: `[a-zA-Z_][a-zA-Z0-9_]*`},
+	{Name: "BracketContent", Pattern: `[^\]]*`},
+	{Name: "Rest", Pattern: `.*`},
+	{Name: "Punct", Pattern: `[\\[\]]`},
+	{Name: "Whitespace", Pattern: `\s+`},
+})
+
+var parser = participle.MustBuild[RawCommand](
+	participle.Lexer(commandLexer),
+)
+
+func ParseInput(input string) *Command {
 	input = strings.TrimSpace(input)
+	
+	// If doesn't start with \, treat as \send message
 	if !strings.HasPrefix(input, "\\") {
-		return nil, fmt.Errorf("command must start with '\\'")
+		return &Command{
+			Name:    "send",
+			Message: input,
+			Options: make(map[string]string),
+		}
 	}
 	
-	// Remove the leading backslash
-	input = input[1:]
-	
-	// Parse command name
-	parts := strings.SplitN(input, " ", 2)
-	if len(parts) == 0 {
-		return nil, fmt.Errorf("empty command")
+	// Parse with participle
+	rawCmd, err := parser.ParseString("", input)
+	if err != nil {
+		// If parsing fails, treat as \send message (removing the \)
+		return &Command{
+			Name:    "send",
+			Message: strings.TrimPrefix(input, "\\"),
+			Options: make(map[string]string),
+		}
 	}
 	
-	nameAndOptions := parts[0]
-	var message string
-	if len(parts) > 1 {
-		message = strings.TrimSpace(parts[1])
-	}
-	
-	// Check if command has options in brackets
 	cmd := &Command{
-		Options: make(map[string]string),
-		Message: message,
+		Name:          rawCmd.Name,
+		BracketContent: rawCmd.BracketContent,
+		Message:       strings.TrimSpace(rawCmd.Message),
+		Options:       make(map[string]string),
 	}
 	
-	if strings.Contains(nameAndOptions, "[") {
-		// Parse command with options: command[opt1=val1,opt2=val2]
-		re := regexp.MustCompile(`^([a-zA-Z_][a-zA-Z0-9_]*)\[([^\]]*)\]$`)
-		matches := re.FindStringSubmatch(nameAndOptions)
-		if matches == nil {
-			return nil, fmt.Errorf("invalid command format")
+	// Determine parse mode based on command
+	cmd.ParseMode = getParseMode(cmd.Name)
+	
+	// Parse bracket content based on mode
+	if cmd.BracketContent != "" {
+		if cmd.ParseMode == ParseModeRaw {
+			// Keep as raw string - don't parse
+		} else {
+			// Parse as key=value pairs
+			parseKeyValueOptions(cmd.BracketContent, cmd.Options)
 		}
-		
-		cmd.Name = matches[1]
-		optionsStr := matches[2]
-		
-		if optionsStr != "" {
-			// Parse options
-			if err := parseOptions(optionsStr, cmd.Options); err != nil {
-				return nil, fmt.Errorf("invalid options: %v", err)
-			}
-		}
-	} else {
-		// Simple command without options
-		cmd.Name = nameAndOptions
 	}
 	
-	return cmd, nil
+	return cmd
 }
 
-func parseOptions(optionsStr string, options map[string]string) error {
-	// Split by comma, but handle quoted values
-	parts := splitOptions(optionsStr)
+func getParseMode(commandName string) ParseMode {
+	// This will be replaced by command registry lookup
+	switch commandName {
+	case "bash":
+		return ParseModeRaw
+	default:
+		return ParseModeKeyValue
+	}
+}
+
+func parseKeyValueOptions(content string, options map[string]string) {
+	if content == "" {
+		return
+	}
+	
+	// Split by comma, handling quoted values
+	parts := splitByComma(content)
 	
 	for _, part := range parts {
 		part = strings.TrimSpace(part)
@@ -81,22 +118,16 @@ func parseOptions(optionsStr string, options map[string]string) error {
 			value := strings.TrimSpace(kv[1])
 			
 			// Remove quotes if present
-			if (strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"")) ||
-				(strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'")) {
-				value = value[1 : len(value)-1]
-			}
-			
+			value = unquote(value)
 			options[key] = value
 		} else {
 			// Just a flag
 			options[part] = ""
 		}
 	}
-	
-	return nil
 }
 
-func splitOptions(s string) []string {
+func splitByComma(s string) []string {
 	var parts []string
 	var current strings.Builder
 	inQuotes := false
@@ -126,6 +157,15 @@ func splitOptions(s string) []string {
 	}
 	
 	return parts
+}
+
+func unquote(s string) string {
+	if len(s) >= 2 {
+		if (s[0] == '"' && s[len(s)-1] == '"') || (s[0] == '\'' && s[len(s)-1] == '\'') {
+			return s[1 : len(s)-1]
+		}
+	}
+	return s
 }
 
 func (c *Command) String() string {
