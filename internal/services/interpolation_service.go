@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/context"
+	"neuroshell/internal/logger"
 	"neuroshell/internal/parser"
 	"neuroshell/pkg/types"
 )
@@ -24,6 +25,7 @@ func (i *InterpolationService) Name() string {
 
 func (i *InterpolationService) Initialize(ctx types.Context) error {
 	i.initialized = true
+	logger.ServiceOperation("interpolation", "initialize", "service ready")
 	return nil
 }
 
@@ -38,7 +40,11 @@ func (i *InterpolationService) InterpolateString(text string, ctx types.Context)
 		return "", fmt.Errorf("context is not a NeuroContext")
 	}
 
-	return neuroCtx.InterpolateVariables(text), nil
+	result := neuroCtx.InterpolateVariables(text)
+	if text != result {
+		logger.Debug("String interpolation performed", "input", text, "output", result)
+	}
+	return result, nil
 }
 
 // InterpolateCommand interpolates all parts of a command structure and returns a new interpolated command
