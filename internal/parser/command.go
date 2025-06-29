@@ -5,8 +5,6 @@ import (
 	"regexp"
 	"strings"
 	
-	"neuroshell/internal/commands"
-	_ "neuroshell/internal/commands/builtin" // Import for side effects
 	"neuroshell/pkg/types"
 )
 
@@ -83,7 +81,9 @@ func ParseInput(input string) *Command {
 }
 
 func getParseMode(commandName string) ParseMode {
-	return commands.GlobalRegistry.GetParseMode(commandName)
+	// Default to key-value parsing for all commands
+	// Commands that need raw parsing will handle it internally
+	return ParseModeKeyValue
 }
 
 func parseKeyValueOptions(content string, options map[string]string) {
