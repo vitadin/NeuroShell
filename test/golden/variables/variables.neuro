@@ -1,0 +1,6 @@
+# Variables and interpolation test
+\set[greeting="Hello"]
+\set[name="World"]
+\set[message="${greeting}, ${name}!"]
+\get[message]
+\get[#test_mode]

@@ -5,7 +5,7 @@ default:
     @just --list
 
 # Build the main binary
-build:
+build: build-neurotest
     @echo "Building NeuroShell..."
     go build -o bin/neuro ./cmd/neuro
     @echo "Binary built at: bin/neuro"
@@ -107,3 +107,17 @@ init:
     go mod download
     @mkdir -p bin docs logs sessions
     @echo "Development environment ready"
+
+# Run end-to-end tests
+test-e2e:
+    @echo "Running end-to-end tests..."
+    go build -o bin/neuro ./cmd/neuro
+    go build -o bin/neurotest ./cmd/neurotest
+    ./bin/neurotest --neuro-cmd=./bin/neuro run-all
+    @echo "End-to-end tests complete"
+
+# Build neurotest binary
+build-neurotest:
+    @echo "Building neurotest..."
+    go build -o bin/neurotest ./cmd/neurotest
+    @echo "Binary built at: bin/neurotest"
