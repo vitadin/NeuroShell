@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	
+	"neuroshell/internal/commands"
+	_ "neuroshell/internal/commands/builtin" // Import for side effects
+	"neuroshell/pkg/types"
 )
 
 type Command struct {
@@ -14,11 +18,12 @@ type Command struct {
 	ParseMode     ParseMode
 }
 
-type ParseMode int
+// Use ParseMode from types package
+type ParseMode = types.ParseMode
 
 const (
-	ParseModeKeyValue ParseMode = iota // Default: parse as key=value pairs
-	ParseModeRaw                       // Raw content for commands like \bash
+	ParseModeKeyValue = types.ParseModeKeyValue
+	ParseModeRaw     = types.ParseModeRaw
 )
 
 func ParseInput(input string) *Command {
@@ -78,13 +83,7 @@ func ParseInput(input string) *Command {
 }
 
 func getParseMode(commandName string) ParseMode {
-	// This will be replaced by command registry lookup
-	switch commandName {
-	case "bash":
-		return ParseModeRaw
-	default:
-		return ParseModeKeyValue
-	}
+	return commands.GlobalRegistry.GetParseMode(commandName)
 }
 
 func parseKeyValueOptions(content string, options map[string]string) {

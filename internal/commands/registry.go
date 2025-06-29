@@ -1,112 +1,92 @@
 package commands
 
 import (
-	"neuroshell/internal/parser"
+	"fmt"
+	"sync"
+
+	"neuroshell/pkg/types"
 )
 
-type CommandInfo struct {
-	Name        string
-	ParseMode   parser.ParseMode
-	Description string
-	Usage       string
+// Registry manages command registration and lookup
+type Registry struct {
+	mu       sync.RWMutex
+	commands map[string]types.Command
 }
 
-var CommandRegistry = map[string]CommandInfo{
-	"send": {
-		Name:        "send",
-		ParseMode:   parser.ParseModeKeyValue,
-		Description: "Send message to LLM agent",
-		Usage:       "\\send message",
-	},
-	"set": {
-		Name:        "set",
-		ParseMode:   parser.ParseModeKeyValue,
-		Description: "Set a variable",
-		Usage:       "\\set[var=value] or \\set var value",
-	},
-	"get": {
-		Name:        "get",
-		ParseMode:   parser.ParseModeKeyValue,
-		Description: "Get a variable",
-		Usage:       "\\get[var] or \\get var",
-	},
-	"bash": {
-		Name:        "bash",
-		ParseMode:   parser.ParseModeRaw,
-		Description: "Execute system command",
-		Usage:       "\\bash[command] or \\bash command",
-	},
-	"exit": {
-		Name:        "exit",
-		ParseMode:   parser.ParseModeKeyValue,
-		Description: "Exit the shell",
-		Usage:       "\\exit",
-	},
-	"help": {
-		Name:        "help",
-		ParseMode:   parser.ParseModeKeyValue,
-		Description: "Show command help",
-		Usage:       "\\help [command]",
-	},
-	"new": {
-		Name:        "new",
-		ParseMode:   parser.ParseModeKeyValue,
-		Description: "Start new session",
-		Usage:       "\\new [name]",
-	},
-	"save": {
-		Name:        "save",
-		ParseMode:   parser.ParseModeKeyValue,
-		Description: "Save current session",
-		Usage:       "\\save[name=\"session_name\"]",
-	},
-	"load": {
-		Name:        "load",
-		ParseMode:   parser.ParseModeKeyValue,
-		Description: "Load saved session",
-		Usage:       "\\load[name=\"session_name\"]",
-	},
-	"clear": {
-		Name:        "clear",
-		ParseMode:   parser.ParseModeKeyValue,
-		Description: "Clear current session",
-		Usage:       "\\clear",
-	},
-	"list": {
-		Name:        "list",
-		ParseMode:   parser.ParseModeKeyValue,
-		Description: "List all variables",
-		Usage:       "\\list [pattern]",
-	},
-	"history": {
-		Name:        "history",
-		ParseMode:   parser.ParseModeKeyValue,
-		Description: "View recent exchanges",
-		Usage:       "\\history[n=5]",
-	},
-}
-
-func GetCommandInfo(name string) (CommandInfo, bool) {
-	info, exists := CommandRegistry[name]
-	return info, exists
-}
-
-func GetParseMode(commandName string) parser.ParseMode {
-	if info, exists := CommandRegistry[commandName]; exists {
-		return info.ParseMode
+// NewRegistry creates a new command registry
+func NewRegistry() *Registry {
+	return &Registry{
+		commands: make(map[string]types.Command),
 	}
-	return parser.ParseModeKeyValue // Default
 }
 
-func IsValidCommand(name string) bool {
-	_, exists := CommandRegistry[name]
-	return exists
+// Register adds a command to the registry
+func (r *Registry) Register(cmd types.Command) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if cmd.Name() == "" {
+		return fmt.Errorf("command name cannot be empty")
+	}
+
+	if _, exists := r.commands[cmd.Name()]; exists {
+		return fmt.Errorf("command %s already registered", cmd.Name())
+	}
+
+	r.commands[cmd.Name()] = cmd
+	return nil
 }
 
-func GetAllCommands() []CommandInfo {
-	commands := make([]CommandInfo, 0, len(CommandRegistry))
-	for _, info := range CommandRegistry {
-		commands = append(commands, info)
+// Unregister removes a command from the registry
+func (r *Registry) Unregister(name string) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.commands, name)
+}
+
+// Get retrieves a command by name
+func (r *Registry) Get(name string) (types.Command, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	cmd, exists := r.commands[name]
+	return cmd, exists
+}
+
+// GetAll returns all registered commands
+func (r *Registry) GetAll() []types.Command {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	commands := make([]types.Command, 0, len(r.commands))
+	for _, cmd := range r.commands {
+		commands = append(commands, cmd)
 	}
 	return commands
 }
+
+// Execute runs a command by name
+func (r *Registry) Execute(name string, args map[string]string, input string, ctx types.Context) error {
+	cmd, exists := r.Get(name)
+	if !exists {
+		return fmt.Errorf("unknown command: %s", name)
+	}
+	return cmd.Execute(args, input, ctx)
+}
+
+// GetParseMode returns the parse mode for a command
+func (r *Registry) GetParseMode(name string) types.ParseMode {
+	cmd, exists := r.Get(name)
+	if !exists {
+		return types.ParseModeKeyValue // Default
+	}
+	return cmd.ParseMode()
+}
+
+// IsValidCommand checks if a command exists
+func (r *Registry) IsValidCommand(name string) bool {
+	_, exists := r.Get(name)
+	return exists
+}
+
+// Global registry instance
+var GlobalRegistry = NewRegistry()

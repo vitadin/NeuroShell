@@ -4,6 +4,9 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell/v2"
+	"neuroshell/internal/commands"
+	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
+	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
 )
 
@@ -25,119 +28,26 @@ func ProcessInput(c *ishell.Context) {
 	executeCommand(c, cmd)
 }
 
+// Global context instance to persist across commands
+var globalCtx = context.New()
+
 func executeCommand(c *ishell.Context, cmd *parser.Command) {
-	switch cmd.Name {
-	case "send":
-		handleSendCommand(c, cmd)
-	case "set":
-		handleSetCommand(c, cmd)
-	case "get":
-		handleGetCommand(c, cmd)
-	case "bash":
-		handleBashCommand(c, cmd)
-	case "exit":
-		handleExitCommand(c, cmd)
-	case "help":
-		handleHelpCommand(c, cmd)
-	default:
-		c.Printf("Unknown command: \\%s\n", cmd.Name)
-		c.Println("Type \\help for available commands")
-	}
-}
-
-func handleSendCommand(c *ishell.Context, cmd *parser.Command) {
-	if cmd.Message == "" {
-		c.Println("Usage: \\send message")
-		return
-	}
-	c.Printf("Sending: %s\n", cmd.Message)
-}
-
-func handleSetCommand(c *ishell.Context, cmd *parser.Command) {
-	if len(cmd.Options) == 0 && cmd.Message == "" {
-		c.Println("Usage: \\set[var=value] or \\set var value")
-		return
+	// Prepare args and input for the new interface
+	args := cmd.Options
+	input := cmd.Message
+	
+	// Special handling for bash command to pass raw bracket content
+	if cmd.Name == "bash" && cmd.ParseMode == parser.ParseModeRaw && cmd.BracketContent != "" {
+		input = cmd.BracketContent
 	}
 	
-	// Handle bracket syntax: \set[var=value]
-	if len(cmd.Options) > 0 {
-		for key, value := range cmd.Options {
-			c.Printf("Setting %s = %s\n", key, value)
-		}
-		return
-	}
-	
-	// Handle space syntax: \set var value
-	if cmd.Message != "" {
-		parts := strings.SplitN(cmd.Message, " ", 2)
-		if len(parts) == 2 {
-			c.Printf("Setting %s = %s\n", parts[0], parts[1])
-		} else {
-			c.Printf("Setting %s = \n", parts[0])
+	// Execute command through registry
+	err := commands.GlobalRegistry.Execute(cmd.Name, args, input, globalCtx)
+	if err != nil {
+		c.Printf("Error: %s\\n", err.Error())
+		if cmd.Name != "help" {
+			c.Println("Type \\help for available commands")
 		}
 	}
 }
 
-func handleGetCommand(c *ishell.Context, cmd *parser.Command) {
-	var variable string
-	
-	// Handle bracket syntax: \get[var]
-	if len(cmd.Options) > 0 {
-		for key := range cmd.Options {
-			variable = key
-			break
-		}
-	} else if cmd.Message != "" {
-		// Handle space syntax: \get var
-		variable = strings.Fields(cmd.Message)[0]
-	}
-	
-	if variable == "" {
-		c.Println("Usage: \\get[var] or \\get var")
-		return
-	}
-	
-	c.Printf("Getting %s (not implemented yet)\n", variable)
-}
-
-func handleBashCommand(c *ishell.Context, cmd *parser.Command) {
-	var command string
-	
-	if cmd.ParseMode == parser.ParseModeRaw && cmd.BracketContent != "" {
-		// Raw bracket content: \bash[ls -la]
-		command = cmd.BracketContent
-	} else if cmd.Message != "" {
-		// Message: \bash ls -la
-		command = cmd.Message
-	}
-	
-	if command == "" {
-		c.Println("Usage: \\bash[command] or \\bash command")
-		return
-	}
-	
-	c.Printf("Executing: %s (not implemented yet)\n", command)
-}
-
-func handleExitCommand(c *ishell.Context, cmd *parser.Command) {
-	c.Println("Goodbye!")
-	c.Stop()
-}
-
-func handleHelpCommand(c *ishell.Context, cmd *parser.Command) {
-	c.Println("Neuro Shell Commands:")
-	c.Println("  \\send message          - Send message to LLM agent")
-	c.Println("  \\set[var=value]        - Set a variable")
-	c.Println("  \\get[var]              - Get a variable")
-	c.Println("  \\bash[command]         - Execute system command")
-	c.Println("  \\exit                  - Exit the shell")
-	c.Println("  \\help                  - Show this help")
-	c.Println("")
-	c.Println("Examples:")
-	c.Println("  \\send Hello world")
-	c.Println("  \\set[name=\"John\"]")
-	c.Println("  \\get[name]")
-	c.Println("  \\bash[ls -la]")
-	c.Println("")
-	c.Println("Note: Text without \\ prefix is sent to LLM automatically")
-}
