@@ -42,6 +42,11 @@ func (c *RunCommand) Execute(args map[string]string, input string, ctx types.Con
 	if err != nil {
 		return fmt.Errorf("executor service not available: %w", err)
 	}
+	
+	interpolationService, err := services.GlobalRegistry.GetService("interpolation")
+	if err != nil {
+		return fmt.Errorf("interpolation service not available: %w", err)
+	}
 
 	// Get filename from args or input
 	filename := ""
@@ -57,6 +62,7 @@ func (c *RunCommand) Execute(args map[string]string, input string, ctx types.Con
 	ss := scriptService.(*services.ScriptService)
 	vs := variableService.(*services.VariableService)
 	es := executorService.(*services.ExecutorService)
+	is := interpolationService.(*services.InterpolationService)
 
 	// Phase 1: Load script file into execution queue
 	if err := ss.LoadScript(filename, ctx); err != nil {
@@ -75,17 +81,21 @@ func (c *RunCommand) Execute(args map[string]string, input string, ctx types.Con
 			break // No more commands
 		}
 
-		// Execute the command through command registry
-		cmdArgs := cmd.Options
-		cmdInput := cmd.Message
-
-		// Special handling for bash command
-		if cmd.Name == "bash" && cmd.ParseMode == types.ParseModeRaw && cmd.BracketContent != "" {
-			cmdInput = cmd.BracketContent
+		// Interpolate command using service
+		interpolatedCmd, err := is.InterpolateCommand(cmd, ctx)
+		if err != nil {
+			es.MarkExecutionError(ctx, err, cmd.String())
+			return fmt.Errorf("interpolation failed: %w", err)
 		}
 
-		// Execute through command registry
-		err = commands.GlobalRegistry.Execute(cmd.Name, cmdArgs, cmdInput, ctx)
+		// Prepare input for execution
+		cmdInput := interpolatedCmd.Message
+		if interpolatedCmd.Name == "bash" && interpolatedCmd.ParseMode == types.ParseModeRaw && interpolatedCmd.BracketContent != "" {
+			cmdInput = interpolatedCmd.BracketContent
+		}
+
+		// Execute command (RunCommand orchestrates execution)
+		err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput, ctx)
 		if err != nil {
 			// Mark execution error and return
 			es.MarkExecutionError(ctx, err, cmd.String())

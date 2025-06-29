@@ -34,6 +34,7 @@ func ProcessInput(c *ishell.Context) {
 var globalCtx = context.New()
 
 
+
 func InitializeServices() error {
 	// Register all pure services
 	if err := services.GlobalRegistry.RegisterService(services.NewScriptService()); err != nil {
@@ -47,6 +48,10 @@ func InitializeServices() error {
 	if err := services.GlobalRegistry.RegisterService(services.NewExecutorService()); err != nil {
 		return err
 	}
+	
+	if err := services.GlobalRegistry.RegisterService(services.NewInterpolationService()); err != nil {
+		return err
+	}
 
 	// Initialize all services with the global context
 	if err := services.GlobalRegistry.InitializeAll(globalCtx); err != nil {
@@ -58,27 +63,30 @@ func InitializeServices() error {
 }
 
 func executeCommand(c *ishell.Context, cmd *parser.Command) {
-	// Interpolate all command components just before execution
-	// Use the enhanced interpolation that handles nested variables
-	interpolatedMessage := globalCtx.InterpolateVariables(cmd.Message)
-	interpolatedBracketContent := globalCtx.InterpolateVariables(cmd.BracketContent)
-	
-	// Interpolate option values
-	interpolatedOptions := make(map[string]string)
-	for key, value := range cmd.Options {
-		interpolatedOptions[key] = globalCtx.InterpolateVariables(value)
+	// Get interpolation service
+	interpolationService, err := services.GlobalRegistry.GetService("interpolation")
+	if err != nil {
+		c.Printf("Error: interpolation service not available: %s\n", err.Error())
+		return
 	}
-	
-	// Use interpolated values for execution
-	input := interpolatedMessage
-	
-	// Special handling for bash command to pass raw bracket content
-	if cmd.Name == "bash" && cmd.ParseMode == parser.ParseModeRaw && interpolatedBracketContent != "" {
-		input = interpolatedBracketContent
+
+	is := interpolationService.(*services.InterpolationService)
+
+	// Interpolate command components using service
+	interpolatedCmd, err := is.InterpolateCommand(cmd, globalCtx)
+	if err != nil {
+		c.Printf("Error: interpolation failed: %s\n", err.Error())
+		return
 	}
-	
-	// Execute command through registry with interpolated values
-	err := commands.GlobalRegistry.Execute(cmd.Name, interpolatedOptions, input, globalCtx)
+
+	// Prepare input for execution
+	input := interpolatedCmd.Message
+	if interpolatedCmd.Name == "bash" && interpolatedCmd.ParseMode == parser.ParseModeRaw && interpolatedCmd.BracketContent != "" {
+		input = interpolatedCmd.BracketContent
+	}
+
+	// Execute command with interpolated values
+	err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, input, globalCtx)
 	if err != nil {
 		c.Printf("Error: %s\\n", err.Error())
 		if cmd.Name != "help" {
