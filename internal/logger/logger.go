@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io"
 	"os"
 	"strings"
 
@@ -11,14 +12,28 @@ import (
 var Logger *log.Logger
 
 func init() {
-	// Create new logger instance
+	// Create new logger instance with default settings
 	Logger = log.New(os.Stderr)
 	
 	// Remove timestamps as requested
 	Logger.SetTimeFormat("")
 	
-	// Set log level based on environment variable, default to Info
-	level := strings.ToLower(os.Getenv("NEURO_LOG_LEVEL"))
+	// Set default log level
+	Logger.SetLevel(log.InfoLevel)
+}
+
+// Configure sets up the logger based on CLI flags and environment variables
+// CLI flags take precedence over environment variables
+func Configure(logLevel string, logFile string, testMode bool) error {
+	// Set log level with precedence: CLI flag > env var > default
+	level := logLevel
+	if level == "" {
+		level = strings.ToLower(os.Getenv("NEURO_LOG_LEVEL"))
+	}
+	if level == "" {
+		level = "info" // default
+	}
+	
 	switch level {
 	case "debug":
 		Logger.SetLevel(log.DebugLevel)
@@ -31,7 +46,49 @@ func init() {
 	case "fatal":
 		Logger.SetLevel(log.FatalLevel)
 	default:
-		Logger.SetLevel(log.InfoLevel) // Default level
+		Logger.SetLevel(log.InfoLevel)
+	}
+	
+	// Set log output destination
+	var output io.Writer = os.Stderr
+	if logFile != "" {
+		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			return err
+		}
+		output = file
+	}
+	
+	// Create new logger with configured output
+	Logger = log.New(output)
+	Logger.SetTimeFormat("")
+	Logger.SetLevel(parseLogLevel(level))
+	
+	// Configure for test mode
+	if testMode {
+		// In test mode, ensure deterministic output
+		Logger.SetTimeFormat("") // No timestamps
+		Logger.SetLevel(log.InfoLevel) // Consistent level
+	}
+	
+	return nil
+}
+
+// parseLogLevel converts string to log level
+func parseLogLevel(level string) log.Level {
+	switch strings.ToLower(level) {
+	case "debug":
+		return log.DebugLevel
+	case "info":
+		return log.InfoLevel
+	case "warn":
+		return log.WarnLevel
+	case "error":
+		return log.ErrorLevel
+	case "fatal":
+		return log.FatalLevel
+	default:
+		return log.InfoLevel
 	}
 }
 
