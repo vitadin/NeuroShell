@@ -15,6 +15,9 @@ func ProcessInput(c *ishell.Context) {
 	rawInput := strings.Join(c.RawArgs, " ")
 	rawInput = strings.TrimSpace(rawInput)
 	
+	// Debug: print what we received
+	// c.Printf("DEBUG: RawArgs=%v, rawInput='%s'\n", c.RawArgs, rawInput)
+	
 	// Parse input - this never fails, always returns a valid command
 	cmd := parser.ParseInput(rawInput)
 	

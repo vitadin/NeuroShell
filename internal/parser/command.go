@@ -2,10 +2,8 @@ package parser
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
-
-	"github.com/alecthomas/participle/v2"
-	"github.com/alecthomas/participle/v2/lexer"
 )
 
 type Command struct {
@@ -23,24 +21,6 @@ const (
 	ParseModeRaw                       // Raw content for commands like \bash
 )
 
-type RawCommand struct {
-	Name           string `parser:"'\\' @Ident"`
-	BracketContent string `parser:"( '[' @BracketContent ']' )?"`
-	Message        string `parser:"@Rest?"`
-}
-
-var commandLexer = lexer.MustSimple([]lexer.SimpleRule{
-	{Name: "Ident", Pattern: `[a-zA-Z_][a-zA-Z0-9_]*`},
-	{Name: "BracketContent", Pattern: `[^\]]*`},
-	{Name: "Rest", Pattern: `.*`},
-	{Name: "Punct", Pattern: `[\\[\]]`},
-	{Name: "Whitespace", Pattern: `\s+`},
-})
-
-var parser = participle.MustBuild[RawCommand](
-	participle.Lexer(commandLexer),
-)
-
 func ParseInput(input string) *Command {
 	input = strings.TrimSpace(input)
 	
@@ -53,22 +33,32 @@ func ParseInput(input string) *Command {
 		}
 	}
 	
-	// Parse with participle
-	rawCmd, err := parser.ParseString("", input)
-	if err != nil {
-		// If parsing fails, treat as \send message (removing the \)
-		return &Command{
-			Name:    "send",
-			Message: strings.TrimPrefix(input, "\\"),
-			Options: make(map[string]string),
+	// Remove the leading backslash
+	input = input[1:]
+	
+	cmd := &Command{
+		Options: make(map[string]string),
+	}
+	
+	// Try to parse command with brackets: command[content] message
+	bracketRe := regexp.MustCompile(`^([a-zA-Z_][a-zA-Z0-9_]*)\[([^\]]*)\](.*)$`)
+	if matches := bracketRe.FindStringSubmatch(input); matches != nil {
+		cmd.Name = matches[1]
+		cmd.BracketContent = matches[2]
+		cmd.Message = strings.TrimSpace(matches[3])
+	} else {
+		// Simple command without brackets: command message
+		parts := strings.SplitN(input, " ", 2)
+		cmd.Name = parts[0]
+		if len(parts) > 1 {
+			cmd.Message = strings.TrimSpace(parts[1])
 		}
 	}
 	
-	cmd := &Command{
-		Name:          rawCmd.Name,
-		BracketContent: rawCmd.BracketContent,
-		Message:       strings.TrimSpace(rawCmd.Message),
-		Options:       make(map[string]string),
+	// If no command name (malformed), treat as \send
+	if cmd.Name == "" {
+		cmd.Name = "send"
+		cmd.Message = input
 	}
 	
 	// Determine parse mode based on command
