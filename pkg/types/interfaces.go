@@ -2,6 +2,13 @@ package types
 
 import "time"
 
+type ParseMode int
+
+const (
+	ParseModeKeyValue ParseMode = iota
+	ParseModeRaw
+)
+
 type Context interface {
 	GetVariable(name string) (string, error)
 	SetVariable(name string, value string) error
@@ -16,7 +23,10 @@ type Service interface {
 
 type Command interface {
 	Name() string
-	Execute(args []string, input string, services ServiceRegistry) error
+	ParseMode() ParseMode
+	Description() string
+	Usage() string
+	Execute(args map[string]string, input string, ctx Context) error
 }
 
 type ServiceRegistry interface {

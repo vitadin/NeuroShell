@@ -2,42 +2,159 @@ package parser
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
-
-	"github.com/alecthomas/participle/v2"
-	"github.com/alecthomas/participle/v2/lexer"
+	
+	"neuroshell/internal/commands"
+	_ "neuroshell/internal/commands/builtin" // Import for side effects
+	"neuroshell/pkg/types"
 )
 
 type Command struct {
-	Name    string            `parser:"'\\' @Ident"`
-	Options map[string]string `parser:"'[' @@? ']'?"`
-	Message string            `parser:"@@?"`
+	Name          string
+	BracketContent string
+	Options       map[string]string
+	Message       string
+	ParseMode     ParseMode
 }
 
-type Option struct {
-	Key   string `parser:"@Ident"`
-	Value string `parser:"('=' @String)?"`
-}
+// Use ParseMode from types package
+type ParseMode = types.ParseMode
 
-var commandLexer = lexer.MustSimple([]lexer.SimpleRule{
-	{Name: "Ident", Pattern: `[a-zA-Z_][a-zA-Z0-9_]*`},
-	{Name: "String", Pattern: `"([^"\\]|\\.)*"`},
-	{Name: "Punct", Pattern: `[\\[\]=,]`},
-	{Name: "Whitespace", Pattern: `\s+`},
-})
-
-var parser = participle.MustBuild[Command](
-	participle.Lexer(commandLexer),
-	participle.Unquote("String"),
+const (
+	ParseModeKeyValue = types.ParseModeKeyValue
+	ParseModeRaw     = types.ParseModeRaw
 )
 
-func ParseCommand(input string) (*Command, error) {
+func ParseInput(input string) *Command {
 	input = strings.TrimSpace(input)
+	
+	// If doesn't start with \, treat as \send message
 	if !strings.HasPrefix(input, "\\") {
-		return nil, fmt.Errorf("command must start with '\\'")
+		return &Command{
+			Name:    "send",
+			Message: input,
+			Options: make(map[string]string),
+		}
 	}
 	
-	return parser.ParseString("", input)
+	// Remove the leading backslash
+	input = input[1:]
+	
+	cmd := &Command{
+		Options: make(map[string]string),
+	}
+	
+	// Try to parse command with brackets: command[content] message
+	bracketRe := regexp.MustCompile(`^([a-zA-Z_][a-zA-Z0-9_]*)\[([^\]]*)\](.*)$`)
+	if matches := bracketRe.FindStringSubmatch(input); matches != nil {
+		cmd.Name = matches[1]
+		cmd.BracketContent = matches[2]
+		cmd.Message = strings.TrimSpace(matches[3])
+	} else {
+		// Simple command without brackets: command message
+		parts := strings.SplitN(input, " ", 2)
+		cmd.Name = parts[0]
+		if len(parts) > 1 {
+			cmd.Message = strings.TrimSpace(parts[1])
+		}
+	}
+	
+	// If no command name (malformed), treat as \send
+	if cmd.Name == "" {
+		cmd.Name = "send"
+		cmd.Message = input
+	}
+	
+	// Determine parse mode based on command
+	cmd.ParseMode = getParseMode(cmd.Name)
+	
+	// Parse bracket content based on mode
+	if cmd.BracketContent != "" {
+		if cmd.ParseMode == ParseModeRaw {
+			// Keep as raw string - don't parse
+		} else {
+			// Parse as key=value pairs
+			parseKeyValueOptions(cmd.BracketContent, cmd.Options)
+		}
+	}
+	
+	return cmd
+}
+
+func getParseMode(commandName string) ParseMode {
+	return commands.GlobalRegistry.GetParseMode(commandName)
+}
+
+func parseKeyValueOptions(content string, options map[string]string) {
+	if content == "" {
+		return
+	}
+	
+	// Split by comma, handling quoted values
+	parts := splitByComma(content)
+	
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		
+		if strings.Contains(part, "=") {
+			// key=value format
+			kv := strings.SplitN(part, "=", 2)
+			key := strings.TrimSpace(kv[0])
+			value := strings.TrimSpace(kv[1])
+			
+			// Remove quotes if present
+			value = unquote(value)
+			options[key] = value
+		} else {
+			// Just a flag
+			options[part] = ""
+		}
+	}
+}
+
+func splitByComma(s string) []string {
+	var parts []string
+	var current strings.Builder
+	inQuotes := false
+	quoteChar := byte(0)
+	
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		
+		if !inQuotes && (c == '"' || c == '\'') {
+			inQuotes = true
+			quoteChar = c
+			current.WriteByte(c)
+		} else if inQuotes && c == quoteChar {
+			inQuotes = false
+			quoteChar = 0
+			current.WriteByte(c)
+		} else if !inQuotes && c == ',' {
+			parts = append(parts, current.String())
+			current.Reset()
+		} else {
+			current.WriteByte(c)
+		}
+	}
+	
+	if current.Len() > 0 {
+		parts = append(parts, current.String())
+	}
+	
+	return parts
+}
+
+func unquote(s string) string {
+	if len(s) >= 2 {
+		if (s[0] == '"' && s[len(s)-1] == '"') || (s[0] == '\'' && s[len(s)-1] == '\'') {
+			return s[1 : len(s)-1]
+		}
+	}
+	return s
 }
 
 func (c *Command) String() string {
