@@ -440,7 +440,7 @@ func (b *BashService) executeInSessionWithOSC(session *context.BashSession, comm
 	// Set timeout - shorter default for faster response when OSC fails
 	timeout := options.Timeout
 	if timeout == 0 {
-		timeout = 5 * time.Second // Reduced timeout for better user experience
+		timeout = 2 * time.Second // Fast timeout for better user experience
 	}
 
 	return b.executeWithHybridDetection(session, trackerSession, tracker, command, timeout)
@@ -450,8 +450,8 @@ func (b *BashService) executeInSessionWithOSC(session *context.BashSession, comm
 func (b *BashService) executeWithHybridDetection(session *context.BashSession, trackerSession *shellintegration.SessionState, tracker *shellintegration.CommandTracker, command string, timeout time.Duration) (string, error) {
 	logger.Debug("Starting hybrid detection", "session", session.Name, "command", command, "timeout", timeout)
 	
-	// Try OSC detection first with short timeout for fast fallback
-	oscTimeout := 2 * time.Second
+	// Try OSC detection first with optimized timeout for completion detection
+	oscTimeout := 500 * time.Millisecond
 	if timeout < oscTimeout {
 		oscTimeout = timeout / 3
 	}
@@ -470,7 +470,7 @@ func (b *BashService) executeWithHybridDetection(session *context.BashSession, t
 	// Calculate remaining timeout
 	remainingTimeout := timeout - oscTimeout
 	if remainingTimeout <= 0 {
-		remainingTimeout = 2 * time.Second // Minimum fallback timeout
+		remainingTimeout = 500 * time.Millisecond // Fast fallback timeout
 	}
 	
 	return b.executeWithMarkerDetectionNoCommandWrite(session, command, remainingTimeout)
@@ -539,9 +539,14 @@ func (b *BashService) readWithOSCDetectionTimeout(session *context.BashSession, 
 				continue
 			}
 			
+			// Debug OSC sequence detection
+			if result.StateChanged {
+				logger.Debug("OSC state changed", "session", session.Name, "old_state", "unknown", "new_state", result.State)
+			}
+			
 			// Display output in real-time (honest output) - use NewOutput to avoid duplication
 			if result.HasNewOutput && result.NewOutput != "" {
-				cleanOutput := shellintegration.FilterOSCSequences(result.NewOutput)
+				cleanOutput := b.filterRealtimeOutput(result.NewOutput)
 				if strings.TrimSpace(cleanOutput) != "" {
 					fmt.Print(cleanOutput)
 					output.WriteString(cleanOutput)
@@ -550,7 +555,7 @@ func (b *BashService) readWithOSCDetectionTimeout(session *context.BashSession, 
 			
 			// Check if command is complete
 			if result.IsComplete {
-				logger.Debug("Command completed via OSC detection", "session", session.Name, "exit_code", result.ExitCode, "total_lines", lineCount)
+				logger.Debug("Command completed via OSC detection", "session", session.Name, "exit_code", result.ExitCode, "total_lines", lineCount, "state", result.State)
 				done <- output.String()
 				return
 			}
@@ -608,7 +613,7 @@ func (b *BashService) readWithOSCDetection(session *context.BashSession, tracker
 
 			// Display output in real-time (honest output) - use NewOutput to avoid duplication
 			if result.HasNewOutput && result.NewOutput != "" {
-				cleanOutput := shellintegration.FilterOSCSequences(result.NewOutput)
+				cleanOutput := b.filterRealtimeOutput(result.NewOutput)
 				if strings.TrimSpace(cleanOutput) != "" {
 					fmt.Print(cleanOutput)
 					output.WriteString(cleanOutput)
@@ -667,7 +672,7 @@ func (b *BashService) executeInSession(session *context.BashSession, command str
 	// Read output until we see the marker
 	timeout := options.Timeout
 	if timeout == 0 {
-		timeout = 2 * time.Second // Default 2-second timeout instead of 5
+		timeout = 1 * time.Second // Default 1-second timeout for faster response
 	}
 
 	return b.readUntilMarker(session.PTY, marker, timeout)
@@ -757,4 +762,26 @@ func (b *BashService) cleanOutput(output string) string {
 	result := strings.Join(cleanLines, "\n")
 	logger.Debug("Output cleaned", "cleaned_output", result)
 	return result
+}
+
+// filterRealtimeOutput filters both OSC sequences and markers from real-time output
+func (b *BashService) filterRealtimeOutput(output string) string {
+	// First filter OSC sequences
+	cleanOutput := shellintegration.FilterOSCSequences(output)
+	
+	// Then filter marker lines
+	lines := strings.Split(cleanOutput, "\n")
+	var filteredLines []string
+	
+	for _, line := range lines {
+		// Skip completion markers and bash command echoes containing markers
+		if strings.Contains(line, "NEURO_CMD_DONE_") || 
+		   strings.Contains(line, "NEURO_INIT_") ||
+		   strings.Contains(line, "echo 'NEURO_CMD_DONE_") {
+			continue
+		}
+		filteredLines = append(filteredLines, line)
+	}
+	
+	return strings.Join(filteredLines, "\n")
 }

@@ -1,0 +1,6 @@
+# Comprehensive test for OSC integration fixes
+\bash echo "Test 1: Simple command"
+\bash ls -la | head -3
+\bash export TEST_VAR=hello
+\bash echo "Test variable: $TEST_VAR"
+\bash pwd

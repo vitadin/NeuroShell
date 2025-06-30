@@ -98,8 +98,8 @@ func (p *StreamParser) processBuffer() ParseResult {
 	// Update sequences list
 	p.sequences = append(p.sequences, newSequences...)
 
-	// Check if command is complete
-	isComplete := p.state == StateCommandEnd
+	// Check if command is complete (either command end or prompt start indicates completion)
+	isComplete := p.state == StateCommandEnd || p.state == StatePromptStart
 
 	return ParseResult{
 		Output:       p.cleanOutput.String(), // Return accumulated clean output
