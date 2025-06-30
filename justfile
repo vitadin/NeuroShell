@@ -150,12 +150,13 @@ lint:
     @echo "Running linters..."
     gofmt -s -w .
     go vet ./...
-    @if command -v golangci-lint >/dev/null 2>&1; then \
-        echo "Running golangci-lint..."; \
-        golangci-lint run; \
-    else \
-        echo "golangci-lint not found, skipping advanced linting"; \
+    @echo "Running golangci-lint..."
+    @if ! command -v golangci-lint >/dev/null 2>&1; then \
+        echo "❌ golangci-lint not found. Please install it:"; \
+        echo "   brew install golangci-lint"; \
+        exit 1; \
     fi
+    golangci-lint run
 
 # Clean build artifacts and temporary files
 clean:

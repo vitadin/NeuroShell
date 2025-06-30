@@ -16,16 +16,23 @@ jobs:
       # Checkout the source code
       - checkout
       
-      # Install just command runner
-      # Note: CircleCI base images may not have just pre-installed
+      # Install dependencies: just and golangci-lint
       - run:
-          name: Install just
+          name: Install build tools
           command: |
             # Install just using the recommended installation method
             curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
+            
+            # Install golangci-lint
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b ~/bin
+            
+            # Update PATH
             echo 'export PATH="$HOME/bin:$PATH"' >> $BASH_ENV
             source $BASH_ENV
+            
+            # Verify installations
             just --version
+            golangci-lint --version
       
       # Cache Go modules for faster builds
       - restore_cache:

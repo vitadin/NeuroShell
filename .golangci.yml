@@ -1,0 +1,70 @@
+# golangci-lint configuration for NeuroShell
+version: 2
+
+run:
+  timeout: 5m
+  tests: true
+  skip-dirs:
+    - vendor
+    - bin
+    - dist
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters:
+  enable:
+    - errcheck      # Check for unchecked errors
+    - govet         # Standard go vet
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Advanced static analysis
+    - unused        # Find unused code
+    - misspell      # Detect misspellings
+    - gocritic      # Advanced criticism
+    - revive        # Replacement for golint
+    - gosec         # Security issues
+
+linters-settings:
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
+    ignore: fmt:.*,io/ioutil:^Read.*
+
+  gosec:
+    excludes:
+      - G204  # Command injection (we have legitimate bash execution)
+      - G304  # File path inclusion (we have legitimate file operations)
+
+  revive:
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: if-return
+      - name: var-naming
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: indent-error-flow
+      - name: errorf
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  
+  exclude-rules:
+    # Exclude linting issues in test files for specific linters
+    - path: _test\.go
+      linters:
+        - gosec
+        - errcheck
+        
+    # Exclude errcheck for defer Close() calls
+    - linters:
+        - errcheck
+      text: "Error return value of.*Close.*is not checked"
