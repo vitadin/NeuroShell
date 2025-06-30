@@ -22,6 +22,42 @@ test:
     go tool cover -html=coverage.out -o coverage.html
     @echo "Coverage report generated: coverage.html"
 
+# Run unit tests only
+test-unit:
+    @echo "Running unit tests..."
+    go test -v -race ./internal/services/... ./internal/testutils/...
+    @echo "Unit tests complete"
+
+# Run unit tests with coverage
+test-unit-coverage:
+    @echo "Running unit tests with coverage..."
+    go test -v -race -coverprofile=unit-coverage.out ./internal/services/... ./internal/testutils/...
+    go tool cover -html=unit-coverage.out -o unit-coverage.html
+    go tool cover -func=unit-coverage.out
+    @echo "Unit test coverage report generated: unit-coverage.html"
+
+# Run benchmark tests
+test-bench:
+    @echo "Running benchmark tests..."
+    go test -bench=. -benchmem ./internal/services/...
+    @echo "Benchmark tests complete"
+
+# Check test coverage percentage
+test-coverage-check:
+    @echo "Checking test coverage..."
+    @coverage=$(go tool cover -func=coverage.out | grep total | awk '{print $$3}' | sed 's/%//'); \
+    if [ -z "$$coverage" ]; then \
+        echo "No coverage data found. Run 'just test' first."; \
+        exit 1; \
+    fi; \
+    echo "Current coverage: $$coverage%"; \
+    if [ $$(echo "$$coverage >= 90" | bc) -eq 1 ]; then \
+        echo "✅ Coverage meets target (≥90%)"; \
+    else \
+        echo "❌ Coverage below target ($$coverage% < 90%)"; \
+        exit 1; \
+    fi
+
 # Run linting and formatting
 lint:
     @echo "Running linters..."
