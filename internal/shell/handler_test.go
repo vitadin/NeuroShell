@@ -65,23 +65,23 @@ func (m *MockIShellContext) ClearOutput() {
 }
 
 // Add methods to satisfy ishell.Context interface
-func (m *MockIShellContext) Cmd() *ishell.Cmd                                          { return nil }
-func (m *MockIShellContext) Args() []string                                            { return m.RawArgs }
-func (m *MockIShellContext) Get(key string) interface{}                                { return nil }
-func (m *MockIShellContext) Set(key string, value interface{})                         {}
-func (m *MockIShellContext) Del(key string) interface{}                                { return nil }
-func (m *MockIShellContext) Keys() []string                                            { return nil }
-func (m *MockIShellContext) Values() []interface{}                                     { return nil }
-func (m *MockIShellContext) Err(err error)                                             {}
-func (m *MockIShellContext) ReadLine() (string, error)                                 { return "", nil }
-func (m *MockIShellContext) ReadPassword(prompt string) (string, error)                { return "", nil }
-func (m *MockIShellContext) ReadMultiLines(prompt string) (string, error)              { return "", nil }
-func (m *MockIShellContext) ShowPrompt(b bool)                                         {}
-func (m *MockIShellContext) ProgressBar() *ishell.ProgressBar                          { return nil }
-func (m *MockIShellContext) SetPrompt(prompt string)                                   {}
-func (m *MockIShellContext) MultiChoice(options []string, text string) int             { return 0 }
-func (m *MockIShellContext) Checklist(options []string, text string, init []int) []int { return nil }
-func (m *MockIShellContext) Stop()                                                     {}
+func (m *MockIShellContext) Cmd() *ishell.Cmd                              { return nil }
+func (m *MockIShellContext) Args() []string                                { return m.RawArgs }
+func (m *MockIShellContext) Get(_ string) interface{}                      { return nil }
+func (m *MockIShellContext) Set(_ string, _ interface{})                   {}
+func (m *MockIShellContext) Del(_ string) interface{}                      { return nil }
+func (m *MockIShellContext) Keys() []string                                { return nil }
+func (m *MockIShellContext) Values() []interface{}                         { return nil }
+func (m *MockIShellContext) Err(_ error)                                   {}
+func (m *MockIShellContext) ReadLine() (string, error)                     { return "", nil }
+func (m *MockIShellContext) ReadPassword(_ string) (string, error)         { return "", nil }
+func (m *MockIShellContext) ReadMultiLines(_ string) (string, error)       { return "", nil }
+func (m *MockIShellContext) ShowPrompt(_ bool)                             {}
+func (m *MockIShellContext) ProgressBar() *ishell.ProgressBar              { return nil }
+func (m *MockIShellContext) SetPrompt(_ string)                            {}
+func (m *MockIShellContext) MultiChoice(_ []string, _ string) int          { return 0 }
+func (m *MockIShellContext) Checklist(_ []string, _ string, _ []int) []int { return nil }
+func (m *MockIShellContext) Stop()                                         {}
 
 // Test setup and teardown helpers
 func setupTestEnvironment(t *testing.T) func() {
@@ -211,7 +211,7 @@ func TestProcessInput_ValidCommands(t *testing.T) {
 			name:        "simple set command",
 			rawArgs:     []string{"\\set[var=value]"},
 			expectError: false,
-			setup: func(t *testing.T) {
+			setup: func(_ *testing.T) {
 				// No additional setup needed
 			},
 		},
@@ -229,19 +229,19 @@ func TestProcessInput_ValidCommands(t *testing.T) {
 			name:        "help command",
 			rawArgs:     []string{"\\help"},
 			expectError: false,
-			setup:       func(t *testing.T) {},
+			setup:       func(_ *testing.T) {},
 		},
 		{
 			name:        "command with message",
 			rawArgs:     []string{"\\set[name=test]", "some", "message"},
 			expectError: false,
-			setup:       func(t *testing.T) {},
+			setup:       func(_ *testing.T) {},
 		},
 		{
 			name:        "plain text auto-send",
 			rawArgs:     []string{"hello", "world"},
 			expectError: false, // send command is implemented and working
-			setup:       func(t *testing.T) {},
+			setup:       func(_ *testing.T) {},
 		},
 	}
 
@@ -333,12 +333,12 @@ func TestProcessInput_WithVariableInterpolation(t *testing.T) {
 		{
 			name:    "interpolated message",
 			rawArgs: []string{"\\set[msg=${greeting} ${name}]"},
-			setup:   func(t *testing.T) {},
+			setup:   func(_ *testing.T) {},
 		},
 		{
 			name:    "system variable interpolation",
 			rawArgs: []string{"\\set[user=${@user}]"},
-			setup:   func(t *testing.T) {},
+			setup:   func(_ *testing.T) {},
 		},
 	}
 
@@ -374,7 +374,7 @@ func TestExecuteCommand_BasicFlow(t *testing.T) {
 				Options: map[string]string{"var": "value"},
 			},
 			expectError: false,
-			setup:       func(t *testing.T) {},
+			setup:       func(_ *testing.T) {},
 		},
 		{
 			name: "valid get command",
@@ -397,7 +397,7 @@ func TestExecuteCommand_BasicFlow(t *testing.T) {
 				Options: map[string]string{},
 			},
 			expectError: true,
-			setup:       func(t *testing.T) {},
+			setup:       func(_ *testing.T) {},
 		},
 		{
 			name: "help command",
@@ -407,7 +407,7 @@ func TestExecuteCommand_BasicFlow(t *testing.T) {
 				Options: map[string]string{},
 			},
 			expectError: false,
-			setup:       func(t *testing.T) {},
+			setup:       func(_ *testing.T) {},
 		},
 	}
 
@@ -692,7 +692,7 @@ func TestProcessInput_Integration(t *testing.T) {
 				{"\\get[@user]"},
 				{"\\get[#test_mode]"},
 			},
-			verify: func(t *testing.T) {
+			verify: func(_ *testing.T) {
 				// Just verify no errors occurred
 			},
 		},
@@ -803,7 +803,7 @@ func (f *FailingService) Name() string {
 	return f.name
 }
 
-func (f *FailingService) Initialize(ctx types.Context) error {
+func (f *FailingService) Initialize(_ types.Context) error {
 	if f.shouldFail {
 		return errors.New("initialization failed")
 	}
