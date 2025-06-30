@@ -1,0 +1,5 @@
+# Test state management fixes
+\bash echo "Command 1"
+\bash echo "Command 2"  
+\bash pwd
+\bash ls | head -2

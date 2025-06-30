@@ -1,0 +1,6 @@
+# Final verification test
+\bash echo "=== NeuroShell OSC Integration Test ==="
+\bash echo "Current directory:"
+\bash pwd
+\bash echo "Files in directory:"
+\bash ls | head -5

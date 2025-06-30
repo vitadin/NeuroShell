@@ -428,6 +428,10 @@ func (b *BashService) executeInSessionWithOSC(session *context.BashSession, comm
 	if !exists {
 		trackerSession = tracker.CreateSession(session.Name)
 		logger.Debug("Created new tracker session", "session", session.Name)
+	} else {
+		// Reset the tracker session for a clean start
+		logger.Debug("Resetting existing tracker session for new command", "session", session.Name)
+		tracker.Reset(session.Name)
 	}
 
 	// Write command to PTY
@@ -777,7 +781,8 @@ func (b *BashService) filterRealtimeOutput(output string) string {
 		// Skip completion markers and bash command echoes containing markers
 		if strings.Contains(line, "NEURO_CMD_DONE_") || 
 		   strings.Contains(line, "NEURO_INIT_") ||
-		   strings.Contains(line, "echo 'NEURO_CMD_DONE_") {
+		   strings.Contains(line, "echo 'NEURO_CMD_DONE_") ||
+		   strings.Contains(line, "NEURO_INTEGRATION_TEST") {
 			continue
 		}
 		filteredLines = append(filteredLines, line)
