@@ -12,27 +12,27 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-// BashCommand implements the \bash command for executing system commands in PTY sessions.
+// Command implements the \bash command for executing system commands in PTY sessions.
 // It provides persistent bash sessions with full terminal support and session management.
-type BashCommand struct{}
+type Command struct{}
 
 // Name returns the command name "bash" for registration and lookup.
-func (c *BashCommand) Name() string {
+func (c *Command) Name() string {
 	return "bash"
 }
 
 // ParseMode returns ParseModeWithOptions to support option parsing.
-func (c *BashCommand) ParseMode() neurotypes.ParseMode {
+func (c *Command) ParseMode() neurotypes.ParseMode {
 	return neurotypes.ParseModeWithOptions
 }
 
 // Description returns a brief description of what the bash command does.
-func (c *BashCommand) Description() string {
+func (c *Command) Description() string {
 	return "Execute commands in persistent bash sessions with PTY support"
 }
 
 // Usage returns the syntax and usage examples for the bash command.
-func (c *BashCommand) Usage() string {
+func (c *Command) Usage() string {
 	return `\bash[session="name", new=true, timeout="30s", env="KEY=value", cwd="/path", interactive=true, capture=true] command
 
 Options:
@@ -53,7 +53,7 @@ Examples:
 }
 
 // Execute runs the bash command with the provided options and input.
-func (c *BashCommand) Execute(options map[string]string, input string, ctx neurotypes.Context) error {
+func (c *Command) Execute(options map[string]string, input string, ctx neurotypes.Context) error {
 	// Get services from global registry (commands only interact with services)
 	bashService, err := services.GlobalRegistry.GetService("bash")
 	if err != nil {
@@ -127,7 +127,7 @@ func (c *BashCommand) Execute(options map[string]string, input string, ctx neuro
 }
 
 // parseOptions parses the command options into BashOptions struct.
-func (c *BashCommand) parseOptions(options map[string]string) (services.BashOptions, error) {
+func (c *Command) parseOptions(options map[string]string) (services.BashOptions, error) {
 	bashOptions := services.BashOptions{
 		SessionName:   "default", // Default session name
 		ForceNew:      false,
@@ -191,13 +191,13 @@ func (c *BashCommand) parseOptions(options map[string]string) (services.BashOpti
 }
 
 // handleInteractiveMode enters interactive mode for a bash session.
-func (c *BashCommand) handleInteractiveMode(_ string, _ *services.BashService, _ neurotypes.Context) error {
+func (c *Command) handleInteractiveMode(_ string, _ *services.BashService, _ neurotypes.Context) error {
 	// For now, return an error indicating interactive mode is not yet implemented
 	return fmt.Errorf("interactive mode not yet implemented - this feature is planned for a future release")
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&BashCommand{}); err != nil {
+	if err := commands.GlobalRegistry.Register(&Command{}); err != nil {
 		panic(fmt.Sprintf("failed to register bash command: %v", err))
 	}
 }

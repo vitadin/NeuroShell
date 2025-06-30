@@ -104,7 +104,7 @@ func setupTestEnvironment(t *testing.T) func() {
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.ExitCommand{}))
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.SendCommand{}))
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.RunCommand{}))
-	require.NoError(t, commands.GlobalRegistry.Register(&bash.BashCommand{}))
+	require.NoError(t, commands.GlobalRegistry.Register(&bash.Command{}))
 
 	// Initialize services
 	err := InitializeServices(true)
