@@ -829,8 +829,12 @@ func BenchmarkProcessInput_CommandWithInterpolation(b *testing.B) {
 	defer cleanup()
 
 	// Set up variables
-	globalCtx.SetVariable("name", "test")
-	globalCtx.SetVariable("value", "benchmark")
+	if err := globalCtx.SetVariable("name", "test"); err != nil {
+		b.Fatal(err)
+	}
+	if err := globalCtx.SetVariable("value", "benchmark"); err != nil {
+		b.Fatal(err)
+	}
 
 	args := []string{"\\set[result=${name}_${value}]"}
 
@@ -865,7 +869,9 @@ func BenchmarkInitializeServices(b *testing.B) {
 		globalCtx = context.New()
 		b.StartTimer()
 
-		InitializeServices(true)
+		if err := InitializeServices(true); err != nil {
+			b.Fatal(err)
+		}
 
 		b.StopTimer()
 		globalCtx = originalCtx

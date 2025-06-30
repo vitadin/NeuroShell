@@ -207,7 +207,7 @@ func TestHelpCommand_Execute_WithArgs(t *testing.T) {
 
 	// Create minimal registry
 	testRegistry := commands.NewRegistry()
-	testRegistry.Register(&MockCommand{name: "test", description: "Test", usage: "\\test"})
+	require.NoError(t, testRegistry.Register(&MockCommand{name: "test", description: "Test", usage: "\\test"}))
 
 	originalRegistry := commands.GlobalRegistry
 	commands.GlobalRegistry = testRegistry
@@ -245,7 +245,7 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 
 	// Create minimal registry
 	testRegistry := commands.NewRegistry()
-	testRegistry.Register(&MockCommand{name: "test", description: "Test", usage: "\\test"})
+	require.NoError(t, testRegistry.Register(&MockCommand{name: "test", description: "Test", usage: "\\test"}))
 
 	originalRegistry := commands.GlobalRegistry
 	commands.GlobalRegistry = testRegistry
@@ -430,7 +430,9 @@ func BenchmarkHelpCommand_Execute_SmallRegistry(b *testing.B) {
 			description: fmt.Sprintf("Command %d", i),
 			usage:       fmt.Sprintf("\\cmd%d", i),
 		}
-		testRegistry.Register(cmd)
+		if err := testRegistry.Register(cmd); err != nil {
+			b.Fatal(err)
+		}
 	}
 
 	originalRegistry := commands.GlobalRegistry
@@ -462,7 +464,9 @@ func BenchmarkHelpCommand_Execute_LargeRegistry(b *testing.B) {
 			description: fmt.Sprintf("Description for command %d with some details", i),
 			usage:       fmt.Sprintf("\\command%d [arg1] [arg2]", i),
 		}
-		testRegistry.Register(cmd)
+		if err := testRegistry.Register(cmd); err != nil {
+			b.Fatal(err)
+		}
 	}
 
 	originalRegistry := commands.GlobalRegistry
