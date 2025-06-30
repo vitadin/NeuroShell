@@ -1,5 +1,7 @@
 # NeuroShell
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/circleci/RjkGUoMoHBKh13iJmkaXTF/Pfh8uXKBx5881azXtzYpio/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/circleci/RjkGUoMoHBKh13iJmkaXTF/Pfh8uXKBx5881azXtzYpio/tree/main)
+
 A specialized shell environment designed for seamless interaction with LLM agents. NeuroShell bridges traditional command-line interfaces and modern AI assistants, enabling professionals to create reproducible, automated workflows that combine system operations with LLM capabilities.
 
 ## Overview
