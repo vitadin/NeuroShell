@@ -1,5 +1,0 @@
-# Test script for .neuro execution
-\set[greeting="Hello from script"]
-\set[name="NeuroShell"]
-\send ${greeting}, ${name}!
-\get[greeting]

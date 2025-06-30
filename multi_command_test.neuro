@@ -1,4 +1,0 @@
-# Test multiple commands with timing fix
-\bash echo "Command 1 output"
-\bash pwd
-\bash echo "Command 3 output"

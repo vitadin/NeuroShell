@@ -1,4 +1,0 @@
-# Final test with fixed OSC completion detection
-\bash echo "Testing fixed OSC detection..."
-\bash ls | head -3
-\bash pwd

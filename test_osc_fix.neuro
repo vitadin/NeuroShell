@@ -1,4 +1,0 @@
-# Test script for OSC integration fix
-\bash echo "Testing OSC integration..."
-\bash pwd
-\bash echo "Script completed successfully"

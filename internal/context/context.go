@@ -5,33 +5,13 @@ package context
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"os/user"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
-	"neuroshell/internal/shellintegration"
 	"neuroshell/pkg/neurotypes"
 )
-
-// BashSession represents a persistent bash session with PTY support.
-type BashSession struct {
-	Name        string            // Session name
-	PTY         *os.File          // PTY file descriptor
-	Process     *exec.Cmd         // Bash process
-	Environment map[string]string // Session-specific environment variables
-	WorkingDir  string            // Current working directory
-	CreatedAt   time.Time         // Session creation time
-	LastUsed    time.Time         // Last command execution time
-	Active      bool              // Whether session is active
-	mutex       sync.RWMutex      // Thread safety for session access
-
-	// Shell integration support
-	CommandTracker *shellintegration.CommandTracker // Command state tracking
-	SessionState   *shellintegration.SessionState   // Shell integration state
-}
 
 // NeuroContext implements the neurotypes.Context interface providing session state management.
 // It maintains variables, message history, execution queues, and metadata for NeuroShell sessions.
@@ -42,11 +22,6 @@ type NeuroContext struct {
 	executionQueue []string
 	scriptMetadata map[string]interface{}
 	testMode       bool
-	bashSessions   map[string]*BashSession // Named bash sessions
-	bashMutex      sync.RWMutex            // Thread safety for bash sessions
-
-	// Shell integration support
-	commandTracker *shellintegration.CommandTracker // Global command tracker
 }
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
@@ -58,8 +33,6 @@ func New() *NeuroContext {
 		executionQueue: make([]string, 0),
 		scriptMetadata: make(map[string]interface{}),
 		testMode:       false,
-		bashSessions:   make(map[string]*BashSession),
-		commandTracker: shellintegration.NewCommandTracker(),
 	}
 }
 
@@ -259,76 +232,4 @@ func (ctx *NeuroContext) SetTestMode(testMode bool) {
 // IsTestMode returns whether test mode is currently enabled.
 func (ctx *NeuroContext) IsTestMode() bool {
 	return ctx.testMode
-}
-
-// GetBashSession retrieves a bash session by name.
-func (ctx *NeuroContext) GetBashSession(name string) (*BashSession, bool) {
-	ctx.bashMutex.RLock()
-	defer ctx.bashMutex.RUnlock()
-
-	session, exists := ctx.bashSessions[name]
-	return session, exists
-}
-
-// SetBashSession stores a bash session with the given name.
-func (ctx *NeuroContext) SetBashSession(name string, session *BashSession) {
-	ctx.bashMutex.Lock()
-	defer ctx.bashMutex.Unlock()
-
-	ctx.bashSessions[name] = session
-}
-
-// ListBashSessions returns a list of all bash session names.
-func (ctx *NeuroContext) ListBashSessions() []string {
-	ctx.bashMutex.RLock()
-	defer ctx.bashMutex.RUnlock()
-
-	names := make([]string, 0, len(ctx.bashSessions))
-	for name := range ctx.bashSessions {
-		names = append(names, name)
-	}
-	return names
-}
-
-// RemoveBashSession removes a bash session by name and cleans up resources.
-func (ctx *NeuroContext) RemoveBashSession(name string) bool {
-	ctx.bashMutex.Lock()
-	defer ctx.bashMutex.Unlock()
-
-	session, exists := ctx.bashSessions[name]
-	if !exists {
-		return false
-	}
-
-	// Clean up session resources
-	session.cleanup()
-	delete(ctx.bashSessions, name)
-	return true
-}
-
-// GetCommandTracker returns the global command tracker for shell integration.
-func (ctx *NeuroContext) GetCommandTracker() *shellintegration.CommandTracker {
-	return ctx.commandTracker
-}
-
-// cleanup closes the PTY and terminates the bash process.
-func (session *BashSession) cleanup() {
-	session.mutex.Lock()
-	defer session.mutex.Unlock()
-
-	session.Active = false
-
-	// Clean up shell integration tracking
-	if session.CommandTracker != nil {
-		session.CommandTracker.RemoveSession(session.Name)
-	}
-
-	if session.PTY != nil {
-		_ = session.PTY.Close()
-	}
-
-	if session.Process != nil && session.Process.Process != nil {
-		_ = session.Process.Process.Kill()
-		_ = session.Process.Wait()
-	}
 }
