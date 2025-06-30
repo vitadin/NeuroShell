@@ -14,6 +14,7 @@ import (
 
 	"github.com/creack/pty"
 	"neuroshell/internal/context"
+	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -231,7 +232,76 @@ func (b *BashService) createBashSession(sessionName string, options BashOptions)
 		}
 	}
 
+	// Initialize the bash session by waiting for it to be ready
+	err = b.initializeBashSession(session)
+	if err != nil {
+		// Clean up session on initialization failure
+		session.Active = false
+		if session.PTY != nil {
+			_ = session.PTY.Close()
+		}
+		if session.Process != nil && session.Process.Process != nil {
+			_ = session.Process.Process.Kill()
+			_ = session.Process.Wait()
+		}
+		return nil, fmt.Errorf("failed to initialize bash session: %w", err)
+	}
+
 	return session, nil
+}
+
+// initializeBashSession waits for bash to be ready and clears any startup output.
+func (b *BashService) initializeBashSession(session *context.BashSession) error {
+	logger.Debug("Initializing bash session", "session", session.Name)
+
+	// Give bash a moment to start up
+	time.Sleep(100 * time.Millisecond)
+
+	// Send a simple command to test if bash is ready and clear startup messages
+	initMarker := fmt.Sprintf("NEURO_INIT_%d", time.Now().UnixNano())
+	initCommand := fmt.Sprintf("echo '%s'\n", initMarker)
+
+	logger.Debug("Sending initialization command", "command", initCommand)
+
+	_, err := session.PTY.WriteString(initCommand)
+	if err != nil {
+		return fmt.Errorf("failed to write init command: %w", err)
+	}
+
+	// Read until we see our init marker, discarding all startup output
+	scanner := bufio.NewScanner(session.PTY)
+	timeout := time.After(5 * time.Second)
+	done := make(chan bool)
+	errChan := make(chan error)
+
+	go func() {
+		for scanner.Scan() {
+			line := scanner.Text()
+			logger.Debug("Init: read line", "line", line)
+
+			if strings.Contains(line, initMarker) {
+				logger.Debug("Bash session initialized successfully", "marker", initMarker)
+				done <- true
+				return
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			errChan <- err
+		} else {
+			errChan <- fmt.Errorf("PTY closed during initialization")
+		}
+	}()
+
+	select {
+	case <-done:
+		logger.Debug("Bash session ready", "session", session.Name)
+		return nil
+	case err := <-errChan:
+		return fmt.Errorf("initialization failed: %w", err)
+	case <-timeout:
+		return fmt.Errorf("bash session initialization timed out")
+	}
 }
 
 // executeInSession executes a command in an existing bash session.
@@ -241,8 +311,12 @@ func (b *BashService) executeInSession(session *context.BashSession, command str
 	// Generate unique marker for command completion detection
 	marker := fmt.Sprintf("NEURO_CMD_DONE_%d_%d", time.Now().UnixNano(), rand.Intn(10000))
 
-	// Write command followed by marker command
-	commandSequence := fmt.Sprintf("%s\necho \"%s\"\n", command, marker)
+	// Create command sequence with proper separation and newlines
+	// Use explicit newlines to ensure commands execute separately
+	commandSequence := fmt.Sprintf("%s\necho '%s'\n", command, marker)
+
+	logger.Debug("Writing command to PTY", "session", session.Name, "command", command, "sequence", commandSequence)
+
 	_, err := session.PTY.WriteString(commandSequence)
 	if err != nil {
 		return "", fmt.Errorf("failed to write command to PTY: %w", err)
@@ -266,12 +340,19 @@ func (b *BashService) readUntilMarker(reader io.Reader, marker string, timeout t
 	done := make(chan string)
 	errChan := make(chan error)
 
+	logger.Debug("Starting to read PTY output", "marker", marker, "timeout", timeout)
+
 	go func() {
+		lineCount := 0
 		for scanner.Scan() {
 			line := scanner.Text()
+			lineCount++
+
+			logger.Debug("Read PTY line", "line_num", lineCount, "content", line)
 
 			// Check if this line contains our completion marker
 			if strings.Contains(line, marker) {
+				logger.Debug("Found completion marker, command finished", "marker", marker, "total_lines", lineCount)
 				// Command completed - don't include the marker line in output
 				done <- output.String()
 				return
@@ -286,46 +367,61 @@ func (b *BashService) readUntilMarker(reader io.Reader, marker string, timeout t
 
 		// If scanner exits (shouldn't happen in normal PTY usage)
 		if err := scanner.Err(); err != nil {
+			logger.Debug("Scanner error", "error", err)
 			errChan <- err
 		} else {
+			logger.Debug("PTY closed unexpectedly")
 			errChan <- fmt.Errorf("PTY closed unexpectedly")
 		}
 	}()
 
 	select {
 	case result := <-done:
-		return b.cleanOutput(result), nil
+		cleanedResult := b.cleanOutput(result)
+		logger.Debug("Command completed successfully", "raw_output", result, "cleaned_output", cleanedResult)
+		return cleanedResult, nil
 	case err := <-errChan:
+		logger.Debug("PTY read error", "error", err, "partial_output", output.String())
 		return output.String(), fmt.Errorf("PTY read error: %w", err)
 	case <-timeoutChan:
+		logger.Debug("Command timed out", "timeout", timeout, "partial_output", output.String())
 		return output.String(), fmt.Errorf("command timed out after %v", timeout)
 	}
 }
 
 // cleanOutput removes bash prompts and cleans up the command output.
 func (b *BashService) cleanOutput(output string) string {
+	logger.Debug("Cleaning output", "raw_output", output)
+
 	lines := strings.Split(output, "\n")
 	var cleanLines []string
-	skipNext := false
 
-	for i, line := range lines {
+	for _, line := range lines {
+		trimmedLine := strings.TrimSpace(line)
+
+		// Skip empty lines at the beginning
+		if trimmedLine == "" && len(cleanLines) == 0 {
+			continue
+		}
+
 		// Skip bash prompts and shell overhead
 		if strings.HasPrefix(line, "bash-") ||
 			strings.Contains(line, "default interactive shell") ||
 			strings.Contains(line, "To update your account") ||
 			strings.Contains(line, "For more details") ||
 			strings.HasPrefix(line, "The default interactive shell") ||
-			strings.TrimSpace(line) == "" && i == 0 {
-			skipNext = true
+			strings.Contains(line, "To update your account to use zsh") {
+			logger.Debug("Skipping shell overhead line", "line", line)
 			continue
 		}
 
-		// Skip the command echo (bash echoes the command before executing it)
-		if skipNext && strings.TrimSpace(line) != "" {
-			skipNext = false
+		// Skip any leftover completion markers from previous commands
+		if strings.Contains(line, "NEURO_CMD_DONE_") || strings.Contains(line, "NEURO_INIT_") {
+			logger.Debug("Skipping completion marker", "line", line)
 			continue
 		}
 
+		// This is actual command output - keep it
 		cleanLines = append(cleanLines, line)
 	}
 
@@ -334,5 +430,7 @@ func (b *BashService) cleanOutput(output string) string {
 		cleanLines = cleanLines[:len(cleanLines)-1]
 	}
 
-	return strings.Join(cleanLines, "\n")
+	result := strings.Join(cleanLines, "\n")
+	logger.Debug("Output cleaned", "cleaned_output", result)
+	return result
 }
