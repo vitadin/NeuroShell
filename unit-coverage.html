@@ -1,0 +1,1041 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>services: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">neuroshell/internal/services/executor_service.go (55.9%)</option>
+				
+				<option value="file1">neuroshell/internal/services/interpolation_service.go (65.2%)</option>
+				
+				<option value="file2">neuroshell/internal/services/registry.go (100.0%)</option>
+				
+				<option value="file3">neuroshell/internal/services/script_service.go (42.9%)</option>
+				
+				<option value="file4">neuroshell/internal/services/variable_service.go (87.0%)</option>
+				
+				<option value="file5">neuroshell/internal/testutils/mock_context.go (0.0%)</option>
+				
+				<option value="file6">neuroshell/internal/testutils/test_helpers.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package services
+
+import (
+        "fmt"
+
+        "neuroshell/internal/context"
+        "neuroshell/internal/parser"
+        "neuroshell/pkg/types"
+)
+
+type ExecutorService struct {
+        initialized bool
+}
+
+func NewExecutorService() *ExecutorService <span class="cov8" title="28">{
+        return &amp;ExecutorService{
+                initialized: false,
+        }
+}</span>
+
+func (e *ExecutorService) Name() string <span class="cov3" title="3">{
+        return "executor"
+}</span>
+
+func (e *ExecutorService) Initialize(ctx types.Context) error <span class="cov7" title="22">{
+        e.initialized = true
+        return nil
+}</span>
+
+// ParseCommand converts a string command to a parsed Command struct
+func (e *ExecutorService) ParseCommand(text string) (*parser.Command, error) <span class="cov10" title="64">{
+        if !e.initialized </span><span class="cov2" title="2">{
+                return nil, fmt.Errorf("executor service not initialized")
+        }</span>
+
+        <span class="cov9" title="62">cmd := parser.ParseInput(text)
+        return cmd, nil</span>
+}
+
+// GetNextCommand returns the next command from the queue without executing it
+func (e *ExecutorService) GetNextCommand(ctx types.Context) (*parser.Command, error) <span class="cov2" title="2">{
+        if !e.initialized </span><span class="cov1" title="1">{
+                return nil, fmt.Errorf("executor service not initialized")
+        }</span>
+
+        <span class="cov1" title="1">neuroCtx, ok := ctx.(*context.NeuroContext)
+        if !ok </span><span class="cov1" title="1">{
+                return nil, fmt.Errorf("context is not a NeuroContext")
+        }</span>
+
+        <span class="cov0" title="0">commandText, hasMore := neuroCtx.DequeueCommand()
+        if !hasMore </span><span class="cov0" title="0">{
+                return nil, nil // No more commands
+        }</span>
+
+        <span class="cov0" title="0">return e.ParseCommand(commandText)</span>
+}
+
+// GetQueueStatus returns information about the execution queue
+func (e *ExecutorService) GetQueueStatus(ctx types.Context) (map[string]interface{}, error) <span class="cov2" title="2">{
+        if !e.initialized </span><span class="cov1" title="1">{
+                return nil, fmt.Errorf("executor service not initialized")
+        }</span>
+
+        <span class="cov1" title="1">neuroCtx, ok := ctx.(*context.NeuroContext)
+        if !ok </span><span class="cov1" title="1">{
+                return nil, fmt.Errorf("context is not a NeuroContext")
+        }</span>
+
+        <span class="cov0" title="0">status := make(map[string]interface{})
+        status["queue_size"] = neuroCtx.GetQueueSize()
+        status["pending_commands"] = neuroCtx.PeekQueue()
+
+        if execStatus, exists := neuroCtx.GetScriptMetadata("execution_status"); exists </span><span class="cov0" title="0">{
+                status["execution_status"] = execStatus
+        }</span>
+        <span class="cov0" title="0">if execCount, exists := neuroCtx.GetScriptMetadata("executed_commands"); exists </span><span class="cov0" title="0">{
+                status["executed_commands"] = execCount
+        }</span>
+        <span class="cov0" title="0">if execError, exists := neuroCtx.GetScriptMetadata("execution_error"); exists </span><span class="cov0" title="0">{
+                status["execution_error"] = execError
+        }</span>
+
+        <span class="cov0" title="0">return status, nil</span>
+}
+
+// MarkCommandExecuted updates execution progress in context
+func (e *ExecutorService) MarkCommandExecuted(ctx types.Context) error <span class="cov2" title="2">{
+        if !e.initialized </span><span class="cov1" title="1">{
+                return fmt.Errorf("executor service not initialized")
+        }</span>
+
+        <span class="cov1" title="1">neuroCtx, ok := ctx.(*context.NeuroContext)
+        if !ok </span><span class="cov1" title="1">{
+                return fmt.Errorf("context is not a NeuroContext")
+        }</span>
+
+        // Increment executed command count
+        <span class="cov0" title="0">executed := 0
+        if count, exists := neuroCtx.GetScriptMetadata("executed_commands"); exists </span><span class="cov0" title="0">{
+                if countInt, ok := count.(int); ok </span><span class="cov0" title="0">{
+                        executed = countInt
+                }</span>
+        }
+        <span class="cov0" title="0">neuroCtx.SetScriptMetadata("executed_commands", executed+1)
+
+        return nil</span>
+}
+
+// MarkExecutionError records an execution error in context
+func (e *ExecutorService) MarkExecutionError(ctx types.Context, err error, command string) error <span class="cov2" title="2">{
+        if !e.initialized </span><span class="cov1" title="1">{
+                return fmt.Errorf("executor service not initialized")
+        }</span>
+
+        <span class="cov1" title="1">neuroCtx, ok := ctx.(*context.NeuroContext)
+        if !ok </span><span class="cov1" title="1">{
+                return fmt.Errorf("context is not a NeuroContext")
+        }</span>
+
+        <span class="cov0" title="0">neuroCtx.SetScriptMetadata("execution_error", err.Error())
+        neuroCtx.SetScriptMetadata("failed_command", command)
+        neuroCtx.SetScriptMetadata("execution_status", "failed")
+
+        return nil</span>
+}
+
+// MarkExecutionComplete marks successful completion of all commands
+func (e *ExecutorService) MarkExecutionComplete(ctx types.Context) error <span class="cov2" title="2">{
+        if !e.initialized </span><span class="cov1" title="1">{
+                return fmt.Errorf("executor service not initialized")
+        }</span>
+
+        <span class="cov1" title="1">neuroCtx, ok := ctx.(*context.NeuroContext)
+        if !ok </span><span class="cov1" title="1">{
+                return fmt.Errorf("context is not a NeuroContext")
+        }</span>
+
+        <span class="cov0" title="0">neuroCtx.SetScriptMetadata("execution_status", "completed")
+
+        return nil</span>
+}</pre>
+		
+		<pre class="file" id="file1" style="display: none">package services
+
+import (
+        "fmt"
+
+        "neuroshell/internal/context"
+        "neuroshell/internal/logger"
+        "neuroshell/internal/parser"
+        "neuroshell/pkg/types"
+)
+
+type InterpolationService struct {
+        initialized bool
+}
+
+func NewInterpolationService() *InterpolationService <span class="cov7" title="23">{
+        return &amp;InterpolationService{
+                initialized: false,
+        }
+}</span>
+
+func (i *InterpolationService) Name() string <span class="cov3" title="3">{
+        return "interpolation"
+}</span>
+
+func (i *InterpolationService) Initialize(ctx types.Context) error <span class="cov7" title="21">{
+        i.initialized = true
+        logger.ServiceOperation("interpolation", "initialize", "service ready")
+        return nil
+}</span>
+
+// InterpolateString performs pure interpolation of a single string using context variables
+func (i *InterpolationService) InterpolateString(text string, ctx types.Context) (string, error) <span class="cov10" title="62">{
+        if !i.initialized </span><span class="cov2" title="2">{
+                return "", fmt.Errorf("interpolation service not initialized")
+        }</span>
+
+        <span class="cov9" title="60">neuroCtx, ok := ctx.(*context.NeuroContext)
+        if !ok </span><span class="cov9" title="60">{
+                return "", fmt.Errorf("context is not a NeuroContext")
+        }</span>
+
+        <span class="cov0" title="0">result := neuroCtx.InterpolateVariables(text)
+        if text != result </span><span class="cov0" title="0">{
+                logger.Debug("String interpolation performed", "input", text, "output", result)
+        }</span>
+        <span class="cov0" title="0">return result, nil</span>
+}
+
+// InterpolateCommand interpolates all parts of a command structure and returns a new interpolated command
+func (i *InterpolationService) InterpolateCommand(cmd *parser.Command, ctx types.Context) (*parser.Command, error) <span class="cov6" title="10">{
+        if !i.initialized </span><span class="cov2" title="2">{
+                return nil, fmt.Errorf("interpolation service not initialized")
+        }</span>
+
+        <span class="cov5" title="8">neuroCtx, ok := ctx.(*context.NeuroContext)
+        if !ok </span><span class="cov5" title="8">{
+                return nil, fmt.Errorf("context is not a NeuroContext")
+        }</span>
+
+        // Create new command with interpolated values
+        <span class="cov0" title="0">interpolatedCmd := &amp;parser.Command{
+                Name:           cmd.Name, // Don't interpolate command name
+                Message:        neuroCtx.InterpolateVariables(cmd.Message),
+                BracketContent: neuroCtx.InterpolateVariables(cmd.BracketContent),
+                Options:        make(map[string]string),
+                ParseMode:      cmd.ParseMode,
+        }
+
+        // Interpolate option values
+        for key, value := range cmd.Options </span><span class="cov0" title="0">{
+                interpolatedCmd.Options[key] = neuroCtx.InterpolateVariables(value)
+        }</span>
+
+        <span class="cov0" title="0">return interpolatedCmd, nil</span>
+}</pre>
+		
+		<pre class="file" id="file2" style="display: none">package services
+
+import (
+        "fmt"
+        "sync"
+
+        "neuroshell/pkg/types"
+)
+
+type Registry struct {
+        mu       sync.RWMutex
+        services map[string]types.Service
+}
+
+func NewRegistry() *Registry <span class="cov6" title="13">{
+        return &amp;Registry{
+                services: make(map[string]types.Service),
+        }
+}</span>
+
+func (r *Registry) RegisterService(service types.Service) error <span class="cov10" title="72">{
+        r.mu.Lock()
+        defer r.mu.Unlock()
+
+        name := service.Name()
+        if _, exists := r.services[name]; exists </span><span class="cov2" title="2">{
+                return fmt.Errorf("service %s already registered", name)
+        }</span>
+
+        <span class="cov9" title="70">r.services[name] = service
+        return nil</span>
+}
+
+func (r *Registry) GetService(name string) (types.Service, error) <span class="cov9" title="64">{
+        r.mu.RLock()
+        defer r.mu.RUnlock()
+
+        service, exists := r.services[name]
+        if !exists </span><span class="cov3" title="3">{
+                return nil, fmt.Errorf("service %s not found", name)
+        }</span>
+
+        <span class="cov9" title="61">return service, nil</span>
+}
+
+func (r *Registry) InitializeAll(ctx types.Context) error <span class="cov4" title="6">{
+        r.mu.RLock()
+        defer r.mu.RUnlock()
+
+        for name, service := range r.services </span><span class="cov9" title="60">{
+                if err := service.Initialize(ctx); err != nil </span><span class="cov1" title="1">{
+                        return fmt.Errorf("failed to initialize service %s: %w", name, err)
+                }</span>
+        }
+
+        <span class="cov4" title="5">return nil</span>
+}
+
+func (r *Registry) GetAllServices() map[string]types.Service <span class="cov4" title="6">{
+        r.mu.RLock()
+        defer r.mu.RUnlock()
+
+        // Return a copy to prevent external modification
+        result := make(map[string]types.Service)
+        for name, service := range r.services </span><span class="cov9" title="59">{
+                result[name] = service
+        }</span>
+
+        <span class="cov4" title="6">return result</span>
+}
+
+// Global registry instance
+var GlobalRegistry = NewRegistry()</pre>
+		
+		<pre class="file" id="file3" style="display: none">package services
+
+import (
+        "bufio"
+        "fmt"
+        "os"
+        "strings"
+
+        "neuroshell/internal/context"
+        "neuroshell/pkg/types"
+)
+
+type ScriptService struct {
+        initialized bool
+}
+
+func NewScriptService() *ScriptService <span class="cov10" title="21">{
+        return &amp;ScriptService{
+                initialized: false,
+        }
+}</span>
+
+func (s *ScriptService) Name() string <span class="cov4" title="3">{
+        return "script"
+}</span>
+
+func (s *ScriptService) Initialize(ctx types.Context) error <span class="cov9" title="18">{
+        s.initialized = true
+        return nil
+}</span>
+
+// LoadScript reads a script file and queues commands in the context
+func (s *ScriptService) LoadScript(filepath string, ctx types.Context) error <span class="cov9" title="15">{
+        if !s.initialized </span><span class="cov1" title="1">{
+                return fmt.Errorf("script service not initialized")
+        }</span>
+
+        <span class="cov8" title="14">file, err := os.Open(filepath)
+        if err != nil </span><span class="cov1" title="1">{
+                return fmt.Errorf("failed to open script file: %w", err)
+        }</span>
+        <span class="cov8" title="13">defer file.Close()
+
+        // Cast to NeuroContext to access queue methods
+        neuroCtx, ok := ctx.(*context.NeuroContext)
+        if !ok </span><span class="cov8" title="13">{
+                return fmt.Errorf("context is not a NeuroContext")
+        }</span>
+
+        // Store script metadata
+        <span class="cov0" title="0">neuroCtx.SetScriptMetadata("current_file", filepath)
+        neuroCtx.SetScriptMetadata("line_count", 0)
+
+        scanner := bufio.NewScanner(file)
+        lineNum := 0
+
+        for scanner.Scan() </span><span class="cov0" title="0">{
+                lineNum++
+                line := strings.TrimSpace(scanner.Text())
+
+                // Skip empty lines and comments
+                if line == "" || strings.HasPrefix(line, "#") </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                // Queue the command for execution
+                <span class="cov0" title="0">neuroCtx.QueueCommand(line)</span>
+        }
+
+        <span class="cov0" title="0">if err := scanner.Err(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("error reading script file: %w", err)
+        }</span>
+
+        // Update metadata
+        <span class="cov0" title="0">neuroCtx.SetScriptMetadata("line_count", lineNum)
+        neuroCtx.SetScriptMetadata("commands_queued", neuroCtx.GetQueueSize())
+
+        return nil</span>
+}
+
+// GetScriptMetadata returns script execution information from context
+func (s *ScriptService) GetScriptMetadata(ctx types.Context) (map[string]interface{}, error) <span class="cov3" title="2">{
+        if !s.initialized </span><span class="cov1" title="1">{
+                return nil, fmt.Errorf("script service not initialized")
+        }</span>
+
+        <span class="cov1" title="1">neuroCtx, ok := ctx.(*context.NeuroContext)
+        if !ok </span><span class="cov1" title="1">{
+                return nil, fmt.Errorf("context is not a NeuroContext")
+        }</span>
+
+        <span class="cov0" title="0">metadata := make(map[string]interface{})
+        
+        if file, exists := neuroCtx.GetScriptMetadata("current_file"); exists </span><span class="cov0" title="0">{
+                metadata["current_file"] = file
+        }</span>
+        <span class="cov0" title="0">if lineCount, exists := neuroCtx.GetScriptMetadata("line_count"); exists </span><span class="cov0" title="0">{
+                metadata["line_count"] = lineCount
+        }</span>
+        <span class="cov0" title="0">if commandsQueued, exists := neuroCtx.GetScriptMetadata("commands_queued"); exists </span><span class="cov0" title="0">{
+                metadata["commands_queued"] = commandsQueued
+        }</span>
+
+        <span class="cov0" title="0">metadata["queue_size"] = neuroCtx.GetQueueSize()
+
+        return metadata, nil</span>
+}</pre>
+		
+		<pre class="file" id="file4" style="display: none">package services
+
+import (
+        "fmt"
+
+        "neuroshell/internal/context"
+        "neuroshell/pkg/types"
+)
+
+type VariableService struct {
+        initialized bool
+}
+
+func NewVariableService() *VariableService <span class="cov9" title="22">{
+        return &amp;VariableService{
+                initialized: false,
+        }
+}</span>
+
+func (v *VariableService) Name() string <span class="cov4" title="3">{
+        return "variable"
+}</span>
+
+func (v *VariableService) Initialize(ctx types.Context) error <span class="cov9" title="17">{
+        v.initialized = true
+        return nil
+}</span>
+
+// Get retrieves a variable value from context
+func (v *VariableService) Get(name string, ctx types.Context) (string, error) <span class="cov10" title="23">{
+        if !v.initialized </span><span class="cov1" title="1">{
+                return "", fmt.Errorf("variable service not initialized")
+        }</span>
+
+        <span class="cov9" title="22">return ctx.GetVariable(name)</span>
+}
+
+// Set stores a variable value in context
+func (v *VariableService) Set(name, value string, ctx types.Context) error <span class="cov8" title="16">{
+        if !v.initialized </span><span class="cov1" title="1">{
+                return fmt.Errorf("variable service not initialized")
+        }</span>
+
+        <span class="cov8" title="15">return ctx.SetVariable(name, value)</span>
+}
+
+// InterpolateString processes ${var} replacements in a string
+func (v *VariableService) InterpolateString(text string, ctx types.Context) (string, error) <span class="cov2" title="2">{
+        if !v.initialized </span><span class="cov1" title="1">{
+                return "", fmt.Errorf("variable service not initialized")
+        }</span>
+
+        // Cast to NeuroContext to access InterpolateVariables method
+        <span class="cov1" title="1">neuroCtx, ok := ctx.(*context.NeuroContext)
+        if !ok </span><span class="cov1" title="1">{
+                return "", fmt.Errorf("context is not a NeuroContext")
+        }</span>
+
+        <span class="cov0" title="0">return neuroCtx.InterpolateVariables(text), nil</span>
+}
+
+
+// GetAllVariables returns all variables from context (useful for debugging)
+func (v *VariableService) GetAllVariables(ctx types.Context) (map[string]string, error) <span class="cov2" title="2">{
+        if !v.initialized </span><span class="cov1" title="1">{
+                return nil, fmt.Errorf("variable service not initialized")
+        }</span>
+
+        <span class="cov1" title="1">_, ok := ctx.(*context.NeuroContext)
+        if !ok </span><span class="cov1" title="1">{
+                return nil, fmt.Errorf("context is not a NeuroContext")
+        }</span>
+
+        // This would require adding a method to NeuroContext to expose all variables
+        // For now, return empty map as placeholder
+        <span class="cov0" title="0">result := make(map[string]string)
+        
+        // TODO: Add GetAllVariables method to NeuroContext if needed
+        return result, nil</span>
+}</pre>
+		
+		<pre class="file" id="file5" style="display: none">package testutils
+
+import (
+        "fmt"
+        "sync"
+        "time"
+
+        "neuroshell/pkg/types"
+)
+
+// MockContext implements the Context interface for testing
+type MockContext struct {
+        mu            sync.RWMutex
+        variables     map[string]string
+        history       []types.Message
+        sessionState  types.SessionState
+        testMode      bool
+        
+        // For testing error scenarios
+        getVariableError error
+        setVariableError error
+}
+
+// NewMockContext creates a new mock context with default values
+func NewMockContext() *MockContext <span class="cov0" title="0">{
+        return &amp;MockContext{
+                variables: make(map[string]string),
+                history:   []types.Message{},
+                sessionState: types.SessionState{
+                        ID:        "test-session-123",
+                        Name:      "test-session",
+                        Variables: make(map[string]string),
+                        History:   []types.Message{},
+                        CreatedAt: time.Now(),
+                        UpdatedAt: time.Now(),
+                },
+                testMode: true,
+        }
+}</span>
+
+// NewMockContextWithVars creates a mock context with predefined variables
+func NewMockContextWithVars(vars map[string]string) *MockContext <span class="cov0" title="0">{
+        ctx := NewMockContext()
+        for k, v := range vars </span><span class="cov0" title="0">{
+                ctx.variables[k] = v
+        }</span>
+        <span class="cov0" title="0">return ctx</span>
+}
+
+// GetVariable implements Context.GetVariable
+func (m *MockContext) GetVariable(name string) (string, error) <span class="cov0" title="0">{
+        m.mu.RLock()
+        defer m.mu.RUnlock()
+        
+        if m.getVariableError != nil </span><span class="cov0" title="0">{
+                return "", m.getVariableError
+        }</span>
+        
+        // Handle system variables like the real context
+        <span class="cov0" title="0">switch name </span>{
+        case "@user":<span class="cov0" title="0">
+                return "testuser", nil</span>
+        case "@pwd":<span class="cov0" title="0">
+                return "/test/pwd", nil</span>
+        case "@home":<span class="cov0" title="0">
+                return "/test/home", nil</span>
+        case "@date":<span class="cov0" title="0">
+                return "2024-01-01", nil</span>
+        case "@os":<span class="cov0" title="0">
+                return "test-os", nil</span>
+        case "#test_mode":<span class="cov0" title="0">
+                if m.testMode </span><span class="cov0" title="0">{
+                        return "true", nil
+                }</span>
+                <span class="cov0" title="0">return "false", nil</span>
+        case "#session_id":<span class="cov0" title="0">
+                return m.sessionState.ID, nil</span>
+        case "#message_count":<span class="cov0" title="0">
+                return fmt.Sprintf("%d", len(m.history)), nil</span>
+        }
+        
+        // Regular variables
+        <span class="cov0" title="0">if value, exists := m.variables[name]; exists </span><span class="cov0" title="0">{
+                return value, nil
+        }</span>
+        
+        <span class="cov0" title="0">return "", fmt.Errorf("variable '%s' not found", name)</span>
+}
+
+// SetVariable implements Context.SetVariable
+func (m *MockContext) SetVariable(name string, value string) error <span class="cov0" title="0">{
+        m.mu.Lock()
+        defer m.mu.Unlock()
+        
+        if m.setVariableError != nil </span><span class="cov0" title="0">{
+                return m.setVariableError
+        }</span>
+        
+        <span class="cov0" title="0">m.variables[name] = value
+        m.sessionState.Variables[name] = value
+        return nil</span>
+}
+
+// GetMessageHistory implements Context.GetMessageHistory
+func (m *MockContext) GetMessageHistory(n int) []types.Message <span class="cov0" title="0">{
+        m.mu.RLock()
+        defer m.mu.RUnlock()
+        
+        if n &lt;= 0 </span><span class="cov0" title="0">{
+                return []types.Message{}
+        }</span>
+        
+        <span class="cov0" title="0">if n &gt;= len(m.history) </span><span class="cov0" title="0">{
+                return m.history
+        }</span>
+        
+        <span class="cov0" title="0">return m.history[len(m.history)-n:]</span>
+}
+
+// GetSessionState implements Context.GetSessionState
+func (m *MockContext) GetSessionState() types.SessionState <span class="cov0" title="0">{
+        m.mu.RLock()
+        defer m.mu.RUnlock()
+        
+        return m.sessionState
+}</span>
+
+// SetTestMode implements Context.SetTestMode
+func (m *MockContext) SetTestMode(testMode bool) <span class="cov0" title="0">{
+        m.mu.Lock()
+        defer m.mu.Unlock()
+        
+        m.testMode = testMode
+}</span>
+
+// IsTestMode implements Context.IsTestMode
+func (m *MockContext) IsTestMode() bool <span class="cov0" title="0">{
+        m.mu.RLock()
+        defer m.mu.RUnlock()
+        
+        return m.testMode
+}</span>
+
+// Test helper methods
+
+// SetGetVariableError sets an error to be returned by GetVariable
+func (m *MockContext) SetGetVariableError(err error) <span class="cov0" title="0">{
+        m.mu.Lock()
+        defer m.mu.Unlock()
+        m.getVariableError = err
+}</span>
+
+// SetSetVariableError sets an error to be returned by SetVariable
+func (m *MockContext) SetSetVariableError(err error) <span class="cov0" title="0">{
+        m.mu.Lock()
+        defer m.mu.Unlock()
+        m.setVariableError = err
+}</span>
+
+// AddMessage adds a message to the history for testing
+func (m *MockContext) AddMessage(role, content string) <span class="cov0" title="0">{
+        m.mu.Lock()
+        defer m.mu.Unlock()
+        
+        msg := types.Message{
+                ID:        fmt.Sprintf("msg-%d", len(m.history)+1),
+                Role:      role,
+                Content:   content,
+                Timestamp: time.Now(),
+        }
+        
+        m.history = append(m.history, msg)
+        m.sessionState.History = m.history
+}</span>
+
+// SetSessionID sets the session ID for testing
+func (m *MockContext) SetSessionID(id string) <span class="cov0" title="0">{
+        m.mu.Lock()
+        defer m.mu.Unlock()
+        
+        m.sessionState.ID = id
+}</span>
+
+// GetAllVariables returns all variables for testing
+func (m *MockContext) GetAllVariables() map[string]string <span class="cov0" title="0">{
+        m.mu.RLock()
+        defer m.mu.RUnlock()
+        
+        result := make(map[string]string)
+        for k, v := range m.variables </span><span class="cov0" title="0">{
+                result[k] = v
+        }</span>
+        <span class="cov0" title="0">return result</span>
+}
+
+// ClearVariables clears all variables for testing
+func (m *MockContext) ClearVariables() <span class="cov0" title="0">{
+        m.mu.Lock()
+        defer m.mu.Unlock()
+        
+        m.variables = make(map[string]string)
+        m.sessionState.Variables = make(map[string]string)
+}</span>
+
+// ClearHistory clears message history for testing
+func (m *MockContext) ClearHistory() <span class="cov0" title="0">{
+        m.mu.Lock()
+        defer m.mu.Unlock()
+        
+        m.history = []types.Message{}
+        m.sessionState.History = []types.Message{}
+}</pre>
+		
+		<pre class="file" id="file6" style="display: none">package testutils
+
+import (
+        "fmt"
+        "os"
+        "path/filepath"
+        "testing"
+
+        "github.com/stretchr/testify/assert"
+        "github.com/stretchr/testify/require"
+)
+
+// TestDataGenerator provides common test data
+type TestDataGenerator struct{}
+
+// NewTestDataGenerator creates a new test data generator
+func NewTestDataGenerator() *TestDataGenerator <span class="cov0" title="0">{
+        return &amp;TestDataGenerator{}
+}</span>
+
+// BasicVariables returns a set of basic variables for testing
+func (g *TestDataGenerator) BasicVariables() map[string]string <span class="cov0" title="0">{
+        return map[string]string{
+                "name":    "test",
+                "status":  "working",
+                "message": "hello world",
+                "count":   "42",
+        }
+}</span>
+
+// InterpolationTestCases returns test cases for variable interpolation
+func (g *TestDataGenerator) InterpolationTestCases() []InterpolationTestCase <span class="cov0" title="0">{
+        return []InterpolationTestCase{
+                {
+                        Name:     "simple variable",
+                        Input:    "Hello ${name}",
+                        Expected: "Hello test",
+                        Variables: map[string]string{
+                                "name": "test",
+                        },
+                },
+                {
+                        Name:     "multiple variables",
+                        Input:    "${greeting}, ${name}!",
+                        Expected: "Hello, World!",
+                        Variables: map[string]string{
+                                "greeting": "Hello",
+                                "name":     "World",
+                        },
+                },
+                {
+                        Name:     "system variable",
+                        Input:    "User: ${@user}",
+                        Expected: "User: testuser",
+                        Variables: map[string]string{},
+                },
+                {
+                        Name:     "nested variables",
+                        Input:    "${prefix}${middle}${suffix}",
+                        Expected: "HelloWorldTest",
+                        Variables: map[string]string{
+                                "prefix": "Hello",
+                                "middle": "World",
+                                "suffix": "Test",
+                        },
+                },
+                {
+                        Name:     "no variables",
+                        Input:    "plain text",
+                        Expected: "plain text",
+                        Variables: map[string]string{},
+                },
+                {
+                        Name:     "empty variable",
+                        Input:    "Value: ${empty}",
+                        Expected: "Value: ",
+                        Variables: map[string]string{
+                                "empty": "",
+                        },
+                },
+        }
+}</span>
+
+// InterpolationTestCase represents a test case for interpolation
+type InterpolationTestCase struct {
+        Name      string
+        Input     string
+        Expected  string
+        Variables map[string]string
+        ShouldErr bool
+}
+
+// ScriptTestData returns test script content
+func (g *TestDataGenerator) ScriptTestData() map[string]string <span class="cov0" title="0">{
+        return map[string]string{
+                "basic.neuro": `# Basic script
+\set[name="test"]
+\get[name]`,
+                
+                "variables.neuro": `# Variable interpolation
+\set[greeting="Hello"]
+\set[name="World"]
+\set[message="${greeting}, ${name}!"]
+\get[message]`,
+                
+                "system.neuro": `# System variables
+\get[@user]
+\get[#test_mode]`,
+                
+                "invalid.neuro": `# Invalid command
+\invalid[param="value"]`,
+                
+                "empty.neuro": `# Empty script
+`,
+        }
+}</span>
+
+// AssertionHelpers provides common assertion patterns
+type AssertionHelpers struct {
+        t *testing.T
+}
+
+// NewAssertionHelpers creates assertion helpers for a test
+func NewAssertionHelpers(t *testing.T) *AssertionHelpers <span class="cov0" title="0">{
+        return &amp;AssertionHelpers{t: t}
+}</span>
+
+// AssertVariableEquals checks if a variable has the expected value
+func (h *AssertionHelpers) AssertVariableEquals(ctx *MockContext, name, expected string) <span class="cov0" title="0">{
+        actual, err := ctx.GetVariable(name)
+        require.NoError(h.t, err, "Getting variable %s should not error", name)
+        assert.Equal(h.t, expected, actual, "Variable %s should equal %s", name, expected)
+}</span>
+
+// AssertVariableNotFound checks if a variable is not found
+func (h *AssertionHelpers) AssertVariableNotFound(ctx *MockContext, name string) <span class="cov0" title="0">{
+        _, err := ctx.GetVariable(name)
+        assert.Error(h.t, err, "Variable %s should not be found", name)
+        assert.Contains(h.t, err.Error(), "not found", "Error should indicate variable not found")
+}</span>
+
+// AssertMapEquals compares two string maps
+func (h *AssertionHelpers) AssertMapEquals(expected, actual map[string]string) <span class="cov0" title="0">{
+        assert.Equal(h.t, len(expected), len(actual), "Maps should have same length")
+        for k, v := range expected </span><span class="cov0" title="0">{
+                assert.Equal(h.t, v, actual[k], "Value for key %s should match", k)
+        }</span>
+}
+
+// FileHelpers provides utilities for working with test files
+type FileHelpers struct{}
+
+// NewFileHelpers creates a new file helpers instance
+func NewFileHelpers() *FileHelpers <span class="cov0" title="0">{
+        return &amp;FileHelpers{}
+}</span>
+
+// CreateTempFile creates a temporary file with given content
+func (f *FileHelpers) CreateTempFile(t *testing.T, filename, content string) string <span class="cov0" title="0">{
+        tmpDir := t.TempDir()
+        filePath := filepath.Join(tmpDir, filename)
+        
+        err := os.WriteFile(filePath, []byte(content), 0644)
+        require.NoError(t, err, "Should create temp file successfully")
+        
+        return filePath
+}</span>
+
+// CreateTempDir creates a temporary directory structure
+func (f *FileHelpers) CreateTempDir(t *testing.T, files map[string]string) string <span class="cov0" title="0">{
+        tmpDir := t.TempDir()
+        
+        for filename, content := range files </span><span class="cov0" title="0">{
+                filePath := filepath.Join(tmpDir, filename)
+                
+                // Create directory if needed
+                dir := filepath.Dir(filePath)
+                if dir != tmpDir </span><span class="cov0" title="0">{
+                        err := os.MkdirAll(dir, 0755)
+                        require.NoError(t, err, "Should create directory %s", dir)
+                }</span>
+                
+                <span class="cov0" title="0">err := os.WriteFile(filePath, []byte(content), 0644)
+                require.NoError(t, err, "Should create file %s", filename)</span>
+        }
+        
+        <span class="cov0" title="0">return tmpDir</span>
+}
+
+// BenchmarkHelpers provides utilities for benchmark tests
+type BenchmarkHelpers struct{}
+
+// NewBenchmarkHelpers creates a new benchmark helpers instance
+func NewBenchmarkHelpers() *BenchmarkHelpers <span class="cov0" title="0">{
+        return &amp;BenchmarkHelpers{}
+}</span>
+
+// RunBenchmarkN runs a function N times for benchmarking
+func (b *BenchmarkHelpers) RunBenchmarkN(b2 *testing.B, fn func()) <span class="cov0" title="0">{
+        b2.ResetTimer()
+        for i := 0; i &lt; b2.N; i++ </span><span class="cov0" title="0">{
+                fn()
+        }</span>
+}
+
+// GenerateLargeVariableSet creates a large set of variables for performance testing
+func (b *BenchmarkHelpers) GenerateLargeVariableSet(count int) map[string]string <span class="cov0" title="0">{
+        vars := make(map[string]string, count)
+        for i := 0; i &lt; count; i++ </span><span class="cov0" title="0">{
+                vars[fmt.Sprintf("var_%d", i)] = fmt.Sprintf("value_%d", i)
+        }</span>
+        <span class="cov0" title="0">return vars</span>
+}
+
+// GenerateComplexInterpolationString creates a string with many variables for testing
+func (b *BenchmarkHelpers) GenerateComplexInterpolationString(varCount int) string <span class="cov0" title="0">{
+        result := ""
+        for i := 0; i &lt; varCount; i++ </span><span class="cov0" title="0">{
+                result += fmt.Sprintf("${var_%d} ", i)
+        }</span>
+        <span class="cov0" title="0">return result</span>
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

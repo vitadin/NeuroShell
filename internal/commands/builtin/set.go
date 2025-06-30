@@ -44,18 +44,22 @@ func (c *SetCommand) Execute(args map[string]string, input string, ctx types.Con
 	
 	// Handle space syntax: \set var value
 	if input != "" {
-		parts := strings.SplitN(input, " ", 2)
+		// Trim only leading whitespace, then split
+		trimmedInput := strings.TrimLeft(input, " \t")
 		var key, value string
-		if len(parts) == 2 {
-			key, value = parts[0], parts[1]
-		} else {
-			key, value = parts[0], ""
+		if trimmedInput != "" {
+			parts := strings.SplitN(trimmedInput, " ", 2)
+			if len(parts) == 2 {
+				key, value = parts[0], strings.TrimLeft(parts[1], " \t")
+			} else {
+				key, value = parts[0], ""
+			}
+			
+			if err := ctx.SetVariable(key, value); err != nil {
+				return fmt.Errorf("failed to set variable %s: %w", key, err)
+			}
+			fmt.Printf("Setting %s = %s\n", key, value)
 		}
-		
-		if err := ctx.SetVariable(key, value); err != nil {
-			return fmt.Errorf("failed to set variable %s: %w", key, err)
-		}
-		fmt.Printf("Setting %s = %s\n", key, value)
 	}
 	
 	return nil

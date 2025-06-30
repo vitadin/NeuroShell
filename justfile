@@ -3,6 +3,14 @@
 # Default recipe to display available commands
 default:
     @just --list
+    @echo ""
+    @echo "Test Commands:"
+    @echo "  test              - Run all tests with coverage"
+    @echo "  test-unit         - Run service/utils unit tests only"
+    @echo "  test-commands     - Run command tests only"
+    @echo "  test-all-units    - Run all unit and command tests"
+    @echo "  test-e2e          - Run end-to-end tests"
+    @echo "  test-bench        - Run benchmark tests"
 
 # Build the main binary
 build: build-neurotest
@@ -36,10 +44,38 @@ test-unit-coverage:
     go tool cover -func=unit-coverage.out
     @echo "Unit test coverage report generated: unit-coverage.html"
 
+# Run command tests only
+test-commands:
+    @echo "Running command tests..."
+    go test -v -race ./internal/commands/...
+    @echo "Command tests complete"
+
+# Run command tests with coverage
+test-commands-coverage:
+    @echo "Running command tests with coverage..."
+    go test -v -race -coverprofile=commands-coverage.out ./internal/commands/...
+    go tool cover -html=commands-coverage.out -o commands-coverage.html
+    go tool cover -func=commands-coverage.out
+    @echo "Command test coverage report generated: commands-coverage.html"
+
+# Run all unit and command tests
+test-all-units:
+    @echo "Running all unit and command tests..."
+    go test -v -race ./internal/services/... ./internal/testutils/... ./internal/commands/...
+    @echo "All unit and command tests complete"
+
+# Run all unit and command tests with coverage
+test-all-units-coverage:
+    @echo "Running all unit and command tests with coverage..."
+    go test -v -race -coverprofile=all-units-coverage.out ./internal/services/... ./internal/testutils/... ./internal/commands/...
+    go tool cover -html=all-units-coverage.out -o all-units-coverage.html
+    go tool cover -func=all-units-coverage.out
+    @echo "All unit test coverage report generated: all-units-coverage.html"
+
 # Run benchmark tests
 test-bench:
     @echo "Running benchmark tests..."
-    go test -bench=. -benchmem ./internal/services/...
+    go test -bench=. -benchmem ./internal/services/... ./internal/commands/...
     @echo "Benchmark tests complete"
 
 # Check test coverage percentage
