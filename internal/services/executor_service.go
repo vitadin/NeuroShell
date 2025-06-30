@@ -1,3 +1,5 @@
+// Package services provides the core business logic services for NeuroShell.
+// It implements service interfaces for script execution, variable management, and system operations.
 package services
 
 import (
@@ -5,24 +7,28 @@ import (
 
 	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
+// ExecutorService manages command execution queue and orchestrates script processing.
 type ExecutorService struct {
 	initialized bool
 }
 
+// NewExecutorService creates a new ExecutorService instance.
 func NewExecutorService() *ExecutorService {
 	return &ExecutorService{
 		initialized: false,
 	}
 }
 
+// Name returns the service name "executor" for registration.
 func (e *ExecutorService) Name() string {
 	return "executor"
 }
 
-func (e *ExecutorService) Initialize(ctx types.Context) error {
+// Initialize sets up the ExecutorService for operation.
+func (e *ExecutorService) Initialize(_ neurotypes.Context) error {
 	e.initialized = true
 	return nil
 }
@@ -38,7 +44,7 @@ func (e *ExecutorService) ParseCommand(text string) (*parser.Command, error) {
 }
 
 // GetNextCommand returns the next command from the queue without executing it
-func (e *ExecutorService) GetNextCommand(ctx types.Context) (*parser.Command, error) {
+func (e *ExecutorService) GetNextCommand(ctx neurotypes.Context) (*parser.Command, error) {
 	if !e.initialized {
 		return nil, fmt.Errorf("executor service not initialized")
 	}
@@ -57,7 +63,7 @@ func (e *ExecutorService) GetNextCommand(ctx types.Context) (*parser.Command, er
 }
 
 // GetQueueStatus returns information about the execution queue
-func (e *ExecutorService) GetQueueStatus(ctx types.Context) (map[string]interface{}, error) {
+func (e *ExecutorService) GetQueueStatus(ctx neurotypes.Context) (map[string]interface{}, error) {
 	if !e.initialized {
 		return nil, fmt.Errorf("executor service not initialized")
 	}
@@ -85,7 +91,7 @@ func (e *ExecutorService) GetQueueStatus(ctx types.Context) (map[string]interfac
 }
 
 // MarkCommandExecuted updates execution progress in context
-func (e *ExecutorService) MarkCommandExecuted(ctx types.Context) error {
+func (e *ExecutorService) MarkCommandExecuted(ctx neurotypes.Context) error {
 	if !e.initialized {
 		return fmt.Errorf("executor service not initialized")
 	}
@@ -108,7 +114,7 @@ func (e *ExecutorService) MarkCommandExecuted(ctx types.Context) error {
 }
 
 // MarkExecutionError records an execution error in context
-func (e *ExecutorService) MarkExecutionError(ctx types.Context, err error, command string) error {
+func (e *ExecutorService) MarkExecutionError(ctx neurotypes.Context, err error, command string) error {
 	if !e.initialized {
 		return fmt.Errorf("executor service not initialized")
 	}
@@ -126,7 +132,7 @@ func (e *ExecutorService) MarkExecutionError(ctx types.Context, err error, comma
 }
 
 // MarkExecutionComplete marks successful completion of all commands
-func (e *ExecutorService) MarkExecutionComplete(ctx types.Context) error {
+func (e *ExecutorService) MarkExecutionComplete(ctx neurotypes.Context) error {
 	if !e.initialized {
 		return fmt.Errorf("executor service not initialized")
 	}

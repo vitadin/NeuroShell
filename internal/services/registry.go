@@ -4,21 +4,24 @@ import (
 	"fmt"
 	"sync"
 
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
+// Registry manages service registration and lifecycle for NeuroShell services.
 type Registry struct {
 	mu       sync.RWMutex
-	services map[string]types.Service
+	services map[string]neurotypes.Service
 }
 
+// NewRegistry creates a new service registry with an empty service map.
 func NewRegistry() *Registry {
 	return &Registry{
-		services: make(map[string]types.Service),
+		services: make(map[string]neurotypes.Service),
 	}
 }
 
-func (r *Registry) RegisterService(service types.Service) error {
+// RegisterService adds a service to the registry, returning an error if already registered.
+func (r *Registry) RegisterService(service neurotypes.Service) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -31,7 +34,8 @@ func (r *Registry) RegisterService(service types.Service) error {
 	return nil
 }
 
-func (r *Registry) GetService(name string) (types.Service, error) {
+// GetService retrieves a service by name, returning an error if not found.
+func (r *Registry) GetService(name string) (neurotypes.Service, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -43,7 +47,8 @@ func (r *Registry) GetService(name string) (types.Service, error) {
 	return service, nil
 }
 
-func (r *Registry) InitializeAll(ctx types.Context) error {
+// InitializeAll initializes all registered services with the provided context.
+func (r *Registry) InitializeAll(ctx neurotypes.Context) error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -56,12 +61,13 @@ func (r *Registry) InitializeAll(ctx types.Context) error {
 	return nil
 }
 
-func (r *Registry) GetAllServices() map[string]types.Service {
+// GetAllServices returns a copy of all registered services.
+func (r *Registry) GetAllServices() map[string]neurotypes.Service {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	// Return a copy to prevent external modification
-	result := make(map[string]types.Service)
+	result := make(map[string]neurotypes.Service)
 	for name, service := range r.services {
 		result[name] = service
 	}
@@ -69,5 +75,5 @@ func (r *Registry) GetAllServices() map[string]types.Service {
 	return result
 }
 
-// Global registry instance
+// GlobalRegistry is the global service registry instance used throughout NeuroShell.
 var GlobalRegistry = NewRegistry()

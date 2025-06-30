@@ -34,7 +34,7 @@ func TestScriptService_Initialize(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewScriptService()
 			err := service.Initialize(tt.ctx)
-			
+
 			if tt.want != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.want.Error(), err.Error())
@@ -49,31 +49,31 @@ func TestScriptService_Initialize(t *testing.T) {
 func TestScriptService_LoadScript(t *testing.T) {
 	testDataGen := testutils.NewTestDataGenerator()
 	fileHelper := testutils.NewFileHelpers()
-	
+
 	tests := []struct {
-		name         string
-		scriptName   string
+		name          string
+		scriptName    string
 		scriptContent string
-		wantError    string
+		wantError     string
 	}{
 		{
-			name:       "load basic script",
-			scriptName: "basic.neuro",
+			name:          "load basic script",
+			scriptName:    "basic.neuro",
 			scriptContent: testDataGen.ScriptTestData()["basic.neuro"],
 		},
 		{
-			name:       "load script with variables",
-			scriptName: "variables.neuro",
+			name:          "load script with variables",
+			scriptName:    "variables.neuro",
 			scriptContent: testDataGen.ScriptTestData()["variables.neuro"],
 		},
 		{
-			name:       "load script with system variables",
-			scriptName: "system.neuro",
+			name:          "load script with system variables",
+			scriptName:    "system.neuro",
 			scriptContent: testDataGen.ScriptTestData()["system.neuro"],
 		},
 		{
-			name:       "load empty script",
-			scriptName: "empty.neuro",
+			name:          "load empty script",
+			scriptName:    "empty.neuro",
 			scriptContent: testDataGen.ScriptTestData()["empty.neuro"],
 		},
 		{
@@ -99,17 +99,17 @@ func TestScriptService_LoadScript(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewScriptService()
 			ctx := testutils.NewMockContext()
-			
+
 			// Initialize service
 			err := service.Initialize(ctx)
 			require.NoError(t, err)
-			
+
 			// Create temporary script file
 			scriptPath := fileHelper.CreateTempFile(t, tt.scriptName, tt.scriptContent)
-			
+
 			// Test LoadScript - note this will fail since MockContext is not NeuroContext
 			err = service.LoadScript(scriptPath, ctx)
-			
+
 			if tt.wantError != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.wantError)
@@ -125,14 +125,14 @@ func TestScriptService_LoadScript(t *testing.T) {
 func TestScriptService_LoadScript_FileNotFound(t *testing.T) {
 	service := NewScriptService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Try to load non-existent file
 	err = service.LoadScript("/nonexistent/path/script.neuro", ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to open script file")
 }
@@ -141,13 +141,13 @@ func TestScriptService_LoadScript_NotInitialized(t *testing.T) {
 	service := NewScriptService()
 	ctx := testutils.NewMockContext()
 	fileHelper := testutils.NewFileHelpers()
-	
+
 	// Create a script file
 	scriptPath := fileHelper.CreateTempFile(t, "test.neuro", `\set[var="value"]`)
-	
+
 	// Try to load without initialization
 	err := service.LoadScript(scriptPath, ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "script service not initialized")
 }
@@ -155,14 +155,14 @@ func TestScriptService_LoadScript_NotInitialized(t *testing.T) {
 func TestScriptService_GetScriptMetadata(t *testing.T) {
 	service := NewScriptService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Test GetScriptMetadata - note this will fail since MockContext is not NeuroContext
 	metadata, err := service.GetScriptMetadata(ctx)
-	
+
 	// Should fail because MockContext is not a NeuroContext
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -172,9 +172,9 @@ func TestScriptService_GetScriptMetadata(t *testing.T) {
 func TestScriptService_GetScriptMetadata_NotInitialized(t *testing.T) {
 	service := NewScriptService()
 	ctx := testutils.NewMockContext()
-	
+
 	metadata, err := service.GetScriptMetadata(ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "script service not initialized")
 	assert.Nil(t, metadata)
@@ -183,17 +183,17 @@ func TestScriptService_GetScriptMetadata_NotInitialized(t *testing.T) {
 // Test script parsing behavior
 func TestScriptService_ScriptParsing(t *testing.T) {
 	testCases := []struct {
-		name           string
-		content        string
-		expectedLines  int
-		description    string
+		name          string
+		content       string
+		expectedLines int
+		description   string
 	}{
 		{
 			name: "empty lines ignored",
 			content: `\set[var="value"]
 
 \get[var]`,
-			expectedLines:  2,
+			expectedLines: 2,
 			description:   "Should ignore empty lines",
 		},
 		{
@@ -203,14 +203,14 @@ func TestScriptService_ScriptParsing(t *testing.T) {
 # Another comment
 \get[var]
 # Final comment`,
-			expectedLines:  2,
+			expectedLines: 2,
 			description:   "Should ignore comment lines",
 		},
 		{
 			name: "whitespace handling",
 			content: `   \set[var="value"]   
 	\get[var]	`,
-			expectedLines:  2,
+			expectedLines: 2,
 			description:   "Should handle whitespace properly",
 		},
 		{
@@ -224,7 +224,7 @@ func TestScriptService_ScriptParsing(t *testing.T) {
 \get[var2]
 
 # Final comment`,
-			expectedLines:  4,
+			expectedLines: 4,
 			description:   "Should handle mixed comments and commands",
 		},
 	}
@@ -234,19 +234,19 @@ func TestScriptService_ScriptParsing(t *testing.T) {
 			service := NewScriptService()
 			ctx := testutils.NewMockContext()
 			fileHelper := testutils.NewFileHelpers()
-			
+
 			// Initialize service
 			err := service.Initialize(ctx)
 			require.NoError(t, err)
-			
+
 			// Create script file
 			scriptPath := fileHelper.CreateTempFile(t, "test.neuro", tc.content)
-			
+
 			// Count actual non-empty, non-comment lines
 			file, err := os.Open(scriptPath)
 			require.NoError(t, err)
-			defer file.Close()
-			
+			defer func() { _ = file.Close() }()
+
 			// This test just verifies the file was created correctly
 			// The actual parsing would require NeuroContext
 			assert.FileExists(t, scriptPath)
@@ -258,21 +258,21 @@ func TestScriptService_ScriptParsing(t *testing.T) {
 func BenchmarkScriptService_LoadScript_Small(b *testing.B) {
 	service := NewScriptService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	// Create a small script
 	scriptContent := `\set[var1="value1"]
 \set[var2="value2"]
 \get[var1]
 \get[var2]`
-	
+
 	tmpDir := b.TempDir()
 	scriptPath := filepath.Join(tmpDir, "small.neuro")
 	err = os.WriteFile(scriptPath, []byte(scriptContent), 0644)
 	require.NoError(b, err)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// This will error due to MockContext, but we're measuring file I/O performance
@@ -283,21 +283,21 @@ func BenchmarkScriptService_LoadScript_Small(b *testing.B) {
 func BenchmarkScriptService_LoadScript_Large(b *testing.B) {
 	service := NewScriptService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	// Create a larger script
 	scriptContent := ""
 	for i := 0; i < 1000; i++ {
 		scriptContent += fmt.Sprintf("\\set[var%d=\"value%d\"]\n", i, i)
 	}
-	
+
 	tmpDir := b.TempDir()
 	scriptPath := filepath.Join(tmpDir, "large.neuro")
 	err = os.WriteFile(scriptPath, []byte(scriptContent), 0644)
 	require.NoError(b, err)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// This will error due to MockContext, but we're measuring file I/O performance
@@ -310,10 +310,10 @@ func TestScriptService_EdgeCases(t *testing.T) {
 	service := NewScriptService()
 	ctx := testutils.NewMockContext()
 	fileHelper := testutils.NewFileHelpers()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	testCases := []struct {
 		name    string
 		content string
@@ -335,11 +335,11 @@ func TestScriptService_EdgeCases(t *testing.T) {
 			content: "# Unicode comment: 测试\n\\set[测试=\"值\"]",
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			scriptPath := fileHelper.CreateTempFile(t, "edge.neuro", tc.content)
-			
+
 			// Should handle edge cases gracefully (even if it errors due to MockContext)
 			err := service.LoadScript(scriptPath, ctx)
 			// We expect error due to MockContext, but it shouldn't panic
@@ -350,19 +350,19 @@ func TestScriptService_EdgeCases(t *testing.T) {
 
 func TestScriptService_ConcurrentAccess(t *testing.T) {
 	fileHelper := testutils.NewFileHelpers()
-	
+
 	// Create multiple script files
 	scripts := map[string]string{
 		"script1.neuro": `\set[var1="value1"]`,
 		"script2.neuro": `\set[var2="value2"]`,
 		"script3.neuro": `\set[var3="value3"]`,
 	}
-	
+
 	tmpDir := fileHelper.CreateTempDir(t, scripts)
-	
+
 	// Test concurrent usage with separate service instances
 	done := make(chan bool)
-	
+
 	for i := 0; i < 3; i++ {
 		go func(id int) {
 			// Each goroutine gets its own service instance to avoid race conditions
@@ -370,16 +370,16 @@ func TestScriptService_ConcurrentAccess(t *testing.T) {
 			ctx := testutils.NewMockContext()
 			err := service.Initialize(ctx)
 			assert.NoError(t, err)
-			
+
 			scriptPath := filepath.Join(tmpDir, fmt.Sprintf("script%d.neuro", id+1))
 			err = service.LoadScript(scriptPath, ctx)
 			// Expect error due to MockContext, but shouldn't panic
 			assert.Error(t, err)
-			
+
 			done <- true
 		}(i)
 	}
-	
+
 	// Wait for all goroutines
 	for i := 0; i < 3; i++ {
 		<-done

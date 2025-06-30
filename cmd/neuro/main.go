@@ -1,12 +1,14 @@
+// Package main provides the NeuroShell CLI application entry point.
+// NeuroShell is a specialized shell environment designed for seamless interaction with LLM agents.
 package main
 
 import (
 	"fmt"
 	"os"
 
+	"github.com/abiosoft/ishell/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/abiosoft/ishell/v2"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/shell"
 )
@@ -40,7 +42,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version information",
 	Long:  `Display the version of Neuro Shell.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Printf("Neuro Shell v%s\n", version)
 	},
 }
@@ -59,9 +61,18 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&testMode, "test-mode", false, "Run in deterministic test mode")
 
 	// Bind flags to viper
-	viper.BindPFlag("log-level", rootCmd.PersistentFlags().Lookup("log-level"))
-	viper.BindPFlag("log-file", rootCmd.PersistentFlags().Lookup("log-file"))
-	viper.BindPFlag("test-mode", rootCmd.PersistentFlags().Lookup("test-mode"))
+	if err := viper.BindPFlag("log-level", rootCmd.PersistentFlags().Lookup("log-level")); err != nil {
+		fmt.Fprintf(os.Stderr, "Error binding log-level flag: %v\n", err)
+		os.Exit(1)
+	}
+	if err := viper.BindPFlag("log-file", rootCmd.PersistentFlags().Lookup("log-file")); err != nil {
+		fmt.Fprintf(os.Stderr, "Error binding log-file flag: %v\n", err)
+		os.Exit(1)
+	}
+	if err := viper.BindPFlag("test-mode", rootCmd.PersistentFlags().Lookup("test-mode")); err != nil {
+		fmt.Fprintf(os.Stderr, "Error binding test-mode flag: %v\n", err)
+		os.Exit(1)
+	}
 
 	// Add subcommands
 	rootCmd.AddCommand(shellCmd)
@@ -79,27 +90,27 @@ func initConfig() {
 	}
 }
 
-func runShell(cmd *cobra.Command, args []string) {
+func runShell(_ *cobra.Command, _ []string) {
 	logger.Info("Starting NeuroShell", "version", version)
-	
+
 	// Initialize services before starting shell
 	if err := shell.InitializeServices(testMode); err != nil {
 		logger.Fatal("Failed to initialize services", "error", err)
 	}
-	
+
 	logger.Info("Services initialized successfully")
 
 	sh := ishell.New()
 	sh.SetPrompt("neuro> ")
-	
+
 	// Remove built-in commands so they become user messages or Neuro commands
 	sh.DeleteCmd("exit")
 	sh.DeleteCmd("help")
-	
+
 	sh.Println(fmt.Sprintf("Neuro Shell v%s - LLM-integrated shell environment", version))
 	sh.Println("Type '\\help' for Neuro commands or '\\exit' to quit.")
-	
+
 	sh.NotFound(shell.ProcessInput)
-	
+
 	sh.Run()
 }

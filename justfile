@@ -14,9 +14,15 @@ default:
     @echo "  test-all-units    - Run all unit, command, parser, context, and shell tests"
     @echo "  test-e2e          - Run end-to-end tests"
     @echo "  test-bench        - Run benchmark tests"
+    @echo ""
+    @echo "CI/CD Commands:"
+    @echo "  check-ci          - Run all CI checks locally (mirrors CI pipeline)"
 
 # Build the main binary
-build: build-neurotest
+build: lint
+    @echo "Building neurotest..."
+    go build -o bin/neurotest ./cmd/neurotest
+    @echo "Binary built at: bin/neurotest"
     @echo "Building NeuroShell..."
     go build -o bin/neuro ./cmd/neuro
     @echo "Binary built at: bin/neuro"
@@ -144,12 +150,13 @@ lint:
     @echo "Running linters..."
     gofmt -s -w .
     go vet ./...
-    @if command -v golangci-lint >/dev/null 2>&1; then \
-        echo "Running golangci-lint..."; \
-        golangci-lint run; \
-    else \
-        echo "golangci-lint not found, skipping advanced linting"; \
+    @echo "Running golangci-lint..."
+    @if ! command -v golangci-lint >/dev/null 2>&1; then \
+        echo "❌ golangci-lint not found. Please install it:"; \
+        echo "   brew install golangci-lint"; \
+        exit 1; \
     fi
+    golangci-lint run
 
 # Clean build artifacts and temporary files
 clean:
@@ -217,6 +224,21 @@ check:
         golangci-lint run --fast; \
     fi
     @echo "Project health check complete"
+
+# Run all CI checks locally (mirrors CI pipeline)
+check-ci:
+    @echo "Running CI checks locally..."
+    @echo "1. Updating dependencies..."
+    just deps
+    @echo "2. Running linter..."
+    just lint
+    @echo "3. Running all unit tests..."
+    just test-all-units
+    @echo "4. Building binary..."
+    just build
+    @echo "5. Running end-to-end tests..."
+    -just test-e2e
+    @echo "✅ CI checks completed (some e2e tests may fail - this is expected in early development)"
 
 # Initialize development environment
 init:

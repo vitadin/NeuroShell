@@ -7,30 +7,34 @@ import (
 	"strings"
 
 	"neuroshell/internal/context"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
+// ScriptService handles loading and parsing of .neuro script files.
 type ScriptService struct {
 	initialized bool
 }
 
+// NewScriptService creates a new ScriptService instance.
 func NewScriptService() *ScriptService {
 	return &ScriptService{
 		initialized: false,
 	}
 }
 
+// Name returns the service name "script" for registration.
 func (s *ScriptService) Name() string {
 	return "script"
 }
 
-func (s *ScriptService) Initialize(ctx types.Context) error {
+// Initialize sets up the ScriptService for operation.
+func (s *ScriptService) Initialize(_ neurotypes.Context) error {
 	s.initialized = true
 	return nil
 }
 
 // LoadScript reads a script file and queues commands in the context
-func (s *ScriptService) LoadScript(filepath string, ctx types.Context) error {
+func (s *ScriptService) LoadScript(filepath string, ctx neurotypes.Context) error {
 	if !s.initialized {
 		return fmt.Errorf("script service not initialized")
 	}
@@ -39,7 +43,7 @@ func (s *ScriptService) LoadScript(filepath string, ctx types.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to open script file: %w", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	// Cast to NeuroContext to access queue methods
 	neuroCtx, ok := ctx.(*context.NeuroContext)
@@ -79,7 +83,7 @@ func (s *ScriptService) LoadScript(filepath string, ctx types.Context) error {
 }
 
 // GetScriptMetadata returns script execution information from context
-func (s *ScriptService) GetScriptMetadata(ctx types.Context) (map[string]interface{}, error) {
+func (s *ScriptService) GetScriptMetadata(ctx neurotypes.Context) (map[string]interface{}, error) {
 	if !s.initialized {
 		return nil, fmt.Errorf("script service not initialized")
 	}
@@ -90,7 +94,7 @@ func (s *ScriptService) GetScriptMetadata(ctx types.Context) (map[string]interfa
 	}
 
 	metadata := make(map[string]interface{})
-	
+
 	if file, exists := neuroCtx.GetScriptMetadata("current_file"); exists {
 		metadata["current_file"] = file
 	}

@@ -14,7 +14,7 @@ import (
 // BenchmarkServiceInitialization tests service initialization performance
 func BenchmarkServiceInitialization(b *testing.B) {
 	ctx := testutils.NewMockContext()
-	
+
 	b.Run("VariableService", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -22,7 +22,7 @@ func BenchmarkServiceInitialization(b *testing.B) {
 			_ = service.Initialize(ctx)
 		}
 	})
-	
+
 	b.Run("ScriptService", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -30,7 +30,7 @@ func BenchmarkServiceInitialization(b *testing.B) {
 			_ = service.Initialize(ctx)
 		}
 	})
-	
+
 	b.Run("ExecutorService", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -38,7 +38,7 @@ func BenchmarkServiceInitialization(b *testing.B) {
 			_ = service.Initialize(ctx)
 		}
 	})
-	
+
 	b.Run("InterpolationService", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -52,13 +52,13 @@ func BenchmarkServiceInitialization(b *testing.B) {
 func BenchmarkServiceRegistry_HighLoad(b *testing.B) {
 	registry := NewRegistry()
 	ctx := testutils.NewMockContext()
-	
+
 	// Pre-register many services
 	for i := 0; i < 1000; i++ {
 		service := NewMockService(fmt.Sprintf("service_%d", i))
 		_ = registry.RegisterService(service)
 	}
-	
+
 	b.Run("GetService", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -66,14 +66,14 @@ func BenchmarkServiceRegistry_HighLoad(b *testing.B) {
 			_, _ = registry.GetService(serviceName)
 		}
 	})
-	
+
 	b.Run("GetAllServices", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_ = registry.GetAllServices()
 		}
 	})
-	
+
 	b.Run("InitializeAll", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -85,17 +85,17 @@ func BenchmarkServiceRegistry_HighLoad(b *testing.B) {
 // BenchmarkVariableService_LargeDataset tests variable operations with many variables
 func BenchmarkVariableService_LargeDataset(b *testing.B) {
 	service := NewVariableService()
-	
+
 	// Create context with many variables
 	vars := make(map[string]string)
 	for i := 0; i < 10000; i++ {
 		vars[fmt.Sprintf("var_%d", i)] = fmt.Sprintf("value_%d", i)
 	}
 	ctx := testutils.NewMockContextWithVars(vars)
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	b.Run("Get_Existing", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -103,14 +103,14 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 			_, _ = service.Get(varName, ctx)
 		}
 	})
-	
+
 	b.Run("Get_NonExisting", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			_, _ = service.Get("nonexistent_var", ctx)
 		}
 	})
-	
+
 	b.Run("Set_NewVariables", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -125,10 +125,10 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 func BenchmarkExecutorService_CommandParsing(b *testing.B) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	commands := []string{
 		`\set[name="value"]`,
 		`\get[name]`,
@@ -141,7 +141,7 @@ func BenchmarkExecutorService_CommandParsing(b *testing.B) {
 		`\get[#session_id]`,
 		`\command[arg1="value1", arg2="value2", arg3="value3", arg4="value4"]`,
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		cmd := commands[i%len(commands)]
@@ -153,10 +153,10 @@ func BenchmarkExecutorService_CommandParsing(b *testing.B) {
 func BenchmarkInterpolationService_ComplexStrings(b *testing.B) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	testStrings := []string{
 		"Simple: ${var}",
 		"Multiple: ${var1} ${var2} ${var3}",
@@ -169,7 +169,7 @@ func BenchmarkInterpolationService_ComplexStrings(b *testing.B) {
 		"Special chars: ${var} !@#$%^&*()_+-=[]{}|;':\",./<>?",
 		"Empty vars: ${} ${empty} ${blank}",
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		str := testStrings[i%len(testStrings)]
@@ -181,10 +181,10 @@ func BenchmarkInterpolationService_ComplexStrings(b *testing.B) {
 func BenchmarkInterpolationService_CommandStructures(b *testing.B) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	commands := []*parser.Command{
 		{
 			Name:    "set",
@@ -213,7 +213,7 @@ func BenchmarkInterpolationService_CommandStructures(b *testing.B) {
 			},
 		},
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		cmd := commands[i%len(commands)]
@@ -228,7 +228,7 @@ func BenchmarkConcurrentServiceUsage(b *testing.B) {
 		ctx := testutils.NewMockContext()
 		err := service.Initialize(ctx)
 		require.NoError(b, err)
-		
+
 		b.RunParallel(func(pb *testing.PB) {
 			i := 0
 			for pb.Next() {
@@ -240,7 +240,7 @@ func BenchmarkConcurrentServiceUsage(b *testing.B) {
 			}
 		})
 	})
-	
+
 	b.Run("ExecutorService_Concurrent", func(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			i := 0
@@ -249,23 +249,23 @@ func BenchmarkConcurrentServiceUsage(b *testing.B) {
 				service := NewExecutorService()
 				ctx := testutils.NewMockContext()
 				_ = service.Initialize(ctx)
-				
+
 				cmd := fmt.Sprintf(`\set[var_%d="value_%d"]`, i, i)
 				_, _ = service.ParseCommand(cmd)
 				i++
 			}
 		})
 	})
-	
+
 	b.Run("Registry_Concurrent", func(b *testing.B) {
 		registry := NewRegistry()
-		
+
 		// Pre-register some services
 		for i := 0; i < 100; i++ {
 			service := NewMockService(fmt.Sprintf("service_%d", i))
 			_ = registry.RegisterService(service)
 		}
-		
+
 		b.RunParallel(func(pb *testing.PB) {
 			i := 0
 			for pb.Next() {
@@ -287,7 +287,7 @@ func BenchmarkMemoryUsage(b *testing.B) {
 			ss := NewScriptService()
 			es := NewExecutorService()
 			is := NewInterpolationService()
-			
+
 			// Prevent optimization
 			_ = vs.Name()
 			_ = ss.Name()
@@ -295,7 +295,7 @@ func BenchmarkMemoryUsage(b *testing.B) {
 			_ = is.Name()
 		}
 	})
-	
+
 	b.Run("RegistryOperations", func(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
@@ -306,12 +306,12 @@ func BenchmarkMemoryUsage(b *testing.B) {
 			_, _ = registry.GetService(service.Name())
 		}
 	})
-	
+
 	b.Run("CommandParsing", func(b *testing.B) {
 		service := NewExecutorService()
 		ctx := testutils.NewMockContext()
 		_ = service.Initialize(ctx)
-		
+
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {

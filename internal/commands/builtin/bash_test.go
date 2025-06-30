@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"neuroshell/internal/testutils"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestBashCommand_Name(t *testing.T) {
@@ -20,7 +20,7 @@ func TestBashCommand_Name(t *testing.T) {
 
 func TestBashCommand_ParseMode(t *testing.T) {
 	cmd := &BashCommand{}
-	assert.Equal(t, types.ParseModeRaw, cmd.ParseMode())
+	assert.Equal(t, neurotypes.ParseModeRaw, cmd.ParseMode())
 }
 
 func TestBashCommand_Description(t *testing.T) {
@@ -83,22 +83,22 @@ func TestBashCommand_Execute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := &BashCommand{}
 			ctx := testutils.NewMockContext()
-			
+
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
-			
+
 			err := cmd.Execute(tt.args, tt.input, ctx)
-			
+
 			// Restore stdout
-			w.Close()
+			_ = w.Close()
 			os.Stdout = originalStdout
-			
+
 			// Read captured output
 			output, _ := io.ReadAll(r)
 			outputStr := string(output)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				if tt.errMsg != "" {
@@ -117,7 +117,7 @@ func TestBashCommand_Execute(t *testing.T) {
 func TestBashCommand_Execute_EmptyInputHandling(t *testing.T) {
 	cmd := &BashCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	tests := []struct {
 		name  string
 		args  map[string]string
@@ -138,7 +138,7 @@ func TestBashCommand_Execute_EmptyInputHandling(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := cmd.Execute(tt.args, tt.input, ctx)
-			
+
 			if tt.input == "" {
 				// Empty input should error
 				assert.Error(t, err)
@@ -154,28 +154,28 @@ func TestBashCommand_Execute_EmptyInputHandling(t *testing.T) {
 func TestBashCommand_Execute_LongCommands(t *testing.T) {
 	cmd := &BashCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	// Test with a very long command
 	longCommand := "echo " + strings.Repeat("very long command ", 100)
-	
+
 	// Capture stdout
 	originalStdout := os.Stdout
 	_, w, _ := os.Pipe()
 	os.Stdout = w
-	
+
 	err := cmd.Execute(map[string]string{}, longCommand, ctx)
-	
+
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
-	
+
 	assert.NoError(t, err)
 }
 
 func TestBashCommand_Execute_SpecialCharacters(t *testing.T) {
 	cmd := &BashCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	specialCommands := []string{
 		"echo $HOME",
 		"ls -la | grep test",
@@ -190,28 +190,28 @@ func TestBashCommand_Execute_SpecialCharacters(t *testing.T) {
 		"cat < input.txt",
 		"command 2>&1",
 	}
-	
+
 	for _, specialCmd := range specialCommands {
-		t.Run(fmt.Sprintf("special_cmd_%s", specialCmd[:min(20, len(specialCmd))]), func(t *testing.T) {
+		t.Run(fmt.Sprintf("special_cmd_%s", specialCmd[:minInt(20, len(specialCmd))]), func(t *testing.T) {
 			// Capture stdout
 			originalStdout := os.Stdout
 			_, w, _ := os.Pipe()
 			os.Stdout = w
-			
+
 			err := cmd.Execute(map[string]string{}, specialCmd, ctx)
-			
+
 			// Restore stdout
-			w.Close()
+			_ = w.Close()
 			os.Stdout = originalStdout
-			
+
 			// Should handle special characters without error (though not execute them)
 			assert.NoError(t, err)
 		})
 	}
 }
 
-// Helper function for min
-func min(a, b int) int {
+// Helper function for minimum of two integers
+func minInt(a, b int) int {
 	if a < b {
 		return a
 	}
@@ -223,16 +223,16 @@ func BenchmarkBashCommand_Execute(b *testing.B) {
 	cmd := &BashCommand{}
 	ctx := testutils.NewMockContext()
 	input := "echo test"
-	
+
 	// Redirect stdout to avoid benchmark noise
 	originalStdout := os.Stdout
 	devNull, _ := os.Open(os.DevNull)
 	os.Stdout = devNull
-	defer func() { 
-		devNull.Close()
-		os.Stdout = originalStdout 
+	defer func() {
+		_ = devNull.Close()
+		os.Stdout = originalStdout
 	}()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = cmd.Execute(map[string]string{}, input, ctx)
@@ -243,16 +243,16 @@ func BenchmarkBashCommand_Execute_LongCommand(b *testing.B) {
 	cmd := &BashCommand{}
 	ctx := testutils.NewMockContext()
 	longInput := "echo " + strings.Repeat("long ", 1000)
-	
+
 	// Redirect stdout to avoid benchmark noise
 	originalStdout := os.Stdout
 	devNull, _ := os.Open(os.DevNull)
 	os.Stdout = devNull
-	defer func() { 
-		devNull.Close()
-		os.Stdout = originalStdout 
+	defer func() {
+		_ = devNull.Close()
+		os.Stdout = originalStdout
 	}()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = cmd.Execute(map[string]string{}, longInput, ctx)
@@ -261,36 +261,36 @@ func BenchmarkBashCommand_Execute_LongCommand(b *testing.B) {
 
 // Test interface compliance
 func TestBashCommand_Interface(t *testing.T) {
-	var _ types.Command = &BashCommand{}
-	
+	var _ neurotypes.Command = &BashCommand{}
+
 	cmd := &BashCommand{}
-	
+
 	// Test all interface methods return reasonable values
 	assert.NotEmpty(t, cmd.Name())
-	assert.NotEmpty(t, cmd.Description()) 
+	assert.NotEmpty(t, cmd.Description())
 	assert.NotEmpty(t, cmd.Usage())
-	
+
 	// ParseMode should be Raw for bash commands
-	assert.Equal(t, types.ParseModeRaw, cmd.ParseMode())
+	assert.Equal(t, neurotypes.ParseModeRaw, cmd.ParseMode())
 }
 
 // Test metadata consistency
 func TestBashCommand_ConsistentMetadata(t *testing.T) {
 	cmd := &BashCommand{}
-	
+
 	// Test that multiple calls return the same values
 	name1 := cmd.Name()
 	name2 := cmd.Name()
 	assert.Equal(t, name1, name2)
-	
+
 	desc1 := cmd.Description()
 	desc2 := cmd.Description()
 	assert.Equal(t, desc1, desc2)
-	
+
 	usage1 := cmd.Usage()
 	usage2 := cmd.Usage()
 	assert.Equal(t, usage1, usage2)
-	
+
 	mode1 := cmd.ParseMode()
 	mode2 := cmd.ParseMode()
 	assert.Equal(t, mode1, mode2)

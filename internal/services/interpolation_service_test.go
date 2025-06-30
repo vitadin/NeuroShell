@@ -8,7 +8,7 @@ import (
 
 	"neuroshell/internal/parser"
 	"neuroshell/internal/testutils"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestInterpolationService_Name(t *testing.T) {
@@ -33,7 +33,7 @@ func TestInterpolationService_Initialize(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewInterpolationService()
 			err := service.Initialize(tt.ctx)
-			
+
 			if tt.want != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.want.Error(), err.Error())
@@ -48,14 +48,14 @@ func TestInterpolationService_Initialize(t *testing.T) {
 func TestInterpolationService_InterpolateString(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Test InterpolateString - will fail since MockContext is not NeuroContext
 	result, err := service.InterpolateString("Hello ${name}", ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
 	assert.Empty(t, result)
@@ -64,9 +64,9 @@ func TestInterpolationService_InterpolateString(t *testing.T) {
 func TestInterpolationService_InterpolateString_NotInitialized(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	result, err := service.InterpolateString("Hello ${name}", ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "interpolation service not initialized")
 	assert.Empty(t, result)
@@ -75,11 +75,11 @@ func TestInterpolationService_InterpolateString_NotInitialized(t *testing.T) {
 func TestInterpolationService_InterpolateCommand(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Create a test command
 	testCmd := &parser.Command{
 		Name:           "set",
@@ -89,12 +89,12 @@ func TestInterpolationService_InterpolateCommand(t *testing.T) {
 			"var":   "${variable}",
 			"value": "${data}",
 		},
-		ParseMode: types.ParseModeKeyValue,
+		ParseMode: neurotypes.ParseModeKeyValue,
 	}
-	
+
 	// Test InterpolateCommand - will fail since MockContext is not NeuroContext
 	result, err := service.InterpolateCommand(testCmd, ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
 	assert.Nil(t, result)
@@ -103,14 +103,14 @@ func TestInterpolationService_InterpolateCommand(t *testing.T) {
 func TestInterpolationService_InterpolateCommand_NotInitialized(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	testCmd := &parser.Command{
 		Name:    "set",
 		Message: "Hello ${name}",
 	}
-	
+
 	result, err := service.InterpolateCommand(testCmd, ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "interpolation service not initialized")
 	assert.Nil(t, result)
@@ -120,10 +120,10 @@ func TestInterpolationService_InterpolateCommand_NotInitialized(t *testing.T) {
 func TestInterpolationService_CommandStructurePreservation(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	testCases := []struct {
 		name string
 		cmd  *parser.Command
@@ -137,7 +137,7 @@ func TestInterpolationService_CommandStructurePreservation(t *testing.T) {
 				Options: map[string]string{
 					"var": "value",
 				},
-				ParseMode: types.ParseModeKeyValue,
+				ParseMode: neurotypes.ParseModeKeyValue,
 			},
 		},
 		{
@@ -151,7 +151,7 @@ func TestInterpolationService_CommandStructurePreservation(t *testing.T) {
 					"temperature": "${temp_setting}",
 					"system":      "${@user}",
 				},
-				ParseMode: types.ParseModeKeyValue,
+				ParseMode: neurotypes.ParseModeKeyValue,
 			},
 		},
 		{
@@ -161,25 +161,26 @@ func TestInterpolationService_CommandStructurePreservation(t *testing.T) {
 				Message:        "",
 				BracketContent: "",
 				Options:        make(map[string]string),
-				ParseMode:      types.ParseModeRaw,
+				ParseMode:      neurotypes.ParseModeRaw,
 			},
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// This will fail due to MockContext, but we test the structure
 			result, err := service.InterpolateCommand(tc.cmd, ctx)
-			
+
 			// Expect error due to MockContext
 			assert.Error(t, err)
 			assert.Nil(t, result)
-			
+
 			// Verify original command is unchanged
 			expectedName := "test"
-			if tc.name == "basic command" {
+			switch tc.name {
+			case "basic command":
 				expectedName = "set"
-			} else if tc.name == "command with interpolation patterns" {
+			case "command with interpolation patterns":
 				expectedName = "send"
 			}
 			assert.Equal(t, expectedName, tc.cmd.Name)
@@ -191,10 +192,10 @@ func TestInterpolationService_CommandStructurePreservation(t *testing.T) {
 func TestInterpolationService_StringInterpolationPatterns(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	testCases := []struct {
 		name  string
 		input string
@@ -209,12 +210,12 @@ func TestInterpolationService_StringInterpolationPatterns(t *testing.T) {
 		{"special characters", "${var} with symbols !@#$%"},
 		{"unicode content", "测试 ${unicode_var} 中文"},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Will fail due to MockContext, but tests service behavior
 			result, err := service.InterpolateString(tc.input, ctx)
-			
+
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "context is not a NeuroContext")
 			assert.Empty(t, result)
@@ -226,12 +227,12 @@ func TestInterpolationService_StringInterpolationPatterns(t *testing.T) {
 func BenchmarkInterpolationService_InterpolateString_Simple(b *testing.B) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	input := "Hello ${name}"
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// Will error due to MockContext, but measures service overhead
@@ -242,12 +243,12 @@ func BenchmarkInterpolationService_InterpolateString_Simple(b *testing.B) {
 func BenchmarkInterpolationService_InterpolateString_Complex(b *testing.B) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	input := "Complex interpolation: ${var1} ${var2} ${@user} ${@pwd} ${#session_id} ${nested_${var3}}"
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// Will error due to MockContext, but measures service overhead
@@ -258,10 +259,10 @@ func BenchmarkInterpolationService_InterpolateString_Complex(b *testing.B) {
 func BenchmarkInterpolationService_InterpolateCommand(b *testing.B) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	cmd := &parser.Command{
 		Name:           "send",
 		Message:        "Hello ${name}, today is ${@date}",
@@ -271,9 +272,9 @@ func BenchmarkInterpolationService_InterpolateCommand(b *testing.B) {
 			"temperature": "${temp_setting}",
 			"system":      "${@user}",
 		},
-		ParseMode: types.ParseModeKeyValue,
+		ParseMode: neurotypes.ParseModeKeyValue,
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// Will error due to MockContext, but measures service overhead
@@ -285,10 +286,10 @@ func BenchmarkInterpolationService_InterpolateCommand(b *testing.B) {
 func TestInterpolationService_EdgeCases(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	edgeCases := []struct {
 		name  string
 		input string
@@ -302,12 +303,12 @@ func TestInterpolationService_EdgeCases(t *testing.T) {
 		{"special characters", "${var} !@#$%^&*()_+-=[]{}|;':\",./<>?"},
 		{"newlines and tabs", "Line1\n${var}\tTab"},
 	}
-	
+
 	for _, tc := range edgeCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Should handle edge cases without panicking
 			result, err := service.InterpolateString(tc.input, ctx)
-			
+
 			// Expect error due to MockContext
 			assert.Error(t, err)
 			assert.Empty(t, result)
@@ -319,15 +320,15 @@ func TestInterpolationService_EdgeCases(t *testing.T) {
 func TestInterpolationService_ConcurrentAccess(t *testing.T) {
 	// Test concurrent initialization and interpolation with separate service instances
 	done := make(chan bool)
-	
+
 	for i := 0; i < 10; i++ {
-		go func(id int) {
+		go func(_ int) {
 			// Each goroutine gets its own service instance to avoid race conditions
 			service := NewInterpolationService()
 			ctx := testutils.NewMockContext()
 			err := service.Initialize(ctx)
 			assert.NoError(t, err)
-			
+
 			// Try various interpolations concurrently
 			testStrings := []string{
 				"Hello ${name}",
@@ -335,17 +336,17 @@ func TestInterpolationService_ConcurrentAccess(t *testing.T) {
 				"User: ${@user}",
 				"Complex: ${var1} ${var2} ${@pwd}",
 			}
-			
+
 			for _, str := range testStrings {
 				_, err := service.InterpolateString(str, ctx)
 				// Expect error due to MockContext, but shouldn't panic
 				assert.Error(t, err)
 			}
-			
+
 			done <- true
 		}(i)
 	}
-	
+
 	// Wait for all goroutines
 	for i := 0; i < 10; i++ {
 		<-done
@@ -355,30 +356,30 @@ func TestInterpolationService_ConcurrentAccess(t *testing.T) {
 // Test initialization state
 func TestInterpolationService_InitializationState(t *testing.T) {
 	service := NewInterpolationService()
-	
+
 	// Should not be initialized initially
 	assert.False(t, service.initialized)
-	
+
 	// Test operations before initialization
 	_, err := service.InterpolateString("Hello ${name}", nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
-	
+
 	_, err = service.InterpolateCommand(&parser.Command{}, nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
-	
+
 	// Initialize
 	ctx := testutils.NewMockContext()
 	err = service.Initialize(ctx)
 	assert.NoError(t, err)
 	assert.True(t, service.initialized)
-	
+
 	// Test operations after initialization (will still error due to MockContext)
 	_, err = service.InterpolateString("Hello ${name}", ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
-	
+
 	// Re-initialization should work
 	err = service.Initialize(ctx)
 	assert.NoError(t, err)
@@ -389,16 +390,16 @@ func TestInterpolationService_InitializationState(t *testing.T) {
 func TestInterpolationService_NilHandling(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Test nil command
 	result, err := service.InterpolateCommand(nil, ctx)
 	// Should handle nil gracefully but will error due to MockContext first
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	
+
 	// Test nil context
 	_, err = service.InterpolateString("test", nil)
 	// Should error due to nil context type assertion
@@ -409,10 +410,10 @@ func TestInterpolationService_NilHandling(t *testing.T) {
 func TestInterpolationService_CommandOptionHandling(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	testCases := []struct {
 		name string
 		cmd  *parser.Command
@@ -441,12 +442,12 @@ func TestInterpolationService_CommandOptionHandling(t *testing.T) {
 			},
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Should handle different option scenarios
 			result, err := service.InterpolateCommand(tc.cmd, ctx)
-			
+
 			// Expect error due to MockContext
 			assert.Error(t, err)
 			assert.Nil(t, result)

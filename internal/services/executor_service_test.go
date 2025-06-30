@@ -32,7 +32,7 @@ func TestExecutorService_Initialize(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewExecutorService()
 			err := service.Initialize(tt.ctx)
-			
+
 			if tt.want != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.want.Error(), err.Error())
@@ -66,7 +66,7 @@ func TestExecutorService_ParseCommand(t *testing.T) {
 			wantError: false, // Parser should handle empty input
 		},
 		{
-			name:      "parse invalid command",  
+			name:      "parse invalid command",
 			input:     "invalid command",
 			wantError: false, // Parser should handle invalid input gracefully
 		},
@@ -79,7 +79,7 @@ func TestExecutorService_ParseCommand(t *testing.T) {
 
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
@@ -87,7 +87,7 @@ func TestExecutorService_ParseCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd, err := service.ParseCommand(tt.input)
-			
+
 			if tt.wantError {
 				assert.Error(t, err)
 				assert.Nil(t, cmd)
@@ -101,9 +101,9 @@ func TestExecutorService_ParseCommand(t *testing.T) {
 
 func TestExecutorService_ParseCommand_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
-	
+
 	cmd, err := service.ParseCommand(`\set[name="value"]`)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "executor service not initialized")
 	assert.Nil(t, cmd)
@@ -112,14 +112,14 @@ func TestExecutorService_ParseCommand_NotInitialized(t *testing.T) {
 func TestExecutorService_GetNextCommand(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Test GetNextCommand - will fail since MockContext is not NeuroContext
 	cmd, err := service.GetNextCommand(ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
 	assert.Nil(t, cmd)
@@ -128,9 +128,9 @@ func TestExecutorService_GetNextCommand(t *testing.T) {
 func TestExecutorService_GetNextCommand_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	cmd, err := service.GetNextCommand(ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "executor service not initialized")
 	assert.Nil(t, cmd)
@@ -139,14 +139,14 @@ func TestExecutorService_GetNextCommand_NotInitialized(t *testing.T) {
 func TestExecutorService_GetQueueStatus(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Test GetQueueStatus - will fail since MockContext is not NeuroContext
 	status, err := service.GetQueueStatus(ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
 	assert.Nil(t, status)
@@ -155,9 +155,9 @@ func TestExecutorService_GetQueueStatus(t *testing.T) {
 func TestExecutorService_GetQueueStatus_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	status, err := service.GetQueueStatus(ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "executor service not initialized")
 	assert.Nil(t, status)
@@ -166,14 +166,14 @@ func TestExecutorService_GetQueueStatus_NotInitialized(t *testing.T) {
 func TestExecutorService_MarkCommandExecuted(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Test MarkCommandExecuted - will fail since MockContext is not NeuroContext
 	err = service.MarkCommandExecuted(ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
 }
@@ -181,9 +181,9 @@ func TestExecutorService_MarkCommandExecuted(t *testing.T) {
 func TestExecutorService_MarkCommandExecuted_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.MarkCommandExecuted(ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "executor service not initialized")
 }
@@ -191,17 +191,17 @@ func TestExecutorService_MarkCommandExecuted_NotInitialized(t *testing.T) {
 func TestExecutorService_MarkExecutionError(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	testError := errors.New("test execution error")
 	testCommand := `\set[name="value"]`
-	
+
 	// Test MarkExecutionError - will fail since MockContext is not NeuroContext
 	err = service.MarkExecutionError(ctx, testError, testCommand)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
 }
@@ -209,12 +209,12 @@ func TestExecutorService_MarkExecutionError(t *testing.T) {
 func TestExecutorService_MarkExecutionError_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	testError := errors.New("test execution error")
 	testCommand := `\set[name="value"]`
-	
+
 	err := service.MarkExecutionError(ctx, testError, testCommand)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "executor service not initialized")
 }
@@ -222,14 +222,14 @@ func TestExecutorService_MarkExecutionError_NotInitialized(t *testing.T) {
 func TestExecutorService_MarkExecutionComplete(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Test MarkExecutionComplete - will fail since MockContext is not NeuroContext
 	err = service.MarkExecutionComplete(ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
 }
@@ -237,9 +237,9 @@ func TestExecutorService_MarkExecutionComplete(t *testing.T) {
 func TestExecutorService_MarkExecutionComplete_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.MarkExecutionComplete(ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "executor service not initialized")
 }
@@ -295,14 +295,14 @@ func TestExecutorService_ParseCommand_Comprehensive(t *testing.T) {
 
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			cmd, err := service.ParseCommand(tc.input)
-			
+
 			// Parser should handle all inputs gracefully
 			assert.NoError(t, err, "ParseCommand should not error for: %s", tc.description)
 			assert.NotNil(t, cmd, "ParseCommand should return command object for: %s", tc.description)
@@ -314,12 +314,12 @@ func TestExecutorService_ParseCommand_Comprehensive(t *testing.T) {
 func BenchmarkExecutorService_ParseCommand_Simple(b *testing.B) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	input := `\set[name="value"]`
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = service.ParseCommand(input)
@@ -329,12 +329,12 @@ func BenchmarkExecutorService_ParseCommand_Simple(b *testing.B) {
 func BenchmarkExecutorService_ParseCommand_Complex(b *testing.B) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	input := `\send[model="gpt-4", temperature=0.7, max_tokens=1000] This is a complex message with multiple parameters and a longer text content that needs to be parsed efficiently`
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = service.ParseCommand(input)
@@ -345,10 +345,10 @@ func BenchmarkExecutorService_ParseCommand_Complex(b *testing.B) {
 func TestExecutorService_ParseCommand_EdgeCases(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	edgeCases := []struct {
 		name  string
 		input string
@@ -362,7 +362,7 @@ func TestExecutorService_ParseCommand_EdgeCases(t *testing.T) {
 		{"only command", `\command`},
 		{"whitespace heavy", `   \set  [  name  =  "value"  ]   `},
 	}
-	
+
 	for _, tc := range edgeCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Parser should handle edge cases gracefully without panicking
@@ -377,15 +377,15 @@ func TestExecutorService_ParseCommand_EdgeCases(t *testing.T) {
 func TestExecutorService_ConcurrentAccess(t *testing.T) {
 	// Test concurrent initialization and parsing with separate service instances
 	done := make(chan bool)
-	
+
 	for i := 0; i < 10; i++ {
-		go func(id int) {
+		go func(_ int) {
 			// Each goroutine gets its own service instance to avoid race conditions
 			service := NewExecutorService()
 			ctx := testutils.NewMockContext()
 			err := service.Initialize(ctx)
 			assert.NoError(t, err)
-			
+
 			// Parse different commands concurrently
 			commands := []string{
 				`\set[var1="value1"]`,
@@ -393,17 +393,17 @@ func TestExecutorService_ConcurrentAccess(t *testing.T) {
 				`\send Hello world`,
 				`\command[arg="value"]`,
 			}
-			
+
 			for _, cmd := range commands {
 				parsed, err := service.ParseCommand(cmd)
 				assert.NoError(t, err)
 				assert.NotNil(t, parsed)
 			}
-			
+
 			done <- true
 		}(i)
 	}
-	
+
 	// Wait for all goroutines
 	for i := 0; i < 10; i++ {
 		<-done
@@ -413,25 +413,25 @@ func TestExecutorService_ConcurrentAccess(t *testing.T) {
 // Test initialization state consistency
 func TestExecutorService_InitializationState(t *testing.T) {
 	service := NewExecutorService()
-	
+
 	// Should not be initialized initially
 	assert.False(t, service.initialized)
-	
+
 	// Test operations before initialization
 	_, err := service.ParseCommand(`\set[name="value"]`)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
-	
+
 	// Initialize
 	ctx := testutils.NewMockContext()
 	err = service.Initialize(ctx)
 	assert.NoError(t, err)
 	assert.True(t, service.initialized)
-	
+
 	// Test operations after initialization
 	_, err = service.ParseCommand(`\set[name="value"]`)
 	assert.NoError(t, err)
-	
+
 	// Re-initialization should work
 	err = service.Initialize(ctx)
 	assert.NoError(t, err)

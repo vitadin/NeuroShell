@@ -6,31 +6,35 @@ import (
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/parser"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
+// InterpolationService handles variable interpolation in commands and text.
 type InterpolationService struct {
 	initialized bool
 }
 
+// NewInterpolationService creates a new InterpolationService instance.
 func NewInterpolationService() *InterpolationService {
 	return &InterpolationService{
 		initialized: false,
 	}
 }
 
+// Name returns the service name "interpolation" for registration.
 func (i *InterpolationService) Name() string {
 	return "interpolation"
 }
 
-func (i *InterpolationService) Initialize(ctx types.Context) error {
+// Initialize sets up the InterpolationService for operation.
+func (i *InterpolationService) Initialize(_ neurotypes.Context) error {
 	i.initialized = true
 	logger.ServiceOperation("interpolation", "initialize", "service ready")
 	return nil
 }
 
 // InterpolateString performs pure interpolation of a single string using context variables
-func (i *InterpolationService) InterpolateString(text string, ctx types.Context) (string, error) {
+func (i *InterpolationService) InterpolateString(text string, ctx neurotypes.Context) (string, error) {
 	if !i.initialized {
 		return "", fmt.Errorf("interpolation service not initialized")
 	}
@@ -48,7 +52,7 @@ func (i *InterpolationService) InterpolateString(text string, ctx types.Context)
 }
 
 // InterpolateCommand interpolates all parts of a command structure and returns a new interpolated command
-func (i *InterpolationService) InterpolateCommand(cmd *parser.Command, ctx types.Context) (*parser.Command, error) {
+func (i *InterpolationService) InterpolateCommand(cmd *parser.Command, ctx neurotypes.Context) (*parser.Command, error) {
 	if !i.initialized {
 		return nil, fmt.Errorf("interpolation service not initialized")
 	}

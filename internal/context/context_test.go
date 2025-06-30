@@ -11,12 +11,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestNew(t *testing.T) {
 	ctx := New()
-	
+
 	assert.NotNil(t, ctx)
 	assert.NotNil(t, ctx.variables)
 	assert.NotNil(t, ctx.history)
@@ -33,7 +33,7 @@ func TestNew(t *testing.T) {
 
 func TestGetVariable_UserVariables(t *testing.T) {
 	ctx := New()
-	
+
 	tests := []struct {
 		name     string
 		varName  string
@@ -71,7 +71,7 @@ func TestGetVariable_UserVariables(t *testing.T) {
 			// Set the variable
 			err := ctx.SetVariable(tt.varName, tt.varValue)
 			require.NoError(t, err)
-			
+
 			// Get the variable
 			value, err := ctx.GetVariable(tt.varName)
 			if tt.wantErr {
@@ -86,7 +86,7 @@ func TestGetVariable_UserVariables(t *testing.T) {
 
 func TestGetVariable_NonExistentVariable(t *testing.T) {
 	ctx := New()
-	
+
 	value, err := ctx.GetVariable("nonexistent")
 	assert.Error(t, err)
 	assert.Equal(t, "", value)
@@ -95,7 +95,7 @@ func TestGetVariable_NonExistentVariable(t *testing.T) {
 
 func TestSetVariable_ValidVariables(t *testing.T) {
 	ctx := New()
-	
+
 	tests := []struct {
 		name     string
 		varName  string
@@ -113,7 +113,7 @@ func TestSetVariable_ValidVariables(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := ctx.SetVariable(tt.varName, tt.varValue)
 			assert.NoError(t, err)
-			
+
 			// Verify it was set
 			value, err := ctx.GetVariable(tt.varName)
 			assert.NoError(t, err)
@@ -124,7 +124,7 @@ func TestSetVariable_ValidVariables(t *testing.T) {
 
 func TestSetVariable_SystemVariables_Forbidden(t *testing.T) {
 	ctx := New()
-	
+
 	tests := []struct {
 		name    string
 		varName string
@@ -149,22 +149,22 @@ func TestSetVariable_SystemVariables_Forbidden(t *testing.T) {
 
 func TestGetMessageHistory(t *testing.T) {
 	ctx := New()
-	
+
 	// Test empty history
 	history := ctx.GetMessageHistory(5)
 	assert.Equal(t, 0, len(history))
-	
+
 	// Add some messages
-	messages := []types.Message{
+	messages := []neurotypes.Message{
 		{ID: "1", Role: "user", Content: "Hello", Timestamp: time.Now()},
 		{ID: "2", Role: "assistant", Content: "Hi there", Timestamp: time.Now()},
 		{ID: "3", Role: "user", Content: "How are you?", Timestamp: time.Now()},
 		{ID: "4", Role: "assistant", Content: "I'm fine", Timestamp: time.Now()},
 		{ID: "5", Role: "user", Content: "Good!", Timestamp: time.Now()},
 	}
-	
+
 	ctx.history = messages
-	
+
 	tests := []struct {
 		name     string
 		n        int
@@ -182,7 +182,7 @@ func TestGetMessageHistory(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			history := ctx.GetMessageHistory(tt.n)
 			assert.Equal(t, tt.expected, len(history))
-			
+
 			// If getting subset, verify we get the last N messages
 			if tt.n > 0 && tt.n < len(messages) {
 				expectedStart := len(messages) - tt.n
@@ -196,18 +196,18 @@ func TestGetMessageHistory(t *testing.T) {
 
 func TestGetSessionState(t *testing.T) {
 	ctx := New()
-	
+
 	// Set some variables
-	ctx.SetVariable("var1", "value1")
-	ctx.SetVariable("var2", "value2")
-	
+	require.NoError(t, ctx.SetVariable("var1", "value1"))
+	require.NoError(t, ctx.SetVariable("var2", "value2"))
+
 	// Add some history
-	ctx.history = []types.Message{
+	ctx.history = []neurotypes.Message{
 		{ID: "1", Role: "user", Content: "Hello", Timestamp: time.Now()},
 	}
-	
+
 	state := ctx.GetSessionState()
-	
+
 	assert.Equal(t, ctx.sessionID, state.ID)
 	assert.Equal(t, ctx.variables, state.Variables)
 	assert.Equal(t, ctx.history, state.History)
@@ -217,7 +217,7 @@ func TestGetSessionState(t *testing.T) {
 
 func TestGetSystemVariable(t *testing.T) {
 	ctx := New()
-	
+
 	tests := []struct {
 		name      string
 		varName   string
@@ -228,9 +228,7 @@ func TestGetSystemVariable(t *testing.T) {
 			name:      "pwd",
 			varName:   "@pwd",
 			shouldGet: true,
-			validator: func(value string) bool {
-				return filepath.IsAbs(value)
-			},
+			validator: filepath.IsAbs,
 		},
 		{
 			name:      "user",
@@ -244,9 +242,7 @@ func TestGetSystemVariable(t *testing.T) {
 			name:      "home",
 			varName:   "@home",
 			shouldGet: true,
-			validator: func(value string) bool {
-				return filepath.IsAbs(value)
-			},
+			validator: filepath.IsAbs,
 		},
 		{
 			name:      "date",
@@ -313,12 +309,12 @@ func TestGetSystemVariable(t *testing.T) {
 
 func TestGetSystemVariable_TestMode(t *testing.T) {
 	ctx := New()
-	
+
 	// Test false mode
 	value, ok := ctx.getSystemVariable("#test_mode")
 	assert.True(t, ok)
 	assert.Equal(t, "false", value)
-	
+
 	// Test true mode
 	ctx.SetTestMode(true)
 	value, ok = ctx.getSystemVariable("#test_mode")
@@ -328,7 +324,7 @@ func TestGetSystemVariable_TestMode(t *testing.T) {
 
 func TestGetSystemVariable_MessageHistory(t *testing.T) {
 	ctx := New()
-	
+
 	tests := []struct {
 		name     string
 		varName  string
@@ -350,10 +346,10 @@ func TestGetSystemVariable_MessageHistory(t *testing.T) {
 
 func TestGetSystemVariable_NonExistent(t *testing.T) {
 	ctx := New()
-	
+
 	tests := []string{
 		"@nonexistent",
-		"#nonexistent", 
+		"#nonexistent",
 		"_nonexistent",
 		"regular_var",
 		"",
@@ -373,7 +369,7 @@ func TestGetSystemVariable_NonExistent(t *testing.T) {
 
 func TestInterpolateVariables_NoVariables(t *testing.T) {
 	ctx := New()
-	
+
 	tests := []string{
 		"plain text",
 		"no variables here",
@@ -393,10 +389,10 @@ func TestInterpolateVariables_NoVariables(t *testing.T) {
 
 func TestInterpolateVariables_SimpleVariables(t *testing.T) {
 	ctx := New()
-	ctx.SetVariable("name", "Alice")
-	ctx.SetVariable("age", "30")
-	ctx.SetVariable("empty", "")
-	
+	require.NoError(t, ctx.SetVariable("name", "Alice"))
+	require.NoError(t, ctx.SetVariable("age", "30"))
+	require.NoError(t, ctx.SetVariable("empty", ""))
+
 	tests := []struct {
 		name     string
 		input    string
@@ -449,7 +445,7 @@ func TestInterpolateVariables_SimpleVariables(t *testing.T) {
 
 func TestInterpolateVariables_SystemVariables(t *testing.T) {
 	ctx := New()
-	
+
 	tests := []struct {
 		name     string
 		input    string
@@ -482,11 +478,11 @@ func TestInterpolateVariables_SystemVariables(t *testing.T) {
 
 func TestInterpolateVariables_NestedVariables(t *testing.T) {
 	ctx := New()
-	ctx.SetVariable("var1", "${var2}")
-	ctx.SetVariable("var2", "final_value")
-	ctx.SetVariable("prefix", "var")
-	ctx.SetVariable("suffix", "2")
-	
+	require.NoError(t, ctx.SetVariable("var1", "${var2}"))
+	require.NoError(t, ctx.SetVariable("var2", "final_value"))
+	require.NoError(t, ctx.SetVariable("prefix", "var"))
+	require.NoError(t, ctx.SetVariable("suffix", "2"))
+
 	tests := []struct {
 		name     string
 		input    string
@@ -514,9 +510,9 @@ func TestInterpolateVariables_NestedVariables(t *testing.T) {
 
 func TestInterpolateVariables_CircularReference(t *testing.T) {
 	ctx := New()
-	ctx.SetVariable("var1", "${var2}")
-	ctx.SetVariable("var2", "${var1}")
-	
+	require.NoError(t, ctx.SetVariable("var1", "${var2}"))
+	require.NoError(t, ctx.SetVariable("var2", "${var1}"))
+
 	// Should not cause infinite loop due to maxIterations limit
 	result := ctx.InterpolateVariables("${var1}")
 	// Exact result depends on implementation but should not hang
@@ -525,16 +521,16 @@ func TestInterpolateVariables_CircularReference(t *testing.T) {
 
 func TestInterpolateVariables_MaxIterations(t *testing.T) {
 	ctx := New()
-	
+
 	// Create a chain longer than maxIterations (10)
 	for i := 1; i <= 15; i++ {
 		if i == 15 {
-			ctx.SetVariable(fmt.Sprintf("var%d", i), "final")
+			require.NoError(t, ctx.SetVariable(fmt.Sprintf("var%d", i), "final"))
 		} else {
-			ctx.SetVariable(fmt.Sprintf("var%d", i), fmt.Sprintf("${var%d}", i+1))
+			require.NoError(t, ctx.SetVariable(fmt.Sprintf("var%d", i), fmt.Sprintf("${var%d}", i+1)))
 		}
 	}
-	
+
 	result := ctx.InterpolateVariables("${var1}")
 	// Should stop after maxIterations, so won't reach "final"
 	assert.NotEqual(t, "final", result)
@@ -543,9 +539,9 @@ func TestInterpolateVariables_MaxIterations(t *testing.T) {
 
 func TestInterpolateOnce(t *testing.T) {
 	ctx := New()
-	ctx.SetVariable("name", "Alice")
-	ctx.SetVariable("nested", "${name}")
-	
+	require.NoError(t, ctx.SetVariable("name", "Alice"))
+	require.NoError(t, ctx.SetVariable("nested", "${name}"))
+
 	tests := []struct {
 		name     string
 		input    string
@@ -578,12 +574,12 @@ func TestInterpolateOnce(t *testing.T) {
 
 func TestQueueCommand(t *testing.T) {
 	ctx := New()
-	
+
 	assert.Equal(t, 0, ctx.GetQueueSize())
-	
+
 	ctx.QueueCommand("command1")
 	assert.Equal(t, 1, ctx.GetQueueSize())
-	
+
 	ctx.QueueCommand("command2")
 	ctx.QueueCommand("command3")
 	assert.Equal(t, 3, ctx.GetQueueSize())
@@ -591,32 +587,32 @@ func TestQueueCommand(t *testing.T) {
 
 func TestDequeueCommand(t *testing.T) {
 	ctx := New()
-	
+
 	// Test empty queue
 	cmd, ok := ctx.DequeueCommand()
 	assert.False(t, ok)
 	assert.Equal(t, "", cmd)
-	
+
 	// Add commands and test FIFO behavior
 	ctx.QueueCommand("first")
 	ctx.QueueCommand("second")
 	ctx.QueueCommand("third")
-	
+
 	cmd, ok = ctx.DequeueCommand()
 	assert.True(t, ok)
 	assert.Equal(t, "first", cmd)
 	assert.Equal(t, 2, ctx.GetQueueSize())
-	
+
 	cmd, ok = ctx.DequeueCommand()
 	assert.True(t, ok)
 	assert.Equal(t, "second", cmd)
 	assert.Equal(t, 1, ctx.GetQueueSize())
-	
+
 	cmd, ok = ctx.DequeueCommand()
 	assert.True(t, ok)
 	assert.Equal(t, "third", cmd)
 	assert.Equal(t, 0, ctx.GetQueueSize())
-	
+
 	// Queue should be empty now
 	cmd, ok = ctx.DequeueCommand()
 	assert.False(t, ok)
@@ -625,15 +621,15 @@ func TestDequeueCommand(t *testing.T) {
 
 func TestClearQueue(t *testing.T) {
 	ctx := New()
-	
+
 	ctx.QueueCommand("command1")
 	ctx.QueueCommand("command2")
 	ctx.QueueCommand("command3")
 	assert.Equal(t, 3, ctx.GetQueueSize())
-	
+
 	ctx.ClearQueue()
 	assert.Equal(t, 0, ctx.GetQueueSize())
-	
+
 	// Should be able to add commands after clearing
 	ctx.QueueCommand("new_command")
 	assert.Equal(t, 1, ctx.GetQueueSize())
@@ -641,23 +637,23 @@ func TestClearQueue(t *testing.T) {
 
 func TestPeekQueue(t *testing.T) {
 	ctx := New()
-	
+
 	// Test empty queue
 	queue := ctx.PeekQueue()
 	assert.Equal(t, 0, len(queue))
-	
+
 	// Add commands
 	ctx.QueueCommand("command1")
 	ctx.QueueCommand("command2")
 	ctx.QueueCommand("command3")
-	
+
 	queue = ctx.PeekQueue()
 	expected := []string{"command1", "command2", "command3"}
 	assert.Equal(t, expected, queue)
-	
+
 	// Verify queue size unchanged
 	assert.Equal(t, 3, ctx.GetQueueSize())
-	
+
 	// Verify returned slice is a copy (modifying it shouldn't affect original)
 	queue[0] = "modified"
 	newQueue := ctx.PeekQueue()
@@ -666,13 +662,13 @@ func TestPeekQueue(t *testing.T) {
 
 func TestScriptMetadata(t *testing.T) {
 	ctx := New()
-	
+
 	// Test getting non-existent metadata
 	value, exists := ctx.GetScriptMetadata("nonexistent")
 	assert.False(t, exists)
 	assert.Nil(t, value)
-	
-	// Test setting and getting various types
+
+	// Test setting and getting various neurotypes
 	tests := []struct {
 		name  string
 		key   string
@@ -689,7 +685,7 @@ func TestScriptMetadata(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx.SetScriptMetadata(tt.key, tt.value)
-			
+
 			value, exists := ctx.GetScriptMetadata(tt.key)
 			assert.True(t, exists)
 			assert.Equal(t, tt.value, value)
@@ -699,26 +695,26 @@ func TestScriptMetadata(t *testing.T) {
 
 func TestClearScriptMetadata(t *testing.T) {
 	ctx := New()
-	
+
 	// Set some metadata
 	ctx.SetScriptMetadata("key1", "value1")
 	ctx.SetScriptMetadata("key2", "value2")
-	
+
 	// Verify they exist
 	_, exists := ctx.GetScriptMetadata("key1")
 	assert.True(t, exists)
 	_, exists = ctx.GetScriptMetadata("key2")
 	assert.True(t, exists)
-	
+
 	// Clear metadata
 	ctx.ClearScriptMetadata()
-	
+
 	// Verify they're gone
 	_, exists = ctx.GetScriptMetadata("key1")
 	assert.False(t, exists)
 	_, exists = ctx.GetScriptMetadata("key2")
 	assert.False(t, exists)
-	
+
 	// Should be able to set new metadata after clearing
 	ctx.SetScriptMetadata("new_key", "new_value")
 	value, exists := ctx.GetScriptMetadata("new_key")
@@ -728,14 +724,14 @@ func TestClearScriptMetadata(t *testing.T) {
 
 func TestSetTestMode(t *testing.T) {
 	ctx := New()
-	
+
 	// Default should be false
 	assert.False(t, ctx.IsTestMode())
-	
+
 	// Set to true
 	ctx.SetTestMode(true)
 	assert.True(t, ctx.IsTestMode())
-	
+
 	// Set back to false
 	ctx.SetTestMode(false)
 	assert.False(t, ctx.IsTestMode())
@@ -743,8 +739,8 @@ func TestSetTestMode(t *testing.T) {
 
 func TestInterpolateVariables_EdgeCases(t *testing.T) {
 	ctx := New()
-	ctx.SetVariable("normal", "value")
-	
+	require.NoError(t, ctx.SetVariable("normal", "value"))
+
 	tests := []struct {
 		name     string
 		input    string
@@ -802,36 +798,36 @@ func TestInterpolateVariables_EdgeCases(t *testing.T) {
 
 func TestSystemVariables_OSEnvironment(t *testing.T) {
 	ctx := New()
-	
+
 	// Test that we can get system variables even when OS calls might fail
 	// by temporarily modifying environment
-	
+
 	// Save original values
 	origGOOS := os.Getenv("GOOS")
 	origGOARCH := os.Getenv("GOARCH")
-	
+
 	// Test with empty environment
-	os.Unsetenv("GOOS")
-	os.Unsetenv("GOARCH")
-	
+	require.NoError(t, os.Unsetenv("GOOS"))
+	require.NoError(t, os.Unsetenv("GOARCH"))
+
 	value, ok := ctx.getSystemVariable("@os")
 	assert.True(t, ok)
 	assert.Equal(t, "/", value) // Should be "/" when both are empty
-	
+
 	// Test with set environment
-	os.Setenv("GOOS", "linux")
-	os.Setenv("GOARCH", "amd64")
-	
+	require.NoError(t, os.Setenv("GOOS", "linux"))
+	require.NoError(t, os.Setenv("GOARCH", "amd64"))
+
 	value, ok = ctx.getSystemVariable("@os")
 	assert.True(t, ok)
 	assert.Equal(t, "linux/amd64", value)
-	
+
 	// Restore original values
 	if origGOOS != "" {
-		os.Setenv("GOOS", origGOOS)
+		require.NoError(t, os.Setenv("GOOS", origGOOS))
 	}
 	if origGOARCH != "" {
-		os.Setenv("GOARCH", origGOARCH)
+		require.NoError(t, os.Setenv("GOARCH", origGOARCH))
 	}
 }
 
@@ -839,7 +835,7 @@ func TestSystemVariables_OSEnvironment(t *testing.T) {
 func BenchmarkInterpolateVariables_NoVariables(b *testing.B) {
 	ctx := New()
 	text := "This is a long text with no variables to interpolate at all"
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ctx.InterpolateVariables(text)
@@ -848,9 +844,11 @@ func BenchmarkInterpolateVariables_NoVariables(b *testing.B) {
 
 func BenchmarkInterpolateVariables_SingleVariable(b *testing.B) {
 	ctx := New()
-	ctx.SetVariable("name", "Alice")
+	if err := ctx.SetVariable("name", "Alice"); err != nil {
+		b.Fatal(err)
+	}
 	text := "Hello ${name}, how are you today?"
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ctx.InterpolateVariables(text)
@@ -859,11 +857,17 @@ func BenchmarkInterpolateVariables_SingleVariable(b *testing.B) {
 
 func BenchmarkInterpolateVariables_MultipleVariables(b *testing.B) {
 	ctx := New()
-	ctx.SetVariable("name", "Alice")
-	ctx.SetVariable("age", "30")
-	ctx.SetVariable("city", "New York")
+	if err := ctx.SetVariable("name", "Alice"); err != nil {
+		b.Fatal(err)
+	}
+	if err := ctx.SetVariable("age", "30"); err != nil {
+		b.Fatal(err)
+	}
+	if err := ctx.SetVariable("city", "New York"); err != nil {
+		b.Fatal(err)
+	}
 	text := "${name} is ${age} years old and lives in ${city}"
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ctx.InterpolateVariables(text)
@@ -872,26 +876,28 @@ func BenchmarkInterpolateVariables_MultipleVariables(b *testing.B) {
 
 func BenchmarkGetVariable_UserVariable(b *testing.B) {
 	ctx := New()
-	ctx.SetVariable("test", "value")
-	
+	if err := ctx.SetVariable("test", "value"); err != nil {
+		b.Fatal(err)
+	}
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ctx.GetVariable("test")
+		_, _ = ctx.GetVariable("test")
 	}
 }
 
 func BenchmarkGetVariable_SystemVariable(b *testing.B) {
 	ctx := New()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ctx.GetVariable("#session_id")
+		_, _ = ctx.GetVariable("#session_id")
 	}
 }
 
 func BenchmarkQueueOperations(b *testing.B) {
 	ctx := New()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ctx.QueueCommand("test_command")
@@ -901,14 +907,16 @@ func BenchmarkQueueOperations(b *testing.B) {
 
 func BenchmarkLargeVariableMap(b *testing.B) {
 	ctx := New()
-	
+
 	// Setup large variable map
 	for i := 0; i < 1000; i++ {
-		ctx.SetVariable(fmt.Sprintf("var%d", i), fmt.Sprintf("value%d", i))
+		if err := ctx.SetVariable(fmt.Sprintf("var%d", i), fmt.Sprintf("value%d", i)); err != nil {
+			b.Fatal(err)
+		}
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ctx.GetVariable("var500") // Access middle variable
+		_, _ = ctx.GetVariable("var500") // Access middle variable
 	}
 }

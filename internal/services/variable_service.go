@@ -4,30 +4,34 @@ import (
 	"fmt"
 
 	"neuroshell/internal/context"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
+// VariableService provides variable management operations for NeuroShell contexts.
 type VariableService struct {
 	initialized bool
 }
 
+// NewVariableService creates a new VariableService instance.
 func NewVariableService() *VariableService {
 	return &VariableService{
 		initialized: false,
 	}
 }
 
+// Name returns the service name "variable" for registration.
 func (v *VariableService) Name() string {
 	return "variable"
 }
 
-func (v *VariableService) Initialize(ctx types.Context) error {
+// Initialize sets up the VariableService for operation.
+func (v *VariableService) Initialize(_ neurotypes.Context) error {
 	v.initialized = true
 	return nil
 }
 
 // Get retrieves a variable value from context
-func (v *VariableService) Get(name string, ctx types.Context) (string, error) {
+func (v *VariableService) Get(name string, ctx neurotypes.Context) (string, error) {
 	if !v.initialized {
 		return "", fmt.Errorf("variable service not initialized")
 	}
@@ -36,7 +40,7 @@ func (v *VariableService) Get(name string, ctx types.Context) (string, error) {
 }
 
 // Set stores a variable value in context
-func (v *VariableService) Set(name, value string, ctx types.Context) error {
+func (v *VariableService) Set(name, value string, ctx neurotypes.Context) error {
 	if !v.initialized {
 		return fmt.Errorf("variable service not initialized")
 	}
@@ -45,7 +49,7 @@ func (v *VariableService) Set(name, value string, ctx types.Context) error {
 }
 
 // InterpolateString processes ${var} replacements in a string
-func (v *VariableService) InterpolateString(text string, ctx types.Context) (string, error) {
+func (v *VariableService) InterpolateString(text string, ctx neurotypes.Context) (string, error) {
 	if !v.initialized {
 		return "", fmt.Errorf("variable service not initialized")
 	}
@@ -59,9 +63,8 @@ func (v *VariableService) InterpolateString(text string, ctx types.Context) (str
 	return neuroCtx.InterpolateVariables(text), nil
 }
 
-
 // GetAllVariables returns all variables from context (useful for debugging)
-func (v *VariableService) GetAllVariables(ctx types.Context) (map[string]string, error) {
+func (v *VariableService) GetAllVariables(ctx neurotypes.Context) (map[string]string, error) {
 	if !v.initialized {
 		return nil, fmt.Errorf("variable service not initialized")
 	}
@@ -74,7 +77,7 @@ func (v *VariableService) GetAllVariables(ctx types.Context) (map[string]string,
 	// This would require adding a method to NeuroContext to expose all variables
 	// For now, return empty map as placeholder
 	result := make(map[string]string)
-	
+
 	// TODO: Add GetAllVariables method to NeuroContext if needed
 	return result, nil
 }

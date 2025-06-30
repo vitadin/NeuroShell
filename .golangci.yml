@@ -1,0 +1,94 @@
+# golangci-lint configuration for NeuroShell
+version: 2
+
+run:
+  timeout: 5m
+  tests: true
+  skip-dirs:
+    - vendor
+    - bin
+    - dist
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters:
+  enable:
+    - errcheck      # Check for unchecked errors
+    - govet         # Standard go vet
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Advanced static analysis
+    - unused        # Find unused code
+    - misspell      # Detect misspellings
+    - gocritic      # Advanced criticism
+    - revive        # Replacement for golint
+    # - gosec       # Security issues (disabled: legitimate file ops & test utils need broader permissions)
+
+linters-settings:
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
+    ignore: fmt:.*,io/ioutil:^Read.*
+
+  gosec:
+    exclude-generated: true
+    excludes:
+      - G204  # Subprocess launched with variable (legitimate command execution)
+      - G301  # Directory permissions (test utilities need 0755)
+      - G304  # File path joins (legitimate file operations)
+      - G306  # File permissions (test files need 0644)
+
+  revive:
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: if-return
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: indent-error-flow
+      - name: errorf
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  
+  exclude-rules:
+    # Exclude linting issues in test files for specific linters
+    - path: _test\.go
+      linters:
+        - gosec
+        - errcheck
+        - ineffassign
+        
+    # Exclude errcheck for defer Close() calls
+    - linters:
+        - errcheck
+      text: "Error return value of.*Close.*is not checked"
+    
+    # Exclude errcheck for test setup operations
+    - linters:
+        - errcheck
+      text: "Error return value of.*SetVariable.*is not checked"
+    
+    # Exclude errcheck for test environment operations
+    - linters:
+        - errcheck
+      text: "Error return value of.*Unsetenv.*is not checked"
+    
+    # Exclude errcheck for test environment operations
+    - linters:
+        - errcheck
+      text: "Error return value of.*Setenv.*is not checked"
+      
+    # Exclude errcheck for test benchmark operations
+    - linters:
+        - errcheck
+      text: "Error return value of.*GetVariable.*is not checked"
+    
