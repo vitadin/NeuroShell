@@ -50,6 +50,8 @@ logs/
 
 # Development and testing
 coverage.html
+unit-coverage.html
+*-coverage.html
 coverage.out
 profile.out
 *.prof

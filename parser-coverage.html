@@ -1,0 +1,293 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>parser: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">neuroshell/internal/parser/command.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package parser
+
+import (
+        "fmt"
+        "regexp"
+        "strings"
+        
+        "neuroshell/pkg/types"
+)
+
+type Command struct {
+        Name          string
+        BracketContent string
+        Options       map[string]string
+        Message       string
+        ParseMode     ParseMode
+}
+
+// Use ParseMode from types package
+type ParseMode = types.ParseMode
+
+const (
+        ParseModeKeyValue = types.ParseModeKeyValue
+        ParseModeRaw     = types.ParseModeRaw
+)
+
+func ParseInput(input string) *Command <span class="cov3" title="46">{
+        input = strings.TrimSpace(input)
+        
+        // If doesn't start with \, treat as \send message
+        if !strings.HasPrefix(input, "\\") </span><span class="cov2" title="10">{
+                return &amp;Command{
+                        Name:    "send",
+                        Message: input,
+                        Options: make(map[string]string),
+                }
+        }</span>
+        
+        // Remove the leading backslash
+        <span class="cov3" title="36">input = input[1:]
+        
+        cmd := &amp;Command{
+                Options: make(map[string]string),
+        }
+        
+        // Try to parse command with brackets: command[content] message
+        bracketRe := regexp.MustCompile(`^([a-zA-Z_][a-zA-Z0-9_]*)\[([^\]]*)\](.*)$`)
+        if matches := bracketRe.FindStringSubmatch(input); matches != nil </span><span class="cov3" title="22">{
+                cmd.Name = matches[1]
+                cmd.BracketContent = matches[2]
+                cmd.Message = strings.TrimSpace(matches[3])
+        }</span> else<span class="cov3" title="14"> {
+                // Simple command without brackets: command message
+                parts := strings.SplitN(input, " ", 2)
+                cmd.Name = parts[0]
+                if len(parts) &gt; 1 </span><span class="cov2" title="9">{
+                        cmd.Message = strings.TrimSpace(parts[1])
+                }</span>
+        }
+        
+        // If no command name (malformed), treat as \send
+        <span class="cov3" title="36">if cmd.Name == "" </span><span class="cov1" title="2">{
+                cmd.Name = "send"
+                cmd.Message = input
+        }</span>
+        
+        // Determine parse mode based on command
+        <span class="cov3" title="36">cmd.ParseMode = getParseMode(cmd.Name)
+        
+        // Parse bracket content based on mode
+        if cmd.BracketContent != "" </span><span class="cov3" title="21">{
+                if cmd.ParseMode == ParseModeRaw </span>{<span class="cov0" title="0">
+                        // Keep as raw string - don't parse
+                }</span> else<span class="cov3" title="21"> {
+                        // Parse as key=value pairs
+                        parseKeyValueOptions(cmd.BracketContent, cmd.Options)
+                }</span>
+        }
+        
+        <span class="cov3" title="36">return cmd</span>
+}
+
+func getParseMode(commandName string) ParseMode <span class="cov3" title="44">{
+        // Default to key-value parsing for all commands
+        // Commands that need raw parsing will handle it internally
+        return ParseModeKeyValue
+}</span>
+
+func parseKeyValueOptions(content string, options map[string]string) <span class="cov3" title="40">{
+        if content == "" </span><span class="cov1" title="1">{
+                return
+        }</span>
+        
+        // Split by comma, handling quoted values
+        <span class="cov3" title="39">parts := splitByComma(content)
+        
+        for _, part := range parts </span><span class="cov4" title="62">{
+                part = strings.TrimSpace(part)
+                if part == "" </span><span class="cov2" title="6">{
+                        continue</span>
+                }
+                
+                <span class="cov4" title="56">if strings.Contains(part, "=") </span><span class="cov4" title="48">{
+                        // key=value format
+                        kv := strings.SplitN(part, "=", 2)
+                        key := strings.TrimSpace(kv[0])
+                        value := strings.TrimSpace(kv[1])
+                        
+                        // Remove quotes if present
+                        value = unquote(value)
+                        options[key] = value
+                }</span> else<span class="cov2" title="8"> {
+                        // Just a flag
+                        options[part] = ""
+                }</span>
+        }
+}
+
+func splitByComma(s string) []string <span class="cov4" title="62">{
+        var parts []string
+        var current strings.Builder
+        inQuotes := false
+        quoteChar := byte(0)
+        
+        for i := 0; i &lt; len(s); i++ </span><span class="cov10" title="104753">{
+                c := s[i]
+                
+                if !inQuotes &amp;&amp; (c == '"' || c == '\'') </span><span class="cov4" title="56">{
+                        inQuotes = true
+                        quoteChar = c
+                        current.WriteByte(c)
+                }</span> else<span class="cov9" title="104697"> if inQuotes &amp;&amp; c == quoteChar </span><span class="cov4" title="52">{
+                        inQuotes = false
+                        quoteChar = 0
+                        current.WriteByte(c)
+                }</span> else<span class="cov9" title="104645"> if !inQuotes &amp;&amp; c == ',' </span><span class="cov4" title="59">{
+                        parts = append(parts, current.String())
+                        current.Reset()
+                }</span> else<span class="cov9" title="104586"> {
+                        current.WriteByte(c)
+                }</span>
+        }
+        
+        <span class="cov4" title="62">if current.Len() &gt; 0 </span><span class="cov4" title="57">{
+                parts = append(parts, current.String())
+        }</span>
+        
+        <span class="cov4" title="62">return parts</span>
+}
+
+func unquote(s string) string <span class="cov4" title="69">{
+        if len(s) &gt;= 2 </span><span class="cov4" title="64">{
+                if (s[0] == '"' &amp;&amp; s[len(s)-1] == '"') || (s[0] == '\'' &amp;&amp; s[len(s)-1] == '\'') </span><span class="cov3" title="38">{
+                        return s[1 : len(s)-1]
+                }</span>
+        }
+        <span class="cov3" title="31">return s</span>
+}
+
+func (c *Command) String() string <span class="cov2" title="13">{
+        result := fmt.Sprintf("\\%s", c.Name)
+        if len(c.Options) &gt; 0 </span><span class="cov2" title="10">{
+                result += "["
+                first := true
+                for k, v := range c.Options </span><span class="cov2" title="12">{
+                        if !first </span><span class="cov1" title="2">{
+                                result += ", "
+                        }</span>
+                        <span class="cov2" title="12">if v != "" </span><span class="cov2" title="10">{
+                                result += fmt.Sprintf("%s=%q", k, v)
+                        }</span> else<span class="cov1" title="2"> {
+                                result += k
+                        }</span>
+                        <span class="cov2" title="12">first = false</span>
+                }
+                <span class="cov2" title="10">result += "]"</span>
+        }
+        <span class="cov2" title="13">if c.Message != "" </span><span class="cov2" title="10">{
+                result += " " + c.Message
+        }</span>
+        <span class="cov2" title="13">return result</span>
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
