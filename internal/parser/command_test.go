@@ -1120,20 +1120,18 @@ func BenchmarkParseInput_LongInput(b *testing.B) {
 
 func BenchmarkParseKeyValueOptions_Simple(b *testing.B) {
 	content := "key1=value1, key2=value2, flag"
-	options := make(map[string]string)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		options = make(map[string]string) // Reset for each iteration
+		options := make(map[string]string) // Create fresh map for each iteration
 		parseKeyValueOptions(content, options)
 	}
 }
 
 func BenchmarkParseKeyValueOptions_Complex(b *testing.B) {
 	content := "verbose, timeout=30, cmd=\"ls -la, pwd\", force, file='test file', url=\"https://example.com?a=1,b=2\""
-	options := make(map[string]string)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		options = make(map[string]string) // Reset for each iteration
+		options := make(map[string]string) // Create fresh map for each iteration
 		parseKeyValueOptions(content, options)
 	}
 }

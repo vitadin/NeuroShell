@@ -177,9 +177,10 @@ func TestInterpolationService_CommandStructurePreservation(t *testing.T) {
 
 			// Verify original command is unchanged
 			expectedName := "test"
-			if tc.name == "basic command" {
+			switch tc.name {
+			case "basic command":
 				expectedName = "set"
-			} else if tc.name == "command with interpolation patterns" {
+			case "command with interpolation patterns":
 				expectedName = "send"
 			}
 			assert.Equal(t, expectedName, tc.cmd.Name)
