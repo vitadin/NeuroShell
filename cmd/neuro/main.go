@@ -1,3 +1,5 @@
+// Package main provides the NeuroShell CLI application entry point.
+// NeuroShell is a specialized shell environment designed for seamless interaction with LLM agents.
 package main
 
 import (
@@ -40,7 +42,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version information",
 	Long:  `Display the version of Neuro Shell.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Printf("Neuro Shell v%s\n", version)
 	},
 }
@@ -79,7 +81,7 @@ func initConfig() {
 	}
 }
 
-func runShell(cmd *cobra.Command, args []string) {
+func runShell(_ *cobra.Command, _ []string) {
 	logger.Info("Starting NeuroShell", "version", version)
 
 	// Initialize services before starting shell

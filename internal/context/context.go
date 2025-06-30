@@ -1,3 +1,5 @@
+// Package context provides session state management and variable interpolation for NeuroShell.
+// It maintains variables, message history, execution queues, and system metadata across command executions.
 package context
 
 import (
@@ -11,6 +13,8 @@ import (
 	"neuroshell/pkg/types"
 )
 
+// NeuroContext implements the types.Context interface providing session state management.
+// It maintains variables, message history, execution queues, and metadata for NeuroShell sessions.
 type NeuroContext struct {
 	variables      map[string]string
 	history        []types.Message
@@ -20,6 +24,7 @@ type NeuroContext struct {
 	testMode       bool
 }
 
+// New creates a new NeuroContext with initialized maps and a unique session ID.
 func New() *NeuroContext {
 	return &NeuroContext{
 		variables:      make(map[string]string),
@@ -31,6 +36,7 @@ func New() *NeuroContext {
 	}
 }
 
+// GetVariable retrieves a variable value by name, supporting both user and system variables.
 func (ctx *NeuroContext) GetVariable(name string) (string, error) {
 	// Handle special variables
 	if value, ok := ctx.getSystemVariable(name); ok {
@@ -45,6 +51,7 @@ func (ctx *NeuroContext) GetVariable(name string) (string, error) {
 	return "", fmt.Errorf("variable %s not found", name)
 }
 
+// SetVariable sets a user variable, preventing modification of system variables.
 func (ctx *NeuroContext) SetVariable(name string, value string) error {
 	// Don't allow setting system variables
 	if strings.HasPrefix(name, "@") || strings.HasPrefix(name, "#") || strings.HasPrefix(name, "_") {
@@ -55,6 +62,7 @@ func (ctx *NeuroContext) SetVariable(name string, value string) error {
 	return nil
 }
 
+// GetMessageHistory returns the last n messages from the conversation history.
 func (ctx *NeuroContext) GetMessageHistory(n int) []types.Message {
 	if n <= 0 || n > len(ctx.history) {
 		return ctx.history
@@ -64,6 +72,7 @@ func (ctx *NeuroContext) GetMessageHistory(n int) []types.Message {
 	return ctx.history[start:]
 }
 
+// GetSessionState returns the complete session state including variables and history.
 func (ctx *NeuroContext) GetSessionState() types.SessionState {
 	return types.SessionState{
 		ID:        ctx.sessionID,
@@ -114,6 +123,7 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 	return "", false
 }
 
+// InterpolateVariables replaces ${variable} placeholders in text with their values.
 func (ctx *NeuroContext) InterpolateVariables(text string) string {
 	// Early exit optimization - if no variables detected, return as-is
 	if !strings.Contains(text, "${") {
@@ -152,11 +162,12 @@ func (ctx *NeuroContext) interpolateOnce(text string) string {
 	})
 }
 
-// Queue management methods
+// QueueCommand adds a command to the execution queue.
 func (ctx *NeuroContext) QueueCommand(command string) {
 	ctx.executionQueue = append(ctx.executionQueue, command)
 }
 
+// DequeueCommand removes and returns the first command from the queue.
 func (ctx *NeuroContext) DequeueCommand() (string, bool) {
 	if len(ctx.executionQueue) == 0 {
 		return "", false
@@ -167,14 +178,17 @@ func (ctx *NeuroContext) DequeueCommand() (string, bool) {
 	return command, true
 }
 
+// GetQueueSize returns the number of commands in the execution queue.
 func (ctx *NeuroContext) GetQueueSize() int {
 	return len(ctx.executionQueue)
 }
 
+// ClearQueue removes all commands from the execution queue.
 func (ctx *NeuroContext) ClearQueue() {
 	ctx.executionQueue = make([]string, 0)
 }
 
+// PeekQueue returns a copy of the execution queue without modifying it.
 func (ctx *NeuroContext) PeekQueue() []string {
 	// Return a copy to prevent external modification
 	result := make([]string, len(ctx.executionQueue))
@@ -182,25 +196,28 @@ func (ctx *NeuroContext) PeekQueue() []string {
 	return result
 }
 
-// Script metadata methods
+// SetScriptMetadata stores metadata associated with script execution.
 func (ctx *NeuroContext) SetScriptMetadata(key string, value interface{}) {
 	ctx.scriptMetadata[key] = value
 }
 
+// GetScriptMetadata retrieves metadata by key, returning the value and existence flag.
 func (ctx *NeuroContext) GetScriptMetadata(key string) (interface{}, bool) {
 	value, exists := ctx.scriptMetadata[key]
 	return value, exists
 }
 
+// ClearScriptMetadata removes all script metadata.
 func (ctx *NeuroContext) ClearScriptMetadata() {
 	ctx.scriptMetadata = make(map[string]interface{})
 }
 
-// Test mode methods
+// SetTestMode enables or disables test mode for deterministic behavior.
 func (ctx *NeuroContext) SetTestMode(testMode bool) {
 	ctx.testMode = testMode
 }
 
+// IsTestMode returns whether test mode is currently enabled.
 func (ctx *NeuroContext) IsTestMode() bool {
 	return ctx.testMode
 }

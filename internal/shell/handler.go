@@ -1,3 +1,5 @@
+// Package shell provides the interactive shell interface and input processing for NeuroShell.
+// It integrates the command system with the ishell interactive environment and handles user input routing.
 package shell
 
 import (

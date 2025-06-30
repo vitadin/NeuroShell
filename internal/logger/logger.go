@@ -1,3 +1,5 @@
+// Package logger provides centralized logging functionality for NeuroShell.
+// It configures structured logging with support for different output formats and log levels.
 package logger
 
 import (
@@ -8,7 +10,7 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-// Global logger instance
+// Logger is the global logger instance used throughout NeuroShell.
 var Logger *log.Logger
 
 func init() {
@@ -92,40 +94,47 @@ func parseLogLevel(level string) log.Level {
 	}
 }
 
-// Convenience functions for different log levels
+// Debug logs a debug message with optional key-value pairs.
 func Debug(msg interface{}, keyvals ...interface{}) {
 	Logger.Debug(msg, keyvals...)
 }
 
+// Info logs an info message with optional key-value pairs.
 func Info(msg interface{}, keyvals ...interface{}) {
 	Logger.Info(msg, keyvals...)
 }
 
+// Warn logs a warning message with optional key-value pairs.
 func Warn(msg interface{}, keyvals ...interface{}) {
 	Logger.Warn(msg, keyvals...)
 }
 
+// Error logs an error message with optional key-value pairs.
 func Error(msg interface{}, keyvals ...interface{}) {
 	Logger.Error(msg, keyvals...)
 }
 
+// Fatal logs a fatal message with optional key-value pairs and exits.
 func Fatal(msg interface{}, keyvals ...interface{}) {
 	Logger.Fatal(msg, keyvals...)
 }
 
-// Structured logging helpers for common debugging scenarios
+// CommandExecution logs command execution details for debugging.
 func CommandExecution(command string, args map[string]string) {
 	Debug("Executing command", "command", command, "args", args)
 }
 
+// ServiceOperation logs service operation details for debugging.
 func ServiceOperation(service string, operation string, details ...interface{}) {
 	Debug("Service operation", "service", service, "operation", operation, "details", details)
 }
 
+// VariableOperation logs variable operation details for debugging.
 func VariableOperation(operation string, key string, value string) {
 	Debug("Variable operation", "operation", operation, "key", key, "value", value)
 }
 
+// InterpolationStep logs variable interpolation steps for debugging.
 func InterpolationStep(text string, result string) {
 	Debug("Variable interpolation", "input", text, "output", result)
 }

@@ -27,7 +27,7 @@ func NewMockCommand(name string) *MockCommand {
 		parseMode:   types.ParseModeKeyValue,
 		description: fmt.Sprintf("Mock command: %s", name),
 		usage:       fmt.Sprintf("Usage: \\%s", name),
-		executeFunc: func(args map[string]string, input string, ctx types.Context) error {
+		executeFunc: func(_ map[string]string, _ string, _ types.Context) error {
 			return nil
 		},
 	}
@@ -287,7 +287,7 @@ func TestRegistry_Execute_CommandError(t *testing.T) {
 	// Create a command that returns an error
 	expectedError := fmt.Errorf("command execution failed")
 	cmd := NewMockCommand("failing")
-	cmd.SetExecuteFunc(func(args map[string]string, input string, ctx types.Context) error {
+	cmd.SetExecuteFunc(func(_ map[string]string, _ string, _ types.Context) error {
 		return expectedError
 	})
 

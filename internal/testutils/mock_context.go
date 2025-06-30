@@ -1,3 +1,5 @@
+// Package testutils provides testing utilities and mock implementations for NeuroShell.
+// It includes mock contexts and helpers for unit testing the command and service layers.
 package testutils
 
 import (

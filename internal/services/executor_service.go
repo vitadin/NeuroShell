@@ -1,3 +1,5 @@
+// Package services provides the core business logic services for NeuroShell.
+// It implements service interfaces for script execution, variable management, and system operations.
 package services
 
 import (

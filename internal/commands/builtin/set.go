@@ -8,24 +8,32 @@ import (
 	"neuroshell/pkg/types"
 )
 
+// SetCommand implements the \set command for setting variable values.
+// It supports both bracket syntax (\set[var=value]) and space syntax (\set var value).
 type SetCommand struct{}
 
+// Name returns the command name "set" for registration and lookup.
 func (c *SetCommand) Name() string {
 	return "set"
 }
 
+// ParseMode returns ParseModeKeyValue for standard argument parsing.
 func (c *SetCommand) ParseMode() types.ParseMode {
 	return types.ParseModeKeyValue
 }
 
+// Description returns a brief description of what the set command does.
 func (c *SetCommand) Description() string {
 	return "Set a variable"
 }
 
+// Usage returns the syntax and usage examples for the set command.
 func (c *SetCommand) Usage() string {
 	return "\\set[var=value] or \\set var value"
 }
 
+// Execute sets variable values using either bracket or space syntax.
+// It handles multiple variable assignments and provides confirmation output.
 func (c *SetCommand) Execute(args map[string]string, input string, ctx types.Context) error {
 	if len(args) == 0 && input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())

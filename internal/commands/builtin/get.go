@@ -8,24 +8,32 @@ import (
 	"neuroshell/pkg/types"
 )
 
+// GetCommand implements the \get command for retrieving variable values.
+// It supports both bracket syntax (\get[var]) and space syntax (\get var).
 type GetCommand struct{}
 
+// Name returns the command name "get" for registration and lookup.
 func (c *GetCommand) Name() string {
 	return "get"
 }
 
+// ParseMode returns ParseModeKeyValue for standard argument parsing.
 func (c *GetCommand) ParseMode() types.ParseMode {
 	return types.ParseModeKeyValue
 }
 
+// Description returns a brief description of what the get command does.
 func (c *GetCommand) Description() string {
 	return "Get a variable"
 }
 
+// Usage returns the syntax and usage examples for the get command.
 func (c *GetCommand) Usage() string {
 	return "\\get[var] or \\get var"
 }
 
+// Execute retrieves and displays the value of the specified variable.
+// It handles both bracket and space syntax for variable specification.
 func (c *GetCommand) Execute(args map[string]string, input string, ctx types.Context) error {
 	var variable string
 

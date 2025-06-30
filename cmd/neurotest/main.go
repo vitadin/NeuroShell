@@ -1,3 +1,5 @@
+// Package main provides the neurotest CLI application for end-to-end testing of NeuroShell.
+// neurotest uses golden files to record, run, and verify expected behavior of Neuro CLI commands.
 package main
 
 import (
@@ -80,7 +82,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version information",
 	Long:  `Display the version of neurotest.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Printf("neurotest v%s\n", version)
 	},
 }
@@ -109,7 +111,7 @@ func init() {
 }
 
 // recordTest records a new test case by running the .neuro script
-func recordTest(cmd *cobra.Command, args []string) error {
+func recordTest(_ *cobra.Command, args []string) error {
 	testName := args[0]
 
 	if verbose {
@@ -150,7 +152,7 @@ func recordTest(cmd *cobra.Command, args []string) error {
 }
 
 // runTest runs a specific test case
-func runTest(cmd *cobra.Command, args []string) error {
+func runTest(_ *cobra.Command, args []string) error {
 	testName := args[0]
 
 	if verbose {
@@ -191,18 +193,18 @@ func runTest(cmd *cobra.Command, args []string) error {
 	if strings.TrimSpace(actual) == strings.TrimSpace(expected) {
 		fmt.Printf("PASS: %s\n", testName)
 		return nil
-	} else {
-		fmt.Printf("FAIL: %s\n", testName)
-		if verbose {
-			fmt.Printf("Expected:\n%s\n", expected)
-			fmt.Printf("Actual:\n%s\n", actual)
-		}
-		return fmt.Errorf("test failed: output mismatch")
 	}
+
+	fmt.Printf("FAIL: %s\n", testName)
+	if verbose {
+		fmt.Printf("Expected:\n%s\n", expected)
+		fmt.Printf("Actual:\n%s\n", actual)
+	}
+	return fmt.Errorf("test failed: output mismatch")
 }
 
 // runAllTests runs all test cases
-func runAllTests(cmd *cobra.Command, args []string) error {
+func runAllTests(cmd *cobra.Command, _ []string) error {
 	if verbose {
 		fmt.Println("Running all test cases...")
 	}
@@ -257,7 +259,7 @@ func acceptTest(cmd *cobra.Command, args []string) error {
 }
 
 // diffTest shows differences between expected and actual output
-func diffTest(cmd *cobra.Command, args []string) error {
+func diffTest(_ *cobra.Command, args []string) error {
 	testName := args[0]
 
 	if verbose {

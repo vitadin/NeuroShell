@@ -147,7 +147,7 @@ func TestExitCommand_Execute_MessageOnly(t *testing.T) {
 	}
 
 	// Override Execute to capture the behavior without calling os.Exit
-	executeFunc := func(args map[string]string, input string, ctx types.Context) error {
+	executeFunc := func(_ map[string]string, _ string, _ types.Context) error {
 		// Capture stdout
 		originalStdout := os.Stdout
 		r, w, _ := os.Pipe()

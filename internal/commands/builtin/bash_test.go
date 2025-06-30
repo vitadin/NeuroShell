@@ -192,7 +192,7 @@ func TestBashCommand_Execute_SpecialCharacters(t *testing.T) {
 	}
 
 	for _, specialCmd := range specialCommands {
-		t.Run(fmt.Sprintf("special_cmd_%s", specialCmd[:min(20, len(specialCmd))]), func(t *testing.T) {
+		t.Run(fmt.Sprintf("special_cmd_%s", specialCmd[:minInt(20, len(specialCmd))]), func(t *testing.T) {
 			// Capture stdout
 			originalStdout := os.Stdout
 			_, w, _ := os.Pipe()
@@ -210,8 +210,8 @@ func TestBashCommand_Execute_SpecialCharacters(t *testing.T) {
 	}
 }
 
-// Helper function for min
-func min(a, b int) int {
+// Helper function for minimum of two integers
+func minInt(a, b int) int {
 	if a < b {
 		return a
 	}

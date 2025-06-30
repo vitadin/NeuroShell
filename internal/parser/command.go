@@ -1,3 +1,5 @@
+// Package parser provides command parsing functionality for NeuroShell input.
+// It handles the parsing of user input into command structures with support for different syntax modes.
 package parser
 
 import (
@@ -80,7 +82,7 @@ func ParseInput(input string) *Command {
 	return cmd
 }
 
-func getParseMode(commandName string) ParseMode {
+func getParseMode(_ string) ParseMode {
 	// Default to key-value parsing for all commands
 	// Commands that need raw parsing will handle it internally
 	return ParseModeKeyValue

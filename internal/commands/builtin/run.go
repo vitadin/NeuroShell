@@ -8,24 +8,32 @@ import (
 	"neuroshell/pkg/types"
 )
 
+// RunCommand implements the \run command for executing .neuro script files.
+// It loads script files and executes their commands in sequence with variable interpolation.
 type RunCommand struct{}
 
+// Name returns the command name "run" for registration and lookup.
 func (c *RunCommand) Name() string {
 	return "run"
 }
 
+// ParseMode returns ParseModeKeyValue for standard argument parsing.
 func (c *RunCommand) ParseMode() types.ParseMode {
 	return types.ParseModeKeyValue
 }
 
+// Description returns a brief description of what the run command does.
 func (c *RunCommand) Description() string {
 	return "Execute a .neuro script file"
 }
 
+// Usage returns the syntax and usage examples for the run command.
 func (c *RunCommand) Usage() string {
 	return "\\run[file=\"script.neuro\"] or \\run script.neuro"
 }
 
+// Execute loads and runs a .neuro script file with full service orchestration.
+// It handles variable interpolation, command execution, and error management.
 func (c *RunCommand) Execute(args map[string]string, input string, ctx types.Context) error {
 	// Get all required services
 	scriptService, err := services.GlobalRegistry.GetService("script")
