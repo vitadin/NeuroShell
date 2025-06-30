@@ -534,7 +534,7 @@ func (b *BashService) readWithOSCDetectionTimeout(session *context.BashSession, 
 			line := scanner.Text()
 			lineCount++
 			
-			logger.Debug("Read PTY line with OSC", "line_num", lineCount, "content", line)
+			logger.Debug("Read PTY line with OSC", "line_num", lineCount, "content", line, "length", len(line))
 			
 			// Process the line through command tracker for OSC detection
 			result, err := tracker.ProcessOutput(session.Name, []byte(line+"\n"))
@@ -543,15 +543,19 @@ func (b *BashService) readWithOSCDetectionTimeout(session *context.BashSession, 
 				continue
 			}
 			
-			// Debug OSC sequence detection
+			// Debug OSC sequence detection and output
 			if result.StateChanged {
-				logger.Debug("OSC state changed", "session", session.Name, "old_state", "unknown", "new_state", result.State)
+				logger.Debug("OSC state changed", "session", session.Name, "new_state", result.State, "has_new_output", result.HasNewOutput, "new_output_len", len(result.NewOutput))
+			}
+			if result.HasNewOutput {
+				logger.Debug("New output detected", "session", session.Name, "output_len", len(result.NewOutput), "trimmed_len", len(strings.TrimSpace(result.NewOutput)))
 			}
 			
 			// Display output in real-time (honest output) - use NewOutput to avoid duplication
 			if result.HasNewOutput && result.NewOutput != "" {
 				cleanOutput := b.filterRealtimeOutput(result.NewOutput)
 				if strings.TrimSpace(cleanOutput) != "" {
+					logger.Debug("Displaying real-time output", "session", session.Name, "clean_len", len(cleanOutput))
 					fmt.Print(cleanOutput)
 					output.WriteString(cleanOutput)
 				}
@@ -559,8 +563,36 @@ func (b *BashService) readWithOSCDetectionTimeout(session *context.BashSession, 
 			
 			// Check if command is complete
 			if result.IsComplete {
-				logger.Debug("Command completed via OSC detection", "session", session.Name, "exit_code", result.ExitCode, "total_lines", lineCount, "state", result.State)
-				done <- output.String()
+				logger.Debug("Command completion detected, waiting for final output", "session", session.Name, "exit_code", result.ExitCode, "total_lines", lineCount, "state", result.State, "current_output_len", output.Len())
+				
+				// Continue reading for a bit to capture any remaining output
+				finalOutput := output.String()
+				completionTime := time.Now()
+				
+				// Keep reading for additional output after completion signal
+				// This is crucial as command output often comes after OSC completion sequences
+				for time.Since(completionTime) < 300*time.Millisecond {
+					time.Sleep(10 * time.Millisecond) // Small delay to let output arrive
+					if scanner.Scan() {
+						extraLine := scanner.Text()
+						logger.Debug("Extra output after completion", "session", session.Name, "line", extraLine, "length", len(extraLine))
+						extraResult, err := tracker.ProcessOutput(session.Name, []byte(extraLine+"\n"))
+						if err == nil && extraResult.HasNewOutput && extraResult.NewOutput != "" {
+							extraClean := b.filterRealtimeOutput(extraResult.NewOutput)
+							if strings.TrimSpace(extraClean) != "" {
+								logger.Debug("Adding extra output to final result", "session", session.Name, "extra_clean_len", len(extraClean))
+								fmt.Print(extraClean)
+								finalOutput += extraClean
+							}
+						}
+					} else {
+						// No more data available, wait a bit and try again
+						time.Sleep(20 * time.Millisecond)
+					}
+				}
+				
+				logger.Debug("Command completed via OSC detection", "session", session.Name, "final_output_length", len(finalOutput))
+				done <- finalOutput
 				return
 			}
 		}

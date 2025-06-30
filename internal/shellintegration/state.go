@@ -142,10 +142,11 @@ func (t *CommandTracker) handleStateTransition(state *SessionState, previousStat
 		}
 
 	case StatePromptStart:
-		// Ready for next command - reset parser state for clean start
+		// Ready for next command - but DON'T reset yet as output may still be coming
+		// Parser will be reset when the next command actually starts (StateCommandStart)
 		if previousState != StatePromptStart {
-			state.Parser.Reset()
-			state.OutputBuffer = make([]string, 0) // Clear output buffer for next command
+			// Just mark that we're ready for the next command
+			// Keep the output buffer intact until the next command starts
 		}
 
 	case StateOutputStart:

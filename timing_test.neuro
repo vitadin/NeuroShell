@@ -1,0 +1,3 @@
+# Test output timing fixes
+\bash echo "Testing output capture..."
+\bash ls | head -3
