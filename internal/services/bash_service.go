@@ -389,7 +389,7 @@ func (b *BashService) readUntilMarker(reader io.Reader, marker string, timeout t
 	}
 }
 
-// cleanOutput removes bash prompts and cleans up the command output.
+// cleanOutput removes only completion markers from command output, preserving all bash session output.
 func (b *BashService) cleanOutput(output string) string {
 	logger.Debug("Cleaning output", "raw_output", output)
 
@@ -397,35 +397,17 @@ func (b *BashService) cleanOutput(output string) string {
 	var cleanLines []string
 
 	for _, line := range lines {
-		trimmedLine := strings.TrimSpace(line)
-
-		// Skip empty lines at the beginning
-		if trimmedLine == "" && len(cleanLines) == 0 {
-			continue
-		}
-
-		// Skip bash prompts and shell overhead
-		if strings.HasPrefix(line, "bash-") ||
-			strings.Contains(line, "default interactive shell") ||
-			strings.Contains(line, "To update your account") ||
-			strings.Contains(line, "For more details") ||
-			strings.HasPrefix(line, "The default interactive shell") ||
-			strings.Contains(line, "To update your account to use zsh") {
-			logger.Debug("Skipping shell overhead line", "line", line)
-			continue
-		}
-
-		// Skip any leftover completion markers from previous commands
+		// Only skip completion markers - keep everything else including bash prompts
 		if strings.Contains(line, "NEURO_CMD_DONE_") || strings.Contains(line, "NEURO_INIT_") {
 			logger.Debug("Skipping completion marker", "line", line)
 			continue
 		}
 
-		// This is actual command output - keep it
+		// Keep all other output including bash prompts, shell messages, etc.
 		cleanLines = append(cleanLines, line)
 	}
 
-	// Remove trailing empty lines
+	// Remove trailing empty lines only
 	for len(cleanLines) > 0 && strings.TrimSpace(cleanLines[len(cleanLines)-1]) == "" {
 		cleanLines = cleanLines[:len(cleanLines)-1]
 	}
