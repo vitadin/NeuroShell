@@ -10,14 +10,14 @@ import (
 	"strings"
 	"time"
 
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
-// NeuroContext implements the types.Context interface providing session state management.
+// NeuroContext implements the neurotypes.Context interface providing session state management.
 // It maintains variables, message history, execution queues, and metadata for NeuroShell sessions.
 type NeuroContext struct {
 	variables      map[string]string
-	history        []types.Message
+	history        []neurotypes.Message
 	sessionID      string
 	executionQueue []string
 	scriptMetadata map[string]interface{}
@@ -28,7 +28,7 @@ type NeuroContext struct {
 func New() *NeuroContext {
 	return &NeuroContext{
 		variables:      make(map[string]string),
-		history:        make([]types.Message, 0),
+		history:        make([]neurotypes.Message, 0),
 		sessionID:      fmt.Sprintf("session_%d", time.Now().Unix()),
 		executionQueue: make([]string, 0),
 		scriptMetadata: make(map[string]interface{}),
@@ -63,7 +63,7 @@ func (ctx *NeuroContext) SetVariable(name string, value string) error {
 }
 
 // GetMessageHistory returns the last n messages from the conversation history.
-func (ctx *NeuroContext) GetMessageHistory(n int) []types.Message {
+func (ctx *NeuroContext) GetMessageHistory(n int) []neurotypes.Message {
 	if n <= 0 || n > len(ctx.history) {
 		return ctx.history
 	}
@@ -73,8 +73,8 @@ func (ctx *NeuroContext) GetMessageHistory(n int) []types.Message {
 }
 
 // GetSessionState returns the complete session state including variables and history.
-func (ctx *NeuroContext) GetSessionState() types.SessionState {
-	return types.SessionState{
+func (ctx *NeuroContext) GetSessionState() neurotypes.SessionState {
+	return neurotypes.SessionState{
 		ID:        ctx.sessionID,
 		Variables: ctx.variables,
 		History:   ctx.history,

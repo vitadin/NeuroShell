@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // GetCommand implements the \get command for retrieving variable values.
@@ -18,8 +18,8 @@ func (c *GetCommand) Name() string {
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
-func (c *GetCommand) ParseMode() types.ParseMode {
-	return types.ParseModeKeyValue
+func (c *GetCommand) ParseMode() neurotypes.ParseMode {
+	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the get command does.
@@ -34,7 +34,7 @@ func (c *GetCommand) Usage() string {
 
 // Execute retrieves and displays the value of the specified variable.
 // It handles both bracket and space syntax for variable specification.
-func (c *GetCommand) Execute(args map[string]string, input string, ctx types.Context) error {
+func (c *GetCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
 	var variable string
 
 	// Handle bracket syntax: \get[var]

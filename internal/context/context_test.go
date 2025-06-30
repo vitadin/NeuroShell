@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestNew(t *testing.T) {
@@ -155,7 +155,7 @@ func TestGetMessageHistory(t *testing.T) {
 	assert.Equal(t, 0, len(history))
 
 	// Add some messages
-	messages := []types.Message{
+	messages := []neurotypes.Message{
 		{ID: "1", Role: "user", Content: "Hello", Timestamp: time.Now()},
 		{ID: "2", Role: "assistant", Content: "Hi there", Timestamp: time.Now()},
 		{ID: "3", Role: "user", Content: "How are you?", Timestamp: time.Now()},
@@ -202,7 +202,7 @@ func TestGetSessionState(t *testing.T) {
 	ctx.SetVariable("var2", "value2")
 
 	// Add some history
-	ctx.history = []types.Message{
+	ctx.history = []neurotypes.Message{
 		{ID: "1", Role: "user", Content: "Hello", Timestamp: time.Now()},
 	}
 
@@ -672,7 +672,7 @@ func TestScriptMetadata(t *testing.T) {
 	assert.False(t, exists)
 	assert.Nil(t, value)
 
-	// Test setting and getting various types
+	// Test setting and getting various neurotypes
 	tests := []struct {
 		name  string
 		key   string

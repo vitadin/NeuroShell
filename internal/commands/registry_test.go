@@ -9,25 +9,25 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/testutils"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // MockCommand implements Command interface for testing
 type MockCommand struct {
 	name        string
-	parseMode   types.ParseMode
+	parseMode   neurotypes.ParseMode
 	description string
 	usage       string
-	executeFunc func(args map[string]string, input string, ctx types.Context) error
+	executeFunc func(args map[string]string, input string, ctx neurotypes.Context) error
 }
 
 func NewMockCommand(name string) *MockCommand {
 	return &MockCommand{
 		name:        name,
-		parseMode:   types.ParseModeKeyValue,
+		parseMode:   neurotypes.ParseModeKeyValue,
 		description: fmt.Sprintf("Mock command: %s", name),
 		usage:       fmt.Sprintf("Usage: \\%s", name),
-		executeFunc: func(_ map[string]string, _ string, _ types.Context) error {
+		executeFunc: func(_ map[string]string, _ string, _ neurotypes.Context) error {
 			return nil
 		},
 	}
@@ -37,7 +37,7 @@ func (m *MockCommand) Name() string {
 	return m.name
 }
 
-func (m *MockCommand) ParseMode() types.ParseMode {
+func (m *MockCommand) ParseMode() neurotypes.ParseMode {
 	return m.parseMode
 }
 
@@ -49,18 +49,18 @@ func (m *MockCommand) Usage() string {
 	return m.usage
 }
 
-func (m *MockCommand) Execute(args map[string]string, input string, ctx types.Context) error {
+func (m *MockCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
 	if m.executeFunc != nil {
 		return m.executeFunc(args, input, ctx)
 	}
 	return nil
 }
 
-func (m *MockCommand) SetParseMode(mode types.ParseMode) {
+func (m *MockCommand) SetParseMode(mode neurotypes.ParseMode) {
 	m.parseMode = mode
 }
 
-func (m *MockCommand) SetExecuteFunc(fn func(args map[string]string, input string, ctx types.Context) error) {
+func (m *MockCommand) SetExecuteFunc(fn func(args map[string]string, input string, ctx neurotypes.Context) error) {
 	m.executeFunc = fn
 }
 
@@ -75,7 +75,7 @@ func TestRegistry_NewRegistry(t *testing.T) {
 func TestRegistry_Register(t *testing.T) {
 	tests := []struct {
 		name    string
-		command types.Command
+		command neurotypes.Command
 		wantErr bool
 		errMsg  string
 	}{
@@ -175,7 +175,7 @@ func TestRegistry_Get(t *testing.T) {
 		name        string
 		commandName string
 		wantExists  bool
-		wantCommand types.Command
+		wantCommand neurotypes.Command
 	}{
 		{
 			name:        "get existing command",
@@ -213,7 +213,7 @@ func TestRegistry_GetAll(t *testing.T) {
 	assert.Equal(t, 0, len(commands))
 
 	// Register some commands
-	testCommands := []types.Command{
+	testCommands := []neurotypes.Command{
 		NewMockCommand("cmd1"),
 		NewMockCommand("cmd2"),
 		NewMockCommand("cmd3"),
@@ -229,7 +229,7 @@ func TestRegistry_GetAll(t *testing.T) {
 	assert.Equal(t, len(testCommands), len(allCommands))
 
 	// Verify all commands are present (order may vary)
-	commandMap := make(map[string]types.Command)
+	commandMap := make(map[string]neurotypes.Command)
 	for _, cmd := range allCommands {
 		commandMap[cmd.Name()] = cmd
 	}
@@ -249,10 +249,10 @@ func TestRegistry_Execute(t *testing.T) {
 	executed := false
 	var capturedArgs map[string]string
 	var capturedInput string
-	var capturedContext types.Context
+	var capturedContext neurotypes.Context
 
 	cmd := NewMockCommand("test")
-	cmd.SetExecuteFunc(func(args map[string]string, input string, ctx types.Context) error {
+	cmd.SetExecuteFunc(func(args map[string]string, input string, ctx neurotypes.Context) error {
 		executed = true
 		capturedArgs = args
 		capturedInput = input
@@ -287,7 +287,7 @@ func TestRegistry_Execute_CommandError(t *testing.T) {
 	// Create a command that returns an error
 	expectedError := fmt.Errorf("command execution failed")
 	cmd := NewMockCommand("failing")
-	cmd.SetExecuteFunc(func(_ map[string]string, _ string, _ types.Context) error {
+	cmd.SetExecuteFunc(func(_ map[string]string, _ string, _ neurotypes.Context) error {
 		return expectedError
 	})
 
@@ -305,10 +305,10 @@ func TestRegistry_GetParseMode(t *testing.T) {
 
 	// Create commands with different parse modes
 	keyValueCmd := NewMockCommand("keyvalue")
-	keyValueCmd.SetParseMode(types.ParseModeKeyValue)
+	keyValueCmd.SetParseMode(neurotypes.ParseModeKeyValue)
 
 	rawCmd := NewMockCommand("raw")
-	rawCmd.SetParseMode(types.ParseModeRaw)
+	rawCmd.SetParseMode(neurotypes.ParseModeRaw)
 
 	err := registry.Register(keyValueCmd)
 	require.NoError(t, err)
@@ -318,22 +318,22 @@ func TestRegistry_GetParseMode(t *testing.T) {
 	tests := []struct {
 		name         string
 		commandName  string
-		expectedMode types.ParseMode
+		expectedMode neurotypes.ParseMode
 	}{
 		{
 			name:         "key-value parse mode",
 			commandName:  "keyvalue",
-			expectedMode: types.ParseModeKeyValue,
+			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 		{
 			name:         "raw parse mode",
 			commandName:  "raw",
-			expectedMode: types.ParseModeRaw,
+			expectedMode: neurotypes.ParseModeRaw,
 		},
 		{
 			name:         "non-existent command defaults to key-value",
 			commandName:  "nonexistent",
-			expectedMode: types.ParseModeKeyValue,
+			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 	}
 
@@ -435,7 +435,7 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 
 				// Test GetParseMode
 				mode := registry.GetParseMode(cmdName)
-				assert.Equal(t, types.ParseModeKeyValue, mode)
+				assert.Equal(t, neurotypes.ParseModeKeyValue, mode)
 			}
 		}(i)
 	}

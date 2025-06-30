@@ -8,7 +8,7 @@ import (
 
 	"neuroshell/internal/parser"
 	"neuroshell/internal/testutils"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestInterpolationService_Name(t *testing.T) {
@@ -89,7 +89,7 @@ func TestInterpolationService_InterpolateCommand(t *testing.T) {
 			"var":   "${variable}",
 			"value": "${data}",
 		},
-		ParseMode: types.ParseModeKeyValue,
+		ParseMode: neurotypes.ParseModeKeyValue,
 	}
 
 	// Test InterpolateCommand - will fail since MockContext is not NeuroContext
@@ -137,7 +137,7 @@ func TestInterpolationService_CommandStructurePreservation(t *testing.T) {
 				Options: map[string]string{
 					"var": "value",
 				},
-				ParseMode: types.ParseModeKeyValue,
+				ParseMode: neurotypes.ParseModeKeyValue,
 			},
 		},
 		{
@@ -151,7 +151,7 @@ func TestInterpolationService_CommandStructurePreservation(t *testing.T) {
 					"temperature": "${temp_setting}",
 					"system":      "${@user}",
 				},
-				ParseMode: types.ParseModeKeyValue,
+				ParseMode: neurotypes.ParseModeKeyValue,
 			},
 		},
 		{
@@ -161,7 +161,7 @@ func TestInterpolationService_CommandStructurePreservation(t *testing.T) {
 				Message:        "",
 				BracketContent: "",
 				Options:        make(map[string]string),
-				ParseMode:      types.ParseModeRaw,
+				ParseMode:      neurotypes.ParseModeRaw,
 			},
 		},
 	}
@@ -271,7 +271,7 @@ func BenchmarkInterpolationService_InterpolateCommand(b *testing.B) {
 			"temperature": "${temp_setting}",
 			"system":      "${@user}",
 		},
-		ParseMode: types.ParseModeKeyValue,
+		ParseMode: neurotypes.ParseModeKeyValue,
 	}
 
 	b.ResetTimer()

@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // Command represents a parsed NeuroShell command with its arguments and metadata.
@@ -20,13 +20,13 @@ type Command struct {
 }
 
 // ParseMode defines how command arguments should be parsed from user input.
-type ParseMode = types.ParseMode
+type ParseMode = neurotypes.ParseMode
 
 const (
 	// ParseModeKeyValue parses arguments as key=value pairs within brackets
-	ParseModeKeyValue = types.ParseModeKeyValue
+	ParseModeKeyValue = neurotypes.ParseModeKeyValue
 	// ParseModeRaw treats the entire input as raw text without parsing
-	ParseModeRaw = types.ParseModeRaw
+	ParseModeRaw = neurotypes.ParseModeRaw
 )
 
 // ParseInput parses user input into a Command structure with name, options, and message.

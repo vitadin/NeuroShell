@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // BashCommand implements the \bash command for executing system commands.
@@ -20,8 +20,8 @@ func (c *BashCommand) Name() string {
 }
 
 // ParseMode returns ParseModeRaw to treat the entire input as a raw command.
-func (c *BashCommand) ParseMode() types.ParseMode {
-	return types.ParseModeRaw
+func (c *BashCommand) ParseMode() neurotypes.ParseMode {
+	return neurotypes.ParseModeRaw
 }
 
 // Description returns a brief description of what the bash command does.
@@ -36,7 +36,7 @@ func (c *BashCommand) Usage() string {
 
 // Execute runs the bash command with the provided input as a system command.
 // Currently returns a placeholder message as actual execution is not yet implemented.
-func (c *BashCommand) Execute(_ map[string]string, input string, _ types.Context) error {
+func (c *BashCommand) Execute(_ map[string]string, input string, _ neurotypes.Context) error {
 	// For bash command, we need to check the raw bracket content
 	// This will require coordination with the parser to pass the raw content
 	var command string

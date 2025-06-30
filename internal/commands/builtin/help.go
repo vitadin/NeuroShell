@@ -5,7 +5,7 @@ import (
 	"sort"
 
 	"neuroshell/internal/commands"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // HelpCommand implements the \help command for displaying available commands and usage information.
@@ -18,8 +18,8 @@ func (c *HelpCommand) Name() string {
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
-func (c *HelpCommand) ParseMode() types.ParseMode {
-	return types.ParseModeKeyValue
+func (c *HelpCommand) ParseMode() neurotypes.ParseMode {
+	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the help command does.
@@ -34,7 +34,7 @@ func (c *HelpCommand) Usage() string {
 
 // Execute displays a list of all available commands with their descriptions and usage examples.
 // It provides an overview of the NeuroShell command system.
-func (c *HelpCommand) Execute(_ map[string]string, _ string, _ types.Context) error {
+func (c *HelpCommand) Execute(_ map[string]string, _ string, _ neurotypes.Context) error {
 	// Get all commands from the registry
 	allCommands := commands.GlobalRegistry.GetAll()
 

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"neuroshell/internal/testutils"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestBashCommand_Name(t *testing.T) {
@@ -20,7 +20,7 @@ func TestBashCommand_Name(t *testing.T) {
 
 func TestBashCommand_ParseMode(t *testing.T) {
 	cmd := &BashCommand{}
-	assert.Equal(t, types.ParseModeRaw, cmd.ParseMode())
+	assert.Equal(t, neurotypes.ParseModeRaw, cmd.ParseMode())
 }
 
 func TestBashCommand_Description(t *testing.T) {
@@ -261,7 +261,7 @@ func BenchmarkBashCommand_Execute_LongCommand(b *testing.B) {
 
 // Test interface compliance
 func TestBashCommand_Interface(t *testing.T) {
-	var _ types.Command = &BashCommand{}
+	var _ neurotypes.Command = &BashCommand{}
 
 	cmd := &BashCommand{}
 
@@ -271,7 +271,7 @@ func TestBashCommand_Interface(t *testing.T) {
 	assert.NotEmpty(t, cmd.Usage())
 
 	// ParseMode should be Raw for bash commands
-	assert.Equal(t, types.ParseModeRaw, cmd.ParseMode())
+	assert.Equal(t, neurotypes.ParseModeRaw, cmd.ParseMode())
 }
 
 // Test metadata consistency

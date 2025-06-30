@@ -470,7 +470,7 @@ func TestParseKeyValueOptions_EdgeCases(t *testing.T) {
 			expectedOptions: map[string]string{"key": "\"unmatched quote"},
 		},
 		{
-			name:            "mixed quote types",
+			name:            "mixed quote neurotypes",
 			content:         "key1=\"double\", key2='single', key3=unquoted",
 			expectedOptions: map[string]string{"key1": "double", "key2": "single", "key3": "unquoted"},
 		},

@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"neuroshell/internal/commands"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // ExitCommand implements the \exit command for terminating the NeuroShell session.
@@ -18,8 +18,8 @@ func (c *ExitCommand) Name() string {
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
-func (c *ExitCommand) ParseMode() types.ParseMode {
-	return types.ParseModeKeyValue
+func (c *ExitCommand) ParseMode() neurotypes.ParseMode {
+	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the exit command does.
@@ -34,7 +34,7 @@ func (c *ExitCommand) Usage() string {
 
 // Execute terminates the NeuroShell session by calling os.Exit(0).
 // This provides an immediate exit from the shell environment.
-func (c *ExitCommand) Execute(_ map[string]string, _ string, _ types.Context) error {
+func (c *ExitCommand) Execute(_ map[string]string, _ string, _ neurotypes.Context) error {
 	fmt.Println("Goodbye!")
 	// For now, we'll use os.Exit. In the future, we might want to use a more graceful shutdown
 	// that could be coordinated through the context or a shutdown signal

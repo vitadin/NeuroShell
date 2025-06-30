@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"neuroshell/internal/testutils"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestExitCommand_Name(t *testing.T) {
@@ -20,7 +20,7 @@ func TestExitCommand_Name(t *testing.T) {
 
 func TestExitCommand_ParseMode(t *testing.T) {
 	cmd := &ExitCommand{}
-	assert.Equal(t, types.ParseModeKeyValue, cmd.ParseMode())
+	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 }
 
 func TestExitCommand_Description(t *testing.T) {
@@ -147,7 +147,7 @@ func TestExitCommand_Execute_MessageOnly(t *testing.T) {
 	}
 
 	// Override Execute to capture the behavior without calling os.Exit
-	executeFunc := func(_ map[string]string, _ string, _ types.Context) error {
+	executeFunc := func(_ map[string]string, _ string, _ neurotypes.Context) error {
 		// Capture stdout
 		originalStdout := os.Stdout
 		r, w, _ := os.Pipe()
@@ -217,7 +217,7 @@ func BenchmarkExitCommand_Metadata(b *testing.B) {
 
 // TestExitCommand_Interface tests that ExitCommand properly implements the Command interface
 func TestExitCommand_Interface(t *testing.T) {
-	var _ types.Command = &ExitCommand{}
+	var _ neurotypes.Command = &ExitCommand{}
 
 	cmd := &ExitCommand{}
 
@@ -228,7 +228,7 @@ func TestExitCommand_Interface(t *testing.T) {
 
 	// ParseMode should be valid
 	mode := cmd.ParseMode()
-	assert.True(t, mode == types.ParseModeKeyValue || mode == types.ParseModeRaw)
+	assert.True(t, mode == neurotypes.ParseModeKeyValue || mode == neurotypes.ParseModeRaw)
 }
 
 // TestExitCommand_ConsistentMetadata tests that metadata methods return consistent values

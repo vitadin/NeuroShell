@@ -12,7 +12,7 @@ import (
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/testutils"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestHelpCommand_Name(t *testing.T) {
@@ -22,7 +22,7 @@ func TestHelpCommand_Name(t *testing.T) {
 
 func TestHelpCommand_ParseMode(t *testing.T) {
 	cmd := &HelpCommand{}
-	assert.Equal(t, types.ParseModeKeyValue, cmd.ParseMode())
+	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 }
 
 func TestHelpCommand_Description(t *testing.T) {
@@ -40,7 +40,7 @@ func TestHelpCommand_Execute(t *testing.T) {
 	testRegistry := commands.NewRegistry()
 
 	// Register some test commands
-	testCommands := []types.Command{
+	testCommands := []neurotypes.Command{
 		&MockCommand{
 			name:        "test1",
 			description: "Test command 1",
@@ -115,7 +115,7 @@ func TestHelpCommand_Execute_AlphabeticalOrder(t *testing.T) {
 	testRegistry := commands.NewRegistry()
 
 	// Register commands in non-alphabetical order
-	testCommands := []types.Command{
+	testCommands := []neurotypes.Command{
 		&MockCommand{name: "zebra", description: "Last", usage: "\\zebra"},
 		&MockCommand{name: "apple", description: "First", usage: "\\apple"},
 		&MockCommand{name: "banana", description: "Middle", usage: "\\banana"},
@@ -281,7 +281,7 @@ func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 	testRegistry := commands.NewRegistry()
 
 	// Register commands with various length names and descriptions
-	testCommands := []types.Command{
+	testCommands := []neurotypes.Command{
 		&MockCommand{
 			name:        "short",
 			description: "Short description",
@@ -388,19 +388,19 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 // MockCommand for testing (reuse from registry_test.go structure)
 type MockCommand struct {
 	name        string
-	parseMode   types.ParseMode
+	parseMode   neurotypes.ParseMode
 	description string
 	usage       string
-	executeFunc func(args map[string]string, input string, ctx types.Context) error
+	executeFunc func(args map[string]string, input string, ctx neurotypes.Context) error
 }
 
 func (m *MockCommand) Name() string {
 	return m.name
 }
 
-func (m *MockCommand) ParseMode() types.ParseMode {
+func (m *MockCommand) ParseMode() neurotypes.ParseMode {
 	if m.parseMode == 0 {
-		return types.ParseModeKeyValue
+		return neurotypes.ParseModeKeyValue
 	}
 	return m.parseMode
 }
@@ -413,7 +413,7 @@ func (m *MockCommand) Usage() string {
 	return m.usage
 }
 
-func (m *MockCommand) Execute(args map[string]string, input string, ctx types.Context) error {
+func (m *MockCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
 	if m.executeFunc != nil {
 		return m.executeFunc(args, input, ctx)
 	}

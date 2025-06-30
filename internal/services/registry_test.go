@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/testutils"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // Mock service for testing
@@ -18,7 +18,7 @@ type MockService struct {
 	name              string
 	initializeCalled  bool
 	initializeError   error
-	initializeContext types.Context
+	initializeContext neurotypes.Context
 }
 
 func NewMockService(name string) *MockService {
@@ -31,7 +31,7 @@ func (m *MockService) Name() string {
 	return m.name
 }
 
-func (m *MockService) Initialize(ctx types.Context) error {
+func (m *MockService) Initialize(ctx neurotypes.Context) error {
 	m.initializeCalled = true
 	m.initializeContext = ctx
 	return m.initializeError
@@ -52,7 +52,7 @@ func TestRegistry_NewRegistry(t *testing.T) {
 func TestRegistry_RegisterService(t *testing.T) {
 	tests := []struct {
 		name    string
-		service types.Service
+		service neurotypes.Service
 		wantErr bool
 	}{
 		{
@@ -119,7 +119,7 @@ func TestRegistry_GetService(t *testing.T) {
 		name        string
 		serviceName string
 		wantErr     bool
-		wantService types.Service
+		wantService neurotypes.Service
 	}{
 		{
 			name:        "get existing service",
@@ -156,24 +156,24 @@ func TestRegistry_InitializeAll(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		services []types.Service
+		services []neurotypes.Service
 		wantErr  bool
 	}{
 		{
 			name:     "initialize empty registry",
-			services: []types.Service{},
+			services: []neurotypes.Service{},
 			wantErr:  false,
 		},
 		{
 			name: "initialize single service",
-			services: []types.Service{
+			services: []neurotypes.Service{
 				NewMockService("service1"),
 			},
 			wantErr: false,
 		},
 		{
 			name: "initialize multiple services",
-			services: []types.Service{
+			services: []neurotypes.Service{
 				NewMockService("service1"),
 				NewMockService("service2"),
 				NewMockService("service3"),
@@ -239,7 +239,7 @@ func TestRegistry_InitializeAll_WithError(t *testing.T) {
 func TestRegistry_GetAllServices(t *testing.T) {
 	registry := NewRegistry()
 
-	services := []types.Service{
+	services := []neurotypes.Service{
 		NewMockService("service1"),
 		NewMockService("service2"),
 		NewMockService("service3"),
@@ -340,7 +340,7 @@ func TestRegistry_RealServices(t *testing.T) {
 	ctx := testutils.NewMockContext()
 
 	// Register actual services
-	services := []types.Service{
+	services := []neurotypes.Service{
 		NewVariableService(),
 		NewScriptService(),
 		NewExecutorService(),

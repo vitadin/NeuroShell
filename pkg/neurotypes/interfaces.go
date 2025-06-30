@@ -1,7 +1,7 @@
-// Package types defines core interfaces and data structures used throughout NeuroShell.
-// This package contains the fundamental types that enable the modular architecture,
+// Package neurotypes defines core interfaces and data structures used throughout NeuroShell.
+// This package contains the fundamental neurotypes that enable the modular architecture,
 // including command interfaces, context management, and service registration.
-package types
+package neurotypes
 
 import "time"
 

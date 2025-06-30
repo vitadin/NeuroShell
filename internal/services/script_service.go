@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/context"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // ScriptService handles loading and parsing of .neuro script files.
@@ -28,13 +28,13 @@ func (s *ScriptService) Name() string {
 }
 
 // Initialize sets up the ScriptService for operation.
-func (s *ScriptService) Initialize(_ types.Context) error {
+func (s *ScriptService) Initialize(_ neurotypes.Context) error {
 	s.initialized = true
 	return nil
 }
 
 // LoadScript reads a script file and queues commands in the context
-func (s *ScriptService) LoadScript(filepath string, ctx types.Context) error {
+func (s *ScriptService) LoadScript(filepath string, ctx neurotypes.Context) error {
 	if !s.initialized {
 		return fmt.Errorf("script service not initialized")
 	}
@@ -83,7 +83,7 @@ func (s *ScriptService) LoadScript(filepath string, ctx types.Context) error {
 }
 
 // GetScriptMetadata returns script execution information from context
-func (s *ScriptService) GetScriptMetadata(ctx types.Context) (map[string]interface{}, error) {
+func (s *ScriptService) GetScriptMetadata(ctx neurotypes.Context) (map[string]interface{}, error) {
 	if !s.initialized {
 		return nil, fmt.Errorf("script service not initialized")
 	}

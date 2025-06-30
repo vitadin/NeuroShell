@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"neuroshell/internal/testutils"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestGetCommand_Name(t *testing.T) {
@@ -19,7 +19,7 @@ func TestGetCommand_Name(t *testing.T) {
 
 func TestGetCommand_ParseMode(t *testing.T) {
 	cmd := &GetCommand{}
-	assert.Equal(t, types.ParseModeKeyValue, cmd.ParseMode())
+	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 }
 
 func TestGetCommand_Description(t *testing.T) {

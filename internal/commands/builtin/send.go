@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // SendCommand implements the \send command for sending messages to LLM agents.
@@ -17,8 +17,8 @@ func (c *SendCommand) Name() string {
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
-func (c *SendCommand) ParseMode() types.ParseMode {
-	return types.ParseModeKeyValue
+func (c *SendCommand) ParseMode() neurotypes.ParseMode {
+	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the send command does.
@@ -33,7 +33,7 @@ func (c *SendCommand) Usage() string {
 
 // Execute sends the provided message to an LLM agent.
 // Currently returns a placeholder message as actual LLM integration is not yet implemented.
-func (c *SendCommand) Execute(_ map[string]string, input string, _ types.Context) error {
+func (c *SendCommand) Execute(_ map[string]string, input string, _ neurotypes.Context) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}

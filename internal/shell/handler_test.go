@@ -15,7 +15,7 @@ import (
 	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // MockIShellContext provides a mock implementation of ishell.Context
@@ -792,7 +792,7 @@ func TestProcessInput_EdgeCases(t *testing.T) {
 	}
 }
 
-// Helper types for testing service failures
+// Helper neurotypes for testing service failures
 
 type FailingService struct {
 	name       string
@@ -803,7 +803,7 @@ func (f *FailingService) Name() string {
 	return f.name
 }
 
-func (f *FailingService) Initialize(_ types.Context) error {
+func (f *FailingService) Initialize(_ neurotypes.Context) error {
 	if f.shouldFail {
 		return errors.New("initialization failed")
 	}

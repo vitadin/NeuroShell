@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // SetCommand implements the \set command for setting variable values.
@@ -18,8 +18,8 @@ func (c *SetCommand) Name() string {
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
-func (c *SetCommand) ParseMode() types.ParseMode {
-	return types.ParseModeKeyValue
+func (c *SetCommand) ParseMode() neurotypes.ParseMode {
+	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the set command does.
@@ -34,7 +34,7 @@ func (c *SetCommand) Usage() string {
 
 // Execute sets variable values using either bracket or space syntax.
 // It handles multiple variable assignments and provides confirmation output.
-func (c *SetCommand) Execute(args map[string]string, input string, ctx types.Context) error {
+func (c *SetCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
 	if len(args) == 0 && input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}

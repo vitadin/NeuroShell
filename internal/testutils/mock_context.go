@@ -7,15 +7,15 @@ import (
 	"sync"
 	"time"
 
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // MockContext implements the Context interface for testing
 type MockContext struct {
 	mu           sync.RWMutex
 	variables    map[string]string
-	history      []types.Message
-	sessionState types.SessionState
+	history      []neurotypes.Message
+	sessionState neurotypes.SessionState
 	testMode     bool
 
 	// For testing error scenarios
@@ -27,12 +27,12 @@ type MockContext struct {
 func NewMockContext() *MockContext {
 	return &MockContext{
 		variables: make(map[string]string),
-		history:   []types.Message{},
-		sessionState: types.SessionState{
+		history:   []neurotypes.Message{},
+		sessionState: neurotypes.SessionState{
 			ID:        "test-session-123",
 			Name:      "test-session",
 			Variables: make(map[string]string),
-			History:   []types.Message{},
+			History:   []neurotypes.Message{},
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		},
@@ -104,12 +104,12 @@ func (m *MockContext) SetVariable(name string, value string) error {
 }
 
 // GetMessageHistory implements Context.GetMessageHistory
-func (m *MockContext) GetMessageHistory(n int) []types.Message {
+func (m *MockContext) GetMessageHistory(n int) []neurotypes.Message {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	if n <= 0 {
-		return []types.Message{}
+		return []neurotypes.Message{}
 	}
 
 	if n >= len(m.history) {
@@ -120,7 +120,7 @@ func (m *MockContext) GetMessageHistory(n int) []types.Message {
 }
 
 // GetSessionState implements Context.GetSessionState
-func (m *MockContext) GetSessionState() types.SessionState {
+func (m *MockContext) GetSessionState() neurotypes.SessionState {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -164,7 +164,7 @@ func (m *MockContext) AddMessage(role, content string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	msg := types.Message{
+	msg := neurotypes.Message{
 		ID:        fmt.Sprintf("msg-%d", len(m.history)+1),
 		Role:      role,
 		Content:   content,
@@ -209,6 +209,6 @@ func (m *MockContext) ClearHistory() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	m.history = []types.Message{}
-	m.sessionState.History = []types.Message{}
+	m.history = []neurotypes.Message{}
+	m.sessionState.History = []neurotypes.Message{}
 }

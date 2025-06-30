@@ -6,26 +6,26 @@ import (
 	"fmt"
 	"sync"
 
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // Registry manages command registration and lookup for NeuroShell commands.
 // It provides thread-safe registration and retrieval of commands by name.
 type Registry struct {
 	mu       sync.RWMutex
-	commands map[string]types.Command
+	commands map[string]neurotypes.Command
 }
 
 // NewRegistry creates a new command registry with an empty command map.
 func NewRegistry() *Registry {
 	return &Registry{
-		commands: make(map[string]types.Command),
+		commands: make(map[string]neurotypes.Command),
 	}
 }
 
 // Register adds a command to the registry. Returns an error if the command
 // name is empty or if a command with the same name is already registered.
-func (r *Registry) Register(cmd types.Command) error {
+func (r *Registry) Register(cmd neurotypes.Command) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -51,7 +51,7 @@ func (r *Registry) Unregister(name string) {
 
 // Get retrieves a command by name. Returns the command and true if found,
 // or nil and false if the command is not registered.
-func (r *Registry) Get(name string) (types.Command, bool) {
+func (r *Registry) Get(name string) (neurotypes.Command, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	cmd, exists := r.commands[name]
@@ -60,11 +60,11 @@ func (r *Registry) Get(name string) (types.Command, bool) {
 
 // GetAll returns a slice containing all registered commands.
 // The returned slice is a copy and can be safely modified.
-func (r *Registry) GetAll() []types.Command {
+func (r *Registry) GetAll() []neurotypes.Command {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	commands := make([]types.Command, 0, len(r.commands))
+	commands := make([]neurotypes.Command, 0, len(r.commands))
 	for _, cmd := range r.commands {
 		commands = append(commands, cmd)
 	}
@@ -73,7 +73,7 @@ func (r *Registry) GetAll() []types.Command {
 
 // Execute runs a command by name with the provided arguments, input, and context.
 // Returns an error if the command is not found or if the command execution fails.
-func (r *Registry) Execute(name string, args map[string]string, input string, ctx types.Context) error {
+func (r *Registry) Execute(name string, args map[string]string, input string, ctx neurotypes.Context) error {
 	cmd, exists := r.Get(name)
 	if !exists {
 		return fmt.Errorf("unknown command: %s", name)
@@ -83,10 +83,10 @@ func (r *Registry) Execute(name string, args map[string]string, input string, ct
 
 // GetParseMode returns the parse mode for a command by name.
 // Returns ParseModeKeyValue as default if the command is not found.
-func (r *Registry) GetParseMode(name string) types.ParseMode {
+func (r *Registry) GetParseMode(name string) neurotypes.ParseMode {
 	cmd, exists := r.Get(name)
 	if !exists {
-		return types.ParseModeKeyValue // Default
+		return neurotypes.ParseModeKeyValue // Default
 	}
 	return cmd.ParseMode()
 }

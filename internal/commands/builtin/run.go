@@ -5,7 +5,7 @@ import (
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
-	"neuroshell/pkg/types"
+	"neuroshell/pkg/neurotypes"
 )
 
 // RunCommand implements the \run command for executing .neuro script files.
@@ -18,8 +18,8 @@ func (c *RunCommand) Name() string {
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
-func (c *RunCommand) ParseMode() types.ParseMode {
-	return types.ParseModeKeyValue
+func (c *RunCommand) ParseMode() neurotypes.ParseMode {
+	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the run command does.
@@ -34,7 +34,7 @@ func (c *RunCommand) Usage() string {
 
 // Execute loads and runs a .neuro script file with full service orchestration.
 // It handles variable interpolation, command execution, and error management.
-func (c *RunCommand) Execute(args map[string]string, input string, ctx types.Context) error {
+func (c *RunCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
 	// Get all required services
 	scriptService, err := services.GlobalRegistry.GetService("script")
 	if err != nil {
@@ -66,7 +66,7 @@ func (c *RunCommand) Execute(args map[string]string, input string, ctx types.Con
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
-	// Cast services to their concrete types
+	// Cast services to their concrete neurotypes
 	ss := scriptService.(*services.ScriptService)
 	vs := variableService.(*services.VariableService)
 	es := executorService.(*services.ExecutorService)
@@ -98,7 +98,7 @@ func (c *RunCommand) Execute(args map[string]string, input string, ctx types.Con
 
 		// Prepare input for execution
 		cmdInput := interpolatedCmd.Message
-		if interpolatedCmd.Name == "bash" && interpolatedCmd.ParseMode == types.ParseModeRaw && interpolatedCmd.BracketContent != "" {
+		if interpolatedCmd.Name == "bash" && interpolatedCmd.ParseMode == neurotypes.ParseModeRaw && interpolatedCmd.BracketContent != "" {
 			cmdInput = interpolatedCmd.BracketContent
 		}
 
