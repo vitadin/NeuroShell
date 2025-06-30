@@ -122,7 +122,7 @@ func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
 	if err := vs.Set("_status", "0", ctx); err != nil {
 		logger.Error("Failed to set _status variable", "error", err)
 	}
-	
+
 	successMessage := fmt.Sprintf("Script %s executed successfully (%d commands)", scriptPath, commandCount)
 	if err := vs.Set("_output", successMessage, ctx); err != nil {
 		logger.Error("Failed to set _output variable", "error", err)
