@@ -12,6 +12,7 @@ import (
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/commands/builtin"
+	"neuroshell/internal/commands/builtin/bash"
 	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
@@ -100,10 +101,10 @@ func setupTestEnvironment(t *testing.T) func() {
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.SetCommand{}))
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.GetCommand{}))
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.HelpCommand{}))
-	require.NoError(t, commands.GlobalRegistry.Register(&builtin.BashCommand{}))
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.ExitCommand{}))
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.SendCommand{}))
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.RunCommand{}))
+	require.NoError(t, commands.GlobalRegistry.Register(&bash.BashCommand{}))
 
 	// Initialize services
 	err := InitializeServices(true)

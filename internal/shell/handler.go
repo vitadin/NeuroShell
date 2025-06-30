@@ -58,6 +58,10 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
+	if err := services.GlobalRegistry.RegisterService(services.NewBashService()); err != nil {
+		return err
+	}
+
 	// Initialize all services with the global context
 	if err := services.GlobalRegistry.InitializeAll(globalCtx); err != nil {
 		return err
