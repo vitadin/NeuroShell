@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -237,70 +238,101 @@ func (b *BashService) createBashSession(sessionName string, options BashOptions)
 func (b *BashService) executeInSession(session *context.BashSession, command string, options BashOptions) (string, error) {
 	session.LastUsed = time.Now()
 
-	// Write command to PTY
-	_, err := session.PTY.WriteString(command + "\n")
+	// Generate unique marker for command completion detection
+	marker := fmt.Sprintf("NEURO_CMD_DONE_%d_%d", time.Now().UnixNano(), rand.Intn(10000))
+
+	// Write command followed by marker command
+	commandSequence := fmt.Sprintf("%s\necho \"%s\"\n", command, marker)
+	_, err := session.PTY.WriteString(commandSequence)
 	if err != nil {
 		return "", fmt.Errorf("failed to write command to PTY: %w", err)
 	}
 
-	// Read output with timeout
-	if options.Timeout > 0 {
-		return b.readWithTimeout(session.PTY, options.Timeout)
+	// Read output until we see the marker
+	timeout := options.Timeout
+	if timeout == 0 {
+		timeout = 2 * time.Second // Default 2-second timeout instead of 5
 	}
 
-	return b.readOutput(session.PTY)
+	return b.readUntilMarker(session.PTY, marker, timeout)
 }
 
-// readOutput reads output from PTY until a reasonable stopping point.
-func (b *BashService) readOutput(reader io.Reader) (string, error) {
-	var output strings.Builder
-	scanner := bufio.NewScanner(reader)
-
-	// Set a reasonable timeout to avoid hanging
-	timeout := time.After(5 * time.Second)
-	done := make(chan bool)
-
-	go func() {
-		// Read a reasonable amount of output
-		lineCount := 0
-		for scanner.Scan() && lineCount < 100 {
-			line := scanner.Text()
-			output.WriteString(line)
-			output.WriteString("\n")
-			lineCount++
-		}
-		done <- true
-	}()
-
-	select {
-	case <-done:
-		return output.String(), nil
-	case <-timeout:
-		return output.String(), nil // Return what we have so far
-	}
-}
-
-// readWithTimeout reads output from PTY with a specific timeout.
-func (b *BashService) readWithTimeout(reader io.Reader, timeout time.Duration) (string, error) {
+// readUntilMarker reads output from PTY until the completion marker is found.
+func (b *BashService) readUntilMarker(reader io.Reader, marker string, timeout time.Duration) (string, error) {
 	var output strings.Builder
 	scanner := bufio.NewScanner(reader)
 
 	timeoutChan := time.After(timeout)
-	done := make(chan bool)
+	done := make(chan string)
+	errChan := make(chan error)
 
 	go func() {
 		for scanner.Scan() {
 			line := scanner.Text()
+
+			// Check if this line contains our completion marker
+			if strings.Contains(line, marker) {
+				// Command completed - don't include the marker line in output
+				done <- output.String()
+				return
+			}
+
+			// Add line to output
+			if output.Len() > 0 {
+				output.WriteString("\n")
+			}
 			output.WriteString(line)
-			output.WriteString("\n")
 		}
-		done <- true
+
+		// If scanner exits (shouldn't happen in normal PTY usage)
+		if err := scanner.Err(); err != nil {
+			errChan <- err
+		} else {
+			errChan <- fmt.Errorf("PTY closed unexpectedly")
+		}
 	}()
 
 	select {
-	case <-done:
-		return output.String(), nil
+	case result := <-done:
+		return b.cleanOutput(result), nil
+	case err := <-errChan:
+		return output.String(), fmt.Errorf("PTY read error: %w", err)
 	case <-timeoutChan:
 		return output.String(), fmt.Errorf("command timed out after %v", timeout)
 	}
+}
+
+// cleanOutput removes bash prompts and cleans up the command output.
+func (b *BashService) cleanOutput(output string) string {
+	lines := strings.Split(output, "\n")
+	var cleanLines []string
+	skipNext := false
+
+	for i, line := range lines {
+		// Skip bash prompts and shell overhead
+		if strings.HasPrefix(line, "bash-") ||
+			strings.Contains(line, "default interactive shell") ||
+			strings.Contains(line, "To update your account") ||
+			strings.Contains(line, "For more details") ||
+			strings.HasPrefix(line, "The default interactive shell") ||
+			strings.TrimSpace(line) == "" && i == 0 {
+			skipNext = true
+			continue
+		}
+
+		// Skip the command echo (bash echoes the command before executing it)
+		if skipNext && strings.TrimSpace(line) != "" {
+			skipNext = false
+			continue
+		}
+
+		cleanLines = append(cleanLines, line)
+	}
+
+	// Remove trailing empty lines
+	for len(cleanLines) > 0 && strings.TrimSpace(cleanLines[len(cleanLines)-1]) == "" {
+		cleanLines = cleanLines[:len(cleanLines)-1]
+	}
+
+	return strings.Join(cleanLines, "\n")
 }
