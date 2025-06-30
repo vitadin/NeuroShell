@@ -198,8 +198,8 @@ func TestGetSessionState(t *testing.T) {
 	ctx := New()
 
 	// Set some variables
-	ctx.SetVariable("var1", "value1")
-	ctx.SetVariable("var2", "value2")
+	require.NoError(t, ctx.SetVariable("var1", "value1"))
+	require.NoError(t, ctx.SetVariable("var2", "value2"))
 
 	// Add some history
 	ctx.history = []neurotypes.Message{
@@ -393,9 +393,9 @@ func TestInterpolateVariables_NoVariables(t *testing.T) {
 
 func TestInterpolateVariables_SimpleVariables(t *testing.T) {
 	ctx := New()
-	ctx.SetVariable("name", "Alice")
-	ctx.SetVariable("age", "30")
-	ctx.SetVariable("empty", "")
+	require.NoError(t, ctx.SetVariable("name", "Alice"))
+	require.NoError(t, ctx.SetVariable("age", "30"))
+	require.NoError(t, ctx.SetVariable("empty", ""))
 
 	tests := []struct {
 		name     string
@@ -482,10 +482,10 @@ func TestInterpolateVariables_SystemVariables(t *testing.T) {
 
 func TestInterpolateVariables_NestedVariables(t *testing.T) {
 	ctx := New()
-	ctx.SetVariable("var1", "${var2}")
-	ctx.SetVariable("var2", "final_value")
-	ctx.SetVariable("prefix", "var")
-	ctx.SetVariable("suffix", "2")
+	require.NoError(t, ctx.SetVariable("var1", "${var2}"))
+	require.NoError(t, ctx.SetVariable("var2", "final_value"))
+	require.NoError(t, ctx.SetVariable("prefix", "var"))
+	require.NoError(t, ctx.SetVariable("suffix", "2"))
 
 	tests := []struct {
 		name     string
@@ -514,8 +514,8 @@ func TestInterpolateVariables_NestedVariables(t *testing.T) {
 
 func TestInterpolateVariables_CircularReference(t *testing.T) {
 	ctx := New()
-	ctx.SetVariable("var1", "${var2}")
-	ctx.SetVariable("var2", "${var1}")
+	require.NoError(t, ctx.SetVariable("var1", "${var2}"))
+	require.NoError(t, ctx.SetVariable("var2", "${var1}"))
 
 	// Should not cause infinite loop due to maxIterations limit
 	result := ctx.InterpolateVariables("${var1}")
@@ -529,9 +529,9 @@ func TestInterpolateVariables_MaxIterations(t *testing.T) {
 	// Create a chain longer than maxIterations (10)
 	for i := 1; i <= 15; i++ {
 		if i == 15 {
-			ctx.SetVariable(fmt.Sprintf("var%d", i), "final")
+			require.NoError(t, ctx.SetVariable(fmt.Sprintf("var%d", i), "final"))
 		} else {
-			ctx.SetVariable(fmt.Sprintf("var%d", i), fmt.Sprintf("${var%d}", i+1))
+			require.NoError(t, ctx.SetVariable(fmt.Sprintf("var%d", i), fmt.Sprintf("${var%d}", i+1)))
 		}
 	}
 
@@ -543,8 +543,8 @@ func TestInterpolateVariables_MaxIterations(t *testing.T) {
 
 func TestInterpolateOnce(t *testing.T) {
 	ctx := New()
-	ctx.SetVariable("name", "Alice")
-	ctx.SetVariable("nested", "${name}")
+	require.NoError(t, ctx.SetVariable("name", "Alice"))
+	require.NoError(t, ctx.SetVariable("nested", "${name}"))
 
 	tests := []struct {
 		name     string
@@ -743,7 +743,7 @@ func TestSetTestMode(t *testing.T) {
 
 func TestInterpolateVariables_EdgeCases(t *testing.T) {
 	ctx := New()
-	ctx.SetVariable("normal", "value")
+	require.NoError(t, ctx.SetVariable("normal", "value"))
 
 	tests := []struct {
 		name     string
@@ -811,16 +811,16 @@ func TestSystemVariables_OSEnvironment(t *testing.T) {
 	origGOARCH := os.Getenv("GOARCH")
 
 	// Test with empty environment
-	os.Unsetenv("GOOS")
-	os.Unsetenv("GOARCH")
+	require.NoError(t, os.Unsetenv("GOOS"))
+	require.NoError(t, os.Unsetenv("GOARCH"))
 
 	value, ok := ctx.getSystemVariable("@os")
 	assert.True(t, ok)
 	assert.Equal(t, "/", value) // Should be "/" when both are empty
 
 	// Test with set environment
-	os.Setenv("GOOS", "linux")
-	os.Setenv("GOARCH", "amd64")
+	require.NoError(t, os.Setenv("GOOS", "linux"))
+	require.NoError(t, os.Setenv("GOARCH", "amd64"))
 
 	value, ok = ctx.getSystemVariable("@os")
 	assert.True(t, ok)
@@ -828,10 +828,10 @@ func TestSystemVariables_OSEnvironment(t *testing.T) {
 
 	// Restore original values
 	if origGOOS != "" {
-		os.Setenv("GOOS", origGOOS)
+		require.NoError(t, os.Setenv("GOOS", origGOOS))
 	}
 	if origGOARCH != "" {
-		os.Setenv("GOARCH", origGOARCH)
+		require.NoError(t, os.Setenv("GOARCH", origGOARCH))
 	}
 }
 
@@ -848,7 +848,9 @@ func BenchmarkInterpolateVariables_NoVariables(b *testing.B) {
 
 func BenchmarkInterpolateVariables_SingleVariable(b *testing.B) {
 	ctx := New()
-	ctx.SetVariable("name", "Alice")
+	if err := ctx.SetVariable("name", "Alice"); err != nil {
+		b.Fatal(err)
+	}
 	text := "Hello ${name}, how are you today?"
 
 	b.ResetTimer()
@@ -859,9 +861,15 @@ func BenchmarkInterpolateVariables_SingleVariable(b *testing.B) {
 
 func BenchmarkInterpolateVariables_MultipleVariables(b *testing.B) {
 	ctx := New()
-	ctx.SetVariable("name", "Alice")
-	ctx.SetVariable("age", "30")
-	ctx.SetVariable("city", "New York")
+	if err := ctx.SetVariable("name", "Alice"); err != nil {
+		b.Fatal(err)
+	}
+	if err := ctx.SetVariable("age", "30"); err != nil {
+		b.Fatal(err)
+	}
+	if err := ctx.SetVariable("city", "New York"); err != nil {
+		b.Fatal(err)
+	}
 	text := "${name} is ${age} years old and lives in ${city}"
 
 	b.ResetTimer()
@@ -872,11 +880,13 @@ func BenchmarkInterpolateVariables_MultipleVariables(b *testing.B) {
 
 func BenchmarkGetVariable_UserVariable(b *testing.B) {
 	ctx := New()
-	ctx.SetVariable("test", "value")
+	if err := ctx.SetVariable("test", "value"); err != nil {
+		b.Fatal(err)
+	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ctx.GetVariable("test")
+		_, _ = ctx.GetVariable("test")
 	}
 }
 
@@ -885,7 +895,7 @@ func BenchmarkGetVariable_SystemVariable(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ctx.GetVariable("#session_id")
+		_, _ = ctx.GetVariable("#session_id")
 	}
 }
 
@@ -904,11 +914,13 @@ func BenchmarkLargeVariableMap(b *testing.B) {
 
 	// Setup large variable map
 	for i := 0; i < 1000; i++ {
-		ctx.SetVariable(fmt.Sprintf("var%d", i), fmt.Sprintf("value%d", i))
+		if err := ctx.SetVariable(fmt.Sprintf("var%d", i), fmt.Sprintf("value%d", i)); err != nil {
+			b.Fatal(err)
+		}
 	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ctx.GetVariable("var500") // Access middle variable
+		_, _ = ctx.GetVariable("var500") // Access middle variable
 	}
 }
