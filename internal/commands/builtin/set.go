@@ -74,5 +74,7 @@ func (c *SetCommand) Execute(args map[string]string, input string, ctx neurotype
 }
 
 func init() {
-	commands.GlobalRegistry.Register(&SetCommand{})
+	if err := commands.GlobalRegistry.Register(&SetCommand{}); err != nil {
+		panic(fmt.Sprintf("failed to register set command: %v", err))
+	}
 }

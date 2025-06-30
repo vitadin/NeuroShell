@@ -102,7 +102,7 @@ func TestGetCommand_Execute_BracketSyntax(t *testing.T) {
 			err := cmd.Execute(tt.args, tt.input, ctx)
 
 			// Restore stdout
-			w.Close()
+			_ = w.Close()
 			os.Stdout = originalStdout
 
 			// Read captured output
@@ -194,7 +194,7 @@ func TestGetCommand_Execute_SpaceSyntax(t *testing.T) {
 			err := cmd.Execute(tt.args, tt.input, ctx)
 
 			// Restore stdout
-			w.Close()
+			_ = w.Close()
 			os.Stdout = originalStdout
 
 			// Read captured output
@@ -234,7 +234,7 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	err := cmd.Execute(args, input, ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	// Read captured output
@@ -323,7 +323,7 @@ func TestGetCommand_Execute_VariableWithSpecialCharacters(t *testing.T) {
 			err := cmd.Execute(args, "", ctx)
 
 			// Restore stdout
-			w.Close()
+			_ = w.Close()
 			os.Stdout = originalStdout
 
 			// Read captured output
@@ -353,7 +353,7 @@ func TestGetCommand_Execute_EmptyVariableValue(t *testing.T) {
 	err := cmd.Execute(args, "", ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	// Read captured output

@@ -157,7 +157,7 @@ func TestExitCommand_Execute_MessageOnly(t *testing.T) {
 		fmt.Println("Goodbye!")
 
 		// Restore stdout and read output
-		w.Close()
+		_ = w.Close()
 		os.Stdout = originalStdout
 		output, _ := io.ReadAll(r)
 		outputStr := string(output)

@@ -245,7 +245,7 @@ func TestScriptService_ScriptParsing(t *testing.T) {
 			// Count actual non-empty, non-comment lines
 			file, err := os.Open(scriptPath)
 			require.NoError(t, err)
-			defer file.Close()
+			defer func() { _ = file.Close() }()
 
 			// This test just verifies the file was created correctly
 			// The actual parsing would require NeuroContext

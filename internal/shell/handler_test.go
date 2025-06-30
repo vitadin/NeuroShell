@@ -97,13 +97,13 @@ func setupTestEnvironment(t *testing.T) func() {
 	commands.GlobalRegistry = commands.NewRegistry()
 
 	// Register builtin commands manually since we cleared the registry
-	commands.GlobalRegistry.Register(&builtin.SetCommand{})
-	commands.GlobalRegistry.Register(&builtin.GetCommand{})
-	commands.GlobalRegistry.Register(&builtin.HelpCommand{})
-	commands.GlobalRegistry.Register(&builtin.BashCommand{})
-	commands.GlobalRegistry.Register(&builtin.ExitCommand{})
-	commands.GlobalRegistry.Register(&builtin.SendCommand{})
-	commands.GlobalRegistry.Register(&builtin.RunCommand{})
+	require.NoError(t, commands.GlobalRegistry.Register(&builtin.SetCommand{}))
+	require.NoError(t, commands.GlobalRegistry.Register(&builtin.GetCommand{}))
+	require.NoError(t, commands.GlobalRegistry.Register(&builtin.HelpCommand{}))
+	require.NoError(t, commands.GlobalRegistry.Register(&builtin.BashCommand{}))
+	require.NoError(t, commands.GlobalRegistry.Register(&builtin.ExitCommand{}))
+	require.NoError(t, commands.GlobalRegistry.Register(&builtin.SendCommand{}))
+	require.NoError(t, commands.GlobalRegistry.Register(&builtin.RunCommand{}))
 
 	// Initialize services
 	err := InitializeServices(true)

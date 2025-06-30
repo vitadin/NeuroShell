@@ -65,5 +65,7 @@ func (c *GetCommand) Execute(args map[string]string, input string, ctx neurotype
 }
 
 func init() {
-	commands.GlobalRegistry.Register(&GetCommand{})
+	if err := commands.GlobalRegistry.Register(&GetCommand{}); err != nil {
+		panic(fmt.Sprintf("failed to register get command: %v", err))
+	}
 }

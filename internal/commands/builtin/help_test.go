@@ -81,7 +81,7 @@ func TestHelpCommand_Execute(t *testing.T) {
 	err := cmd.Execute(map[string]string{}, "", ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	// Read captured output
@@ -144,7 +144,7 @@ func TestHelpCommand_Execute_AlphabeticalOrder(t *testing.T) {
 	err := cmd.Execute(map[string]string{}, "", ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	// Read captured output
@@ -185,7 +185,7 @@ func TestHelpCommand_Execute_EmptyRegistry(t *testing.T) {
 	err := cmd.Execute(map[string]string{}, "", ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	// Read captured output
@@ -226,7 +226,7 @@ func TestHelpCommand_Execute_WithArgs(t *testing.T) {
 	err := cmd.Execute(args, "", ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	// Read captured output
@@ -264,7 +264,7 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 	err := cmd.Execute(map[string]string{}, input, ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	// Read captured output
@@ -321,7 +321,7 @@ func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 	err := cmd.Execute(map[string]string{}, "", ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	// Read captured output
@@ -360,7 +360,7 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 	err := cmd.Execute(map[string]string{}, "", ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	// Read captured output

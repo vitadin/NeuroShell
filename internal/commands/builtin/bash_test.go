@@ -92,7 +92,7 @@ func TestBashCommand_Execute(t *testing.T) {
 			err := cmd.Execute(tt.args, tt.input, ctx)
 
 			// Restore stdout
-			w.Close()
+			_ = w.Close()
 			os.Stdout = originalStdout
 
 			// Read captured output
@@ -166,7 +166,7 @@ func TestBashCommand_Execute_LongCommands(t *testing.T) {
 	err := cmd.Execute(map[string]string{}, longCommand, ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	assert.NoError(t, err)
@@ -201,7 +201,7 @@ func TestBashCommand_Execute_SpecialCharacters(t *testing.T) {
 			err := cmd.Execute(map[string]string{}, specialCmd, ctx)
 
 			// Restore stdout
-			w.Close()
+			_ = w.Close()
 			os.Stdout = originalStdout
 
 			// Should handle special characters without error (though not execute them)
@@ -229,7 +229,7 @@ func BenchmarkBashCommand_Execute(b *testing.B) {
 	devNull, _ := os.Open(os.DevNull)
 	os.Stdout = devNull
 	defer func() {
-		devNull.Close()
+		_ = devNull.Close()
 		os.Stdout = originalStdout
 	}()
 
@@ -249,7 +249,7 @@ func BenchmarkBashCommand_Execute_LongCommand(b *testing.B) {
 	devNull, _ := os.Open(os.DevNull)
 	os.Stdout = devNull
 	defer func() {
-		devNull.Close()
+		_ = devNull.Close()
 		os.Stdout = originalStdout
 	}()
 

@@ -99,7 +99,7 @@ func TestSetCommand_Execute_BracketSyntax(t *testing.T) {
 			err := cmd.Execute(tt.args, tt.input, ctx)
 
 			// Restore stdout
-			w.Close()
+			_ = w.Close()
 			os.Stdout = originalStdout
 
 			// Read captured output
@@ -210,7 +210,7 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 			err := cmd.Execute(tt.args, tt.input, ctx)
 
 			// Restore stdout
-			w.Close()
+			_ = w.Close()
 			os.Stdout = originalStdout
 
 			// Read captured output
@@ -253,7 +253,7 @@ func TestSetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	err := cmd.Execute(args, input, ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	// Read captured output
@@ -337,7 +337,7 @@ func TestSetCommand_Execute_VariableOverwrite(t *testing.T) {
 	err := cmd.Execute(args, "", ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	// Read captured output
@@ -384,7 +384,7 @@ func TestSetCommand_Execute_SpecialVariableNames(t *testing.T) {
 			err := cmd.Execute(args, "", ctx)
 
 			// Restore stdout
-			w.Close()
+			_ = w.Close()
 			os.Stdout = originalStdout
 
 			// Read captured output
@@ -426,7 +426,7 @@ func TestSetCommand_Execute_LargeValues(t *testing.T) {
 	err := cmd.Execute(args, "", ctx)
 
 	// Restore stdout
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdout
 
 	assert.NoError(t, err)
@@ -508,7 +508,7 @@ func BenchmarkSetCommand_Execute_LargeValue(b *testing.B) {
 	devNull, _ := os.Open(os.DevNull)
 	os.Stdout = devNull
 	defer func() {
-		devNull.Close()
+		_ = devNull.Close()
 		os.Stdout = originalStdout
 	}()
 

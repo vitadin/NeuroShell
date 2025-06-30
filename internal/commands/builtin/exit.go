@@ -43,5 +43,7 @@ func (c *ExitCommand) Execute(_ map[string]string, _ string, _ neurotypes.Contex
 }
 
 func init() {
-	commands.GlobalRegistry.Register(&ExitCommand{})
+	if err := commands.GlobalRegistry.Register(&ExitCommand{}); err != nil {
+		panic(fmt.Sprintf("failed to register exit command: %v", err))
+	}
 }

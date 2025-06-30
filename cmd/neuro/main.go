@@ -61,9 +61,18 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&testMode, "test-mode", false, "Run in deterministic test mode")
 
 	// Bind flags to viper
-	viper.BindPFlag("log-level", rootCmd.PersistentFlags().Lookup("log-level"))
-	viper.BindPFlag("log-file", rootCmd.PersistentFlags().Lookup("log-file"))
-	viper.BindPFlag("test-mode", rootCmd.PersistentFlags().Lookup("test-mode"))
+	if err := viper.BindPFlag("log-level", rootCmd.PersistentFlags().Lookup("log-level")); err != nil {
+		fmt.Fprintf(os.Stderr, "Error binding log-level flag: %v\n", err)
+		os.Exit(1)
+	}
+	if err := viper.BindPFlag("log-file", rootCmd.PersistentFlags().Lookup("log-file")); err != nil {
+		fmt.Fprintf(os.Stderr, "Error binding log-file flag: %v\n", err)
+		os.Exit(1)
+	}
+	if err := viper.BindPFlag("test-mode", rootCmd.PersistentFlags().Lookup("test-mode")); err != nil {
+		fmt.Fprintf(os.Stderr, "Error binding test-mode flag: %v\n", err)
+		os.Exit(1)
+	}
 
 	// Add subcommands
 	rootCmd.AddCommand(shellCmd)

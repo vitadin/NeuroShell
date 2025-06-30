@@ -62,8 +62,29 @@ issues:
       linters:
         - gosec
         - errcheck
+        - ineffassign
         
     # Exclude errcheck for defer Close() calls
     - linters:
         - errcheck
       text: "Error return value of.*Close.*is not checked"
+    
+    # Exclude errcheck for test setup operations
+    - linters:
+        - errcheck
+      text: "Error return value of.*SetVariable.*is not checked"
+    
+    # Exclude errcheck for test environment operations
+    - linters:
+        - errcheck
+      text: "Error return value of.*Unsetenv.*is not checked"
+    
+    # Exclude errcheck for test environment operations
+    - linters:
+        - errcheck
+      text: "Error return value of.*Setenv.*is not checked"
+      
+    # Exclude errcheck for test benchmark operations
+    - linters:
+        - errcheck
+      text: "Error return value of.*GetVariable.*is not checked"

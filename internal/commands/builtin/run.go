@@ -92,7 +92,10 @@ func (c *RunCommand) Execute(args map[string]string, input string, ctx neurotype
 		// Interpolate command using service
 		interpolatedCmd, err := is.InterpolateCommand(cmd, ctx)
 		if err != nil {
-			es.MarkExecutionError(ctx, err, cmd.String())
+			if markErr := es.MarkExecutionError(ctx, err, cmd.String()); markErr != nil {
+				// Log the mark error but continue with the original error
+				fmt.Printf("Warning: failed to mark execution error: %v\n", markErr)
+			}
 			return fmt.Errorf("interpolation failed: %w", err)
 		}
 
@@ -106,24 +109,37 @@ func (c *RunCommand) Execute(args map[string]string, input string, ctx neurotype
 		err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput, ctx)
 		if err != nil {
 			// Mark execution error and return
-			es.MarkExecutionError(ctx, err, cmd.String())
+			if markErr := es.MarkExecutionError(ctx, err, cmd.String()); markErr != nil {
+				// Log the mark error but continue with the original error
+				fmt.Printf("Warning: failed to mark execution error: %v\n", markErr)
+			}
 			return fmt.Errorf("script execution failed: %w", err)
 		}
 
 		// Mark command as executed
-		es.MarkCommandExecuted(ctx)
+		if err := es.MarkCommandExecuted(ctx); err != nil {
+			fmt.Printf("Warning: failed to mark command as executed: %v\n", err)
+		}
 	}
 
 	// Phase 3: Mark successful completion
-	es.MarkExecutionComplete(ctx)
+	if err := es.MarkExecutionComplete(ctx); err != nil {
+		fmt.Printf("Warning: failed to mark execution complete: %v\n", err)
+	}
 
 	// Set success status in context variables
-	vs.Set("_status", "0", ctx)
-	vs.Set("_output", fmt.Sprintf("Script %s executed successfully", filename), ctx)
+	if err := vs.Set("_status", "0", ctx); err != nil {
+		fmt.Printf("Warning: failed to set _status variable: %v\n", err)
+	}
+	if err := vs.Set("_output", fmt.Sprintf("Script %s executed successfully", filename), ctx); err != nil {
+		fmt.Printf("Warning: failed to set _output variable: %v\n", err)
+	}
 
 	return nil
 }
 
 func init() {
-	commands.GlobalRegistry.Register(&RunCommand{})
+	if err := commands.GlobalRegistry.Register(&RunCommand{}); err != nil {
+		panic(fmt.Sprintf("failed to register run command: %v", err))
+	}
 }

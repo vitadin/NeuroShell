@@ -61,5 +61,7 @@ func (c *HelpCommand) Execute(_ map[string]string, _ string, _ neurotypes.Contex
 }
 
 func init() {
-	commands.GlobalRegistry.Register(&HelpCommand{})
+	if err := commands.GlobalRegistry.Register(&HelpCommand{}); err != nil {
+		panic(fmt.Sprintf("failed to register help command: %v", err))
+	}
 }

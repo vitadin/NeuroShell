@@ -43,7 +43,7 @@ func (s *ScriptService) LoadScript(filepath string, ctx neurotypes.Context) erro
 	if err != nil {
 		return fmt.Errorf("failed to open script file: %w", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	// Cast to NeuroContext to access queue methods
 	neuroCtx, ok := ctx.(*context.NeuroContext)

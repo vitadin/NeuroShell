@@ -46,5 +46,7 @@ func (c *SendCommand) Execute(_ map[string]string, input string, _ neurotypes.Co
 }
 
 func init() {
-	commands.GlobalRegistry.Register(&SendCommand{})
+	if err := commands.GlobalRegistry.Register(&SendCommand{}); err != nil {
+		panic(fmt.Sprintf("failed to register send command: %v", err))
+	}
 }
