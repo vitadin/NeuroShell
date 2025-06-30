@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"neuroshell/internal/context"
 	"neuroshell/internal/testutils"
 )
 
@@ -372,4 +373,91 @@ func TestVariableService_ConcurrentAccess(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		<-done
 	}
+}
+
+func TestVariableService_SetSystemVariable(t *testing.T) {
+	tests := []struct {
+		name      string
+		varName   string
+		varValue  string
+		wantError string
+	}{
+		{
+			name:     "set system variable with underscore prefix",
+			varName:  "_status",
+			varValue: "success",
+		},
+		{
+			name:     "set system variable with @ prefix",
+			varName:  "@custom",
+			varValue: "custom_value",
+		},
+		{
+			name:     "set system variable with # prefix",
+			varName:  "#custom_mode",
+			varValue: "test",
+		},
+		{
+			name:     "set system variable with empty value",
+			varName:  "_empty",
+			varValue: "",
+		},
+		{
+			name:      "fail to set regular variable",
+			varName:   "regular_var",
+			varValue:  "value",
+			wantError: "SetSystemVariable can only set system variables",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := NewVariableService()
+			ctx := context.New() // Use real NeuroContext instead of mock
+
+			// Initialize service
+			err := service.Initialize(ctx)
+			require.NoError(t, err)
+
+			// Test SetSystemVariable
+			err = service.SetSystemVariable(tt.varName, tt.varValue, ctx)
+
+			if tt.wantError != "" {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.wantError)
+			} else {
+				assert.NoError(t, err)
+
+				// Verify the variable was set by getting it back
+				value, err := service.Get(tt.varName, ctx)
+				assert.NoError(t, err)
+				assert.Equal(t, tt.varValue, value)
+			}
+		})
+	}
+}
+
+func TestVariableService_SetSystemVariable_NotInitialized(t *testing.T) {
+	service := NewVariableService()
+	ctx := context.New()
+
+	err := service.SetSystemVariable("_test", "value", ctx)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "variable service not initialized")
+}
+
+func TestVariableService_SetSystemVariable_WrongContextType(t *testing.T) {
+	service := NewVariableService()
+	ctx := testutils.NewMockContext() // Use MockContext to test error case
+
+	// Initialize service
+	err := service.Initialize(ctx)
+	require.NoError(t, err)
+
+	// Test SetSystemVariable with wrong context type
+	err = service.SetSystemVariable("_test", "value", ctx)
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "context is not a NeuroContext")
 }

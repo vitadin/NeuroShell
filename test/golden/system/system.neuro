@@ -1,3 +1,2 @@
 # System variables test
-\get[@user]
 \get[#test_mode]

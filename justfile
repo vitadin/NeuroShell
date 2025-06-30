@@ -33,7 +33,7 @@ run: build
     NEURO_LOG_LEVEL=debug ./bin/neuro
 
 # Run tests with coverage
-test:
+test: build test-all-units
     @echo "Running tests..."
     go test -v -race -coverprofile=coverage.out ./...
     go tool cover -html=coverage.out -o coverage.html
@@ -248,10 +248,8 @@ init:
     @echo "Development environment ready"
 
 # Run end-to-end tests
-test-e2e:
+test-e2e: build
     @echo "Running end-to-end tests..."
-    go build -o bin/neuro ./cmd/neuro
-    go build -o bin/neurotest ./cmd/neurotest
     ./bin/neurotest --neuro-cmd=./bin/neuro run-all
     @echo "End-to-end tests complete"
 

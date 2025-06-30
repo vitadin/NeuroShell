@@ -62,6 +62,18 @@ func (ctx *NeuroContext) SetVariable(name string, value string) error {
 	return nil
 }
 
+// SetSystemVariable sets a system variable, allowing internal app use only.
+// This method is for internal use by the application and should not be exposed to users.
+func (ctx *NeuroContext) SetSystemVariable(name string, value string) error {
+	// Only allow setting system variables (prefixed with @, #, or _)
+	if !strings.HasPrefix(name, "@") && !strings.HasPrefix(name, "#") && !strings.HasPrefix(name, "_") {
+		return fmt.Errorf("SetSystemVariable can only set system variables (prefixed with @, #, or _), got: %s", name)
+	}
+
+	ctx.variables[name] = value
+	return nil
+}
+
 // GetMessageHistory returns the last n messages from the conversation history.
 func (ctx *NeuroContext) GetMessageHistory(n int) []neurotypes.Message {
 	if n <= 0 || n > len(ctx.history) {

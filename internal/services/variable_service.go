@@ -48,6 +48,21 @@ func (v *VariableService) Set(name, value string, ctx neurotypes.Context) error 
 	return ctx.SetVariable(name, value)
 }
 
+// SetSystemVariable sets a system variable in context (for internal app use only)
+func (v *VariableService) SetSystemVariable(name, value string, ctx neurotypes.Context) error {
+	if !v.initialized {
+		return fmt.Errorf("variable service not initialized")
+	}
+
+	// Cast to NeuroContext to access SetSystemVariable method
+	neuroCtx, ok := ctx.(*context.NeuroContext)
+	if !ok {
+		return fmt.Errorf("context is not a NeuroContext")
+	}
+
+	return neuroCtx.SetSystemVariable(name, value)
+}
+
 // InterpolateString processes ${var} replacements in a string
 func (v *VariableService) InterpolateString(text string, ctx neurotypes.Context) (string, error) {
 	if !v.initialized {
