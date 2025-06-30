@@ -5,11 +5,15 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/abiosoft/ishell/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
+	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
+	"neuroshell/internal/orchestration"
 	"neuroshell/internal/shell"
 )
 
@@ -35,6 +39,16 @@ var shellCmd = &cobra.Command{
 	Short: "Start interactive shell mode",
 	Long:  `Start the interactive Neuro shell for LLM-integrated command execution.`,
 	Run:   runShell,
+}
+
+// batchCmd represents the batch command for non-interactive script execution
+var batchCmd = &cobra.Command{
+	Use:   "batch <script.neuro>",
+	Short: "Execute a .neuro script file in batch mode",
+	Long: `Execute a .neuro script file directly without entering interactive mode.
+This is useful for automation, CI/CD pipelines, and running predefined workflows.`,
+	Args: cobra.ExactArgs(1),
+	Run:  runBatch,
 }
 
 // versionCmd represents the version command
@@ -76,6 +90,7 @@ func init() {
 
 	// Add subcommands
 	rootCmd.AddCommand(shellCmd)
+	rootCmd.AddCommand(batchCmd)
 	rootCmd.AddCommand(versionCmd)
 
 	// Configure logger before any command execution
@@ -113,4 +128,52 @@ func runShell(_ *cobra.Command, _ []string) {
 	sh.NotFound(shell.ProcessInput)
 
 	sh.Run()
+}
+
+func runBatch(_ *cobra.Command, args []string) {
+	scriptPath := args[0]
+	
+	logger.Info("Starting NeuroShell batch mode", "version", version, "script", scriptPath)
+
+	// Validate script file exists and has correct extension
+	if err := validateScriptFile(scriptPath); err != nil {
+		logger.Fatal("Script validation failed", "error", err)
+	}
+
+	// Initialize services before running script
+	if err := shell.InitializeServices(testMode); err != nil {
+		logger.Fatal("Failed to initialize services", "error", err)
+	}
+
+	logger.Info("Services initialized successfully")
+
+	// Create a context for batch execution
+	ctx := context.New()
+	ctx.SetTestMode(testMode)
+
+	// Execute the script
+	if err := executeBatchScript(scriptPath, ctx); err != nil {
+		logger.Fatal("Script execution failed", "error", err)
+	}
+
+	logger.Info("Script executed successfully", "script", scriptPath)
+}
+
+func validateScriptFile(scriptPath string) error {
+	// Check if file exists
+	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
+		return fmt.Errorf("script file does not exist: %s", scriptPath)
+	}
+
+	// Check file extension
+	if ext := filepath.Ext(scriptPath); ext != ".neuro" {
+		return fmt.Errorf("script file must have .neuro extension, got: %s", ext)
+	}
+
+	return nil
+}
+
+func executeBatchScript(scriptPath string, ctx *context.NeuroContext) error {
+	// Execute the script using centralized execution logic
+	return orchestration.ExecuteScript(scriptPath, ctx)
 }
