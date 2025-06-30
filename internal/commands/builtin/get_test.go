@@ -34,16 +34,16 @@ func TestGetCommand_Usage(t *testing.T) {
 
 func TestGetCommand_Execute_BracketSyntax(t *testing.T) {
 	cmd := &GetCommand{}
-	
+
 	tests := []struct {
-		name           string
-		args           map[string]string
-		input          string
-		setupVars      map[string]string
-		expectedVar    string
-		expectedValue  string
-		wantErr        bool
-		errMsg         string
+		name          string
+		args          map[string]string
+		input         string
+		setupVars     map[string]string
+		expectedVar   string
+		expectedValue string
+		wantErr       bool
+		errMsg        string
 	}{
 		{
 			name:          "get existing variable",
@@ -93,22 +93,22 @@ func TestGetCommand_Execute_BracketSyntax(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContextWithVars(tt.setupVars)
-			
+
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
-			
+
 			err := cmd.Execute(tt.args, tt.input, ctx)
-			
+
 			// Restore stdout
 			w.Close()
 			os.Stdout = originalStdout
-			
+
 			// Read captured output
 			output, _ := io.ReadAll(r)
 			outputStr := string(output)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				if tt.errMsg != "" {
@@ -125,16 +125,16 @@ func TestGetCommand_Execute_BracketSyntax(t *testing.T) {
 
 func TestGetCommand_Execute_SpaceSyntax(t *testing.T) {
 	cmd := &GetCommand{}
-	
+
 	tests := []struct {
-		name           string
-		args           map[string]string
-		input          string
-		setupVars      map[string]string
-		expectedVar    string
-		expectedValue  string
-		wantErr        bool
-		errMsg         string
+		name          string
+		args          map[string]string
+		input         string
+		setupVars     map[string]string
+		expectedVar   string
+		expectedValue string
+		wantErr       bool
+		errMsg        string
 	}{
 		{
 			name:          "get variable with space syntax",
@@ -185,22 +185,22 @@ func TestGetCommand_Execute_SpaceSyntax(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContextWithVars(tt.setupVars)
-			
+
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
-			
+
 			err := cmd.Execute(tt.args, tt.input, ctx)
-			
+
 			// Restore stdout
 			w.Close()
 			os.Stdout = originalStdout
-			
+
 			// Read captured output
 			output, _ := io.ReadAll(r)
 			outputStr := string(output)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				if tt.errMsg != "" {
@@ -221,26 +221,26 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 		"bracketvar": "bracketvalue",
 		"spacevar":   "spacevalue",
 	})
-	
+
 	// When both args and input are provided, args (bracket syntax) should take priority
 	args := map[string]string{"bracketvar": ""}
 	input := "spacevar"
-	
+
 	// Capture stdout
 	originalStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	
+
 	err := cmd.Execute(args, input, ctx)
-	
+
 	// Restore stdout
 	w.Close()
 	os.Stdout = originalStdout
-	
+
 	// Read captured output
 	output, _ := io.ReadAll(r)
 	outputStr := string(output)
-	
+
 	assert.NoError(t, err)
 	// Should use bracket syntax (bracketvar), not space syntax (spacevar)
 	expectedOutput := "bracketvar = bracketvalue\n"
@@ -250,14 +250,14 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 func TestGetCommand_Execute_ContextError(t *testing.T) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	// Set up context to return an error
 	ctx.SetGetVariableError(fmt.Errorf("context error"))
-	
+
 	args := map[string]string{"testvar": ""}
-	
+
 	err := cmd.Execute(args, "", ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to get variable testvar")
 	assert.Contains(t, err.Error(), "context error")
@@ -266,7 +266,7 @@ func TestGetCommand_Execute_ContextError(t *testing.T) {
 func TestGetCommand_Execute_EmptyVariableName(t *testing.T) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	tests := []struct {
 		name  string
 		args  map[string]string
@@ -283,7 +283,7 @@ func TestGetCommand_Execute_EmptyVariableName(t *testing.T) {
 			input: "   ",
 		},
 		{
-			name:  "args with empty key", 
+			name:  "args with empty key",
 			args:  map[string]string{"": ""},
 			input: "",
 		},
@@ -292,7 +292,7 @@ func TestGetCommand_Execute_EmptyVariableName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := cmd.Execute(tt.args, tt.input, ctx)
-			
+
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "Usage:")
 		})
@@ -301,35 +301,35 @@ func TestGetCommand_Execute_EmptyVariableName(t *testing.T) {
 
 func TestGetCommand_Execute_VariableWithSpecialCharacters(t *testing.T) {
 	cmd := &GetCommand{}
-	
+
 	specialVars := map[string]string{
 		"var_with_underscores": "underscore_value",
-		"var-with-dashes":      "dash-value",  
+		"var-with-dashes":      "dash-value",
 		"var123":               "numeric_value",
 		"UPPERCASE_VAR":        "upper_value",
 	}
-	
+
 	ctx := testutils.NewMockContextWithVars(specialVars)
-	
+
 	for varName, expectedValue := range specialVars {
 		t.Run(fmt.Sprintf("get_%s", varName), func(t *testing.T) {
 			args := map[string]string{varName: ""}
-			
+
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
-			
+
 			err := cmd.Execute(args, "", ctx)
-			
+
 			// Restore stdout
 			w.Close()
 			os.Stdout = originalStdout
-			
+
 			// Read captured output
 			output, _ := io.ReadAll(r)
 			outputStr := string(output)
-			
+
 			assert.NoError(t, err)
 			expectedOutput := fmt.Sprintf("%s = %s\n", varName, expectedValue)
 			assert.Equal(t, expectedOutput, outputStr)
@@ -342,24 +342,24 @@ func TestGetCommand_Execute_EmptyVariableValue(t *testing.T) {
 	ctx := testutils.NewMockContextWithVars(map[string]string{
 		"empty_var": "",
 	})
-	
+
 	args := map[string]string{"empty_var": ""}
-	
+
 	// Capture stdout
 	originalStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	
+
 	err := cmd.Execute(args, "", ctx)
-	
+
 	// Restore stdout
 	w.Close()
 	os.Stdout = originalStdout
-	
+
 	// Read captured output
 	output, _ := io.ReadAll(r)
 	outputStr := string(output)
-	
+
 	assert.NoError(t, err)
 	expectedOutput := "empty_var = \n"
 	assert.Equal(t, expectedOutput, outputStr)
@@ -372,12 +372,12 @@ func BenchmarkGetCommand_Execute_BracketSyntax(b *testing.B) {
 		"benchvar": "benchvalue",
 	})
 	args := map[string]string{"benchvar": ""}
-	
+
 	// Redirect stdout to avoid benchmark noise
 	originalStdout := os.Stdout
 	os.Stdout, _ = os.Open(os.DevNull)
 	defer func() { os.Stdout = originalStdout }()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = cmd.Execute(args, "", ctx)
@@ -390,12 +390,12 @@ func BenchmarkGetCommand_Execute_SpaceSyntax(b *testing.B) {
 		"benchvar": "benchvalue",
 	})
 	input := "benchvar"
-	
+
 	// Redirect stdout to avoid benchmark noise
 	originalStdout := os.Stdout
 	os.Stdout, _ = os.Open(os.DevNull)
 	defer func() { os.Stdout = originalStdout }()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = cmd.Execute(map[string]string{}, input, ctx)
@@ -406,12 +406,12 @@ func BenchmarkGetCommand_Execute_SystemVariable(b *testing.B) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
 	args := map[string]string{"@user": ""}
-	
+
 	// Redirect stdout to avoid benchmark noise
 	originalStdout := os.Stdout
 	os.Stdout, _ = os.Open(os.DevNull)
 	defer func() { os.Stdout = originalStdout }()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = cmd.Execute(args, "", ctx)

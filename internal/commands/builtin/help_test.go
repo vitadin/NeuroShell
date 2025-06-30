@@ -38,7 +38,7 @@ func TestHelpCommand_Usage(t *testing.T) {
 func TestHelpCommand_Execute(t *testing.T) {
 	// Create a separate registry for testing to avoid polluting global state
 	testRegistry := commands.NewRegistry()
-	
+
 	// Register some test commands
 	testCommands := []types.Command{
 		&MockCommand{
@@ -47,7 +47,7 @@ func TestHelpCommand_Execute(t *testing.T) {
 			usage:       "\\test1",
 		},
 		&MockCommand{
-			name:        "test2", 
+			name:        "test2",
 			description: "Test command 2",
 			usage:       "\\test2 [arg]",
 		},
@@ -57,44 +57,44 @@ func TestHelpCommand_Execute(t *testing.T) {
 			usage:       "\\aaa",
 		},
 	}
-	
+
 	for _, cmd := range testCommands {
 		err := testRegistry.Register(cmd)
 		require.NoError(t, err)
 	}
-	
+
 	// Temporarily replace global registry
 	originalRegistry := commands.GlobalRegistry
 	commands.GlobalRegistry = testRegistry
 	defer func() {
 		commands.GlobalRegistry = originalRegistry
 	}()
-	
+
 	cmd := &HelpCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	// Capture stdout
 	originalStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	
+
 	err := cmd.Execute(map[string]string{}, "", ctx)
-	
+
 	// Restore stdout
 	w.Close()
 	os.Stdout = originalStdout
-	
+
 	// Read captured output
 	output, _ := io.ReadAll(r)
 	outputStr := string(output)
-	
+
 	assert.NoError(t, err)
-	
+
 	// Verify output contains expected elements
 	assert.Contains(t, outputStr, "Neuro Shell Commands:")
 	assert.Contains(t, outputStr, "Examples:")
 	assert.Contains(t, outputStr, "Note: Text without \\ prefix is sent to LLM automatically")
-	
+
 	// Verify all test commands are listed
 	assert.Contains(t, outputStr, "\\test1")
 	assert.Contains(t, outputStr, "Test command 1")
@@ -102,7 +102,7 @@ func TestHelpCommand_Execute(t *testing.T) {
 	assert.Contains(t, outputStr, "Test command 2")
 	assert.Contains(t, outputStr, "\\aaa")
 	assert.Contains(t, outputStr, "First alphabetically")
-	
+
 	// Verify example commands are shown
 	assert.Contains(t, outputStr, "\\send Hello world")
 	assert.Contains(t, outputStr, "\\set[name=\"John\"]")
@@ -113,51 +113,51 @@ func TestHelpCommand_Execute(t *testing.T) {
 func TestHelpCommand_Execute_AlphabeticalOrder(t *testing.T) {
 	// Create a separate registry for testing
 	testRegistry := commands.NewRegistry()
-	
+
 	// Register commands in non-alphabetical order
 	testCommands := []types.Command{
 		&MockCommand{name: "zebra", description: "Last", usage: "\\zebra"},
 		&MockCommand{name: "apple", description: "First", usage: "\\apple"},
 		&MockCommand{name: "banana", description: "Middle", usage: "\\banana"},
 	}
-	
+
 	for _, cmd := range testCommands {
 		err := testRegistry.Register(cmd)
 		require.NoError(t, err)
 	}
-	
+
 	// Temporarily replace global registry
 	originalRegistry := commands.GlobalRegistry
 	commands.GlobalRegistry = testRegistry
 	defer func() {
 		commands.GlobalRegistry = originalRegistry
 	}()
-	
+
 	cmd := &HelpCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	// Capture stdout
 	originalStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	
+
 	err := cmd.Execute(map[string]string{}, "", ctx)
-	
+
 	// Restore stdout
 	w.Close()
 	os.Stdout = originalStdout
-	
+
 	// Read captured output
 	output, _ := io.ReadAll(r)
 	outputStr := string(output)
-	
+
 	assert.NoError(t, err)
-	
+
 	// Find positions of commands in output
 	applePos := strings.Index(outputStr, "\\apple")
 	bananaPos := strings.Index(outputStr, "\\banana")
 	zebraPos := strings.Index(outputStr, "\\zebra")
-	
+
 	// Verify they appear in alphabetical order
 	assert.True(t, applePos < bananaPos, "apple should appear before banana")
 	assert.True(t, bananaPos < zebraPos, "banana should appear before zebra")
@@ -166,34 +166,34 @@ func TestHelpCommand_Execute_AlphabeticalOrder(t *testing.T) {
 func TestHelpCommand_Execute_EmptyRegistry(t *testing.T) {
 	// Create an empty registry for testing
 	testRegistry := commands.NewRegistry()
-	
+
 	// Temporarily replace global registry
 	originalRegistry := commands.GlobalRegistry
 	commands.GlobalRegistry = testRegistry
 	defer func() {
 		commands.GlobalRegistry = originalRegistry
 	}()
-	
+
 	cmd := &HelpCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	// Capture stdout
 	originalStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	
+
 	err := cmd.Execute(map[string]string{}, "", ctx)
-	
+
 	// Restore stdout
 	w.Close()
 	os.Stdout = originalStdout
-	
+
 	// Read captured output
 	output, _ := io.ReadAll(r)
 	outputStr := string(output)
-	
+
 	assert.NoError(t, err)
-	
+
 	// Should still show header and examples even with no commands
 	assert.Contains(t, outputStr, "Neuro Shell Commands:")
 	assert.Contains(t, outputStr, "Examples:")
@@ -204,35 +204,35 @@ func TestHelpCommand_Execute_WithArgs(t *testing.T) {
 	// Test that help command ignores arguments (current implementation doesn't use them)
 	cmd := &HelpCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	// Create minimal registry
 	testRegistry := commands.NewRegistry()
 	testRegistry.Register(&MockCommand{name: "test", description: "Test", usage: "\\test"})
-	
+
 	originalRegistry := commands.GlobalRegistry
 	commands.GlobalRegistry = testRegistry
 	defer func() {
 		commands.GlobalRegistry = originalRegistry
 	}()
-	
+
 	// Test with args
 	args := map[string]string{"command": "test"}
-	
+
 	// Capture stdout
 	originalStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	
+
 	err := cmd.Execute(args, "", ctx)
-	
+
 	// Restore stdout
 	w.Close()
 	os.Stdout = originalStdout
-	
+
 	// Read captured output
 	output, _ := io.ReadAll(r)
 	outputStr := string(output)
-	
+
 	assert.NoError(t, err)
 	// Should still show all commands (current implementation doesn't filter by specific command)
 	assert.Contains(t, outputStr, "Neuro Shell Commands:")
@@ -242,35 +242,35 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 	// Test that help command ignores input (current implementation doesn't use it)
 	cmd := &HelpCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	// Create minimal registry
 	testRegistry := commands.NewRegistry()
 	testRegistry.Register(&MockCommand{name: "test", description: "Test", usage: "\\test"})
-	
+
 	originalRegistry := commands.GlobalRegistry
 	commands.GlobalRegistry = testRegistry
 	defer func() {
 		commands.GlobalRegistry = originalRegistry
 	}()
-	
+
 	// Test with input
 	input := "some input text"
-	
+
 	// Capture stdout
 	originalStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	
+
 	err := cmd.Execute(map[string]string{}, input, ctx)
-	
+
 	// Restore stdout
 	w.Close()
 	os.Stdout = originalStdout
-	
+
 	// Read captured output
 	output, _ := io.ReadAll(r)
 	outputStr := string(output)
-	
+
 	assert.NoError(t, err)
 	// Should still show all commands (current implementation doesn't use input)
 	assert.Contains(t, outputStr, "Neuro Shell Commands:")
@@ -279,7 +279,7 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 	// Test output formatting consistency
 	testRegistry := commands.NewRegistry()
-	
+
 	// Register commands with various length names and descriptions
 	testCommands := []types.Command{
 		&MockCommand{
@@ -298,38 +298,38 @@ func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 			usage:       "\\mid [optional]",
 		},
 	}
-	
+
 	for _, cmd := range testCommands {
 		err := testRegistry.Register(cmd)
 		require.NoError(t, err)
 	}
-	
+
 	originalRegistry := commands.GlobalRegistry
 	commands.GlobalRegistry = testRegistry
 	defer func() {
 		commands.GlobalRegistry = originalRegistry
 	}()
-	
+
 	cmd := &HelpCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	// Capture stdout
 	originalStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	
+
 	err := cmd.Execute(map[string]string{}, "", ctx)
-	
+
 	// Restore stdout
 	w.Close()
 	os.Stdout = originalStdout
-	
+
 	// Read captured output
 	output, _ := io.ReadAll(r)
 	outputStr := string(output)
-	
+
 	assert.NoError(t, err)
-	
+
 	// Verify all commands are present
 	assert.Contains(t, outputStr, "\\short")
 	assert.Contains(t, outputStr, "Short description")
@@ -343,7 +343,7 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 	// Test that static content (examples, notes) is always present
 	cmd := &HelpCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	// Use empty registry
 	testRegistry := commands.NewRegistry()
 	originalRegistry := commands.GlobalRegistry
@@ -351,24 +351,24 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 	defer func() {
 		commands.GlobalRegistry = originalRegistry
 	}()
-	
+
 	// Capture stdout
 	originalStdout := os.Stdout
 	r, w, _ := os.Pipe()
 	os.Stdout = w
-	
+
 	err := cmd.Execute(map[string]string{}, "", ctx)
-	
+
 	// Restore stdout
 	w.Close()
 	os.Stdout = originalStdout
-	
+
 	// Read captured output
 	output, _ := io.ReadAll(r)
 	outputStr := string(output)
-	
+
 	assert.NoError(t, err)
-	
+
 	// Verify static content is present
 	expectedStaticContent := []string{
 		"Neuro Shell Commands:",
@@ -379,7 +379,7 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 		"\\bash[ls -la]",
 		"Note: Text without \\ prefix is sent to LLM automatically",
 	}
-	
+
 	for _, content := range expectedStaticContent {
 		assert.Contains(t, outputStr, content, "Missing static content: %s", content)
 	}
@@ -432,21 +432,21 @@ func BenchmarkHelpCommand_Execute_SmallRegistry(b *testing.B) {
 		}
 		testRegistry.Register(cmd)
 	}
-	
+
 	originalRegistry := commands.GlobalRegistry
 	commands.GlobalRegistry = testRegistry
 	defer func() {
 		commands.GlobalRegistry = originalRegistry
 	}()
-	
+
 	cmd := &HelpCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	// Redirect stdout to avoid benchmark noise
 	originalStdout := os.Stdout
 	os.Stdout, _ = os.Open(os.DevNull)
 	defer func() { os.Stdout = originalStdout }()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = cmd.Execute(map[string]string{}, "", ctx)
@@ -464,21 +464,21 @@ func BenchmarkHelpCommand_Execute_LargeRegistry(b *testing.B) {
 		}
 		testRegistry.Register(cmd)
 	}
-	
+
 	originalRegistry := commands.GlobalRegistry
 	commands.GlobalRegistry = testRegistry
 	defer func() {
 		commands.GlobalRegistry = originalRegistry
 	}()
-	
+
 	cmd := &HelpCommand{}
 	ctx := testutils.NewMockContext()
-	
+
 	// Redirect stdout to avoid benchmark noise
 	originalStdout := os.Stdout
 	os.Stdout, _ = os.Open(os.DevNull)
 	defer func() { os.Stdout = originalStdout }()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = cmd.Execute(map[string]string{}, "", ctx)

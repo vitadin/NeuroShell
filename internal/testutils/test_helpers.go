@@ -49,9 +49,9 @@ func (g *TestDataGenerator) InterpolationTestCases() []InterpolationTestCase {
 			},
 		},
 		{
-			Name:     "system variable",
-			Input:    "User: ${@user}",
-			Expected: "User: testuser",
+			Name:      "system variable",
+			Input:     "User: ${@user}",
+			Expected:  "User: testuser",
 			Variables: map[string]string{},
 		},
 		{
@@ -65,9 +65,9 @@ func (g *TestDataGenerator) InterpolationTestCases() []InterpolationTestCase {
 			},
 		},
 		{
-			Name:     "no variables",
-			Input:    "plain text",
-			Expected: "plain text",
+			Name:      "no variables",
+			Input:     "plain text",
+			Expected:  "plain text",
 			Variables: map[string]string{},
 		},
 		{
@@ -96,20 +96,20 @@ func (g *TestDataGenerator) ScriptTestData() map[string]string {
 		"basic.neuro": `# Basic script
 \set[name="test"]
 \get[name]`,
-		
+
 		"variables.neuro": `# Variable interpolation
 \set[greeting="Hello"]
 \set[name="World"]
 \set[message="${greeting}, ${name}!"]
 \get[message]`,
-		
+
 		"system.neuro": `# System variables
 \get[@user]
 \get[#test_mode]`,
-		
+
 		"invalid.neuro": `# Invalid command
 \invalid[param="value"]`,
-		
+
 		"empty.neuro": `# Empty script
 `,
 	}
@@ -159,31 +159,31 @@ func NewFileHelpers() *FileHelpers {
 func (f *FileHelpers) CreateTempFile(t *testing.T, filename, content string) string {
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, filename)
-	
+
 	err := os.WriteFile(filePath, []byte(content), 0644)
 	require.NoError(t, err, "Should create temp file successfully")
-	
+
 	return filePath
 }
 
 // CreateTempDir creates a temporary directory structure
 func (f *FileHelpers) CreateTempDir(t *testing.T, files map[string]string) string {
 	tmpDir := t.TempDir()
-	
+
 	for filename, content := range files {
 		filePath := filepath.Join(tmpDir, filename)
-		
+
 		// Create directory if needed
 		dir := filepath.Dir(filePath)
 		if dir != tmpDir {
 			err := os.MkdirAll(dir, 0755)
 			require.NoError(t, err, "Should create directory %s", dir)
 		}
-		
+
 		err := os.WriteFile(filePath, []byte(content), 0644)
 		require.NoError(t, err, "Should create file %s", filename)
 	}
-	
+
 	return tmpDir
 }
 

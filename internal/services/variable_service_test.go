@@ -32,7 +32,7 @@ func TestVariableService_Initialize(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewVariableService()
 			err := service.Initialize(tt.ctx)
-			
+
 			if tt.want != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.want.Error(), err.Error())
@@ -96,19 +96,19 @@ func TestVariableService_Get(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewVariableService()
 			ctx := testutils.NewMockContextWithVars(tt.setupVars)
-			
+
 			// Setup context error if needed
 			if tt.setupError != nil {
 				ctx.SetGetVariableError(tt.setupError)
 			}
-			
+
 			// Initialize service
 			err := service.Initialize(ctx)
 			require.NoError(t, err)
-			
+
 			// Test Get
 			value, err := service.Get(tt.varName, ctx)
-			
+
 			if tt.wantError != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.wantError)
@@ -123,9 +123,9 @@ func TestVariableService_Get(t *testing.T) {
 func TestVariableService_Get_NotInitialized(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
-	
+
 	value, err := service.Get("test_var", ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not initialized")
 	assert.Empty(t, value)
@@ -172,25 +172,25 @@ func TestVariableService_Set(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewVariableService()
 			ctx := testutils.NewMockContext()
-			
+
 			// Setup context error if needed
 			if tt.setupError != nil {
 				ctx.SetSetVariableError(tt.setupError)
 			}
-			
+
 			// Initialize service
 			err := service.Initialize(ctx)
 			require.NoError(t, err)
-			
+
 			// Test Set
 			err = service.Set(tt.varName, tt.varValue, ctx)
-			
+
 			if tt.wantError != "" {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.wantError)
 			} else {
 				assert.NoError(t, err)
-				
+
 				// Verify the variable was set
 				value, err := ctx.GetVariable(tt.varName)
 				assert.NoError(t, err)
@@ -203,9 +203,9 @@ func TestVariableService_Set(t *testing.T) {
 func TestVariableService_Set_NotInitialized(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Set("test_var", "test_value", ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not initialized")
 }
@@ -213,15 +213,15 @@ func TestVariableService_Set_NotInitialized(t *testing.T) {
 func TestVariableService_InterpolateString(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Test interpolation - note this will fail since we're using MockContext
 	// but we need to test the error handling
 	result, err := service.InterpolateString("Hello ${name}", ctx)
-	
+
 	// Should fail because MockContext is not a NeuroContext
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -231,9 +231,9 @@ func TestVariableService_InterpolateString(t *testing.T) {
 func TestVariableService_InterpolateString_NotInitialized(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
-	
+
 	result, err := service.InterpolateString("Hello ${name}", ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not initialized")
 	assert.Empty(t, result)
@@ -242,14 +242,14 @@ func TestVariableService_InterpolateString_NotInitialized(t *testing.T) {
 func TestVariableService_GetAllVariables(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
-	
+
 	// Initialize service
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Test GetAllVariables - note this will fail since we're using MockContext
 	result, err := service.GetAllVariables(ctx)
-	
+
 	// Should fail because MockContext is not a NeuroContext
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -259,9 +259,9 @@ func TestVariableService_GetAllVariables(t *testing.T) {
 func TestVariableService_GetAllVariables_NotInitialized(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
-	
+
 	result, err := service.GetAllVariables(ctx)
-	
+
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not initialized")
 	assert.Nil(t, result)
@@ -273,10 +273,10 @@ func BenchmarkVariableService_Get(b *testing.B) {
 	ctx := testutils.NewMockContextWithVars(map[string]string{
 		"test_var": "test_value",
 	})
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = service.Get("test_var", ctx)
@@ -286,10 +286,10 @@ func BenchmarkVariableService_Get(b *testing.B) {
 func BenchmarkVariableService_Set(b *testing.B) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = service.Set("test_var", "test_value", ctx)
@@ -299,10 +299,10 @@ func BenchmarkVariableService_Set(b *testing.B) {
 func BenchmarkVariableService_GetSystemVariable(b *testing.B) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(b, err)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = service.Get("@user", ctx)
@@ -323,13 +323,13 @@ func TestVariableService_SystemVariables(t *testing.T) {
 		{"os variable", "@os", "test-os"},
 		{"test_mode variable", "#test_mode", "true"},
 	}
-	
+
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			value, err := service.Get(tc.variable, ctx)
@@ -342,32 +342,32 @@ func TestVariableService_SystemVariables(t *testing.T) {
 func TestVariableService_ConcurrentAccess(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
-	
+
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
-	
+
 	// Test concurrent access
 	done := make(chan bool)
-	
+
 	// Start multiple goroutines for concurrent access
 	for i := 0; i < 10; i++ {
 		go func(id int) {
 			// Set a variable
 			varName := fmt.Sprintf("var_%d", id)
 			varValue := fmt.Sprintf("value_%d", id)
-			
+
 			err := service.Set(varName, varValue, ctx)
 			assert.NoError(t, err)
-			
+
 			// Get the variable
 			value, err := service.Get(varName, ctx)
 			assert.NoError(t, err)
 			assert.Equal(t, varValue, value)
-			
+
 			done <- true
 		}(i)
 	}
-	
+
 	// Wait for all goroutines to complete
 	for i := 0; i < 10; i++ {
 		<-done

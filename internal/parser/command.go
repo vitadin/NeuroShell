@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	
+
 	"neuroshell/pkg/types"
 )
 
 type Command struct {
-	Name          string
+	Name           string
 	BracketContent string
-	Options       map[string]string
-	Message       string
-	ParseMode     ParseMode
+	Options        map[string]string
+	Message        string
+	ParseMode      ParseMode
 }
 
 // Use ParseMode from types package
@@ -21,12 +21,12 @@ type ParseMode = types.ParseMode
 
 const (
 	ParseModeKeyValue = types.ParseModeKeyValue
-	ParseModeRaw     = types.ParseModeRaw
+	ParseModeRaw      = types.ParseModeRaw
 )
 
 func ParseInput(input string) *Command {
 	input = strings.TrimSpace(input)
-	
+
 	// If doesn't start with \, treat as \send message
 	if !strings.HasPrefix(input, "\\") {
 		return &Command{
@@ -35,14 +35,14 @@ func ParseInput(input string) *Command {
 			Options: make(map[string]string),
 		}
 	}
-	
+
 	// Remove the leading backslash
 	input = input[1:]
-	
+
 	cmd := &Command{
 		Options: make(map[string]string),
 	}
-	
+
 	// Try to parse command with brackets: command[content] message
 	bracketRe := regexp.MustCompile(`^([a-zA-Z_][a-zA-Z0-9_]*)\[([^\]]*)\](.*)$`)
 	if matches := bracketRe.FindStringSubmatch(input); matches != nil {
@@ -57,16 +57,16 @@ func ParseInput(input string) *Command {
 			cmd.Message = strings.TrimSpace(parts[1])
 		}
 	}
-	
+
 	// If no command name (malformed), treat as \send
 	if cmd.Name == "" {
 		cmd.Name = "send"
 		cmd.Message = input
 	}
-	
+
 	// Determine parse mode based on command
 	cmd.ParseMode = getParseMode(cmd.Name)
-	
+
 	// Parse bracket content based on mode
 	if cmd.BracketContent != "" {
 		if cmd.ParseMode == ParseModeRaw {
@@ -76,7 +76,7 @@ func ParseInput(input string) *Command {
 			parseKeyValueOptions(cmd.BracketContent, cmd.Options)
 		}
 	}
-	
+
 	return cmd
 }
 
@@ -90,22 +90,22 @@ func parseKeyValueOptions(content string, options map[string]string) {
 	if content == "" {
 		return
 	}
-	
+
 	// Split by comma, handling quoted values
 	parts := splitByComma(content)
-	
+
 	for _, part := range parts {
 		part = strings.TrimSpace(part)
 		if part == "" {
 			continue
 		}
-		
+
 		if strings.Contains(part, "=") {
 			// key=value format
 			kv := strings.SplitN(part, "=", 2)
 			key := strings.TrimSpace(kv[0])
 			value := strings.TrimSpace(kv[1])
-			
+
 			// Remove quotes if present
 			value = unquote(value)
 			options[key] = value
@@ -121,10 +121,10 @@ func splitByComma(s string) []string {
 	var current strings.Builder
 	inQuotes := false
 	quoteChar := byte(0)
-	
+
 	for i := 0; i < len(s); i++ {
 		c := s[i]
-		
+
 		if !inQuotes && (c == '"' || c == '\'') {
 			inQuotes = true
 			quoteChar = c
@@ -140,11 +140,11 @@ func splitByComma(s string) []string {
 			current.WriteByte(c)
 		}
 	}
-	
+
 	if current.Len() > 0 {
 		parts = append(parts, current.String())
 	}
-	
+
 	return parts
 }
 

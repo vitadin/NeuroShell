@@ -59,7 +59,6 @@ func (v *VariableService) InterpolateString(text string, ctx types.Context) (str
 	return neuroCtx.InterpolateVariables(text), nil
 }
 
-
 // GetAllVariables returns all variables from context (useful for debugging)
 func (v *VariableService) GetAllVariables(ctx types.Context) (map[string]string, error) {
 	if !v.initialized {
@@ -74,7 +73,7 @@ func (v *VariableService) GetAllVariables(ctx types.Context) (map[string]string,
 	// This would require adding a method to NeuroContext to expose all variables
 	// For now, return empty map as placeholder
 	result := make(map[string]string)
-	
+
 	// TODO: Add GetAllVariables method to NeuroContext if needed
 	return result, nil
 }

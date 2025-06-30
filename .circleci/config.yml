@@ -1,0 +1,78 @@
+version: 2.1
+
+# Define the executor for our jobs
+executors:
+  go-executor:
+    docker:
+      # Use official Go image matching go.mod version
+      - image: cimg/go:1.24
+    working_directory: ~/project
+
+# Define our CI job
+jobs:
+  ci-pipeline:
+    executor: go-executor
+    steps:
+      # Checkout the source code
+      - checkout
+      
+      # Install just command runner
+      # Note: CircleCI base images may not have just pre-installed
+      - run:
+          name: Install just
+          command: |
+            # Install just using the recommended installation method
+            curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/bin
+            echo 'export PATH="$HOME/bin:$PATH"' >> $BASH_ENV
+            source $BASH_ENV
+            just --version
+      
+      # Cache Go modules for faster builds
+      - restore_cache:
+          keys:
+            - go-mod-{{ checksum "go.sum" }}
+            - go-mod-
+      
+      # Run all CI checks using our local check-ci command
+      - run:
+          name: Run CI checks
+          command: |
+            # Source the PATH update for just
+            source $BASH_ENV
+            # Run the same checks we run locally
+            just check-ci
+          no_output_timeout: 10m
+      
+      # Save Go modules cache
+      - save_cache:
+          key: go-mod-{{ checksum "go.sum" }}
+          paths:
+            - ~/go/pkg/mod
+      
+      # Store test results and coverage reports as artifacts
+      - store_artifacts:
+          path: coverage.html
+          destination: coverage-reports/coverage.html
+      
+      - store_artifacts:
+          path: bin/
+          destination: binaries/
+      
+      # Store any additional coverage files that might be generated
+      - store_artifacts:
+          path: "*-coverage.html"
+          destination: coverage-reports/
+
+# Define the workflow
+workflows:
+  version: 2
+  ci:
+    jobs:
+      - ci-pipeline:
+          filters:
+            branches:
+              # Run on all branches
+              only: /.*/
+            tags:
+              # Run on all tags  
+              only: /.*/

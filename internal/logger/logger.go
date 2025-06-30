@@ -14,10 +14,10 @@ var Logger *log.Logger
 func init() {
 	// Create new logger instance with default settings
 	Logger = log.New(os.Stderr)
-	
+
 	// Remove timestamps as requested
 	Logger.SetTimeFormat("")
-	
+
 	// Set default log level
 	Logger.SetLevel(log.InfoLevel)
 }
@@ -33,7 +33,7 @@ func Configure(logLevel string, logFile string, testMode bool) error {
 	if level == "" {
 		level = "info" // default
 	}
-	
+
 	switch level {
 	case "debug":
 		Logger.SetLevel(log.DebugLevel)
@@ -48,7 +48,7 @@ func Configure(logLevel string, logFile string, testMode bool) error {
 	default:
 		Logger.SetLevel(log.InfoLevel)
 	}
-	
+
 	// Set log output destination
 	var output io.Writer = os.Stderr
 	if logFile != "" {
@@ -58,19 +58,19 @@ func Configure(logLevel string, logFile string, testMode bool) error {
 		}
 		output = file
 	}
-	
+
 	// Create new logger with configured output
 	Logger = log.New(output)
 	Logger.SetTimeFormat("")
 	Logger.SetLevel(parseLogLevel(level))
-	
+
 	// Configure for test mode
 	if testMode {
 		// In test mode, ensure deterministic output
-		Logger.SetTimeFormat("") // No timestamps
+		Logger.SetTimeFormat("")       // No timestamps
 		Logger.SetLevel(log.InfoLevel) // Consistent level
 	}
-	
+
 	return nil
 }
 

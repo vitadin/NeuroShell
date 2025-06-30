@@ -9,11 +9,11 @@ import (
 
 func TestParseInput_BackslashPrefix(t *testing.T) {
 	tests := []struct {
-		name           string
-		input          string
-		expectedName   string
-		expectedMsg    string
-		expectedOpts   map[string]string
+		name            string
+		input           string
+		expectedName    string
+		expectedMsg     string
+		expectedOpts    map[string]string
 		expectedBracket string
 	}{
 		{
@@ -74,7 +74,7 @@ func TestParseInput_BackslashPrefix(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := ParseInput(tt.input)
-			
+
 			assert.Equal(t, tt.expectedName, cmd.Name)
 			assert.Equal(t, tt.expectedMsg, cmd.Message)
 			assert.Equal(t, tt.expectedBracket, cmd.BracketContent)
@@ -119,7 +119,7 @@ func TestParseInput_NoBackslashPrefix(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := ParseInput(tt.input)
-			
+
 			assert.Equal(t, tt.expectedName, cmd.Name)
 			assert.Equal(t, tt.expectedMsg, cmd.Message)
 			assert.Equal(t, map[string]string{}, cmd.Options)
@@ -175,7 +175,7 @@ func TestParseInput_EdgeCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := ParseInput(tt.input)
-			
+
 			assert.Equal(t, tt.expectedName, cmd.Name)
 			assert.Equal(t, tt.expectedMsg, cmd.Message)
 		})
@@ -236,7 +236,7 @@ func TestParseInput_ComplexBracketSyntax(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := ParseInput(tt.input)
-			
+
 			assert.Equal(t, tt.expectedName, cmd.Name)
 			assert.Equal(t, tt.expectedMsg, cmd.Message)
 			assert.Equal(t, tt.expectedBracket, cmd.BracketContent)
@@ -281,7 +281,7 @@ func TestParseInput_SpecialCharacters(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := ParseInput(tt.input)
-			
+
 			assert.Equal(t, tt.expectedName, cmd.Name)
 			assert.Equal(t, tt.expectedMsg, cmd.Message)
 		})
@@ -290,23 +290,23 @@ func TestParseInput_SpecialCharacters(t *testing.T) {
 
 func TestParseInput_ParseMode(t *testing.T) {
 	tests := []struct {
-		name             string
-		input            string
+		name              string
+		input             string
 		expectedParseMode ParseMode
 	}{
 		{
-			name:             "default command uses key-value mode",
-			input:            "\\set[var=value] message",
+			name:              "default command uses key-value mode",
+			input:             "\\set[var=value] message",
 			expectedParseMode: ParseModeKeyValue,
 		},
 		{
-			name:             "bash command uses key-value mode (default)",
-			input:            "\\bash[cmd=ls] execute",
+			name:              "bash command uses key-value mode (default)",
+			input:             "\\bash[cmd=ls] execute",
 			expectedParseMode: ParseModeKeyValue,
 		},
 		{
-			name:             "send command uses key-value mode",
-			input:            "\\send[urgent] message",
+			name:              "send command uses key-value mode",
+			input:             "\\send[urgent] message",
 			expectedParseMode: ParseModeKeyValue,
 		},
 	}
@@ -324,7 +324,7 @@ func TestParseInput_LongInputs(t *testing.T) {
 	longMessage := strings.Repeat("very long message ", 1000)
 	longKey := strings.Repeat("key", 100)
 	longValue := strings.Repeat("value ", 500)
-	
+
 	tests := []struct {
 		name         string
 		input        string
@@ -847,7 +847,7 @@ func TestCommand_String(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := tt.command.String()
-			
+
 			// For commands with multiple options, we need to check components due to map iteration order
 			if len(tt.command.Options) > 1 {
 				assert.Contains(t, result, "\\"+tt.command.Name)
@@ -875,10 +875,10 @@ func TestCommand_String_Deterministic(t *testing.T) {
 		Message: "message",
 		Options: map[string]string{"key": "value"},
 	}
-	
+
 	result1 := cmd.String()
 	result2 := cmd.String()
-	
+
 	assert.Equal(t, result1, result2, "String() should be deterministic")
 }
 
@@ -887,7 +887,7 @@ func TestCommand_String_EmptyCommand(t *testing.T) {
 	cmd := &Command{
 		Options: map[string]string{},
 	}
-	
+
 	result := cmd.String()
 	assert.Equal(t, "\\", result)
 }
@@ -896,13 +896,13 @@ func TestCommand_String_LongContent(t *testing.T) {
 	// Test with very long content
 	longMessage := strings.Repeat("very long message ", 100)
 	longValue := strings.Repeat("long value ", 50)
-	
+
 	cmd := &Command{
 		Name:    "send",
 		Message: longMessage,
 		Options: map[string]string{"data": longValue},
 	}
-	
+
 	result := cmd.String()
 	assert.Contains(t, result, "\\send")
 	assert.Contains(t, result, longMessage)
@@ -969,63 +969,63 @@ func TestParseInput_ErrorHandling(t *testing.T) {
 	// These tests verify that the parser handles malformed input gracefully
 	// without panicking and produces reasonable output
 	tests := []struct {
-		name         string
-		input        string
-		expectedName string
+		name           string
+		input          string
+		expectedName   string
 		shouldNotPanic bool
 	}{
 		{
-			name:         "extremely long input",
-			input:        strings.Repeat("very long input ", 10000),
-			expectedName: "send",
+			name:           "extremely long input",
+			input:          strings.Repeat("very long input ", 10000),
+			expectedName:   "send",
 			shouldNotPanic: true,
 		},
 		{
-			name:         "input with null bytes",
-			input:        "\\command\x00test\x00message",
-			expectedName: "command\x00test\x00message", // Parser preserves null bytes in command name
+			name:           "input with null bytes",
+			input:          "\\command\x00test\x00message",
+			expectedName:   "command\x00test\x00message", // Parser preserves null bytes in command name
 			shouldNotPanic: true,
 		},
 		{
-			name:         "input with control characters",
-			input:        "\\test\r\n\t message",
-			expectedName: "test\r\n\t", // Parser preserves control characters in command name
+			name:           "input with control characters",
+			input:          "\\test\r\n\t message",
+			expectedName:   "test\r\n\t", // Parser preserves control characters in command name
 			shouldNotPanic: true,
 		},
 		{
-			name:         "deeply nested brackets",
-			input:        "\\cmd[key=\"[[[[nested]]]]\" value]",
-			expectedName: "cmd",
+			name:           "deeply nested brackets",
+			input:          "\\cmd[key=\"[[[[nested]]]]\" value]",
+			expectedName:   "cmd",
 			shouldNotPanic: true,
 		},
 		{
-			name:         "malformed regex patterns",
-			input:        "\\test[.*+?{}()[]^$|\\] message",
-			expectedName: "test",
+			name:           "malformed regex patterns",
+			input:          "\\test[.*+?{}()[]^$|\\] message",
+			expectedName:   "test",
 			shouldNotPanic: true,
 		},
 		{
-			name:         "extremely large options",
-			input:        "\\set[data=\"" + strings.Repeat("x", 100000) + "\"] msg",
-			expectedName: "set",
+			name:           "extremely large options",
+			input:          "\\set[data=\"" + strings.Repeat("x", 100000) + "\"] msg",
+			expectedName:   "set",
 			shouldNotPanic: true,
 		},
 		{
-			name:         "binary data",
-			input:        string([]byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}),
-			expectedName: "send",
+			name:           "binary data",
+			input:          string([]byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}),
+			expectedName:   "send",
 			shouldNotPanic: true,
 		},
 		{
-			name:         "unicode normalization edge cases",
-			input:        "\\test é vs é message", // Different unicode representations
-			expectedName: "test",
+			name:           "unicode normalization edge cases",
+			input:          "\\test é vs é message", // Different unicode representations
+			expectedName:   "test",
 			shouldNotPanic: true,
 		},
 		{
-			name:         "extremely nested quotes",
-			input:        "\\cmd[val=\"'\"'\"'\"'\"'\"'\"'\"] msg",
-			expectedName: "cmd",
+			name:           "extremely nested quotes",
+			input:          "\\cmd[val=\"'\"'\"'\"'\"'\"'\"'\"] msg",
+			expectedName:   "cmd",
 			shouldNotPanic: true,
 		},
 	}
@@ -1037,7 +1037,7 @@ func TestParseInput_ErrorHandling(t *testing.T) {
 					t.Errorf("ParseInput panicked on input %q: %v", tt.input, r)
 				}
 			}()
-			
+
 			cmd := ParseInput(tt.input)
 			assert.NotNil(t, cmd)
 			assert.Equal(t, tt.expectedName, cmd.Name)

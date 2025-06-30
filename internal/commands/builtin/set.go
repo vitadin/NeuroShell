@@ -3,7 +3,7 @@ package builtin
 import (
 	"fmt"
 	"strings"
-	
+
 	"neuroshell/internal/commands"
 	"neuroshell/pkg/types"
 )
@@ -30,7 +30,7 @@ func (c *SetCommand) Execute(args map[string]string, input string, ctx types.Con
 	if len(args) == 0 && input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
-	
+
 	// Handle bracket syntax: \set[var=value]
 	if len(args) > 0 {
 		for key, value := range args {
@@ -41,7 +41,7 @@ func (c *SetCommand) Execute(args map[string]string, input string, ctx types.Con
 		}
 		return nil
 	}
-	
+
 	// Handle space syntax: \set var value
 	if input != "" {
 		// Trim only leading whitespace, then split
@@ -54,14 +54,14 @@ func (c *SetCommand) Execute(args map[string]string, input string, ctx types.Con
 			} else {
 				key, value = parts[0], ""
 			}
-			
+
 			if err := ctx.SetVariable(key, value); err != nil {
 				return fmt.Errorf("failed to set variable %s: %w", key, err)
 			}
 			fmt.Printf("Setting %s = %s\n", key, value)
 		}
 	}
-	
+
 	return nil
 }
 

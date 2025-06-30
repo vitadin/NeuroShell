@@ -90,7 +90,7 @@ func (s *ScriptService) GetScriptMetadata(ctx types.Context) (map[string]interfa
 	}
 
 	metadata := make(map[string]interface{})
-	
+
 	if file, exists := neuroCtx.GetScriptMetadata("current_file"); exists {
 		metadata["current_file"] = file
 	}

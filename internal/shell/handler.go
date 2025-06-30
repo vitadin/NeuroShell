@@ -16,16 +16,16 @@ func ProcessInput(c *ishell.Context) {
 	if len(c.RawArgs) == 0 {
 		return
 	}
-	
+
 	rawInput := strings.Join(c.RawArgs, " ")
 	rawInput = strings.TrimSpace(rawInput)
-	
+
 	logger.Debug("Processing user input", "input", rawInput)
-	
+
 	// Parse input - interpolation will happen later at execution time
 	cmd := parser.ParseInput(rawInput)
 	logger.Debug("Parsed command", "name", cmd.Name, "message", cmd.Message, "options", cmd.Options)
-	
+
 	// Execute the command
 	executeCommand(c, cmd)
 }
@@ -33,25 +33,23 @@ func ProcessInput(c *ishell.Context) {
 // Global context instance to persist across commands
 var globalCtx = context.New()
 
-
-
 func InitializeServices(testMode bool) error {
 	// Set test mode on global context
 	globalCtx.SetTestMode(testMode)
-	
+
 	// Register all pure services
 	if err := services.GlobalRegistry.RegisterService(services.NewScriptService()); err != nil {
 		return err
 	}
-	
+
 	if err := services.GlobalRegistry.RegisterService(services.NewVariableService()); err != nil {
 		return err
 	}
-	
+
 	if err := services.GlobalRegistry.RegisterService(services.NewExecutorService()); err != nil {
 		return err
 	}
-	
+
 	if err := services.GlobalRegistry.RegisterService(services.NewInterpolationService()); err != nil {
 		return err
 	}
@@ -67,7 +65,7 @@ func InitializeServices(testMode bool) error {
 
 func executeCommand(c *ishell.Context, cmd *parser.Command) {
 	logger.CommandExecution(cmd.Name, cmd.Options)
-	
+
 	// Get interpolation service
 	interpolationService, err := services.GlobalRegistry.GetService("interpolation")
 	if err != nil {
@@ -85,7 +83,7 @@ func executeCommand(c *ishell.Context, cmd *parser.Command) {
 		c.Printf("Error: interpolation failed: %s\n", err.Error())
 		return
 	}
-	
+
 	logger.InterpolationStep(cmd.Message, interpolatedCmd.Message)
 
 	// Prepare input for execution
@@ -106,4 +104,3 @@ func executeCommand(c *ishell.Context, cmd *parser.Command) {
 		logger.Debug("Command executed successfully", "command", interpolatedCmd.Name)
 	}
 }
-

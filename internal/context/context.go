@@ -36,12 +36,12 @@ func (ctx *NeuroContext) GetVariable(name string) (string, error) {
 	if value, ok := ctx.getSystemVariable(name); ok {
 		return value, nil
 	}
-	
+
 	// Handle user variables
 	if value, ok := ctx.variables[name]; ok {
 		return value, nil
 	}
-	
+
 	return "", fmt.Errorf("variable %s not found", name)
 }
 
@@ -50,7 +50,7 @@ func (ctx *NeuroContext) SetVariable(name string, value string) error {
 	if strings.HasPrefix(name, "@") || strings.HasPrefix(name, "#") || strings.HasPrefix(name, "_") {
 		return fmt.Errorf("cannot set system variable: %s", name)
 	}
-	
+
 	ctx.variables[name] = value
 	return nil
 }
@@ -59,7 +59,7 @@ func (ctx *NeuroContext) GetMessageHistory(n int) []types.Message {
 	if n <= 0 || n > len(ctx.history) {
 		return ctx.history
 	}
-	
+
 	start := len(ctx.history) - n
 	return ctx.history[start:]
 }
@@ -104,13 +104,13 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		}
 		return "false", true
 	}
-	
+
 	// Handle message history variables: ${1}, ${2}, etc.
 	if matched, _ := regexp.MatchString(`^\d+$`, name); matched {
 		// TODO: Implement message history access
 		return fmt.Sprintf("message_%s_placeholder", name), true
 	}
-	
+
 	return "", false
 }
 
@@ -119,34 +119,34 @@ func (ctx *NeuroContext) InterpolateVariables(text string) string {
 	if !strings.Contains(text, "${") {
 		return text
 	}
-	
+
 	// Iterative nested interpolation with safety limit
 	maxIterations := 10 // Prevent infinite loops
 	for i := 0; i < maxIterations; i++ {
 		before := text
 		text = ctx.interpolateOnce(text)
-		
+
 		// If no changes or no more variables, we're done
 		if text == before || !strings.Contains(text, "${") {
 			break
 		}
 	}
-	
+
 	return text
 }
 
 // interpolateOnce performs a single pass of variable interpolation
 func (ctx *NeuroContext) interpolateOnce(text string) string {
 	re := regexp.MustCompile(`\$\{([^}]+)\}`)
-	
+
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		// Extract variable name (remove ${})
 		varName := match[2 : len(match)-1]
-		
+
 		if value, err := ctx.GetVariable(varName); err == nil {
 			return value
 		}
-		
+
 		// Graceful handling: missing variables become empty string
 		return ""
 	})
@@ -161,7 +161,7 @@ func (ctx *NeuroContext) DequeueCommand() (string, bool) {
 	if len(ctx.executionQueue) == 0 {
 		return "", false
 	}
-	
+
 	command := ctx.executionQueue[0]
 	ctx.executionQueue = ctx.executionQueue[1:]
 	return command, true

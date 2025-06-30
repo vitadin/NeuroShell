@@ -2,7 +2,7 @@ package builtin
 
 import (
 	"fmt"
-	
+
 	"neuroshell/internal/commands"
 	"neuroshell/pkg/types"
 )
@@ -29,11 +29,11 @@ func (c *SendCommand) Execute(args map[string]string, input string, ctx types.Co
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
-	
+
 	// TODO: Implement actual LLM agent communication
 	// For now, just echo the message
 	fmt.Printf("Sending: %s\n", input)
-	
+
 	return nil
 }
 

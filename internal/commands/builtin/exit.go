@@ -3,7 +3,7 @@ package builtin
 import (
 	"fmt"
 	"os"
-	
+
 	"neuroshell/internal/commands"
 	"neuroshell/pkg/types"
 )

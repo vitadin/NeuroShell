@@ -111,7 +111,7 @@ func init() {
 // recordTest records a new test case by running the .neuro script
 func recordTest(cmd *cobra.Command, args []string) error {
 	testName := args[0]
-	
+
 	if verbose {
 		fmt.Printf("Recording test case: %s\n", testName)
 	}
@@ -145,14 +145,14 @@ func recordTest(cmd *cobra.Command, args []string) error {
 
 	fmt.Printf("Recorded test case: %s\n", testName)
 	fmt.Printf("Expected output saved to: %s\n", expectedFile)
-	
+
 	return nil
 }
 
 // runTest runs a specific test case
 func runTest(cmd *cobra.Command, args []string) error {
 	testName := args[0]
-	
+
 	if verbose {
 		fmt.Printf("Running test case: %s\n", testName)
 	}
@@ -236,7 +236,7 @@ func runAllTests(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("\nResults: %d passed, %d failed\n", passed, failed)
-	
+
 	if failed > 0 {
 		return fmt.Errorf("%d test(s) failed", failed)
 	}
@@ -247,7 +247,7 @@ func runAllTests(cmd *cobra.Command, args []string) error {
 // acceptTest updates the golden file with current output
 func acceptTest(cmd *cobra.Command, args []string) error {
 	testName := args[0]
-	
+
 	if verbose {
 		fmt.Printf("Accepting current output for test: %s\n", testName)
 	}
@@ -259,7 +259,7 @@ func acceptTest(cmd *cobra.Command, args []string) error {
 // diffTest shows differences between expected and actual output
 func diffTest(cmd *cobra.Command, args []string) error {
 	testName := args[0]
-	
+
 	if verbose {
 		fmt.Printf("Showing diff for test case: %s\n", testName)
 	}
@@ -297,7 +297,7 @@ func diffTest(cmd *cobra.Command, args []string) error {
 	// Show diff
 	fmt.Printf("=== Expected ===\n%s\n", expected)
 	fmt.Printf("=== Actual ===\n%s\n", actual)
-	
+
 	if strings.TrimSpace(actual) == strings.TrimSpace(expected) {
 		fmt.Println("=== No differences ===")
 	} else {
@@ -347,10 +347,10 @@ func runNeuroScript(scriptPath string) (string, error) {
 
 	// Create the command to run the script using the \run command
 	runCommand := fmt.Sprintf("\\run %s\n\\exit\n", absPath)
-	
+
 	cmd := exec.Command(neurocmd, "--test-mode")
 	cmd.Stdin = strings.NewReader(runCommand)
-	
+
 	// Set environment variables for consistent testing
 	cmd.Env = append(os.Environ(),
 		"NEURO_LOG_LEVEL=fatal", // Minimize log noise in tests
@@ -396,7 +396,7 @@ func findAllTests() ([]string, error) {
 func cleanNeuroOutput(output string) string {
 	lines := strings.Split(output, "\n")
 	var cleanLines []string
-	
+
 	skipPatterns := []string{
 		"INFO Starting NeuroShell",
 		"INFO All services initialized",
@@ -405,7 +405,7 @@ func cleanNeuroOutput(output string) string {
 		"Type '\\help' for Neuro commands",
 		"Goodbye!",
 	}
-	
+
 	for _, line := range lines {
 		shouldSkip := false
 		for _, pattern := range skipPatterns {
@@ -414,11 +414,11 @@ func cleanNeuroOutput(output string) string {
 				break
 			}
 		}
-		
+
 		if !shouldSkip && strings.TrimSpace(line) != "" {
 			cleanLines = append(cleanLines, line)
 		}
 	}
-	
+
 	return strings.Join(cleanLines, "\n")
 }

@@ -32,17 +32,17 @@ func (c *RunCommand) Execute(args map[string]string, input string, ctx types.Con
 	if err != nil {
 		return fmt.Errorf("script service not available: %w", err)
 	}
-	
+
 	variableService, err := services.GlobalRegistry.GetService("variable")
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
-	
+
 	executorService, err := services.GlobalRegistry.GetService("executor")
 	if err != nil {
 		return fmt.Errorf("executor service not available: %w", err)
 	}
-	
+
 	interpolationService, err := services.GlobalRegistry.GetService("interpolation")
 	if err != nil {
 		return fmt.Errorf("interpolation service not available: %w", err)

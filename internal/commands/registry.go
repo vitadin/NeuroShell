@@ -88,6 +88,5 @@ func (r *Registry) IsValidCommand(name string) bool {
 	return exists
 }
 
-
 // Global registry instance
 var GlobalRegistry = NewRegistry()

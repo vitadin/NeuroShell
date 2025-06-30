@@ -2,7 +2,7 @@ package builtin
 
 import (
 	"fmt"
-	
+
 	"neuroshell/internal/commands"
 	"neuroshell/pkg/types"
 )
@@ -29,20 +29,20 @@ func (c *BashCommand) Execute(args map[string]string, input string, ctx types.Co
 	// For bash command, we need to check the raw bracket content
 	// This will require coordination with the parser to pass the raw content
 	var command string
-	
+
 	// Try to get command from input (both bracket and space syntax)
 	if input != "" {
 		command = input
 	}
-	
+
 	if command == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
-	
+
 	// TODO: Implement actual bash execution with proper security and sandboxing
 	// For now, just echo what would be executed
 	fmt.Printf("Executing: %s (not implemented yet)\n", command)
-	
+
 	return nil
 }
 
