@@ -228,9 +228,7 @@ func TestGetSystemVariable(t *testing.T) {
 			name:      "pwd",
 			varName:   "@pwd",
 			shouldGet: true,
-			validator: func(value string) bool {
-				return filepath.IsAbs(value)
-			},
+			validator: filepath.IsAbs,
 		},
 		{
 			name:      "user",
@@ -244,9 +242,7 @@ func TestGetSystemVariable(t *testing.T) {
 			name:      "home",
 			varName:   "@home",
 			shouldGet: true,
-			validator: func(value string) bool {
-				return filepath.IsAbs(value)
-			},
+			validator: filepath.IsAbs,
 		},
 		{
 			name:      "date",

@@ -129,18 +129,19 @@ func splitByComma(s string) []string {
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 
-		if !inQuotes && (c == '"' || c == '\'') {
+		switch {
+		case !inQuotes && (c == '"' || c == '\''):
 			inQuotes = true
 			quoteChar = c
 			current.WriteByte(c)
-		} else if inQuotes && c == quoteChar {
+		case inQuotes && c == quoteChar:
 			inQuotes = false
 			quoteChar = 0
 			current.WriteByte(c)
-		} else if !inQuotes && c == ',' {
+		case !inQuotes && c == ',':
 			parts = append(parts, current.String())
 			current.Reset()
-		} else {
+		default:
 			current.WriteByte(c)
 		}
 	}
