@@ -6,7 +6,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -15,6 +14,7 @@ import (
 	"github.com/creack/pty"
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
+	"neuroshell/internal/shellintegration"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -59,10 +59,16 @@ func (b *BashService) ExecuteCommand(sessionName, command string, options BashOp
 		return "", fmt.Errorf("failed to get or create session: %w", err)
 	}
 
-	// Execute command in session
-	output, err := b.executeInSession(session, command, options)
+	// Execute command in session with hybrid detection (OSC + marker fallback)
+	output, err := b.executeInSessionWithOSC(session, command, options, neuroCtx)
 	if err != nil {
-		return "", fmt.Errorf("failed to execute command in session %s: %w", sessionName, err)
+		// If hybrid detection fails completely, try one last fallback
+		logger.Debug("Hybrid detection failed, trying emergency fallback", "session", sessionName, "error", err)
+		emergencyOutput, emergencyErr := b.executeInSession(session, command, options)
+		if emergencyErr != nil {
+			return "", fmt.Errorf("failed to execute command in session %s (hybrid: %v, emergency: %v)", sessionName, err, emergencyErr)
+		}
+		return emergencyOutput, nil
 	}
 
 	// Update session last used time
@@ -164,7 +170,7 @@ func (b *BashService) ListSessions(ctx neurotypes.Context) ([]string, error) {
 	return neuroCtx.ListBashSessions(), nil
 }
 
-// getOrCreateSession gets an existing session or creates a new one.
+// getOrCreateSession gets an existing session or creates a new one with shell integration.
 func (b *BashService) getOrCreateSession(sessionName string, options BashOptions, ctx *context.NeuroContext) (*context.BashSession, error) {
 	// Try to get existing session
 	if session, exists := ctx.GetBashSession(sessionName); exists && !options.ForceNew {
@@ -188,7 +194,7 @@ func (b *BashService) getOrCreateSession(sessionName string, options BashOptions
 	return session, nil
 }
 
-// createBashSession creates a new bash session with PTY.
+// createBashSession creates a new bash session with PTY and shell integration.
 func (b *BashService) createBashSession(sessionName string, options BashOptions) (*context.BashSession, error) {
 	// Create bash command
 	cmd := exec.Command("bash")
@@ -232,8 +238,12 @@ func (b *BashService) createBashSession(sessionName string, options BashOptions)
 		}
 	}
 
-	// Initialize the bash session by waiting for it to be ready
-	err = b.initializeBashSession(session)
+	// Initialize shell integration tracking (will be set up properly when connected to context)
+	session.CommandTracker = nil // Will be initialized when used with context
+	session.SessionState = nil   // Will be initialized when used with context
+
+	// Initialize shell integration for the session
+	err = b.setupShellIntegration(session)
 	if err != nil {
 		// Clean up session on initialization failure
 		session.Active = false
@@ -244,43 +254,62 @@ func (b *BashService) createBashSession(sessionName string, options BashOptions)
 			_ = session.Process.Process.Kill()
 			_ = session.Process.Wait()
 		}
-		return nil, fmt.Errorf("failed to initialize bash session: %w", err)
+		return nil, fmt.Errorf("failed to setup shell integration: %w", err)
 	}
 
 	return session, nil
 }
 
-// initializeBashSession waits for bash to be ready and clears any startup output.
-func (b *BashService) initializeBashSession(session *context.BashSession) error {
-	logger.Debug("Initializing bash session", "session", session.Name)
+// setupShellIntegration configures bash session with OSC 133 shell integration.
+func (b *BashService) setupShellIntegration(session *context.BashSession) error {
+	logger.Debug("Setting up shell integration", "session", session.Name)
 
 	// Give bash a moment to start up
 	time.Sleep(100 * time.Millisecond)
 
-	// Send a simple command to test if bash is ready and clear startup messages
-	initMarker := fmt.Sprintf("NEURO_INIT_%d", time.Now().UnixNano())
-	initCommand := fmt.Sprintf("echo '%s'\n", initMarker)
-
-	logger.Debug("Sending initialization command", "command", initCommand)
-
-	_, err := session.PTY.WriteString(initCommand)
-	if err != nil {
-		return fmt.Errorf("failed to write init command: %w", err)
+	// Generate and log the shell integration script for debugging
+	integrationScript := shellintegration.ShellIntegrationScript()
+	logger.Debug("Generated shell integration script", "session", session.Name, "script_length", len(integrationScript))
+	
+	// Log first few lines of script for debugging
+	scriptLines := strings.Split(integrationScript, "\n")
+	if len(scriptLines) > 0 {
+		logger.Debug("Script preview", "session", session.Name, "first_line", scriptLines[0])
 	}
 
-	// Read until we see our init marker, discarding all startup output
-	scanner := bufio.NewScanner(session.PTY)
+	// Send the script
+	_, err := session.PTY.WriteString(integrationScript + "\n")
+	if err != nil {
+		logger.Debug("Failed to write shell integration script", "session", session.Name, "error", err)
+		return fmt.Errorf("failed to write shell integration script: %w", err)
+	}
+
+	// Send a test command to verify integration
+	testCommand := "echo 'NEURO_INTEGRATION_TEST'\n"
+	_, err = session.PTY.WriteString(testCommand)
+	if err != nil {
+		logger.Debug("Failed to write test command", "session", session.Name, "error", err)
+		return fmt.Errorf("failed to write test command: %w", err)
+	}
+
+	// Wait for the integration to be set up by looking for the initial prompt start
 	timeout := time.After(5 * time.Second)
 	done := make(chan bool)
 	errChan := make(chan error)
 
-	go func() {
-		for scanner.Scan() {
-			line := scanner.Text()
-			logger.Debug("Init: read line", "line", line)
+	parser := shellintegration.NewStreamParser()
 
-			if strings.Contains(line, initMarker) {
-				logger.Debug("Bash session initialized successfully", "marker", initMarker)
+	go func() {
+		scanner := bufio.NewScanner(session.PTY)
+		for scanner.Scan() {
+			line := scanner.Text() + "\n"
+			logger.Debug("Shell integration setup: read line", "line", strings.TrimSpace(line))
+
+			result := parser.ParseOutput([]byte(line))
+
+			// Look for any OSC sequence indicating integration is working
+			if len(result.Sequences) > 0 {
+				logger.Debug("Shell integration setup complete", "sequences", len(result.Sequences))
 				done <- true
 				return
 			}
@@ -289,18 +318,331 @@ func (b *BashService) initializeBashSession(session *context.BashSession) error 
 		if err := scanner.Err(); err != nil {
 			errChan <- err
 		} else {
-			errChan <- fmt.Errorf("PTY closed during initialization")
+			errChan <- fmt.Errorf("PTY closed during shell integration setup")
 		}
 	}()
 
 	select {
 	case <-done:
-		logger.Debug("Bash session ready", "session", session.Name)
-		return nil
+		logger.Debug("Shell integration ready", "session", session.Name)
+		return b.validateShellIntegration(session)
 	case err := <-errChan:
-		return fmt.Errorf("initialization failed: %w", err)
+		logger.Debug("Shell integration setup failed", "error", err)
+		// Don't fail - session can still work without integration
+		return nil
 	case <-timeout:
-		return fmt.Errorf("bash session initialization timed out")
+		logger.Debug("Shell integration setup timed out - using validation", "session", session.Name)
+		// Try validation anyway - might still work
+		return b.validateShellIntegration(session)
+	}
+}
+
+// validateShellIntegration validates that shell integration is working properly
+func (b *BashService) validateShellIntegration(session *context.BashSession) error {
+	timeout := time.After(3 * time.Second)
+	done := make(chan bool)
+	errChan := make(chan error)
+	
+	parser := shellintegration.NewStreamParser()
+	var allOutput strings.Builder
+	oscSequenceFound := false
+	testOutputFound := false
+
+	go func() {
+		scanner := bufio.NewScanner(session.PTY)
+		lineCount := 0
+		
+		for scanner.Scan() {
+			line := scanner.Text()
+			lineCount++
+			allOutput.WriteString(line + "\n")
+			
+			logger.Debug("Integration validation", "session", session.Name, "line", lineCount, "content", line)
+			
+			// Check for test output
+			if strings.Contains(line, "NEURO_INTEGRATION_TEST") {
+				testOutputFound = true
+				logger.Debug("Test output found", "session", session.Name)
+			}
+			
+			// Parse for OSC sequences
+			result := parser.ParseOutput([]byte(line + "\n"))
+			
+			if len(result.Sequences) > 0 {
+				for _, seq := range result.Sequences {
+					logger.Debug("OSC sequence detected", "session", session.Name, "type", seq.Type, "raw", seq.Raw)
+				}
+				oscSequenceFound = true
+			}
+			
+			// Consider integration successful if we see OSC sequences and test output
+			if oscSequenceFound && testOutputFound {
+				logger.Debug("Shell integration validation successful", "session", session.Name)
+				done <- true
+				return
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			errChan <- err
+		} else {
+			errChan <- fmt.Errorf("PTY closed during validation")
+		}
+	}()
+
+	select {
+	case <-done:
+		logger.Debug("Shell integration validated successfully", "session", session.Name)
+		return nil
+		
+	case err := <-errChan:
+		logger.Debug("Shell integration validation failed", "session", session.Name, "error", err, "output", allOutput.String())
+		// Don't fail completely - session can work with fallback detection
+		return nil
+		
+	case <-timeout:
+		output := allOutput.String()
+		logger.Debug("Shell integration validation timed out", "session", session.Name, "osc_found", oscSequenceFound, "test_found", testOutputFound, "output", output)
+		
+		// Check if we at least got the test output (bash is working)
+		if testOutputFound {
+			logger.Debug("Bash is working but OSC integration may have failed", "session", session.Name)
+		} else {
+			logger.Debug("No test output - bash session may have issues", "session", session.Name)
+		}
+		
+		// Continue anyway - we'll use fallback detection
+		return nil
+	}
+}
+
+// executeInSessionWithOSC executes a command using OSC 133 shell integration for completion detection.
+func (b *BashService) executeInSessionWithOSC(session *context.BashSession, command string, options BashOptions, ctx *context.NeuroContext) (string, error) {
+	session.LastUsed = time.Now()
+
+	logger.Debug("Executing command with OSC detection", "session", session.Name, "command", command)
+
+	// Get or create command tracker session
+	tracker := ctx.GetCommandTracker()
+	trackerSession, exists := tracker.GetSession(session.Name)
+	if !exists {
+		trackerSession = tracker.CreateSession(session.Name)
+		logger.Debug("Created new tracker session", "session", session.Name)
+	}
+
+	// Write command to PTY
+	commandWithNewline := command + "\n"
+	_, err := session.PTY.WriteString(commandWithNewline)
+	if err != nil {
+		return "", fmt.Errorf("failed to write command to PTY: %w", err)
+	}
+
+	// Set timeout - shorter default for faster response when OSC fails
+	timeout := options.Timeout
+	if timeout == 0 {
+		timeout = 5 * time.Second // Reduced timeout for better user experience
+	}
+
+	return b.executeWithHybridDetection(session, trackerSession, tracker, command, timeout)
+}
+
+// executeWithHybridDetection tries OSC detection first, then falls back to marker detection
+func (b *BashService) executeWithHybridDetection(session *context.BashSession, trackerSession *shellintegration.SessionState, tracker *shellintegration.CommandTracker, command string, timeout time.Duration) (string, error) {
+	logger.Debug("Starting hybrid detection", "session", session.Name, "command", command, "timeout", timeout)
+	
+	// Try OSC detection first with short timeout for fast fallback
+	oscTimeout := 2 * time.Second
+	if timeout < oscTimeout {
+		oscTimeout = timeout / 3
+	}
+	
+	logger.Debug("Trying OSC detection first", "session", session.Name, "osc_timeout", oscTimeout)
+	
+	output, err := b.readWithOSCDetectionTimeout(session, trackerSession, tracker, oscTimeout)
+	if err == nil {
+		logger.Debug("OSC detection successful", "session", session.Name)
+		return output, nil
+	}
+	
+	// OSC detection failed, fallback to marker detection
+	logger.Debug("OSC detection failed, falling back to marker detection", "session", session.Name, "error", err)
+	
+	// Calculate remaining timeout
+	remainingTimeout := timeout - oscTimeout
+	if remainingTimeout <= 0 {
+		remainingTimeout = 2 * time.Second // Minimum fallback timeout
+	}
+	
+	return b.executeWithMarkerDetectionNoCommandWrite(session, command, remainingTimeout)
+}
+
+// executeWithMarkerDetection uses the legacy marker-based detection as fallback
+func (b *BashService) executeWithMarkerDetection(session *context.BashSession, command string, timeout time.Duration) (string, error) {
+	logger.Debug("Using marker detection fallback", "session", session.Name)
+	
+	// Generate unique marker for command completion detection
+	marker := fmt.Sprintf("NEURO_CMD_DONE_%d", time.Now().UnixNano())
+	
+	// Don't re-execute the command, just add a marker to detect when it's done
+	markerCommand := fmt.Sprintf("echo '%s'\n", marker)
+	
+	_, err := session.PTY.WriteString(markerCommand)
+	if err != nil {
+		return "", fmt.Errorf("failed to write marker command to PTY: %w", err)
+	}
+	
+	return b.readUntilMarker(session.PTY, marker, timeout)
+}
+
+// executeWithMarkerDetectionNoCommandWrite uses marker-based detection without re-executing the command
+func (b *BashService) executeWithMarkerDetectionNoCommandWrite(session *context.BashSession, command string, timeout time.Duration) (string, error) {
+	logger.Debug("Using marker detection fallback without re-executing command", "session", session.Name)
+	
+	// Generate unique marker for command completion detection
+	marker := fmt.Sprintf("NEURO_CMD_DONE_%d", time.Now().UnixNano())
+	
+	// Only add a marker to detect when the already-executed command is done
+	markerCommand := fmt.Sprintf("echo '%s'\n", marker)
+	
+	_, err := session.PTY.WriteString(markerCommand)
+	if err != nil {
+		return "", fmt.Errorf("failed to write marker command to PTY: %w", err)
+	}
+	
+	return b.readUntilMarker(session.PTY, marker, timeout)
+}
+
+// readWithOSCDetectionTimeout is like readWithOSCDetection but with a specific timeout
+func (b *BashService) readWithOSCDetectionTimeout(session *context.BashSession, trackerSession *shellintegration.SessionState, tracker *shellintegration.CommandTracker, timeout time.Duration) (string, error) {
+	var output strings.Builder
+	
+	timeoutChan := time.After(timeout)
+	done := make(chan string)
+	errChan := make(chan error)
+	
+	logger.Debug("Starting OSC detection with timeout", "session", session.Name, "timeout", timeout)
+	
+	go func() {
+		scanner := bufio.NewScanner(session.PTY)
+		lineCount := 0
+		
+		for scanner.Scan() {
+			line := scanner.Text()
+			lineCount++
+			
+			logger.Debug("Read PTY line with OSC", "line_num", lineCount, "content", line)
+			
+			// Process the line through command tracker for OSC detection
+			result, err := tracker.ProcessOutput(session.Name, []byte(line+"\n"))
+			if err != nil {
+				logger.Debug("Error processing output", "error", err)
+				continue
+			}
+			
+			// Display output in real-time (honest output) - use NewOutput to avoid duplication
+			if result.HasNewOutput && result.NewOutput != "" {
+				cleanOutput := shellintegration.FilterOSCSequences(result.NewOutput)
+				if strings.TrimSpace(cleanOutput) != "" {
+					fmt.Print(cleanOutput)
+					output.WriteString(cleanOutput)
+				}
+			}
+			
+			// Check if command is complete
+			if result.IsComplete {
+				logger.Debug("Command completed via OSC detection", "session", session.Name, "exit_code", result.ExitCode, "total_lines", lineCount)
+				done <- output.String()
+				return
+			}
+		}
+		
+		// Scanner error or PTY closed
+		if err := scanner.Err(); err != nil {
+			logger.Debug("Scanner error in OSC detection", "error", err)
+			errChan <- err
+		} else {
+			logger.Debug("PTY closed during OSC detection")
+			errChan <- fmt.Errorf("PTY closed unexpectedly")
+		}
+	}()
+	
+	select {
+	case result := <-done:
+		logger.Debug("OSC detection completed successfully", "output_length", len(result))
+		return result, nil
+	case err := <-errChan:
+		logger.Debug("OSC detection failed with PTY error", "error", err, "partial_output", output.String())
+		return output.String(), fmt.Errorf("OSC detection failed: %w", err)
+	case <-timeoutChan:
+		logger.Debug("OSC detection timed out", "timeout", timeout, "partial_output", output.String())
+		return output.String(), fmt.Errorf("OSC detection timed out after %v", timeout)
+	}
+}
+
+// readWithOSCDetection reads PTY output with real-time display and OSC completion detection.
+func (b *BashService) readWithOSCDetection(session *context.BashSession, trackerSession *shellintegration.SessionState, tracker *shellintegration.CommandTracker, timeout time.Duration) (string, error) {
+	var output strings.Builder
+
+	timeoutChan := time.After(timeout)
+	done := make(chan string)
+	errChan := make(chan error)
+
+	logger.Debug("Starting OSC-based output reading", "session", session.Name, "timeout", timeout)
+
+	go func() {
+		scanner := bufio.NewScanner(session.PTY)
+		lineCount := 0
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			lineCount++
+
+			logger.Debug("Read PTY line with OSC", "line_num", lineCount, "content", line)
+
+			// Process the line through command tracker for OSC detection
+			result, err := tracker.ProcessOutput(session.Name, []byte(line+"\n"))
+			if err != nil {
+				logger.Debug("Error processing output", "error", err)
+				continue
+			}
+
+			// Display output in real-time (honest output) - use NewOutput to avoid duplication
+			if result.HasNewOutput && result.NewOutput != "" {
+				cleanOutput := shellintegration.FilterOSCSequences(result.NewOutput)
+				if strings.TrimSpace(cleanOutput) != "" {
+					fmt.Print(cleanOutput)
+					output.WriteString(cleanOutput)
+				}
+			}
+
+			// Check if command is complete
+			if result.IsComplete {
+				logger.Debug("Command completed via OSC detection", "session", session.Name, "exit_code", result.ExitCode, "total_lines", lineCount)
+				done <- output.String()
+				return
+			}
+		}
+
+		// Scanner error or PTY closed
+		if err := scanner.Err(); err != nil {
+			logger.Debug("Scanner error in OSC detection", "error", err)
+			errChan <- err
+		} else {
+			logger.Debug("PTY closed during OSC detection")
+			errChan <- fmt.Errorf("PTY closed unexpectedly")
+		}
+	}()
+
+	select {
+	case result := <-done:
+		logger.Debug("Command completed successfully with OSC", "output_length", len(result))
+		return result, nil
+	case err := <-errChan:
+		logger.Debug("PTY read error with OSC", "error", err, "partial_output", output.String())
+		return output.String(), fmt.Errorf("PTY read error: %w", err)
+	case <-timeoutChan:
+		logger.Debug("Command timed out with OSC", "timeout", timeout, "partial_output", output.String())
+		return output.String(), fmt.Errorf("command timed out after %v", timeout)
 	}
 }
 
@@ -308,8 +650,8 @@ func (b *BashService) initializeBashSession(session *context.BashSession) error 
 func (b *BashService) executeInSession(session *context.BashSession, command string, options BashOptions) (string, error) {
 	session.LastUsed = time.Now()
 
-	// Generate unique marker for command completion detection
-	marker := fmt.Sprintf("NEURO_CMD_DONE_%d_%d", time.Now().UnixNano(), rand.Intn(10000))
+	// Generate unique marker for command completion detection (legacy fallback)
+	marker := fmt.Sprintf("NEURO_CMD_DONE_%d", time.Now().UnixNano())
 
 	// Create command sequence with proper separation and newlines
 	// Use explicit newlines to ensure commands execute separately

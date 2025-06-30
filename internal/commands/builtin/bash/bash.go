@@ -118,10 +118,8 @@ func (c *Command) Execute(options map[string]string, input string, ctx neurotype
 		}
 	}
 
-	// Print output to user
-	if output != "" {
-		fmt.Print(output)
-	}
+	// Output is already printed in real-time by OSC detection
+	// No need to print again here
 
 	return nil
 }

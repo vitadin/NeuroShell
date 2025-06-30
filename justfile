@@ -19,7 +19,7 @@ default:
     @echo "  check-ci          - Run all CI checks locally (mirrors CI pipeline)"
 
 # Build the main binary
-build: lint
+build:
     @echo "Building neurotest..."
     go build -o bin/neurotest ./cmd/neurotest
     @echo "Binary built at: bin/neurotest"

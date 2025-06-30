@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"neuroshell/internal/shellintegration"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -26,6 +27,10 @@ type BashSession struct {
 	LastUsed    time.Time         // Last command execution time
 	Active      bool              // Whether session is active
 	mutex       sync.RWMutex      // Thread safety for session access
+
+	// Shell integration support
+	CommandTracker *shellintegration.CommandTracker // Command state tracking
+	SessionState   *shellintegration.SessionState   // Shell integration state
 }
 
 // NeuroContext implements the neurotypes.Context interface providing session state management.
@@ -39,6 +44,9 @@ type NeuroContext struct {
 	testMode       bool
 	bashSessions   map[string]*BashSession // Named bash sessions
 	bashMutex      sync.RWMutex            // Thread safety for bash sessions
+
+	// Shell integration support
+	commandTracker *shellintegration.CommandTracker // Global command tracker
 }
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
@@ -51,6 +59,7 @@ func New() *NeuroContext {
 		scriptMetadata: make(map[string]interface{}),
 		testMode:       false,
 		bashSessions:   make(map[string]*BashSession),
+		commandTracker: shellintegration.NewCommandTracker(),
 	}
 }
 
@@ -297,12 +306,22 @@ func (ctx *NeuroContext) RemoveBashSession(name string) bool {
 	return true
 }
 
+// GetCommandTracker returns the global command tracker for shell integration.
+func (ctx *NeuroContext) GetCommandTracker() *shellintegration.CommandTracker {
+	return ctx.commandTracker
+}
+
 // cleanup closes the PTY and terminates the bash process.
 func (session *BashSession) cleanup() {
 	session.mutex.Lock()
 	defer session.mutex.Unlock()
 
 	session.Active = false
+
+	// Clean up shell integration tracking
+	if session.CommandTracker != nil {
+		session.CommandTracker.RemoveSession(session.Name)
+	}
 
 	if session.PTY != nil {
 		_ = session.PTY.Close()
