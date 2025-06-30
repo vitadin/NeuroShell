@@ -1,3 +1,0 @@
-# Test script - variables set before use
-\set[test="working"]
-\send Variable test is ${test}

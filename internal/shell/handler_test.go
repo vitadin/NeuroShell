@@ -12,7 +12,6 @@ import (
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/commands/builtin"
-	"neuroshell/internal/commands/builtin/bash"
 	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
@@ -104,7 +103,7 @@ func setupTestEnvironment(t *testing.T) func() {
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.ExitCommand{}))
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.SendCommand{}))
 	require.NoError(t, commands.GlobalRegistry.Register(&builtin.RunCommand{}))
-	require.NoError(t, commands.GlobalRegistry.Register(&bash.Command{}))
+	// Note: Bash command has been removed
 
 	// Initialize services
 	err := InitializeServices(true)
@@ -152,9 +151,6 @@ func testExecuteCommand(mockCtx *MockIShellContext, cmd *parser.Command) {
 
 	// Prepare input for execution
 	input := interpolatedCmd.Message
-	if interpolatedCmd.Name == "bash" && interpolatedCmd.ParseMode == parser.ParseModeRaw && interpolatedCmd.BracketContent != "" {
-		input = interpolatedCmd.BracketContent
-	}
 
 	// Execute command with interpolated values
 	err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, input, globalCtx)
@@ -478,32 +474,9 @@ func TestExecuteCommand_BashCommandSpecialHandling(t *testing.T) {
 	defer cleanup()
 
 	tests := []struct {
-		name              string
-		cmd               *parser.Command
-		expectBashMessage string
+		name string
+		cmd  *parser.Command
 	}{
-		{
-			name: "bash command with raw parse mode",
-			cmd: &parser.Command{
-				Name:           "bash",
-				Message:        "echo 'from message'",
-				BracketContent: "echo 'from bracket'",
-				Options:        map[string]string{},
-				ParseMode:      parser.ParseModeRaw,
-			},
-			expectBashMessage: "echo 'from bracket'", // Should use bracket content
-		},
-		{
-			name: "bash command with key-value parse mode",
-			cmd: &parser.Command{
-				Name:           "bash",
-				Message:        "echo 'from message'",
-				BracketContent: "echo 'from bracket'",
-				Options:        map[string]string{},
-				ParseMode:      parser.ParseModeKeyValue,
-			},
-			expectBashMessage: "echo 'from message'", // Should use message
-		},
 		{
 			name: "non-bash command",
 			cmd: &parser.Command{
@@ -513,7 +486,6 @@ func TestExecuteCommand_BashCommandSpecialHandling(t *testing.T) {
 				Options:        map[string]string{"var": "value"},
 				ParseMode:      parser.ParseModeRaw,
 			},
-			expectBashMessage: "", // Not a bash command
 		},
 	}
 
@@ -524,13 +496,8 @@ func TestExecuteCommand_BashCommandSpecialHandling(t *testing.T) {
 
 			output := mockCtx.GetOutput()
 
-			if tt.cmd.Name == "bash" {
-				// Bash command executes without errors (output goes to stdout)
-				assert.NotContains(t, output, "Error:", "Bash command should execute without shell errors")
-			} else {
-				// Non-bash commands should execute normally
-				assert.NotContains(t, output, "Error:", "Unexpected error output: %s", output)
-			}
+			// Commands should execute normally
+			assert.NotContains(t, output, "Error:", "Unexpected error output: %s", output)
 		})
 	}
 }

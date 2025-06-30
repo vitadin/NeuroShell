@@ -2,7 +2,4 @@
 // This file imports all builtin command packages for side effects (init functions).
 package builtin
 
-import (
-	// Import bash package for command registration
-	_ "neuroshell/internal/commands/builtin/bash"
-)
+// Note: Individual builtin commands are registered via their own init() functions
