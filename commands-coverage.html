@@ -1,0 +1,666 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>builtin: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">neuroshell/internal/commands/builtin/bash.go (100.0%)</option>
+				
+				<option value="file1">neuroshell/internal/commands/builtin/exit.go (100.0%)</option>
+				
+				<option value="file2">neuroshell/internal/commands/builtin/get.go (100.0%)</option>
+				
+				<option value="file3">neuroshell/internal/commands/builtin/help.go (100.0%)</option>
+				
+				<option value="file4">neuroshell/internal/commands/builtin/run.go (3.9%)</option>
+				
+				<option value="file5">neuroshell/internal/commands/builtin/send.go (22.2%)</option>
+				
+				<option value="file6">neuroshell/internal/commands/builtin/set.go (100.0%)</option>
+				
+				<option value="file7">neuroshell/internal/commands/registry.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package builtin
+
+import (
+        "fmt"
+        
+        "neuroshell/internal/commands"
+        "neuroshell/pkg/types"
+)
+
+type BashCommand struct{}
+
+func (c *BashCommand) Name() string <span class="cov9" title="16">{
+        return "bash"
+}</span>
+
+func (c *BashCommand) ParseMode() types.ParseMode <span class="cov5" title="4">{
+        return types.ParseModeRaw
+}</span>
+
+func (c *BashCommand) Description() string <span class="cov5" title="4">{
+        return "Execute system command"
+}</span>
+
+func (c *BashCommand) Usage() string <span class="cov6" title="6">{
+        return "\\bash[command] or \\bash command"
+}</span>
+
+func (c *BashCommand) Execute(args map[string]string, input string, ctx types.Context) error <span class="cov10" title="20">{
+        // For bash command, we need to check the raw bracket content
+        // This will require coordination with the parser to pass the raw content
+        var command string
+        
+        // Try to get command from input (both bracket and space syntax)
+        if input != "" </span><span class="cov9" title="18">{
+                command = input
+        }</span>
+        
+        <span class="cov10" title="20">if command == "" </span><span class="cov3" title="2">{
+                return fmt.Errorf("Usage: %s", c.Usage())
+        }</span>
+        
+        // TODO: Implement actual bash execution with proper security and sandboxing
+        // For now, just echo what would be executed
+        <span class="cov9" title="18">fmt.Printf("Executing: %s (not implemented yet)\n", command)
+        
+        return nil</span>
+}
+
+func init() <span class="cov5" title="4">{
+        commands.GlobalRegistry.Register(&amp;BashCommand{})
+}</pre>
+		
+		<pre class="file" id="file1" style="display: none">package builtin
+
+import (
+        "fmt"
+        "os"
+        
+        "neuroshell/internal/commands"
+        "neuroshell/pkg/types"
+)
+
+type ExitCommand struct{}
+
+func (c *ExitCommand) Name() string <span class="cov10" title="16">{
+        return "exit"
+}</span>
+
+func (c *ExitCommand) ParseMode() types.ParseMode <span class="cov5" title="4">{
+        return types.ParseModeKeyValue
+}</span>
+
+func (c *ExitCommand) Description() string <span class="cov5" title="4">{
+        return "Exit the shell"
+}</span>
+
+func (c *ExitCommand) Usage() string <span class="cov5" title="4">{
+        return "\\exit"
+}</span>
+
+func (c *ExitCommand) Execute(args map[string]string, input string, ctx types.Context) error <span class="cov4" title="3">{
+        fmt.Println("Goodbye!")
+        // For now, we'll use os.Exit. In the future, we might want to use a more graceful shutdown
+        // that could be coordinated through the context or a shutdown signal
+        os.Exit(0)
+        return nil
+}</span>
+
+func init() <span class="cov5" title="4">{
+        commands.GlobalRegistry.Register(&amp;ExitCommand{})
+}</pre>
+		
+		<pre class="file" id="file2" style="display: none">package builtin
+
+import (
+        "fmt"
+        "strings"
+        
+        "neuroshell/internal/commands"
+        "neuroshell/pkg/types"
+)
+
+type GetCommand struct{}
+
+func (c *GetCommand) Name() string <span class="cov8" title="13">{
+        return "get"
+}</span>
+
+func (c *GetCommand) ParseMode() types.ParseMode <span class="cov1" title="1">{
+        return types.ParseModeKeyValue
+}</span>
+
+func (c *GetCommand) Description() string <span class="cov1" title="1">{
+        return "Get a variable"
+}</span>
+
+func (c *GetCommand) Usage() string <span class="cov5" title="5">{
+        return "\\get[var] or \\get var"
+}</span>
+
+func (c *GetCommand) Execute(args map[string]string, input string, ctx types.Context) error <span class="cov10" title="20">{
+        var variable string
+        
+        // Handle bracket syntax: \get[var]
+        if len(args) &gt; 0 </span><span class="cov8" title="12">{
+                for key := range args </span><span class="cov8" title="12">{
+                        variable = key
+                        break</span>
+                }
+        } else<span class="cov7" title="8"> if input != "" </span><span class="cov6" title="6">{
+                // Handle space syntax: \get var
+                fields := strings.Fields(input)
+                if len(fields) &gt; 0 </span><span class="cov5" title="5">{
+                        variable = fields[0]
+                }</span>
+        }
+        
+        <span class="cov10" title="20">if variable == "" </span><span class="cov5" title="4">{
+                return fmt.Errorf("Usage: %s", c.Usage())
+        }</span>
+        
+        <span class="cov9" title="16">value, err := ctx.GetVariable(variable)
+        if err != nil </span><span class="cov4" title="3">{
+                return fmt.Errorf("failed to get variable %s: %w", variable, err)
+        }</span>
+        
+        <span class="cov8" title="13">fmt.Printf("%s = %s\n", variable, value)
+        return nil</span>
+}
+
+func init() <span class="cov5" title="4">{
+        commands.GlobalRegistry.Register(&amp;GetCommand{})
+}</pre>
+		
+		<pre class="file" id="file3" style="display: none">package builtin
+
+import (
+        "fmt"
+        "sort"
+        
+        "neuroshell/internal/commands"
+        "neuroshell/pkg/types"
+)
+
+type HelpCommand struct{}
+
+func (c *HelpCommand) Name() string <span class="cov10" title="13">{
+        return "help"
+}</span>
+
+func (c *HelpCommand) ParseMode() types.ParseMode <span class="cov1" title="1">{
+        return types.ParseModeKeyValue
+}</span>
+
+func (c *HelpCommand) Description() string <span class="cov1" title="1">{
+        return "Show command help"
+}</span>
+
+func (c *HelpCommand) Usage() string <span class="cov1" title="1">{
+        return "\\help [command]"
+}</span>
+
+func (c *HelpCommand) Execute(args map[string]string, input string, ctx types.Context) error <span class="cov7" title="7">{
+        // Get all commands from the registry
+        allCommands := commands.GlobalRegistry.GetAll()
+        
+        // Sort commands by name for consistent output
+        sort.Slice(allCommands, func(i, j int) bool </span><span class="cov8" title="8">{
+                return allCommands[i].Name() &lt; allCommands[j].Name()
+        }</span>)
+        
+        <span class="cov7" title="7">fmt.Println("Neuro Shell Commands:")
+        for _, cmd := range allCommands </span><span class="cov9" title="11">{
+                fmt.Printf("  %-20s - %s\n", cmd.Usage(), cmd.Description())
+        }</span>
+        
+        <span class="cov7" title="7">fmt.Println()
+        fmt.Println("Examples:")
+        fmt.Println("  \\send Hello world")
+        fmt.Println("  \\set[name=\"John\"]")
+        fmt.Println("  \\get[name]")
+        fmt.Println("  \\bash[ls -la]")
+        fmt.Println()
+        fmt.Println("Note: Text without \\ prefix is sent to LLM automatically")
+        
+        return nil</span>
+}
+
+func init() <span class="cov5" title="4">{
+        commands.GlobalRegistry.Register(&amp;HelpCommand{})
+}</pre>
+		
+		<pre class="file" id="file4" style="display: none">package builtin
+
+import (
+        "fmt"
+
+        "neuroshell/internal/commands"
+        "neuroshell/internal/services"
+        "neuroshell/pkg/types"
+)
+
+type RunCommand struct{}
+
+func (c *RunCommand) Name() string <span class="cov10" title="12">{
+        return "run"
+}</span>
+
+func (c *RunCommand) ParseMode() types.ParseMode <span class="cov0" title="0">{
+        return types.ParseModeKeyValue
+}</span>
+
+func (c *RunCommand) Description() string <span class="cov0" title="0">{
+        return "Execute a .neuro script file"
+}</span>
+
+func (c *RunCommand) Usage() string <span class="cov0" title="0">{
+        return "\\run[file=\"script.neuro\"] or \\run script.neuro"
+}</span>
+
+func (c *RunCommand) Execute(args map[string]string, input string, ctx types.Context) error <span class="cov0" title="0">{
+        // Get all required services
+        scriptService, err := services.GlobalRegistry.GetService("script")
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("script service not available: %w", err)
+        }</span>
+        
+        <span class="cov0" title="0">variableService, err := services.GlobalRegistry.GetService("variable")
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("variable service not available: %w", err)
+        }</span>
+        
+        <span class="cov0" title="0">executorService, err := services.GlobalRegistry.GetService("executor")
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("executor service not available: %w", err)
+        }</span>
+        
+        <span class="cov0" title="0">interpolationService, err := services.GlobalRegistry.GetService("interpolation")
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("interpolation service not available: %w", err)
+        }</span>
+
+        // Get filename from args or input
+        <span class="cov0" title="0">filename := ""
+        if fileArg, exists := args["file"]; exists &amp;&amp; fileArg != "" </span><span class="cov0" title="0">{
+                filename = fileArg
+        }</span> else<span class="cov0" title="0"> if input != "" </span><span class="cov0" title="0">{
+                filename = input
+        }</span> else<span class="cov0" title="0"> {
+                return fmt.Errorf("Usage: %s", c.Usage())
+        }</span>
+
+        // Cast services to their concrete types
+        <span class="cov0" title="0">ss := scriptService.(*services.ScriptService)
+        vs := variableService.(*services.VariableService)
+        es := executorService.(*services.ExecutorService)
+        is := interpolationService.(*services.InterpolationService)
+
+        // Phase 1: Load script file into execution queue
+        if err := ss.LoadScript(filename, ctx); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to load script: %w", err)
+        }</span>
+
+        // Phase 2: Execute all commands in the queue
+        // Note: Variable interpolation now happens per-command in executeCommand
+        <span class="cov0" title="0">for </span><span class="cov0" title="0">{
+                // Get next command from queue
+                cmd, err := es.GetNextCommand(ctx)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("failed to get next command: %w", err)
+                }</span>
+                <span class="cov0" title="0">if cmd == nil </span><span class="cov0" title="0">{
+                        break</span> // No more commands
+                }
+
+                // Interpolate command using service
+                <span class="cov0" title="0">interpolatedCmd, err := is.InterpolateCommand(cmd, ctx)
+                if err != nil </span><span class="cov0" title="0">{
+                        es.MarkExecutionError(ctx, err, cmd.String())
+                        return fmt.Errorf("interpolation failed: %w", err)
+                }</span>
+
+                // Prepare input for execution
+                <span class="cov0" title="0">cmdInput := interpolatedCmd.Message
+                if interpolatedCmd.Name == "bash" &amp;&amp; interpolatedCmd.ParseMode == types.ParseModeRaw &amp;&amp; interpolatedCmd.BracketContent != "" </span><span class="cov0" title="0">{
+                        cmdInput = interpolatedCmd.BracketContent
+                }</span>
+
+                // Execute command (RunCommand orchestrates execution)
+                <span class="cov0" title="0">err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput, ctx)
+                if err != nil </span><span class="cov0" title="0">{
+                        // Mark execution error and return
+                        es.MarkExecutionError(ctx, err, cmd.String())
+                        return fmt.Errorf("script execution failed: %w", err)
+                }</span>
+
+                // Mark command as executed
+                <span class="cov0" title="0">es.MarkCommandExecuted(ctx)</span>
+        }
+
+        // Phase 3: Mark successful completion
+        <span class="cov0" title="0">es.MarkExecutionComplete(ctx)
+
+        // Set success status in context variables
+        vs.Set("_status", "0", ctx)
+        vs.Set("_output", fmt.Sprintf("Script %s executed successfully", filename), ctx)
+
+        return nil</span>
+}
+
+func init() <span class="cov6" title="4">{
+        commands.GlobalRegistry.Register(&amp;RunCommand{})
+}</pre>
+		
+		<pre class="file" id="file5" style="display: none">package builtin
+
+import (
+        "fmt"
+        
+        "neuroshell/internal/commands"
+        "neuroshell/pkg/types"
+)
+
+type SendCommand struct{}
+
+func (c *SendCommand) Name() string <span class="cov10" title="12">{
+        return "send"
+}</span>
+
+func (c *SendCommand) ParseMode() types.ParseMode <span class="cov0" title="0">{
+        return types.ParseModeKeyValue
+}</span>
+
+func (c *SendCommand) Description() string <span class="cov0" title="0">{
+        return "Send message to LLM agent"
+}</span>
+
+func (c *SendCommand) Usage() string <span class="cov0" title="0">{
+        return "\\send message"
+}</span>
+
+func (c *SendCommand) Execute(args map[string]string, input string, ctx types.Context) error <span class="cov0" title="0">{
+        if input == "" </span><span class="cov0" title="0">{
+                return fmt.Errorf("Usage: %s", c.Usage())
+        }</span>
+        
+        // TODO: Implement actual LLM agent communication
+        // For now, just echo the message
+        <span class="cov0" title="0">fmt.Printf("Sending: %s\n", input)
+        
+        return nil</span>
+}
+
+func init() <span class="cov6" title="4">{
+        commands.GlobalRegistry.Register(&amp;SendCommand{})
+}</pre>
+		
+		<pre class="file" id="file6" style="display: none">package builtin
+
+import (
+        "fmt"
+        "strings"
+        
+        "neuroshell/internal/commands"
+        "neuroshell/pkg/types"
+)
+
+type SetCommand struct{}
+
+func (c *SetCommand) Name() string <span class="cov8" title="13">{
+        return "set"
+}</span>
+
+func (c *SetCommand) ParseMode() types.ParseMode <span class="cov1" title="1">{
+        return types.ParseModeKeyValue
+}</span>
+
+func (c *SetCommand) Description() string <span class="cov1" title="1">{
+        return "Set a variable"
+}</span>
+
+func (c *SetCommand) Usage() string <span class="cov2" title="2">{
+        return "\\set[var=value] or \\set var value"
+}</span>
+
+func (c *SetCommand) Execute(args map[string]string, input string, ctx types.Context) error <span class="cov10" title="23">{
+        if len(args) == 0 &amp;&amp; input == "" </span><span class="cov1" title="1">{
+                return fmt.Errorf("Usage: %s", c.Usage())
+        }</span>
+        
+        // Handle bracket syntax: \set[var=value]
+        <span class="cov9" title="22">if len(args) &gt; 0 </span><span class="cov8" title="15">{
+                for key, value := range args </span><span class="cov8" title="16">{
+                        if err := ctx.SetVariable(key, value); err != nil </span><span class="cov1" title="1">{
+                                return fmt.Errorf("failed to set variable %s: %w", key, err)
+                        }</span>
+                        <span class="cov8" title="15">fmt.Printf("Setting %s = %s\n", key, value)</span>
+                }
+                <span class="cov8" title="14">return nil</span>
+        }
+        
+        // Handle space syntax: \set var value
+        <span class="cov6" title="7">if input != "" </span><span class="cov6" title="7">{
+                // Trim only leading whitespace, then split
+                trimmedInput := strings.TrimLeft(input, " \t")
+                var key, value string
+                if trimmedInput != "" </span><span class="cov6" title="7">{
+                        parts := strings.SplitN(trimmedInput, " ", 2)
+                        if len(parts) == 2 </span><span class="cov6" title="6">{
+                                key, value = parts[0], strings.TrimLeft(parts[1], " \t")
+                        }</span> else<span class="cov1" title="1"> {
+                                key, value = parts[0], ""
+                        }</span>
+                        
+                        <span class="cov6" title="7">if err := ctx.SetVariable(key, value); err != nil </span><span class="cov1" title="1">{
+                                return fmt.Errorf("failed to set variable %s: %w", key, err)
+                        }</span>
+                        <span class="cov6" title="6">fmt.Printf("Setting %s = %s\n", key, value)</span>
+                }
+        }
+        
+        <span class="cov6" title="6">return nil</span>
+}
+
+func init() <span class="cov4" title="4">{
+        commands.GlobalRegistry.Register(&amp;SetCommand{})
+}</pre>
+		
+		<pre class="file" id="file7" style="display: none">package commands
+
+import (
+        "fmt"
+        "sync"
+
+        "neuroshell/pkg/types"
+)
+
+// Registry manages command registration and lookup
+type Registry struct {
+        mu       sync.RWMutex
+        commands map[string]types.Command
+}
+
+// NewRegistry creates a new command registry
+func NewRegistry() *Registry <span class="cov4" title="13">{
+        return &amp;Registry{
+                commands: make(map[string]types.Command),
+        }
+}</span>
+
+// Register adds a command to the registry
+func (r *Registry) Register(cmd types.Command) error <span class="cov8" title="118">{
+        r.mu.Lock()
+        defer r.mu.Unlock()
+
+        if cmd.Name() == "" </span><span class="cov1" title="1">{
+                return fmt.Errorf("command name cannot be empty")
+        }</span>
+
+        <span class="cov8" title="117">if _, exists := r.commands[cmd.Name()]; exists </span><span class="cov2" title="2">{
+                return fmt.Errorf("command %s already registered", cmd.Name())
+        }</span>
+
+        <span class="cov8" title="115">r.commands[cmd.Name()] = cmd
+        return nil</span>
+}
+
+// Unregister removes a command from the registry
+func (r *Registry) Unregister(name string) <span class="cov3" title="4">{
+        r.mu.Lock()
+        defer r.mu.Unlock()
+        delete(r.commands, name)
+}</span>
+
+// Get retrieves a command by name
+func (r *Registry) Get(name string) (types.Command, bool) <span class="cov10" title="323">{
+        r.mu.RLock()
+        defer r.mu.RUnlock()
+        cmd, exists := r.commands[name]
+        return cmd, exists
+}</span>
+
+// GetAll returns all registered commands
+func (r *Registry) GetAll() []types.Command <span class="cov4" title="9">{
+        r.mu.RLock()
+        defer r.mu.RUnlock()
+
+        commands := make([]types.Command, 0, len(r.commands))
+        for _, cmd := range r.commands </span><span class="cov8" title="105">{
+                commands = append(commands, cmd)
+        }</span>
+        <span class="cov4" title="9">return commands</span>
+}
+
+// Execute runs a command by name
+func (r *Registry) Execute(name string, args map[string]string, input string, ctx types.Context) error <span class="cov2" title="3">{
+        cmd, exists := r.Get(name)
+        if !exists </span><span class="cov1" title="1">{
+                return fmt.Errorf("unknown command: %s", name)
+        }</span>
+        <span class="cov2" title="2">return cmd.Execute(args, input, ctx)</span>
+}
+
+// GetParseMode returns the parse mode for a command
+func (r *Registry) GetParseMode(name string) types.ParseMode <span class="cov8" title="103">{
+        cmd, exists := r.Get(name)
+        if !exists </span><span class="cov1" title="1">{
+                return types.ParseModeKeyValue // Default
+        }</span>
+        <span class="cov8" title="102">return cmd.ParseMode()</span>
+}
+
+// IsValidCommand checks if a command exists
+func (r *Registry) IsValidCommand(name string) bool <span class="cov8" title="107">{
+        _, exists := r.Get(name)
+        return exists
+}</span>
+
+
+// Global registry instance
+var GlobalRegistry = NewRegistry()</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

@@ -37,7 +37,10 @@ func (c *GetCommand) Execute(args map[string]string, input string, ctx types.Con
 		}
 	} else if input != "" {
 		// Handle space syntax: \get var
-		variable = strings.Fields(input)[0]
+		fields := strings.Fields(input)
+		if len(fields) > 0 {
+			variable = fields[0]
+		}
 	}
 	
 	if variable == "" {
