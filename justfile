@@ -9,7 +9,8 @@ default:
     @echo "  test-unit         - Run service/utils unit tests only"
     @echo "  test-commands     - Run command tests only"
     @echo "  test-parser       - Run parser tests only"
-    @echo "  test-all-units    - Run all unit, command, and parser tests"
+    @echo "  test-context      - Run context tests only"
+    @echo "  test-all-units    - Run all unit, command, parser, and context tests"
     @echo "  test-e2e          - Run end-to-end tests"
     @echo "  test-bench        - Run benchmark tests"
 
@@ -73,16 +74,30 @@ test-parser-coverage:
     go tool cover -func=parser-coverage.out
     @echo "Parser test coverage report generated: parser-coverage.html"
 
-# Run all unit, command, and parser tests
-test-all-units:
-    @echo "Running all unit, command, and parser tests..."
-    go test -v -race ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/...
-    @echo "All unit, command, and parser tests complete"
+# Run context tests only
+test-context:
+    @echo "Running context tests..."
+    go test -v -race ./internal/context/...
+    @echo "Context tests complete"
 
-# Run all unit, command, and parser tests with coverage
+# Run context tests with coverage
+test-context-coverage:
+    @echo "Running context tests with coverage..."
+    go test -v -race -coverprofile=context-coverage.out ./internal/context/...
+    go tool cover -html=context-coverage.out -o context-coverage.html
+    go tool cover -func=context-coverage.out
+    @echo "Context test coverage report generated: context-coverage.html"
+
+# Run all unit, command, parser, and context tests
+test-all-units:
+    @echo "Running all unit, command, parser, and context tests..."
+    go test -v -race ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/... ./internal/context/...
+    @echo "All unit, command, parser, and context tests complete"
+
+# Run all unit, command, parser, and context tests with coverage
 test-all-units-coverage:
-    @echo "Running all unit, command, and parser tests with coverage..."
-    go test -v -race -coverprofile=all-units-coverage.out ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/...
+    @echo "Running all unit, command, parser, and context tests with coverage..."
+    go test -v -race -coverprofile=all-units-coverage.out ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/... ./internal/context/...
     go tool cover -html=all-units-coverage.out -o all-units-coverage.html
     go tool cover -func=all-units-coverage.out
     @echo "All unit test coverage report generated: all-units-coverage.html"
@@ -90,7 +105,7 @@ test-all-units-coverage:
 # Run benchmark tests
 test-bench:
     @echo "Running benchmark tests..."
-    go test -bench=. -benchmem ./internal/services/... ./internal/commands/... ./internal/parser/...
+    go test -bench=. -benchmem ./internal/services/... ./internal/commands/... ./internal/parser/... ./internal/context/...
     @echo "Benchmark tests complete"
 
 # Check test coverage percentage
