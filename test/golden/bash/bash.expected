@@ -1,0 +1,6 @@
+export TEST_VAR="default_session"export TEST_VAR="work_session"bash-3.2$ export TEST_VAR="default_session"
+bash-3.2$ echo "Default session TEST_VAR: $TEST_VAR"
+Default session TEST_VAR: default_sessionbash-3.2$ export TEST_VAR="work_session"
+bash-3.2$ echo "Work session TEST_VAR: $TEST_VAR"
+Work session TEST_VAR: work_sessionbash-3.2$ echo "Fresh session TEST_VAR: $TEST_VAR"
+Fresh session TEST_VAR: bash-3.2$ echo "Custom env CUSTOM_VAR: $CUSTOM_VAR"

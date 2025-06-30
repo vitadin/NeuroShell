@@ -1,0 +1,18 @@
+# Test bash session persistence and isolation
+# Test 1: Default session - set environment variable
+\bash export TEST_VAR="default_session"
+
+# Test 2: Named session "work" - different environment
+\bash[session="work"] export TEST_VAR="work_session"
+
+# Test 3: Check default session maintains its variable
+\bash echo "Default session TEST_VAR: $TEST_VAR"
+
+# Test 4: Check work session maintains its variable  
+\bash[session="work"] echo "Work session TEST_VAR: $TEST_VAR"
+
+# Test 5: Test new session creation (should not have TEST_VAR)
+\bash[session="fresh", new=true] echo "Fresh session TEST_VAR: $TEST_VAR"
+
+# Test 6: Test environment option
+\bash[env="CUSTOM_VAR=hello_world"] echo "Custom env CUSTOM_VAR: $CUSTOM_VAR"

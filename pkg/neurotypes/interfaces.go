@@ -13,6 +13,8 @@ const (
 	ParseModeKeyValue ParseMode = iota
 	// ParseModeRaw treats the entire input as raw text without parsing
 	ParseModeRaw
+	// ParseModeWithOptions parses arguments with options support
+	ParseModeWithOptions
 )
 
 // Context provides session state management and variable interpolation for NeuroShell.

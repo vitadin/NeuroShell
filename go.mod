@@ -5,6 +5,7 @@ go 1.24.4
 require (
 	github.com/abiosoft/ishell/v2 v2.0.2
 	github.com/charmbracelet/log v0.4.2
+	github.com/creack/pty v1.1.24
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
