@@ -33,7 +33,7 @@ run: build
     NEURO_LOG_LEVEL=debug ./bin/neuro
 
 # Run tests with coverage
-test:
+test: build test-all-units
     @echo "Running tests..."
     go test -v -race -coverprofile=coverage.out ./...
     go tool cover -html=coverage.out -o coverage.html
