@@ -10,12 +10,10 @@ import (
 	"github.com/abiosoft/ishell/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"neuroshell/internal/commands"
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
-	"neuroshell/internal/parser"
-	"neuroshell/internal/services"
+	"neuroshell/internal/orchestration"
 	"neuroshell/internal/shell"
 )
 
@@ -176,84 +174,6 @@ func validateScriptFile(scriptPath string) error {
 }
 
 func executeBatchScript(scriptPath string, ctx *context.NeuroContext) error {
-	// Get required services
-	scriptService, err := services.GlobalRegistry.GetService("script")
-	if err != nil {
-		return fmt.Errorf("script service not available: %w", err)
-	}
-
-	executorService, err := services.GlobalRegistry.GetService("executor")
-	if err != nil {
-		return fmt.Errorf("executor service not available: %w", err)
-	}
-
-	interpolationService, err := services.GlobalRegistry.GetService("interpolation")
-	if err != nil {
-		return fmt.Errorf("interpolation service not available: %w", err)
-	}
-
-	// Cast services to their concrete types
-	ss := scriptService.(*services.ScriptService)
-	es := executorService.(*services.ExecutorService)
-	is := interpolationService.(*services.InterpolationService)
-
-	// Phase 1: Load script file into execution queue
-	if err := ss.LoadScript(scriptPath, ctx); err != nil {
-		return fmt.Errorf("failed to load script: %w", err)
-	}
-
-	logger.Info("Script loaded successfully", "script", scriptPath)
-
-	// Phase 2: Execute all commands in the queue
-	for {
-		// Get next command from queue
-		cmd, err := es.GetNextCommand(ctx)
-		if err != nil {
-			return fmt.Errorf("failed to get next command: %w", err)
-		}
-		if cmd == nil {
-			break // No more commands
-		}
-
-		logger.Debug("Executing command", "command", cmd.Name, "message", cmd.Message)
-
-		// Interpolate command using service
-		interpolatedCmd, err := is.InterpolateCommand(cmd, ctx)
-		if err != nil {
-			if markErr := es.MarkExecutionError(ctx, err, cmd.String()); markErr != nil {
-				logger.Error("Failed to mark execution error", "error", markErr)
-			}
-			return fmt.Errorf("interpolation failed: %w", err)
-		}
-
-		// Prepare input for execution
-		cmdInput := interpolatedCmd.Message
-		if interpolatedCmd.Name == "bash" && interpolatedCmd.ParseMode == parser.ParseModeRaw && interpolatedCmd.BracketContent != "" {
-			cmdInput = interpolatedCmd.BracketContent
-		}
-
-		// Execute command
-		err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput, ctx)
-		if err != nil {
-			// Mark execution error and return
-			if markErr := es.MarkExecutionError(ctx, err, cmd.String()); markErr != nil {
-				logger.Error("Failed to mark execution error", "error", markErr)
-			}
-			return fmt.Errorf("command execution failed: %w", err)
-		}
-
-		// Mark command as executed
-		if err := es.MarkCommandExecuted(ctx); err != nil {
-			logger.Error("Failed to mark command as executed", "error", err)
-		}
-
-		logger.Debug("Command executed successfully", "command", interpolatedCmd.Name)
-	}
-
-	// Phase 3: Mark successful completion
-	if err := es.MarkExecutionComplete(ctx); err != nil {
-		logger.Error("Failed to mark execution complete", "error", err)
-	}
-
-	return nil
+	// Execute the script using centralized execution logic
+	return orchestration.ExecuteScript(scriptPath, ctx)
 }
