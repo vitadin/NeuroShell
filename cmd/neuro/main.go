@@ -132,7 +132,7 @@ func runShell(_ *cobra.Command, _ []string) {
 
 func runBatch(_ *cobra.Command, args []string) {
 	scriptPath := args[0]
-	
+
 	logger.Info("Starting NeuroShell batch mode", "version", version, "script", scriptPath)
 
 	// Validate script file exists and has correct extension
