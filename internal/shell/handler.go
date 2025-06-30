@@ -14,6 +14,7 @@ import (
 	"neuroshell/internal/services"
 )
 
+// ProcessInput handles user input from the interactive shell and executes commands.
 func ProcessInput(c *ishell.Context) {
 	if len(c.RawArgs) == 0 {
 		return
@@ -35,6 +36,7 @@ func ProcessInput(c *ishell.Context) {
 // Global context instance to persist across commands
 var globalCtx = context.New()
 
+// InitializeServices sets up all required services for the NeuroShell environment.
 func InitializeServices(testMode bool) error {
 	// Set test mode on global context
 	globalCtx.SetTestMode(testMode)

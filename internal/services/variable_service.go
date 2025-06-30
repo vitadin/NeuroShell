@@ -7,21 +7,25 @@ import (
 	"neuroshell/pkg/types"
 )
 
+// VariableService provides variable management operations for NeuroShell contexts.
 type VariableService struct {
 	initialized bool
 }
 
+// NewVariableService creates a new VariableService instance.
 func NewVariableService() *VariableService {
 	return &VariableService{
 		initialized: false,
 	}
 }
 
+// Name returns the service name "variable" for registration.
 func (v *VariableService) Name() string {
 	return "variable"
 }
 
-func (v *VariableService) Initialize(ctx types.Context) error {
+// Initialize sets up the VariableService for operation.
+func (v *VariableService) Initialize(_ types.Context) error {
 	v.initialized = true
 	return nil
 }

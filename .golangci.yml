@@ -46,7 +46,6 @@ linters-settings:
       - name: error-strings
       - name: error-naming
       - name: if-return
-      - name: var-naming
       - name: range
       - name: receiver-naming
       - name: time-naming

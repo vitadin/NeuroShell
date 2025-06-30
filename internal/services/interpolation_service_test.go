@@ -321,7 +321,7 @@ func TestInterpolationService_ConcurrentAccess(t *testing.T) {
 	done := make(chan bool)
 
 	for i := 0; i < 10; i++ {
-		go func(id int) {
+		go func(_ int) {
 			// Each goroutine gets its own service instance to avoid race conditions
 			service := NewInterpolationService()
 			ctx := testutils.NewMockContext()

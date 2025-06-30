@@ -10,21 +10,25 @@ import (
 	"neuroshell/pkg/types"
 )
 
+// ScriptService handles loading and parsing of .neuro script files.
 type ScriptService struct {
 	initialized bool
 }
 
+// NewScriptService creates a new ScriptService instance.
 func NewScriptService() *ScriptService {
 	return &ScriptService{
 		initialized: false,
 	}
 }
 
+// Name returns the service name "script" for registration.
 func (s *ScriptService) Name() string {
 	return "script"
 }
 
-func (s *ScriptService) Initialize(ctx types.Context) error {
+// Initialize sets up the ScriptService for operation.
+func (s *ScriptService) Initialize(_ types.Context) error {
 	s.initialized = true
 	return nil
 }

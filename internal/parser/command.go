@@ -10,6 +10,7 @@ import (
 	"neuroshell/pkg/types"
 )
 
+// Command represents a parsed NeuroShell command with its arguments and metadata.
 type Command struct {
 	Name           string
 	BracketContent string
@@ -18,14 +19,17 @@ type Command struct {
 	ParseMode      ParseMode
 }
 
-// Use ParseMode from types package
+// ParseMode defines how command arguments should be parsed from user input.
 type ParseMode = types.ParseMode
 
 const (
+	// ParseModeKeyValue parses arguments as key=value pairs within brackets
 	ParseModeKeyValue = types.ParseModeKeyValue
-	ParseModeRaw      = types.ParseModeRaw
+	// ParseModeRaw treats the entire input as raw text without parsing
+	ParseModeRaw = types.ParseModeRaw
 )
 
+// ParseInput parses user input into a Command structure with name, options, and message.
 func ParseInput(input string) *Command {
 	input = strings.TrimSpace(input)
 
@@ -71,9 +75,7 @@ func ParseInput(input string) *Command {
 
 	// Parse bracket content based on mode
 	if cmd.BracketContent != "" {
-		if cmd.ParseMode == ParseModeRaw {
-			// Keep as raw string - don't parse
-		} else {
+		if cmd.ParseMode != ParseModeRaw {
 			// Parse as key=value pairs
 			parseKeyValueOptions(cmd.BracketContent, cmd.Options)
 		}

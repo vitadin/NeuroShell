@@ -10,21 +10,25 @@ import (
 	"neuroshell/pkg/types"
 )
 
+// ExecutorService manages command execution queue and orchestrates script processing.
 type ExecutorService struct {
 	initialized bool
 }
 
+// NewExecutorService creates a new ExecutorService instance.
 func NewExecutorService() *ExecutorService {
 	return &ExecutorService{
 		initialized: false,
 	}
 }
 
+// Name returns the service name "executor" for registration.
 func (e *ExecutorService) Name() string {
 	return "executor"
 }
 
-func (e *ExecutorService) Initialize(ctx types.Context) error {
+// Initialize sets up the ExecutorService for operation.
+func (e *ExecutorService) Initialize(_ types.Context) error {
 	e.initialized = true
 	return nil
 }

@@ -9,21 +9,25 @@ import (
 	"neuroshell/pkg/types"
 )
 
+// InterpolationService handles variable interpolation in commands and text.
 type InterpolationService struct {
 	initialized bool
 }
 
+// NewInterpolationService creates a new InterpolationService instance.
 func NewInterpolationService() *InterpolationService {
 	return &InterpolationService{
 		initialized: false,
 	}
 }
 
+// Name returns the service name "interpolation" for registration.
 func (i *InterpolationService) Name() string {
 	return "interpolation"
 }
 
-func (i *InterpolationService) Initialize(ctx types.Context) error {
+// Initialize sets up the InterpolationService for operation.
+func (i *InterpolationService) Initialize(_ types.Context) error {
 	i.initialized = true
 	logger.ServiceOperation("interpolation", "initialize", "service ready")
 	return nil
