@@ -73,7 +73,7 @@ func (c *HelpCommand) showCommandHelp(commandName string, helpService *services.
 	fmt.Printf("Parse Mode: %s\n", c.parseModeToString(cmdInfo.ParseMode))
 
 	// Show examples specific to this command
-	c.showCommandExamples(cmdInfo.Name)
+	c.showCommandExamples(cmdInfo)
 
 	return nil
 }
@@ -133,39 +133,16 @@ func (c *HelpCommand) parseModeToString(mode neurotypes.ParseMode) string {
 	}
 }
 
-// showCommandExamples shows command-specific examples
-func (c *HelpCommand) showCommandExamples(commandName string) {
+// showCommandExamples shows command-specific examples using the command's Usage() method
+func (c *HelpCommand) showCommandExamples(cmdInfo services.CommandInfo) {
 	fmt.Println("\nExamples:")
 
-	switch commandName {
-	case "send":
-		fmt.Println("  \\send Hello, how are you?")
-		fmt.Println("  \\send Can you help me with this code?")
-	case "set":
-		fmt.Println("  \\set[name=\"John\"]")
-		fmt.Println("  \\set[count=42]")
-		fmt.Println("  \\set name John Doe")
-	case "get":
-		fmt.Println("  \\get[name]")
-		fmt.Println("  \\get name")
-		fmt.Println("  \\get @user")
-	case "bash":
-		fmt.Println("  \\bash ls -la")
-		fmt.Println("  \\bash echo \"Hello World\"")
-		fmt.Println("  \\bash pwd")
-	case "help":
-		fmt.Println("  \\help")
-		fmt.Println("  \\help[bash]")
-		fmt.Println("  \\help[send]")
-	case "run":
-		fmt.Println("  \\run[file=\"script.neuro\"]")
-		fmt.Println("  \\run script.neuro")
-	case "exit":
-		fmt.Println("  \\exit")
-		fmt.Println("  \\exit[code=0]")
-	default:
-		fmt.Printf("  \\%s\n", commandName)
-		fmt.Printf("  \\%s[option=value]\n", commandName)
+	// Show the primary usage example from the command's Usage() method
+	fmt.Printf("  %s\n", cmdInfo.Usage)
+
+	// Add a generic parameter example if command supports key-value options
+	if cmdInfo.ParseMode == neurotypes.ParseModeKeyValue || cmdInfo.ParseMode == neurotypes.ParseModeWithOptions {
+		fmt.Printf("  \\%s[option=value]\n", cmdInfo.Name)
 	}
 }
 
