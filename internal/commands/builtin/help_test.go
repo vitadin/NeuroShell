@@ -393,7 +393,7 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 				"Usage: \\bash command_to_execute",
 				"Parse Mode: Raw",
 				"Examples:",
-				"\\bash ls -la",
+				"\\bash command_to_execute",
 			},
 		},
 		{
@@ -405,7 +405,8 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 				"Usage: \\set[var=value] or \\set var value",
 				"Parse Mode: Key-Value",
 				"Examples:",
-				"\\set[name=\"John\"]",
+				"\\set[var=value] or \\set var value",
+				"\\set[option=value]",
 			},
 		},
 		{
@@ -454,6 +455,92 @@ func TestHelpCommand_Execute_ServiceUnavailable(t *testing.T) {
 	err := cmd.Execute(map[string]string{}, "", ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "help service not available")
+}
+
+func TestHelpCommand_ShowCommandExamples(t *testing.T) {
+	// Test the showCommandExamples function with different command types
+	cmd := &HelpCommand{}
+
+	tests := []struct {
+		name         string
+		cmdInfo      services.CommandInfo
+		expectedText []string
+	}{
+		{
+			name: "KeyValue parse mode command",
+			cmdInfo: services.CommandInfo{
+				Name:        "set",
+				Usage:       "\\set[var=value] or \\set var value",
+				ParseMode:   neurotypes.ParseModeKeyValue,
+				Description: "Set a variable",
+			},
+			expectedText: []string{
+				"Examples:",
+				"\\set[var=value] or \\set var value",
+				"\\set[option=value]",
+			},
+		},
+		{
+			name: "Raw parse mode command",
+			cmdInfo: services.CommandInfo{
+				Name:        "bash",
+				Usage:       "\\bash command_to_execute",
+				ParseMode:   neurotypes.ParseModeRaw,
+				Description: "Execute system commands via bash",
+			},
+			expectedText: []string{
+				"Examples:",
+				"\\bash command_to_execute",
+			},
+		},
+		{
+			name: "WithOptions parse mode command",
+			cmdInfo: services.CommandInfo{
+				Name:        "test",
+				Usage:       "\\test [options] message",
+				ParseMode:   neurotypes.ParseModeWithOptions,
+				Description: "Test command",
+			},
+			expectedText: []string{
+				"Examples:",
+				"\\test [options] message",
+				"\\test[option=value]",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Capture stdout
+			originalStdout := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			cmd.showCommandExamples(tt.cmdInfo)
+
+			// Restore stdout
+			_ = w.Close()
+			os.Stdout = originalStdout
+
+			// Read captured output
+			output, _ := io.ReadAll(r)
+			outputStr := string(output)
+
+			// Verify all expected text is present
+			for _, expectedText := range tt.expectedText {
+				assert.Contains(t, outputStr, expectedText, "Missing expected text: %s", expectedText)
+			}
+
+			// Verify the primary usage is always shown
+			assert.Contains(t, outputStr, tt.cmdInfo.Usage)
+
+			// Verify KeyValue and WithOptions modes get generic parameter example
+			if tt.cmdInfo.ParseMode == neurotypes.ParseModeKeyValue || tt.cmdInfo.ParseMode == neurotypes.ParseModeWithOptions {
+				expectedGeneric := fmt.Sprintf("\\%s[option=value]", tt.cmdInfo.Name)
+				assert.Contains(t, outputStr, expectedGeneric)
+			}
+		})
+	}
 }
 
 // MockCommand for testing (reuse from registry_test.go structure)
