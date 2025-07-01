@@ -42,7 +42,7 @@ func (c *BashCommand) Execute(_ map[string]string, input string, ctx neurotypes.
 	}
 
 	// Get bash service from global registry
-	service, err := services.GlobalRegistry.GetService("bash")
+	service, err := services.GetGlobalRegistry().GetService("bash")
 	if err != nil {
 		return fmt.Errorf("bash service not available: %w", err)
 	}

@@ -30,14 +30,14 @@ func setupHelpTestEnvironment(t *testing.T, testCommands []neurotypes.Command) n
 
 	// Temporarily replace global registries using thread-safe functions
 	originalCommandRegistry := commands.GetGlobalRegistry()
-	originalServiceRegistry := services.GlobalRegistry
+	originalServiceRegistry := services.GetGlobalRegistry()
 	commands.SetGlobalRegistry(testCommandRegistry)
-	services.GlobalRegistry = testServiceRegistry
+	services.SetGlobalRegistry(testServiceRegistry)
 
 	// Cleanup function
 	t.Cleanup(func() {
 		commands.SetGlobalRegistry(originalCommandRegistry)
-		services.GlobalRegistry = originalServiceRegistry
+		services.SetGlobalRegistry(originalServiceRegistry)
 	})
 
 	// Create and initialize help service

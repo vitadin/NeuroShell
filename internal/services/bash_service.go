@@ -108,7 +108,7 @@ func (b *BashService) Execute(command string, ctx neurotypes.Context) (string, s
 
 // getVariableService is a helper function to get the variable service from the global registry
 func getVariableService() (*VariableService, error) {
-	service, err := GlobalRegistry.GetService("variable")
+	service, err := GetGlobalRegistry().GetService("variable")
 	if err != nil {
 		return nil, err
 	}

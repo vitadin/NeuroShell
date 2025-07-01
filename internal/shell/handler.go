@@ -42,32 +42,32 @@ func InitializeServices(testMode bool) error {
 	globalCtx.SetTestMode(testMode)
 
 	// Register all pure services
-	if err := services.GlobalRegistry.RegisterService(services.NewScriptService()); err != nil {
+	if err := services.GetGlobalRegistry().RegisterService(services.NewScriptService()); err != nil {
 		return err
 	}
 
-	if err := services.GlobalRegistry.RegisterService(services.NewVariableService()); err != nil {
+	if err := services.GetGlobalRegistry().RegisterService(services.NewVariableService()); err != nil {
 		return err
 	}
 
-	if err := services.GlobalRegistry.RegisterService(services.NewExecutorService()); err != nil {
+	if err := services.GetGlobalRegistry().RegisterService(services.NewExecutorService()); err != nil {
 		return err
 	}
 
-	if err := services.GlobalRegistry.RegisterService(services.NewInterpolationService()); err != nil {
+	if err := services.GetGlobalRegistry().RegisterService(services.NewInterpolationService()); err != nil {
 		return err
 	}
 
-	if err := services.GlobalRegistry.RegisterService(services.NewBashService()); err != nil {
+	if err := services.GetGlobalRegistry().RegisterService(services.NewBashService()); err != nil {
 		return err
 	}
 
-	if err := services.GlobalRegistry.RegisterService(services.NewHelpService()); err != nil {
+	if err := services.GetGlobalRegistry().RegisterService(services.NewHelpService()); err != nil {
 		return err
 	}
 
 	// Initialize all services with the global context
-	if err := services.GlobalRegistry.InitializeAll(globalCtx); err != nil {
+	if err := services.GetGlobalRegistry().InitializeAll(globalCtx); err != nil {
 		return err
 	}
 
@@ -79,7 +79,7 @@ func executeCommand(c *ishell.Context, cmd *parser.Command) {
 	logger.CommandExecution(cmd.Name, cmd.Options)
 
 	// Get interpolation service
-	interpolationService, err := services.GlobalRegistry.GetService("interpolation")
+	interpolationService, err := services.GetGlobalRegistry().GetService("interpolation")
 	if err != nil {
 		logger.Error("Interpolation service not available", "error", err)
 		c.Printf("Error: interpolation service not available: %s\n", err.Error())

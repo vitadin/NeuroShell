@@ -93,7 +93,7 @@ func setupTestEnvironment(t *testing.T) func() {
 	globalCtx.SetTestMode(true)
 
 	// Clear and reinitialize registries using thread-safe functions
-	services.GlobalRegistry = services.NewRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
 	commands.SetGlobalRegistry(commands.NewRegistry())
 
 	// Register builtin commands manually since we cleared the registry
@@ -578,19 +578,19 @@ func TestInitializeServices_Success(t *testing.T) {
 
 func TestInitializeServices_RegistrationFailure(t *testing.T) {
 	// Test registration failure by registering the same service twice
-	originalRegistry := services.GlobalRegistry
-	defer func() { services.GlobalRegistry = originalRegistry }()
+	originalRegistry := services.GetGlobalRegistry()
+	defer func() { services.SetGlobalRegistry(originalRegistry) }()
 
 	// Create fresh registry
-	services.GlobalRegistry = services.NewRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
 
 	// Register a service first
 	scriptService := services.NewScriptService()
-	err := services.GlobalRegistry.RegisterService(scriptService)
+	err := services.GetGlobalRegistry().RegisterService(scriptService)
 	require.NoError(t, err)
 
 	// Try to register the same service again - should fail
-	err = services.GlobalRegistry.RegisterService(scriptService)
+	err = services.GetGlobalRegistry().RegisterService(scriptService)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "already registered")
 }

@@ -30,22 +30,22 @@ func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
 	logger.Debug("Starting script execution", "script", scriptPath)
 
 	// Phase 1: Get required services from global registry
-	scriptService, err := services.GlobalRegistry.GetService("script")
+	scriptService, err := services.GetGlobalRegistry().GetService("script")
 	if err != nil {
 		return fmt.Errorf("script service not available: %w", err)
 	}
 
-	executorService, err := services.GlobalRegistry.GetService("executor")
+	executorService, err := services.GetGlobalRegistry().GetService("executor")
 	if err != nil {
 		return fmt.Errorf("executor service not available: %w", err)
 	}
 
-	interpolationService, err := services.GlobalRegistry.GetService("interpolation")
+	interpolationService, err := services.GetGlobalRegistry().GetService("interpolation")
 	if err != nil {
 		return fmt.Errorf("interpolation service not available: %w", err)
 	}
 
-	variableService, err := services.GlobalRegistry.GetService("variable")
+	variableService, err := services.GetGlobalRegistry().GetService("variable")
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
 	}

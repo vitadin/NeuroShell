@@ -174,15 +174,15 @@ func TestBashCommand_Execute_WrongServiceType(t *testing.T) {
 	ctx := testutils.NewMockContext()
 
 	// Setup registry but register wrong service type under "bash" name
-	oldRegistry := services.GlobalRegistry
-	services.GlobalRegistry = services.NewRegistry()
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
 
 	// Register a different service under "bash" name (this simulates a type error)
-	err := services.GlobalRegistry.RegisterService(&mockWrongService{})
+	err := services.GetGlobalRegistry().RegisterService(&mockWrongService{})
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		services.GlobalRegistry = oldRegistry
+		services.SetGlobalRegistry(oldRegistry)
 	})
 
 	err = cmd.Execute(nil, "echo test", ctx)
@@ -379,23 +379,23 @@ func TestBashCommand_Execute_IntegrationWithRealCommands(t *testing.T) {
 // setupBashTestRegistry sets up a test service registry with bash service
 func setupBashTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	// Create a new registry for testing
-	oldRegistry := services.GlobalRegistry
-	services.GlobalRegistry = services.NewRegistry()
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
 
 	// Register services
-	err := services.GlobalRegistry.RegisterService(services.NewVariableService())
+	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
 	require.NoError(t, err)
 
-	err = services.GlobalRegistry.RegisterService(services.NewBashService())
+	err = services.GetGlobalRegistry().RegisterService(services.NewBashService())
 	require.NoError(t, err)
 
 	// Initialize services
-	err = services.GlobalRegistry.InitializeAll(ctx)
+	err = services.GetGlobalRegistry().InitializeAll(ctx)
 	require.NoError(t, err)
 
 	// Cleanup function to restore original registry
 	t.Cleanup(func() {
-		services.GlobalRegistry = oldRegistry
+		services.SetGlobalRegistry(oldRegistry)
 	})
 }
 

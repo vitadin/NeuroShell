@@ -106,7 +106,7 @@ func (c *HelpCommand) showAllCommands(helpService *services.HelpService) error {
 
 // getHelpService retrieves the help service from the global registry
 func (c *HelpCommand) getHelpService() (*services.HelpService, error) {
-	service, err := services.GlobalRegistry.GetService("help")
+	service, err := services.GetGlobalRegistry().GetService("help")
 	if err != nil {
 		return nil, err
 	}
