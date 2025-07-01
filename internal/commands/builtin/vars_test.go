@@ -84,8 +84,8 @@ func TestVarsCommand_Execute_WithUserVariables(t *testing.T) {
 	setupVarsTestRegistry(t, ctx)
 
 	// Set some user variables
-	ctx.SetVariable("name", "John")
-	ctx.SetVariable("project", "NeuroShell")
+	require.NoError(t, ctx.SetVariable("name", "John"))
+	require.NoError(t, ctx.SetVariable("project", "NeuroShell"))
 
 	// Capture stdout
 	output := captureOutput(func() {
@@ -115,8 +115,8 @@ func TestVarsCommand_Execute_TypeFilter_User(t *testing.T) {
 	setupVarsTestRegistry(t, ctx)
 
 	// Set mixed variables
-	ctx.SetVariable("user_var", "value1")
-	ctx.SetSystemVariable("_system_var", "value2")
+	require.NoError(t, ctx.SetVariable("user_var", "value1"))
+	require.NoError(t, ctx.SetSystemVariable("_system_var", "value2"))
 
 	args := map[string]string{"type": "user"}
 
@@ -148,8 +148,8 @@ func TestVarsCommand_Execute_TypeFilter_System(t *testing.T) {
 	setupVarsTestRegistry(t, ctx)
 
 	// Set mixed variables
-	ctx.SetVariable("user_var", "value1")
-	ctx.SetSystemVariable("_system_var", "value2")
+	require.NoError(t, ctx.SetVariable("user_var", "value1"))
+	require.NoError(t, ctx.SetSystemVariable("_system_var", "value2"))
 
 	args := map[string]string{"type": "system"}
 
@@ -181,9 +181,9 @@ func TestVarsCommand_Execute_PatternFilter(t *testing.T) {
 	setupVarsTestRegistry(t, ctx)
 
 	// Set variables with different patterns
-	ctx.SetVariable("test_var1", "value1")
-	ctx.SetVariable("test_var2", "value2")
-	ctx.SetVariable("other_var", "value3")
+	require.NoError(t, ctx.SetVariable("test_var1", "value1"))
+	require.NoError(t, ctx.SetVariable("test_var2", "value2"))
+	require.NoError(t, ctx.SetVariable("other_var", "value3"))
 
 	args := map[string]string{"pattern": "^test_"}
 
@@ -233,9 +233,9 @@ func TestVarsCommand_Execute_CombinedFilters(t *testing.T) {
 	setupVarsTestRegistry(t, ctx)
 
 	// Set mixed variables
-	ctx.SetVariable("user_test", "value1")
-	ctx.SetVariable("user_other", "value2")
-	ctx.SetSystemVariable("_test_var", "value3")
+	require.NoError(t, ctx.SetVariable("user_test", "value1"))
+	require.NoError(t, ctx.SetVariable("user_other", "value2"))
+	require.NoError(t, ctx.SetSystemVariable("_test_var", "value3"))
 
 	args := map[string]string{
 		"pattern": "test",
@@ -321,7 +321,7 @@ func BenchmarkVarsCommand_Execute(b *testing.B) {
 
 	// Set up some test variables
 	for i := 0; i < 100; i++ {
-		ctx.SetVariable(fmt.Sprintf("var%d", i), fmt.Sprintf("value%d", i))
+		require.NoError(b, ctx.SetVariable(fmt.Sprintf("var%d", i), fmt.Sprintf("value%d", i)))
 	}
 
 	b.ResetTimer()
@@ -340,8 +340,8 @@ func BenchmarkVarsCommand_PatternFilter(b *testing.B) {
 
 	// Set up test variables
 	for i := 0; i < 100; i++ {
-		ctx.SetVariable(fmt.Sprintf("test_var%d", i), fmt.Sprintf("value%d", i))
-		ctx.SetVariable(fmt.Sprintf("other_var%d", i), fmt.Sprintf("value%d", i))
+		require.NoError(b, ctx.SetVariable(fmt.Sprintf("test_var%d", i), fmt.Sprintf("value%d", i)))
+		require.NoError(b, ctx.SetVariable(fmt.Sprintf("other_var%d", i), fmt.Sprintf("value%d", i)))
 	}
 
 	args := map[string]string{"pattern": "^test_"}
