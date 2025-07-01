@@ -101,3 +101,20 @@ func (r *Registry) IsValidCommand(name string) bool {
 // GlobalRegistry is the global command registry instance used throughout NeuroShell.
 // Commands register themselves with this instance during initialization.
 var GlobalRegistry = NewRegistry()
+
+// globalRegistryMu protects access to the GlobalRegistry variable itself
+var globalRegistryMu sync.RWMutex
+
+// GetGlobalRegistry returns the global registry instance in a thread-safe manner
+func GetGlobalRegistry() *Registry {
+	globalRegistryMu.RLock()
+	defer globalRegistryMu.RUnlock()
+	return GlobalRegistry
+}
+
+// SetGlobalRegistry sets the global registry instance in a thread-safe manner
+func SetGlobalRegistry(registry *Registry) {
+	globalRegistryMu.Lock()
+	defer globalRegistryMu.Unlock()
+	GlobalRegistry = registry
+}

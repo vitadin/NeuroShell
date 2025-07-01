@@ -92,17 +92,17 @@ func setupTestEnvironment(t *testing.T) func() {
 	globalCtx = context.New()
 	globalCtx.SetTestMode(true)
 
-	// Clear and reinitialize registries
+	// Clear and reinitialize registries using thread-safe functions
 	services.GlobalRegistry = services.NewRegistry()
-	commands.GlobalRegistry = commands.NewRegistry()
+	commands.SetGlobalRegistry(commands.NewRegistry())
 
 	// Register builtin commands manually since we cleared the registry
-	require.NoError(t, commands.GlobalRegistry.Register(&builtin.SetCommand{}))
-	require.NoError(t, commands.GlobalRegistry.Register(&builtin.GetCommand{}))
-	require.NoError(t, commands.GlobalRegistry.Register(&builtin.HelpCommand{}))
-	require.NoError(t, commands.GlobalRegistry.Register(&builtin.ExitCommand{}))
-	require.NoError(t, commands.GlobalRegistry.Register(&builtin.SendCommand{}))
-	require.NoError(t, commands.GlobalRegistry.Register(&builtin.RunCommand{}))
+	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SetCommand{}))
+	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.GetCommand{}))
+	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.HelpCommand{}))
+	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.ExitCommand{}))
+	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendCommand{}))
+	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.RunCommand{}))
 	// Note: Bash command has been removed
 
 	// Initialize services
