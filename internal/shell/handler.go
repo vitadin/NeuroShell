@@ -12,7 +12,6 @@ import (
 	"neuroshell/internal/logger"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
-	"neuroshell/pkg/neurotypes"
 )
 
 // ProcessInput handles user input from the interactive shell and executes commands.
@@ -59,6 +58,10 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
+	if err := services.GlobalRegistry.RegisterService(services.NewBashService()); err != nil {
+		return err
+	}
+
 	// Initialize all services with the global context
 	if err := services.GlobalRegistry.InitializeAll(globalCtx); err != nil {
 		return err
@@ -93,9 +96,6 @@ func executeCommand(c *ishell.Context, cmd *parser.Command) {
 
 	// Prepare input for execution
 	input := interpolatedCmd.Message
-	if interpolatedCmd.Name == "bash" && interpolatedCmd.ParseMode == neurotypes.ParseModeRaw && interpolatedCmd.BracketContent != "" {
-		input = interpolatedCmd.BracketContent
-	}
 
 	// Execute command with interpolated values
 	err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, input, globalCtx)
