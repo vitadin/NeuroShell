@@ -78,21 +78,16 @@ func (v *VariableService) InterpolateString(text string, ctx neurotypes.Context)
 	return neuroCtx.InterpolateVariables(text), nil
 }
 
-// GetAllVariables returns all variables from context (useful for debugging)
+// GetAllVariables returns all variables from context (useful for debugging and listing)
 func (v *VariableService) GetAllVariables(ctx neurotypes.Context) (map[string]string, error) {
 	if !v.initialized {
 		return nil, fmt.Errorf("variable service not initialized")
 	}
 
-	_, ok := ctx.(*context.NeuroContext)
+	neuroCtx, ok := ctx.(*context.NeuroContext)
 	if !ok {
 		return nil, fmt.Errorf("context is not a NeuroContext")
 	}
 
-	// This would require adding a method to NeuroContext to expose all variables
-	// For now, return empty map as placeholder
-	result := make(map[string]string)
-
-	// TODO: Add GetAllVariables method to NeuroContext if needed
-	return result, nil
+	return neuroCtx.GetAllVariables(), nil
 }
