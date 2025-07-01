@@ -40,15 +40,58 @@ jobs:
             - go-mod-{{ checksum "go.sum" }}
             - go-mod-
       
-      # Run all CI checks using our local check-ci command
+      # Run all CI checks step by step for better debugging
       - run:
-          name: Run CI checks
+          name: "Debug: Environment Info"
           command: |
-            # Source the PATH update for just
+            echo "=== Environment Debug Information ==="
+            echo "Go version: $(go version)"
+            echo "CPU cores: $(nproc)"
+            echo "Available memory: $(free -h)"
+            echo "Current directory: $(pwd)"
+            echo "PATH: $PATH"
+            echo "BASH_ENV: $BASH_ENV"
             source $BASH_ENV
-            # Run the same checks we run locally
-            just check-ci
+            echo "Updated PATH: $PATH"
+            echo "Just version: $(just --version)"
+            echo "Golangci-lint version: $(golangci-lint --version)"
+            echo "Go environment:"
+            go env
+            echo "=================================="
+
+      - run:
+          name: "CI Step 1: Update dependencies"
+          command: |
+            source $BASH_ENV
+            just deps
+
+      - run:
+          name: "CI Step 2: Run linter"
+          command: |
+            source $BASH_ENV
+            just lint
+
+      - run:
+          name: "CI Step 3: Run all unit tests (with race detection)"
+          command: |
+            source $BASH_ENV
+            echo "=== Running unit tests with race detection ==="
+            echo "Test command: go test -v -race ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/shell/..."
+            just test-all-units
           no_output_timeout: 10m
+
+      - run:
+          name: "CI Step 4: Build binary"
+          command: |
+            source $BASH_ENV
+            just build
+
+      - run:
+          name: "CI Step 5: Run end-to-end tests"
+          command: |
+            source $BASH_ENV
+            just test-e2e || true
+          when: always
       
       # Save Go modules cache
       - save_cache:
