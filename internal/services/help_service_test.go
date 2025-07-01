@@ -237,12 +237,12 @@ func setupHelpServiceTest(t *testing.T, testCommands []neurotypes.Command) neuro
 		require.NoError(t, err)
 	}
 
-	// Temporarily replace global command registry
-	originalCommandRegistry := commands.GlobalRegistry
-	commands.GlobalRegistry = testCommandRegistry
+	// Temporarily replace global command registry using thread-safe functions
+	originalCommandRegistry := commands.GetGlobalRegistry()
+	commands.SetGlobalRegistry(testCommandRegistry)
 
 	t.Cleanup(func() {
-		commands.GlobalRegistry = originalCommandRegistry
+		commands.SetGlobalRegistry(originalCommandRegistry)
 	})
 
 	return testutils.NewMockContext()

@@ -92,7 +92,7 @@ func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
 		cmdInput := interpolatedCmd.Message
 
 		// Execute command through the global command registry
-		err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput, ctx)
+		err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput, ctx)
 		if err != nil {
 			// Mark execution error and return
 			if markErr := es.MarkExecutionError(ctx, err, cmd.String()); markErr != nil {

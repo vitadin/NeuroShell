@@ -41,8 +41,8 @@ func (h *HelpService) Name() string {
 // Initialize collects command metadata from the command registry and stores it in context
 // as system variables, following the architecture pattern
 func (h *HelpService) Initialize(ctx neurotypes.Context) error {
-	// Collect all commands from the global registry
-	allCommands := commands.GlobalRegistry.GetAll()
+	// Collect all commands from the global registry using thread-safe accessor
+	allCommands := commands.GetGlobalRegistry().GetAll()
 
 	// Store command metadata
 	h.commands = make(map[string]CommandInfo)
