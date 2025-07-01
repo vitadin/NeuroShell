@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	_ "neuroshell/internal/commands/assert" // Import assert commands (init functions)
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
