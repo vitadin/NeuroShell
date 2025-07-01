@@ -1,0 +1,85 @@
+package builtin
+
+import (
+	"fmt"
+	"strings"
+
+	"neuroshell/internal/commands"
+	"neuroshell/internal/services"
+	"neuroshell/pkg/neurotypes"
+)
+
+// BashCommand implements the \bash command for executing system commands.
+// It uses exec.Command("bash", "-c", command) for simple, safe command execution.
+type BashCommand struct{}
+
+// Name returns the command name "bash" for registration and lookup.
+func (c *BashCommand) Name() string {
+	return "bash"
+}
+
+// ParseMode returns ParseModeRaw to pass entire input directly to bash.
+func (c *BashCommand) ParseMode() neurotypes.ParseMode {
+	return neurotypes.ParseModeRaw
+}
+
+// Description returns a brief description of what the bash command does.
+func (c *BashCommand) Description() string {
+	return "Execute system commands via bash"
+}
+
+// Usage returns the syntax and usage examples for the bash command.
+func (c *BashCommand) Usage() string {
+	return "\\bash command_to_execute"
+}
+
+// Execute runs system commands using bash and sets _output, _error, and _status variables.
+func (c *BashCommand) Execute(_ map[string]string, input string, ctx neurotypes.Context) error {
+	// Get the command to execute
+	command := strings.TrimSpace(input)
+	if command == "" {
+		return fmt.Errorf("Usage: %s", c.Usage())
+	}
+
+	// Get bash service from global registry
+	service, err := services.GlobalRegistry.GetService("bash")
+	if err != nil {
+		return fmt.Errorf("bash service not available: %w", err)
+	}
+
+	bashService, ok := service.(*services.BashService)
+	if !ok {
+		return fmt.Errorf("bash service has incorrect type")
+	}
+
+	// Execute the command
+	stdout, stderr, exitCode, err := bashService.Execute(command, ctx)
+	if err != nil {
+		return fmt.Errorf("failed to execute command: %w", err)
+	}
+
+	// Display output to user
+	if stdout != "" {
+		fmt.Print(stdout)
+		if !strings.HasSuffix(stdout, "\n") {
+			fmt.Println() // Add newline if output doesn't end with one
+		}
+	}
+
+	if stderr != "" {
+		fmt.Printf("Error: %s\n", stderr)
+	}
+
+	// Display exit status if non-zero
+	if exitCode != 0 {
+		fmt.Printf("Exit status: %d\n", exitCode)
+	}
+
+	return nil
+}
+
+func init() {
+	if err := commands.GlobalRegistry.Register(&BashCommand{}); err != nil {
+		panic(fmt.Sprintf("failed to register bash command: %v", err))
+	}
+}

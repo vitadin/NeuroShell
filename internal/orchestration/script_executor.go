@@ -88,11 +88,8 @@ func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
 			return fmt.Errorf("interpolation failed for command %d: %w", commandCount, err)
 		}
 
-		// Prepare input for execution (handle bash command special case)
+		// Prepare input for execution
 		cmdInput := interpolatedCmd.Message
-		if interpolatedCmd.Name == "bash" && interpolatedCmd.ParseMode == neurotypes.ParseModeRaw && interpolatedCmd.BracketContent != "" {
-			cmdInput = interpolatedCmd.BracketContent
-		}
 
 		// Execute command through the global command registry
 		err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput, ctx)
