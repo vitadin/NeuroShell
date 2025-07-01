@@ -11,9 +11,47 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/services"
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
+
+// setupHelpTestEnvironment sets up both command and service registries for testing help functionality
+func setupHelpTestEnvironment(t *testing.T, testCommands []neurotypes.Command) neurotypes.Context {
+	// Create separate registries for testing
+	testCommandRegistry := commands.NewRegistry()
+	testServiceRegistry := services.NewRegistry()
+
+	// Register test commands
+	for _, cmd := range testCommands {
+		err := testCommandRegistry.Register(cmd)
+		require.NoError(t, err)
+	}
+
+	// Temporarily replace global registries
+	originalCommandRegistry := commands.GlobalRegistry
+	originalServiceRegistry := services.GlobalRegistry
+	commands.GlobalRegistry = testCommandRegistry
+	services.GlobalRegistry = testServiceRegistry
+
+	// Cleanup function
+	t.Cleanup(func() {
+		commands.GlobalRegistry = originalCommandRegistry
+		services.GlobalRegistry = originalServiceRegistry
+	})
+
+	// Create and initialize help service
+	helpService := services.NewHelpService()
+	err := testServiceRegistry.RegisterService(helpService)
+	require.NoError(t, err)
+
+	// Create context and initialize service
+	ctx := testutils.NewMockContext()
+	err = helpService.Initialize(ctx)
+	require.NoError(t, err)
+
+	return ctx
+}
 
 func TestHelpCommand_Name(t *testing.T) {
 	cmd := &HelpCommand{}
@@ -36,10 +74,7 @@ func TestHelpCommand_Usage(t *testing.T) {
 }
 
 func TestHelpCommand_Execute(t *testing.T) {
-	// Create a separate registry for testing to avoid polluting global state
-	testRegistry := commands.NewRegistry()
-
-	// Register some test commands
+	// Set up test environment with help service
 	testCommands := []neurotypes.Command{
 		&MockCommand{
 			name:        "test1",
@@ -58,20 +93,8 @@ func TestHelpCommand_Execute(t *testing.T) {
 		},
 	}
 
-	for _, cmd := range testCommands {
-		err := testRegistry.Register(cmd)
-		require.NoError(t, err)
-	}
-
-	// Temporarily replace global registry
-	originalRegistry := commands.GlobalRegistry
-	commands.GlobalRegistry = testRegistry
-	defer func() {
-		commands.GlobalRegistry = originalRegistry
-	}()
-
+	ctx := setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
-	ctx := testutils.NewMockContext()
 
 	// Capture stdout
 	originalStdout := os.Stdout
@@ -111,9 +134,6 @@ func TestHelpCommand_Execute(t *testing.T) {
 }
 
 func TestHelpCommand_Execute_AlphabeticalOrder(t *testing.T) {
-	// Create a separate registry for testing
-	testRegistry := commands.NewRegistry()
-
 	// Register commands in non-alphabetical order
 	testCommands := []neurotypes.Command{
 		&MockCommand{name: "zebra", description: "Last", usage: "\\zebra"},
@@ -121,20 +141,8 @@ func TestHelpCommand_Execute_AlphabeticalOrder(t *testing.T) {
 		&MockCommand{name: "banana", description: "Middle", usage: "\\banana"},
 	}
 
-	for _, cmd := range testCommands {
-		err := testRegistry.Register(cmd)
-		require.NoError(t, err)
-	}
-
-	// Temporarily replace global registry
-	originalRegistry := commands.GlobalRegistry
-	commands.GlobalRegistry = testRegistry
-	defer func() {
-		commands.GlobalRegistry = originalRegistry
-	}()
-
+	ctx := setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
-	ctx := testutils.NewMockContext()
 
 	// Capture stdout
 	originalStdout := os.Stdout
@@ -164,18 +172,11 @@ func TestHelpCommand_Execute_AlphabeticalOrder(t *testing.T) {
 }
 
 func TestHelpCommand_Execute_EmptyRegistry(t *testing.T) {
-	// Create an empty registry for testing
-	testRegistry := commands.NewRegistry()
+	// Use empty command list
+	testCommands := []neurotypes.Command{}
 
-	// Temporarily replace global registry
-	originalRegistry := commands.GlobalRegistry
-	commands.GlobalRegistry = testRegistry
-	defer func() {
-		commands.GlobalRegistry = originalRegistry
-	}()
-
+	ctx := setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
-	ctx := testutils.NewMockContext()
 
 	// Capture stdout
 	originalStdout := os.Stdout
@@ -201,22 +202,16 @@ func TestHelpCommand_Execute_EmptyRegistry(t *testing.T) {
 }
 
 func TestHelpCommand_Execute_WithArgs(t *testing.T) {
-	// Test that help command ignores arguments (current implementation doesn't use them)
+	// Test help command with specific command requested
+	testCommands := []neurotypes.Command{
+		&MockCommand{name: "test", description: "Test", usage: "\\test"},
+	}
+
+	ctx := setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
-	ctx := testutils.NewMockContext()
 
-	// Create minimal registry
-	testRegistry := commands.NewRegistry()
-	require.NoError(t, testRegistry.Register(&MockCommand{name: "test", description: "Test", usage: "\\test"}))
-
-	originalRegistry := commands.GlobalRegistry
-	commands.GlobalRegistry = testRegistry
-	defer func() {
-		commands.GlobalRegistry = originalRegistry
-	}()
-
-	// Test with args
-	args := map[string]string{"command": "test"}
+	// Test with args - request help for specific command
+	args := map[string]string{"test": ""}
 
 	// Capture stdout
 	originalStdout := os.Stdout
@@ -234,24 +229,20 @@ func TestHelpCommand_Execute_WithArgs(t *testing.T) {
 	outputStr := string(output)
 
 	assert.NoError(t, err)
-	// Should still show all commands (current implementation doesn't filter by specific command)
-	assert.Contains(t, outputStr, "Neuro Shell Commands:")
+	// Should show specific command help
+	assert.Contains(t, outputStr, "Command: test")
+	assert.Contains(t, outputStr, "Description: Test")
+	assert.Contains(t, outputStr, "Usage: \\test")
 }
 
 func TestHelpCommand_Execute_WithInput(t *testing.T) {
 	// Test that help command ignores input (current implementation doesn't use it)
+	testCommands := []neurotypes.Command{
+		&MockCommand{name: "test", description: "Test", usage: "\\test"},
+	}
+
+	ctx := setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
-	ctx := testutils.NewMockContext()
-
-	// Create minimal registry
-	testRegistry := commands.NewRegistry()
-	require.NoError(t, testRegistry.Register(&MockCommand{name: "test", description: "Test", usage: "\\test"}))
-
-	originalRegistry := commands.GlobalRegistry
-	commands.GlobalRegistry = testRegistry
-	defer func() {
-		commands.GlobalRegistry = originalRegistry
-	}()
 
 	// Test with input
 	input := "some input text"
@@ -278,8 +269,6 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 
 func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 	// Test output formatting consistency
-	testRegistry := commands.NewRegistry()
-
 	// Register commands with various length names and descriptions
 	testCommands := []neurotypes.Command{
 		&MockCommand{
@@ -299,19 +288,8 @@ func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 		},
 	}
 
-	for _, cmd := range testCommands {
-		err := testRegistry.Register(cmd)
-		require.NoError(t, err)
-	}
-
-	originalRegistry := commands.GlobalRegistry
-	commands.GlobalRegistry = testRegistry
-	defer func() {
-		commands.GlobalRegistry = originalRegistry
-	}()
-
+	ctx := setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
-	ctx := testutils.NewMockContext()
 
 	// Capture stdout
 	originalStdout := os.Stdout
@@ -341,16 +319,11 @@ func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 
 func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 	// Test that static content (examples, notes) is always present
-	cmd := &HelpCommand{}
-	ctx := testutils.NewMockContext()
-
 	// Use empty registry
-	testRegistry := commands.NewRegistry()
-	originalRegistry := commands.GlobalRegistry
-	commands.GlobalRegistry = testRegistry
-	defer func() {
-		commands.GlobalRegistry = originalRegistry
-	}()
+	testCommands := []neurotypes.Command{}
+
+	ctx := setupHelpTestEnvironment(t, testCommands)
+	cmd := &HelpCommand{}
 
 	// Capture stdout
 	originalStdout := os.Stdout
@@ -383,6 +356,104 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 	for _, content := range expectedStaticContent {
 		assert.Contains(t, outputStr, content, "Missing static content: %s", content)
 	}
+}
+
+func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
+	// Test help for a specific command using \help[command] syntax
+	testCommands := []neurotypes.Command{
+		&MockCommand{
+			name:        "bash",
+			description: "Execute system commands via bash",
+			usage:       "\\bash command_to_execute",
+			parseMode:   neurotypes.ParseModeRaw,
+		},
+		&MockCommand{
+			name:        "set",
+			description: "Set a variable",
+			usage:       "\\set[var=value] or \\set var value",
+			parseMode:   neurotypes.ParseModeKeyValue,
+		},
+	}
+
+	ctx := setupHelpTestEnvironment(t, testCommands)
+	cmd := &HelpCommand{}
+
+	tests := []struct {
+		name         string
+		args         map[string]string
+		shouldError  bool
+		expectedText []string
+	}{
+		{
+			name: "help for bash command",
+			args: map[string]string{"bash": ""},
+			expectedText: []string{
+				"Command: bash",
+				"Description: Execute system commands via bash",
+				"Usage: \\bash command_to_execute",
+				"Parse Mode: Raw",
+				"Examples:",
+				"\\bash ls -la",
+			},
+		},
+		{
+			name: "help for set command",
+			args: map[string]string{"set": ""},
+			expectedText: []string{
+				"Command: set",
+				"Description: Set a variable",
+				"Usage: \\set[var=value] or \\set var value",
+				"Parse Mode: Key-Value",
+				"Examples:",
+				"\\set[name=\"John\"]",
+			},
+		},
+		{
+			name:        "help for nonexistent command",
+			args:        map[string]string{"nonexistent": ""},
+			shouldError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Capture stdout
+			originalStdout := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			err := cmd.Execute(tt.args, "", ctx)
+
+			// Restore stdout
+			_ = w.Close()
+			os.Stdout = originalStdout
+
+			// Read captured output
+			output, _ := io.ReadAll(r)
+			outputStr := string(output)
+
+			if tt.shouldError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "not found")
+			} else {
+				assert.NoError(t, err)
+				for _, expectedText := range tt.expectedText {
+					assert.Contains(t, outputStr, expectedText, "Missing expected text: %s", expectedText)
+				}
+			}
+		})
+	}
+}
+
+func TestHelpCommand_Execute_ServiceUnavailable(t *testing.T) {
+	// Test when help service is not available
+	cmd := &HelpCommand{}
+	ctx := testutils.NewMockContext()
+
+	// Don't set up help service - this will cause service not found error
+	err := cmd.Execute(map[string]string{}, "", ctx)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "help service not available")
 }
 
 // MockCommand for testing (reuse from registry_test.go structure)
