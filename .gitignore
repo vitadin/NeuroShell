@@ -7,6 +7,9 @@
 bin/
 dist/
 
+# Root level binary (neuroshell)
+/neuroshell
+
 # Test binary, built with `go test -c`
 *.test
 

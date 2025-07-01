@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestParseInput_BackslashPrefix(t *testing.T) {
@@ -292,22 +293,22 @@ func TestParseInput_ParseMode(t *testing.T) {
 	tests := []struct {
 		name              string
 		input             string
-		expectedParseMode ParseMode
+		expectedParseMode neurotypes.ParseMode
 	}{
 		{
 			name:              "default command uses key-value mode",
 			input:             "\\set[var=value] message",
-			expectedParseMode: ParseModeKeyValue,
+			expectedParseMode: neurotypes.ParseModeKeyValue,
 		},
 		{
 			name:              "bash command uses key-value mode (default)",
 			input:             "\\bash[cmd=ls] execute",
-			expectedParseMode: ParseModeKeyValue,
+			expectedParseMode: neurotypes.ParseModeKeyValue,
 		},
 		{
 			name:              "send command uses key-value mode",
 			input:             "\\send[urgent] message",
-			expectedParseMode: ParseModeKeyValue,
+			expectedParseMode: neurotypes.ParseModeKeyValue,
 		},
 	}
 
@@ -913,47 +914,47 @@ func TestGetParseMode(t *testing.T) {
 	tests := []struct {
 		name         string
 		commandName  string
-		expectedMode ParseMode
+		expectedMode neurotypes.ParseMode
 	}{
 		{
 			name:         "set command",
 			commandName:  "set",
-			expectedMode: ParseModeKeyValue,
+			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 		{
 			name:         "get command",
 			commandName:  "get",
-			expectedMode: ParseModeKeyValue,
+			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 		{
 			name:         "bash command",
 			commandName:  "bash",
-			expectedMode: ParseModeKeyValue,
+			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 		{
 			name:         "send command",
 			commandName:  "send",
-			expectedMode: ParseModeKeyValue,
+			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 		{
 			name:         "help command",
 			commandName:  "help",
-			expectedMode: ParseModeKeyValue,
+			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 		{
 			name:         "unknown command",
 			commandName:  "unknown",
-			expectedMode: ParseModeKeyValue,
+			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 		{
 			name:         "empty command name",
 			commandName:  "",
-			expectedMode: ParseModeKeyValue,
+			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 		{
 			name:         "special characters in command name",
 			commandName:  "test-command_123",
-			expectedMode: ParseModeKeyValue,
+			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 	}
 

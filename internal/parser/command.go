@@ -16,18 +16,8 @@ type Command struct {
 	BracketContent string
 	Options        map[string]string
 	Message        string
-	ParseMode      ParseMode
+	ParseMode      neurotypes.ParseMode
 }
-
-// ParseMode defines how command arguments should be parsed from user input.
-type ParseMode = neurotypes.ParseMode
-
-const (
-	// ParseModeKeyValue parses arguments as key=value pairs within brackets
-	ParseModeKeyValue = neurotypes.ParseModeKeyValue
-	// ParseModeRaw treats the entire input as raw text without parsing
-	ParseModeRaw = neurotypes.ParseModeRaw
-)
 
 // ParseInput parses user input into a Command structure with name, options, and message.
 func ParseInput(input string) *Command {
@@ -75,7 +65,7 @@ func ParseInput(input string) *Command {
 
 	// Parse bracket content based on mode
 	if cmd.BracketContent != "" {
-		if cmd.ParseMode != ParseModeRaw {
+		if cmd.ParseMode != neurotypes.ParseModeRaw {
 			// Parse as key=value pairs
 			parseKeyValueOptions(cmd.BracketContent, cmd.Options)
 		}
@@ -84,10 +74,10 @@ func ParseInput(input string) *Command {
 	return cmd
 }
 
-func getParseMode(_ string) ParseMode {
+func getParseMode(_ string) neurotypes.ParseMode {
 	// Default to key-value parsing for all commands
 	// Commands that need raw parsing will handle it internally
-	return ParseModeKeyValue
+	return neurotypes.ParseModeKeyValue
 }
 
 func parseKeyValueOptions(content string, options map[string]string) {
