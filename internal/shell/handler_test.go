@@ -484,7 +484,7 @@ func TestExecuteCommand_BashCommandSpecialHandling(t *testing.T) {
 				Message:        "setting value",
 				BracketContent: "var=value",
 				Options:        map[string]string{"var": "value"},
-				ParseMode:      parser.ParseModeRaw,
+				ParseMode:      neurotypes.ParseModeRaw,
 			},
 		},
 	}

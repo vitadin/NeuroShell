@@ -8,7 +8,6 @@ import (
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/logger"
-	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -91,7 +90,7 @@ func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
 
 		// Prepare input for execution (handle bash command special case)
 		cmdInput := interpolatedCmd.Message
-		if interpolatedCmd.Name == "bash" && interpolatedCmd.ParseMode == parser.ParseModeRaw && interpolatedCmd.BracketContent != "" {
+		if interpolatedCmd.Name == "bash" && interpolatedCmd.ParseMode == neurotypes.ParseModeRaw && interpolatedCmd.BracketContent != "" {
 			cmdInput = interpolatedCmd.BracketContent
 		}
 
