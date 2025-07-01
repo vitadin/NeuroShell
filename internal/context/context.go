@@ -233,3 +233,23 @@ func (ctx *NeuroContext) SetTestMode(testMode bool) {
 func (ctx *NeuroContext) IsTestMode() bool {
 	return ctx.testMode
 }
+
+// GetAllVariables returns all variables including both user variables and computed system variables.
+func (ctx *NeuroContext) GetAllVariables() map[string]string {
+	result := make(map[string]string)
+
+	// Add all stored variables (both user and system variables)
+	for name, value := range ctx.variables {
+		result[name] = value
+	}
+
+	// Add computed system variables
+	systemVars := []string{"@pwd", "@user", "@home", "@date", "@time", "@os", "#session_id", "#message_count", "#test_mode"}
+	for _, varName := range systemVars {
+		if value, ok := ctx.getSystemVariable(varName); ok {
+			result[varName] = value
+		}
+	}
+
+	return result
+}
