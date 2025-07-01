@@ -291,26 +291,124 @@ func TestVarsCommand_MatchesTypeFilter(t *testing.T) {
 	}
 }
 
-func TestVarsCommand_DisplayVariables_TruncateLongValues(t *testing.T) {
+func TestVarsCommand_DisplayVariables_SmartTruncation(t *testing.T) {
 	cmd := &VarsCommand{}
 
-	// Create a very long value
-	longValue := strings.Repeat("a", 100)
-	vars := map[string]string{
-		"long_var": longValue,
+	tests := []struct {
+		name         string
+		value        string
+		shouldShow   []string // Strings that should appear in output
+		shouldntShow []string // Strings that should NOT appear in output
+	}{
+		{
+			name:       "short value unchanged",
+			value:      "short value",
+			shouldShow: []string{"short value"},
+		},
+		{
+			name:         "long value smart truncated",
+			value:        strings.Repeat("a", 100) + "END",
+			shouldShow:   []string{"aaa", "...", "END", "(length: 103 chars)"},
+			shouldntShow: []string{strings.Repeat("a", 50)}, // Middle part should not appear
+		},
+		{
+			name:       "value with newlines",
+			value:      "Line 1\nLine 2\nLine 3",
+			shouldShow: []string{"Line 1\\nLine 2\\nLine 3"},
+		},
+		{
+			name:       "value with tabs",
+			value:      "Text\twith\ttabs",
+			shouldShow: []string{"Text\\twith\\ttabs"},
+		},
+		{
+			name:         "very long value with special chars",
+			value:        "Start" + strings.Repeat("x", 90) + "\n\tEnd",
+			shouldShow:   []string{"Start", "...", "\\n\\tEnd", "(length: 100 chars)"},
+			shouldntShow: []string{strings.Repeat("x", 40)}, // Middle part should not appear
+		},
 	}
 
-	// Capture stdout
-	output := captureOutput(func() {
-		cmd.displayVariables(vars)
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			vars := map[string]string{
+				"test_var": tt.value,
+			}
 
-	// Should truncate long values
-	if strings.Contains(output, longValue) {
-		t.Error("Long value should be truncated")
+			// Capture stdout
+			output := captureOutput(func() {
+				cmd.displayVariables(vars)
+			})
+
+			// Check that expected strings appear
+			for _, expected := range tt.shouldShow {
+				if !strings.Contains(output, expected) {
+					t.Errorf("Expected output to contain '%s', got: %s", expected, output)
+				}
+			}
+
+			// Check that unexpected strings don't appear
+			for _, unexpected := range tt.shouldntShow {
+				if strings.Contains(output, unexpected) {
+					t.Errorf("Expected output to NOT contain '%s', got: %s", unexpected, output)
+				}
+			}
+		})
 	}
-	if !strings.Contains(output, "...") {
-		t.Error("Truncated value should contain '...'")
+}
+
+func TestVarsCommand_FormatValueForDisplay(t *testing.T) {
+	cmd := &VarsCommand{}
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "short value",
+			input:    "hello world",
+			expected: "hello world",
+		},
+		{
+			name:     "exactly max length",
+			input:    strings.Repeat("a", 80),
+			expected: strings.Repeat("a", 80),
+		},
+		{
+			name:     "just over max length",
+			input:    strings.Repeat("a", 85),
+			expected: strings.Repeat("a", 30) + "..." + strings.Repeat("a", 20) + " (length: 85 chars)",
+		},
+		{
+			name:     "newlines replaced",
+			input:    "line1\nline2\nline3",
+			expected: "line1\\nline2\\nline3",
+		},
+		{
+			name:     "tabs and carriage returns",
+			input:    "text\twith\r\nvarious\twhitespace",
+			expected: "text\\twith\\r\\nvarious\\twhitespace",
+		},
+		{
+			name:     "very long with newlines",
+			input:    "Start of message" + strings.Repeat("x", 70) + "\nEnd of message",
+			expected: "Start of messagexxxxxxxxxxxxxx...xxxx\\nEnd of message (length: 101 chars)",
+		},
+		{
+			name:     "empty string",
+			input:    "",
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := cmd.formatValueForDisplay(tt.input)
+			if result != tt.expected {
+				t.Errorf("formatValueForDisplay(%q) = %q, want %q", tt.input, result, tt.expected)
+			}
+		})
 	}
 }
 

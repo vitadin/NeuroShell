@@ -169,6 +169,41 @@ func (c *VarsCommand) displayVariables(vars map[string]string) {
 	fmt.Printf("\nTotal: %d variables\n", len(vars))
 }
 
+// formatValueForDisplay formats a variable value for concise display
+// Shows full value if short, otherwise shows beginning + "..." + end + length info
+func (c *VarsCommand) formatValueForDisplay(value string) string {
+	const (
+		maxDisplayWidth = 80
+		firstPartLength = 30
+		lastPartLength  = 20
+	)
+
+	// Handle newlines by replacing with \n for display
+	displayValue := strings.ReplaceAll(value, "\n", "\\n")
+	displayValue = strings.ReplaceAll(displayValue, "\r", "\\r")
+	displayValue = strings.ReplaceAll(displayValue, "\t", "\\t")
+
+	// If value is short enough, show it entirely
+	if len(displayValue) <= maxDisplayWidth {
+		return displayValue
+	}
+
+	// For long values, show: first part + "..." + last part + length info
+	firstPart := displayValue[:firstPartLength]
+	lastPart := displayValue[len(displayValue)-lastPartLength:]
+	lengthInfo := fmt.Sprintf("(length: %d chars)", len(value))
+
+	// Calculate space needed for "..." + lastPart + " " + lengthInfo
+	ellipsisAndEnd := "..." + lastPart + " " + lengthInfo
+
+	// If the truncated version would be longer than original, just show original
+	if len(firstPart)+len(ellipsisAndEnd) >= len(displayValue) {
+		return displayValue
+	}
+
+	return firstPart + "..." + lastPart + " " + lengthInfo
+}
+
 // displayVariableGroup displays a group of variables sorted by name
 func (c *VarsCommand) displayVariableGroup(vars map[string]string) {
 	// Sort variable names for consistent output
@@ -181,11 +216,8 @@ func (c *VarsCommand) displayVariableGroup(vars map[string]string) {
 	// Display each variable
 	for _, name := range names {
 		value := vars[name]
-		// Truncate very long values for readability
-		if len(value) > 80 {
-			value = value[:77] + "..."
-		}
-		fmt.Printf("  %-20s = %s\n", name, value)
+		formattedValue := c.formatValueForDisplay(value)
+		fmt.Printf("  %-20s = %s\n", name, formattedValue)
 	}
 }
 
