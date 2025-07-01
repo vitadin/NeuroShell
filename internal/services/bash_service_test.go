@@ -187,33 +187,16 @@ func TestBashService_Execute_WithStderr(t *testing.T) {
 			name:    "stderr via ls nonexistent",
 			command: "ls /this/path/does/not/exist",
 			checkErr: func(stderr string, exitCode int) {
-				t.Logf("=== DEBUG: LS Nonexistent Test ===")
-				t.Logf("Expected: stderr contains 'No such file or directory'")
-				t.Logf("Actual stderr: %q", stderr)
-				t.Logf("Expected exit code: 1")
-				t.Logf("Actual exit code: %d", exitCode)
-				t.Logf("Contains 'No such file or directory': %v", strings.Contains(stderr, "No such file or directory"))
-				t.Logf("==================================")
-				
 				assert.Contains(t, stderr, "No such file or directory")
-				assert.Equal(t, 1, exitCode)
+				// Accept both exit codes 1 and 2 (different ls implementations across environments)
+				assert.True(t, exitCode == 1 || exitCode == 2,
+					"Expected exit code 1 or 2 for ls nonexistent file, got %d", exitCode)
 			},
 		},
 		{
 			name:    "stderr via invalid command",
 			command: "invalidcommandthatdoesnotexist123",
 			checkErr: func(stderr string, exitCode int) {
-				t.Logf("=== DEBUG: Invalid Command Test ===")
-				t.Logf("Expected: stderr contains 'command not found'")
-				t.Logf("Expected: exit code = 127")
-				t.Logf("Actual stderr: %q", stderr)
-				t.Logf("Actual exit code: %d", exitCode)
-				t.Logf("Contains 'command not found': %v", strings.Contains(stderr, "command not found"))
-				t.Logf("Exit code matches: %v", exitCode == 127)
-				t.Logf("Stderr length: %d", len(stderr))
-				t.Logf("Stderr bytes: %v", []byte(stderr))
-				t.Logf("================================")
-				
 				assert.Contains(t, stderr, "command not found")
 				assert.Equal(t, 127, exitCode)
 			},
