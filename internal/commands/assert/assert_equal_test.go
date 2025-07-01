@@ -1,8 +1,6 @@
 package assert
 
 import (
-	"io"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,28 +11,28 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-func TestAssertEqualCommand_Name(t *testing.T) {
-	cmd := &AssertEqualCommand{}
+func TestEqualCommand_Name(t *testing.T) {
+	cmd := &EqualCommand{}
 	assert.Equal(t, "assert-equal", cmd.Name())
 }
 
-func TestAssertEqualCommand_ParseMode(t *testing.T) {
-	cmd := &AssertEqualCommand{}
+func TestEqualCommand_ParseMode(t *testing.T) {
+	cmd := &EqualCommand{}
 	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 }
 
-func TestAssertEqualCommand_Description(t *testing.T) {
-	cmd := &AssertEqualCommand{}
+func TestEqualCommand_Description(t *testing.T) {
+	cmd := &EqualCommand{}
 	assert.Equal(t, "Compare two values for equality", cmd.Description())
 }
 
-func TestAssertEqualCommand_Usage(t *testing.T) {
-	cmd := &AssertEqualCommand{}
+func TestEqualCommand_Usage(t *testing.T) {
+	cmd := &EqualCommand{}
 	assert.Equal(t, "\\assert-equal[expect=expected_value, actual=actual_value]", cmd.Usage())
 }
 
-func TestAssertEqualCommand_Execute_MissingArguments(t *testing.T) {
-	cmd := &AssertEqualCommand{}
+func TestEqualCommand_Execute_MissingArguments(t *testing.T) {
+	cmd := &EqualCommand{}
 
 	tests := []struct {
 		name string
@@ -70,8 +68,8 @@ func TestAssertEqualCommand_Execute_MissingArguments(t *testing.T) {
 	}
 }
 
-func TestAssertEqualCommand_Execute_ServiceNotAvailable(t *testing.T) {
-	cmd := &AssertEqualCommand{}
+func TestEqualCommand_Execute_ServiceNotAvailable(t *testing.T) {
+	cmd := &EqualCommand{}
 	ctx := testutils.NewMockContext()
 
 	// Don't set up services to test service unavailability
@@ -87,8 +85,8 @@ func TestAssertEqualCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	assert.Contains(t, err.Error(), "interpolation service not available")
 }
 
-func TestAssertEqualCommand_Execute_InterpolationServiceError(t *testing.T) {
-	cmd := &AssertEqualCommand{}
+func TestEqualCommand_Execute_InterpolationServiceError(t *testing.T) {
+	cmd := &EqualCommand{}
 	ctx := testutils.NewMockContext()
 
 	// Set up services - but MockContext will cause interpolation to fail
@@ -106,8 +104,8 @@ func TestAssertEqualCommand_Execute_InterpolationServiceError(t *testing.T) {
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
 }
 
-func TestAssertEqualCommand_Execute_WrongServiceType(t *testing.T) {
-	cmd := &AssertEqualCommand{}
+func TestEqualCommand_Execute_WrongServiceType(t *testing.T) {
+	cmd := &EqualCommand{}
 	ctx := testutils.NewMockContext()
 
 	// Setup registry but register wrong service type under "interpolation" name
@@ -132,8 +130,8 @@ func TestAssertEqualCommand_Execute_WrongServiceType(t *testing.T) {
 	assert.Contains(t, err.Error(), "incorrect type")
 }
 
-func TestAssertEqualCommand_Execute_VariableServiceError(t *testing.T) {
-	cmd := &AssertEqualCommand{}
+func TestEqualCommand_Execute_VariableServiceError(t *testing.T) {
+	cmd := &EqualCommand{}
 	ctx := testutils.NewMockContext()
 
 	// Set up only interpolation service, missing variable service
@@ -190,36 +188,6 @@ func setupTestServices(t *testing.T, ctx neurotypes.Context) {
 	})
 }
 
-// captureOutput captures stdout during function execution
-func captureOutput(fn func()) string {
-	// Save original stdout
-	oldStdout := os.Stdout
-
-	// Create pipe
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	// Channel to receive output
-	outputChan := make(chan string)
-
-	// Start goroutine to read output
-	go func() {
-		defer close(outputChan)
-		output, _ := io.ReadAll(r)
-		outputChan <- string(output)
-	}()
-
-	// Execute function
-	fn()
-
-	// Restore stdout and close writer
-	_ = w.Close()
-	os.Stdout = oldStdout
-
-	// Return captured output
-	return <-outputChan
-}
-
 // mockWrongService is a mock service with wrong type for testing
 type mockWrongService struct{}
 
@@ -227,13 +195,13 @@ func (m *mockWrongService) Name() string                          { return "inte
 func (m *mockWrongService) Initialize(_ neurotypes.Context) error { return nil }
 
 // Interface compliance test
-func TestAssertEqualCommand_InterfaceCompliance(_ *testing.T) {
-	var _ neurotypes.Command = (*AssertEqualCommand)(nil)
+func TestEqualCommand_InterfaceCompliance(_ *testing.T) {
+	var _ neurotypes.Command = (*EqualCommand)(nil)
 }
 
 // Benchmark tests
-func BenchmarkAssertEqualCommand_Execute_ServiceError(b *testing.B) {
-	cmd := &AssertEqualCommand{}
+func BenchmarkEqualCommand_Execute_ServiceError(b *testing.B) {
+	cmd := &EqualCommand{}
 	ctx := testutils.NewMockContext()
 
 	// Don't setup services to measure error handling overhead
@@ -248,8 +216,8 @@ func BenchmarkAssertEqualCommand_Execute_ServiceError(b *testing.B) {
 	}
 }
 
-func BenchmarkAssertEqualCommand_Execute_WithServices(b *testing.B) {
-	cmd := &AssertEqualCommand{}
+func BenchmarkEqualCommand_Execute_WithServices(b *testing.B) {
+	cmd := &EqualCommand{}
 	ctx := testutils.NewMockContext()
 
 	// Setup services (will fail at interpolation but measures setup overhead)

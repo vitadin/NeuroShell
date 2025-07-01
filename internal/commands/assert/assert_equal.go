@@ -1,3 +1,5 @@
+// Package assert provides assertion commands for testing and validation in NeuroShell.
+// This package contains commands that compare values and set system variables based on results.
 package assert
 
 import (
@@ -8,33 +10,33 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-// AssertEqualCommand implements the \assert-equal command for comparing two values.
+// EqualCommand implements the \assert-equal command for comparing two values.
 // It supports variable interpolation and sets system variables for test results.
-type AssertEqualCommand struct{}
+type EqualCommand struct{}
 
 // Name returns the command name "assert-equal" for registration and lookup.
-func (c *AssertEqualCommand) Name() string {
+func (c *EqualCommand) Name() string {
 	return "assert-equal"
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
-func (c *AssertEqualCommand) ParseMode() neurotypes.ParseMode {
+func (c *EqualCommand) ParseMode() neurotypes.ParseMode {
 	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the assert-equal command does.
-func (c *AssertEqualCommand) Description() string {
+func (c *EqualCommand) Description() string {
 	return "Compare two values for equality"
 }
 
 // Usage returns the syntax and usage examples for the assert-equal command.
-func (c *AssertEqualCommand) Usage() string {
+func (c *EqualCommand) Usage() string {
 	return "\\assert-equal[expect=expected_value, actual=actual_value]"
 }
 
 // Execute compares two values for equality with variable interpolation support.
 // It sets system variables _status, _assert_result, _assert_expected, and _assert_actual.
-func (c *AssertEqualCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
 	// Validate required arguments
 	expected, hasExpected := args["expect"]
 	actual, hasActual := args["actual"]
@@ -117,7 +119,7 @@ func getVariableService() (*services.VariableService, error) {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&AssertEqualCommand{}); err != nil {
+	if err := commands.GlobalRegistry.Register(&EqualCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register assert-equal command: %v", err))
 	}
 }
