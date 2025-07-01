@@ -7,6 +7,7 @@ import (
 
 	"github.com/abiosoft/ishell/v2"
 	"neuroshell/internal/commands"
+	_ "neuroshell/internal/commands/assert"  // Import assert commands (init functions)
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"

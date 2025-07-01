@@ -40,7 +40,7 @@ func ParseInput(input string) *Command {
 	}
 
 	// Try to parse command with brackets: command[content] message
-	bracketRe := regexp.MustCompile(`^([a-zA-Z_][a-zA-Z0-9_]*)\[([^\]]*)\](.*)$`)
+	bracketRe := regexp.MustCompile(`^([a-zA-Z_][a-zA-Z0-9_-]*)\[([^\]]*)\](.*)$`)
 	if matches := bracketRe.FindStringSubmatch(input); matches != nil {
 		cmd.Name = matches[1]
 		cmd.BracketContent = matches[2]
