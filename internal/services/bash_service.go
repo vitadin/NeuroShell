@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -58,24 +59,34 @@ func (b *BashService) Execute(command string, ctx neurotypes.Context) (string, s
 	// Execute command using bash -c
 	cmd := exec.CommandContext(ctxWithTimeout, "bash", "-c", command)
 
-	// Capture stdout and stderr
-	stdout, err := cmd.Output()
-	var stderr []byte
+	// Set up separate pipes for stdout and stderr
+	var stdoutBuf, stderrBuf bytes.Buffer
+	cmd.Stdout = &stdoutBuf
+	cmd.Stderr = &stderrBuf
+
+	// Run the command
+	err := cmd.Run()
+
+	// Get the output
+	stdout := stdoutBuf.Bytes()
+	stderr := stderrBuf.Bytes()
 	var exitCode int
 
 	if err != nil {
 		// Handle different types of errors
 		if exitError, ok := err.(*exec.ExitError); ok {
 			// Command ran but returned non-zero exit code
-			stderr = exitError.Stderr
 			exitCode = exitError.ExitCode()
-		} else if ctxWithTimeout.Err() == context.DeadlineExceeded {
+		} else if ctxWithTimeout.Err() == context.DeadlineExceeded || strings.Contains(err.Error(), "deadline exceeded") {
 			// Command timed out
 			stderr = []byte(fmt.Sprintf("command timed out after %v", b.timeout))
 			exitCode = -1
 		} else {
 			// Other execution errors (command not found, etc.)
-			stderr = []byte(err.Error())
+			// For these errors, add to stderr if it's empty
+			if len(stderr) == 0 {
+				stderr = []byte(err.Error())
+			}
 			exitCode = -1
 		}
 	} else {

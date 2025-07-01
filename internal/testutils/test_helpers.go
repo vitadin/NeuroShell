@@ -1,7 +1,9 @@
 package testutils
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -219,4 +221,112 @@ func (b *BenchmarkHelpers) GenerateComplexInterpolationString(varCount int) stri
 		result += fmt.Sprintf("${var_%d} ", i)
 	}
 	return result
+}
+
+// OutputCapture provides utilities for capturing stdout/stderr in tests
+type OutputCapture struct {
+	oldStdout *os.File
+	output    chan string
+}
+
+// NewOutputCapture creates a new output capture instance
+func NewOutputCapture() *OutputCapture {
+	return &OutputCapture{}
+}
+
+// CaptureStdout captures stdout for the duration of a function call
+func (o *OutputCapture) CaptureStdout(fn func()) string {
+	// Save original stdout
+	o.oldStdout = os.Stdout
+
+	// Create pipe
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	// Create channel to receive output
+	o.output = make(chan string)
+
+	// Start goroutine to read output
+	go func() {
+		var buf bytes.Buffer
+		_, _ = io.Copy(&buf, r)
+		o.output <- buf.String()
+	}()
+
+	// Execute function
+	fn()
+
+	// Restore stdout and close writer
+	_ = w.Close()
+	os.Stdout = o.oldStdout
+
+	// Read captured output
+	return <-o.output
+}
+
+// BashTestHelpers provides utilities specifically for testing bash commands
+type BashTestHelpers struct{}
+
+// NewBashTestHelpers creates bash-specific test helpers
+func NewBashTestHelpers() *BashTestHelpers {
+	return &BashTestHelpers{}
+}
+
+// BasicCommands returns a set of basic bash commands for testing
+func (b *BashTestHelpers) BasicCommands() map[string]ExpectedResult {
+	return map[string]ExpectedResult{
+		"echo hello": {
+			Output:   "hello",
+			Error:    "",
+			ExitCode: 0,
+		},
+		"echo 'hello world'": {
+			Output:   "hello world",
+			Error:    "",
+			ExitCode: 0,
+		},
+		"pwd": {
+			Output:   "", // Will be current directory
+			Error:    "",
+			ExitCode: 0,
+		},
+		"echo test >&2": {
+			Output:   "",
+			Error:    "test",
+			ExitCode: 0,
+		},
+		"exit 1": {
+			Output:   "",
+			Error:    "",
+			ExitCode: 1,
+		},
+		"false": {
+			Output:   "",
+			Error:    "",
+			ExitCode: 1,
+		},
+	}
+}
+
+// ErrorCommands returns commands that should fail
+func (b *BashTestHelpers) ErrorCommands() map[string]ExpectedResult {
+	return map[string]ExpectedResult{
+		"nonexistentcommand123": {
+			Output:   "",
+			Error:    "nonexistentcommand123: command not found",
+			ExitCode: 127,
+		},
+		"ls /nonexistent/directory": {
+			Output:   "",
+			Error:    "ls: /nonexistent/directory: No such file or directory",
+			ExitCode: 1,
+		},
+	}
+}
+
+// ExpectedResult represents expected output from a bash command
+type ExpectedResult struct {
+	Output   string
+	Error    string
+	ExitCode int
 }

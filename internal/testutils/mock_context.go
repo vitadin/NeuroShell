@@ -212,3 +212,22 @@ func (m *MockContext) ClearHistory() {
 	m.history = []neurotypes.Message{}
 	m.sessionState.History = []neurotypes.Message{}
 }
+
+// SetSystemVariable sets a system variable (for testing bash service)
+func (m *MockContext) SetSystemVariable(name string, value string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.setVariableError != nil {
+		return m.setVariableError
+	}
+
+	// System variables are prefixed with _, @, or #
+	if len(name) > 0 && (name[0] == '_' || name[0] == '@' || name[0] == '#') {
+		m.variables[name] = value
+		m.sessionState.Variables[name] = value
+		return nil
+	}
+
+	return fmt.Errorf("variable '%s' is not a system variable", name)
+}
