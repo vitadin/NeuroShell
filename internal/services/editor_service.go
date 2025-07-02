@@ -117,15 +117,9 @@ func (e *EditorService) getEditorCommand(ctx neurotypes.Context) string {
 func (e *EditorService) createTempFile() (string, error) {
 	tempFile := filepath.Join(e.tempDir, "neuroshell-input.txt")
 
-	// Create the file with some helpful content
-	initialContent := `# NeuroShell Editor Mode
-# Enter your message or command below.
-# Save and exit to capture the content.
-
-`
-
-	if err := os.WriteFile(tempFile, []byte(initialContent), 0600); err != nil {
-		return "", fmt.Errorf("failed to write initial content: %w", err)
+	// Create an empty file
+	if err := os.WriteFile(tempFile, []byte(""), 0600); err != nil {
+		return "", fmt.Errorf("failed to create temp file: %w", err)
 	}
 
 	return tempFile, nil

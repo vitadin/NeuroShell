@@ -144,13 +144,12 @@ func TestEditorService_createTempFile(t *testing.T) {
 	// Verify file is in the service's temp directory
 	assert.True(t, strings.HasPrefix(tempFile, service.tempDir))
 
-	// Verify file has default content
+	// Verify file is empty
 	content, err := os.ReadFile(tempFile)
 	require.NoError(t, err)
 
 	contentStr := string(content)
-	assert.Contains(t, contentStr, "NeuroShell Editor Mode")
-	assert.Contains(t, contentStr, "Enter your message or command below")
+	assert.Empty(t, contentStr)
 }
 
 func TestEditorService_createTempFileWithContent(t *testing.T) {
