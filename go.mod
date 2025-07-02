@@ -4,6 +4,7 @@ go 1.24.4
 
 require (
 	github.com/abiosoft/ishell/v2 v2.0.2
+	github.com/abiosoft/readline v0.0.0-20180607040430-155bce2042db
 	github.com/charmbracelet/log v0.4.2
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
@@ -12,7 +13,6 @@ require (
 
 require (
 	github.com/abiosoft/ishell v2.0.0+incompatible // indirect
-	github.com/abiosoft/readline v0.0.0-20180607040430-155bce2042db // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
 	github.com/charmbracelet/lipgloss v1.1.0 // indirect

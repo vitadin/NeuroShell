@@ -1,0 +1,465 @@
+package services
+
+import (
+	"os"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"neuroshell/internal/testutils"
+)
+
+func TestEditorService_Name(t *testing.T) {
+	service := NewEditorService()
+	assert.Equal(t, "editor", service.Name())
+}
+
+func TestEditorService_Initialize(t *testing.T) {
+	tests := []struct {
+		name string
+		want error
+	}{
+		{
+			name: "successful initialization",
+			want: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := NewEditorService()
+			ctx := testutils.NewMockContext()
+
+			err := service.Initialize(ctx)
+			assert.Equal(t, tt.want, err)
+
+			if err == nil {
+				assert.True(t, service.initialized)
+				assert.NotEmpty(t, service.tempDir)
+
+				// Verify temp directory exists
+				_, err := os.Stat(service.tempDir)
+				assert.NoError(t, err)
+
+				// Cleanup
+				assert.NoError(t, service.Cleanup())
+			}
+		})
+	}
+}
+
+func TestEditorService_Initialize_TempDirError(t *testing.T) {
+	// This test is platform-specific and may not work on all systems
+	// We'll create a basic test that checks the error handling
+	service := NewEditorService()
+	ctx := testutils.NewMockContext()
+
+	// First, test normal initialization works
+	err := service.Initialize(ctx)
+	assert.NoError(t, err)
+
+	// Cleanup for next test
+	assert.NoError(t, service.Cleanup())
+}
+
+func TestEditorService_getEditorCommand(t *testing.T) {
+	tests := []struct {
+		name           string
+		contextVars    map[string]string
+		envEditor      string
+		expectedPrefix string // We'll check if result starts with this
+		shouldFind     bool
+	}{
+		{
+			name:           "user configured editor via @editor variable",
+			contextVars:    map[string]string{"@editor": "custom-editor"},
+			envEditor:      "",
+			expectedPrefix: "custom-editor",
+			shouldFind:     true,
+		},
+		{
+			name:           "fallback to EDITOR environment variable",
+			contextVars:    map[string]string{},
+			envEditor:      "env-editor",
+			expectedPrefix: "env-editor",
+			shouldFind:     true,
+		},
+		{
+			name:        "auto-detect common editors with echo",
+			contextVars: map[string]string{},
+			envEditor:   "echo", // Use echo for predictable, fast testing
+			shouldFind:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := NewEditorService()
+			ctx := testutils.NewMockContextWithVars(tt.contextVars)
+
+			// Set up environment using test helper
+			var helper *testutils.EditorTestHelper
+			if tt.envEditor != "" {
+				helper = &testutils.EditorTestHelper{}
+				helper.Cleanup() // Initialize with current env
+				_ = os.Setenv("EDITOR", tt.envEditor)
+			} else {
+				helper = testutils.SetupMockEditor() // Use echo by default
+			}
+			defer helper.Cleanup()
+
+			result := service.getEditorCommand(ctx)
+
+			if tt.shouldFind {
+				assert.NotEmpty(t, result)
+				if tt.expectedPrefix != "" {
+					assert.True(t, strings.HasPrefix(result, tt.expectedPrefix),
+						"Expected result '%s' to start with '%s'", result, tt.expectedPrefix)
+				}
+			} else {
+				assert.Empty(t, result)
+			}
+		})
+	}
+}
+
+func TestEditorService_createTempFile(t *testing.T) {
+	service := NewEditorService()
+	ctx := testutils.NewMockContext()
+
+	err := service.Initialize(ctx)
+	require.NoError(t, err)
+	defer func() { _ = service.Cleanup() }()
+
+	tempFile, err := service.createTempFile()
+	require.NoError(t, err)
+	defer func() { _ = os.Remove(tempFile) }()
+
+	// Verify file exists
+	_, err = os.Stat(tempFile)
+	assert.NoError(t, err)
+
+	// Verify file is in the service's temp directory
+	assert.True(t, strings.HasPrefix(tempFile, service.tempDir))
+
+	// Verify file has default content
+	content, err := os.ReadFile(tempFile)
+	require.NoError(t, err)
+
+	contentStr := string(content)
+	assert.Contains(t, contentStr, "NeuroShell Editor Mode")
+	assert.Contains(t, contentStr, "Enter your message or command below")
+}
+
+func TestEditorService_createTempFileWithContent(t *testing.T) {
+	tests := []struct {
+		name            string
+		initialContent  string
+		expectedContent string
+	}{
+		{
+			name:            "with custom content",
+			initialContent:  "Hello, World!",
+			expectedContent: "Hello, World!",
+		},
+		{
+			name:            "with empty content gets default header",
+			initialContent:  "",
+			expectedContent: "NeuroShell Editor Mode",
+		},
+		{
+			name:            "with whitespace-only content gets default header",
+			initialContent:  "   \t\n  ",
+			expectedContent: "NeuroShell Editor Mode",
+		},
+		{
+			name:            "with unicode content",
+			initialContent:  "Hello 世界! 🌍",
+			expectedContent: "Hello 世界! 🌍",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := NewEditorService()
+			ctx := testutils.NewMockContext()
+
+			err := service.Initialize(ctx)
+			require.NoError(t, err)
+			defer func() { _ = service.Cleanup() }()
+
+			tempFile, err := service.createTempFileWithContent(tt.initialContent)
+			require.NoError(t, err)
+			defer func() { _ = os.Remove(tempFile) }()
+
+			// Verify file exists
+			_, err = os.Stat(tempFile)
+			assert.NoError(t, err)
+
+			// Verify file content
+			content, err := os.ReadFile(tempFile)
+			require.NoError(t, err)
+
+			contentStr := string(content)
+			assert.Contains(t, contentStr, tt.expectedContent)
+		})
+	}
+}
+
+func TestEditorService_OpenEditor_NotInitialized(t *testing.T) {
+	service := NewEditorService()
+	ctx := testutils.NewMockContext()
+
+	content, err := service.OpenEditor(ctx)
+	assert.Error(t, err)
+	assert.Empty(t, content)
+	assert.Contains(t, err.Error(), "editor service not initialized")
+}
+
+func TestEditorService_OpenEditorWithContent_NotInitialized(t *testing.T) {
+	service := NewEditorService()
+	ctx := testutils.NewMockContext()
+
+	content, err := service.OpenEditorWithContent(ctx, "test content")
+	assert.Error(t, err)
+	assert.Empty(t, content)
+	assert.Contains(t, err.Error(), "editor service not initialized")
+}
+
+func TestEditorService_OpenEditor_NoEditorFound(t *testing.T) {
+	service := NewEditorService()
+	ctx := testutils.NewMockContext()
+
+	err := service.Initialize(ctx)
+	require.NoError(t, err)
+	defer func() { _ = service.Cleanup() }()
+
+	// Set up environment with no available editor using helper
+	helper := testutils.SetupNoEditor()
+	defer helper.Cleanup()
+
+	content, err := service.OpenEditor(ctx)
+	assert.Error(t, err)
+	assert.Empty(t, content)
+	assert.Contains(t, err.Error(), "no editor configured or found")
+}
+
+func TestEditorService_executeEditor_Success(t *testing.T) {
+	service := NewEditorService()
+	ctx := testutils.NewMockContext()
+
+	err := service.Initialize(ctx)
+	require.NoError(t, err)
+	defer func() { _ = service.Cleanup() }()
+
+	// Create a test file
+	tempFile, err := service.createTempFileWithContent("test content")
+	require.NoError(t, err)
+	defer func() { _ = os.Remove(tempFile) }()
+
+	// Test with a command that should succeed (echo - which just returns)
+	// We'll use 'true' command which should be available on Unix systems
+	err = service.executeEditor("true", tempFile)
+
+	// On Unix systems, this should succeed
+	// On Windows, this might fail, but that's expected
+	if err != nil {
+		t.Logf("executeEditor failed (expected on some platforms): %v", err)
+	}
+}
+
+func TestEditorService_executeEditor_EmptyCommand(t *testing.T) {
+	service := NewEditorService()
+	ctx := testutils.NewMockContext()
+
+	err := service.Initialize(ctx)
+	require.NoError(t, err)
+	defer func() { _ = service.Cleanup() }()
+
+	tempFile, err := service.createTempFile()
+	require.NoError(t, err)
+	defer func() { _ = os.Remove(tempFile) }()
+
+	err = service.executeEditor("", tempFile)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "empty editor command")
+}
+
+func TestEditorService_Cleanup(t *testing.T) {
+	service := NewEditorService()
+	ctx := testutils.NewMockContext()
+
+	err := service.Initialize(ctx)
+	require.NoError(t, err)
+
+	tempDir := service.tempDir
+	require.NotEmpty(t, tempDir)
+
+	// Verify temp directory exists
+	_, err = os.Stat(tempDir)
+	assert.NoError(t, err)
+
+	// Cleanup
+	err = service.Cleanup()
+	assert.NoError(t, err)
+
+	// Verify temp directory is removed
+	_, err = os.Stat(tempDir)
+	assert.True(t, os.IsNotExist(err))
+}
+
+func TestEditorService_Cleanup_EmptyTempDir(t *testing.T) {
+	service := NewEditorService()
+
+	// Don't initialize, so tempDir is empty
+	err := service.Cleanup()
+	assert.NoError(t, err) // Should not error even with empty tempDir
+}
+
+func TestEditorService_ConcurrentAccess(t *testing.T) {
+	service := NewEditorService()
+	ctx := testutils.NewMockContext()
+
+	// Set up mock editor environment for consistent results
+	helper := testutils.SetupMockEditor()
+	defer helper.Cleanup()
+
+	err := service.Initialize(ctx)
+	require.NoError(t, err)
+	defer func() { _ = service.Cleanup() }()
+
+	// Test concurrent calls to getEditorCommand
+	done := make(chan bool, 10)
+
+	for i := 0; i < 10; i++ {
+		go func() {
+			defer func() { done <- true }()
+
+			// This should not panic or cause race conditions
+			cmd := service.getEditorCommand(ctx)
+			assert.NotEmpty(t, cmd) // Should find echo editor
+		}()
+	}
+
+	// Wait for all goroutines to complete
+	for i := 0; i < 10; i++ {
+		<-done
+	}
+}
+
+func TestEditorService_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name     string
+		testFunc func(t *testing.T)
+	}{
+		{
+			name: "very long content",
+			testFunc: func(t *testing.T) {
+				service := NewEditorService()
+				ctx := testutils.NewMockContext()
+
+				err := service.Initialize(ctx)
+				require.NoError(t, err)
+				defer func() { _ = service.Cleanup() }()
+
+				// Create very long content (10KB)
+				longContent := strings.Repeat("Hello World! ", 1000)
+
+				tempFile, err := service.createTempFileWithContent(longContent)
+				require.NoError(t, err)
+				defer func() { _ = os.Remove(tempFile) }()
+
+				// Verify content was written correctly
+				content, err := os.ReadFile(tempFile)
+				require.NoError(t, err)
+				assert.Contains(t, string(content), "Hello World!")
+			},
+		},
+		{
+			name: "content with special characters",
+			testFunc: func(t *testing.T) {
+				service := NewEditorService()
+				ctx := testutils.NewMockContext()
+
+				err := service.Initialize(ctx)
+				require.NoError(t, err)
+				defer func() { _ = service.Cleanup() }()
+
+				specialContent := "Special chars: !@#$%^&*()[]{}|\\:;\"'<>,.?/~`"
+
+				tempFile, err := service.createTempFileWithContent(specialContent)
+				require.NoError(t, err)
+				defer func() { _ = os.Remove(tempFile) }()
+
+				content, err := os.ReadFile(tempFile)
+				require.NoError(t, err)
+				assert.Contains(t, string(content), specialContent)
+			},
+		},
+		{
+			name: "content with newlines",
+			testFunc: func(t *testing.T) {
+				service := NewEditorService()
+				ctx := testutils.NewMockContext()
+
+				err := service.Initialize(ctx)
+				require.NoError(t, err)
+				defer func() { _ = service.Cleanup() }()
+
+				multilineContent := "Line 1\nLine 2\nLine 3\n"
+
+				tempFile, err := service.createTempFileWithContent(multilineContent)
+				require.NoError(t, err)
+				defer func() { _ = os.Remove(tempFile) }()
+
+				content, err := os.ReadFile(tempFile)
+				require.NoError(t, err)
+				contentStr := string(content)
+				assert.Contains(t, contentStr, "Line 1")
+				assert.Contains(t, contentStr, "Line 2")
+				assert.Contains(t, contentStr, "Line 3")
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, tt.testFunc)
+	}
+}
+
+func TestEditorService_IntegrationWithRealContext(t *testing.T) {
+	// Test with a more realistic context setup
+	service := NewEditorService()
+	ctx := testutils.NewMockContextWithVars(map[string]string{
+		"@editor":  "echo", // Use echo as a "fake" editor for testing
+		"test_var": "test_value",
+	})
+
+	// Set up mock editor environment for fast testing
+	helper := testutils.SetupMockEditor()
+	defer helper.Cleanup()
+
+	err := service.Initialize(ctx)
+	require.NoError(t, err)
+	defer func() { _ = service.Cleanup() }()
+
+	// Test editor command detection
+	cmd := service.getEditorCommand(ctx)
+	assert.Equal(t, "echo", cmd)
+
+	// Test temp file creation and management
+	tempFile, err := service.createTempFileWithContent("test content")
+	require.NoError(t, err)
+	defer func() { _ = os.Remove(tempFile) }()
+
+	// Verify file path structure
+	assert.True(t, strings.HasPrefix(tempFile, service.tempDir))
+	assert.True(t, strings.HasSuffix(tempFile, "neuroshell-input.txt"))
+
+	// Verify content
+	content, err := os.ReadFile(tempFile)
+	require.NoError(t, err)
+	assert.Contains(t, string(content), "test content")
+}

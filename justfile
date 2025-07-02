@@ -35,20 +35,20 @@ run: build
 # Run tests with coverage
 test: build test-all-units
     @echo "Running tests..."
-    go test -v -race -coverprofile=coverage.out ./...
+    EDITOR=echo go test -v -race -coverprofile=coverage.out ./...
     go tool cover -html=coverage.out -o coverage.html
     @echo "Coverage report generated: coverage.html"
 
 # Run unit tests only
 test-unit:
     @echo "Running unit tests..."
-    go test -v -race ./internal/services/... ./internal/testutils/...
+    EDITOR=echo go test -v -race ./internal/services/... ./internal/testutils/...
     @echo "Unit tests complete"
 
 # Run unit tests with coverage
 test-unit-coverage:
     @echo "Running unit tests with coverage..."
-    go test -v -race -coverprofile=unit-coverage.out ./internal/services/... ./internal/testutils/...
+    EDITOR=echo go test -v -race -coverprofile=unit-coverage.out ./internal/services/... ./internal/testutils/...
     go tool cover -html=unit-coverage.out -o unit-coverage.html
     go tool cover -func=unit-coverage.out
     @echo "Unit test coverage report generated: unit-coverage.html"
@@ -56,13 +56,13 @@ test-unit-coverage:
 # Run command tests only
 test-commands:
     @echo "Running command tests..."
-    go test -v -race ./internal/commands/...
+    EDITOR=echo go test -v -race ./internal/commands/...
     @echo "Command tests complete"
 
 # Run command tests with coverage
 test-commands-coverage:
     @echo "Running command tests with coverage..."
-    go test -v -race -coverprofile=commands-coverage.out ./internal/commands/...
+    EDITOR=echo go test -v -race -coverprofile=commands-coverage.out ./internal/commands/...
     go tool cover -html=commands-coverage.out -o commands-coverage.html
     go tool cover -func=commands-coverage.out
     @echo "Command test coverage report generated: commands-coverage.html"
@@ -112,13 +112,13 @@ test-shell-coverage:
 # Run all unit, command, parser, context, and shell tests
 test-all-units:
     @echo "Running all unit, command, parser, context, and shell tests..."
-    go test -v -race ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/shell/...
+    EDITOR=echo go test -v -race ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/shell/...
     @echo "All unit, command, parser, context, and shell tests complete"
 
 # Run all unit, command, parser, context, and shell tests with coverage
 test-all-units-coverage:
     @echo "Running all unit, command, parser, context, and shell tests with coverage..."
-    go test -v -race -coverprofile=all-units-coverage.out ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/shell/...
+    EDITOR=echo go test -v -race -coverprofile=all-units-coverage.out ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/shell/...
     go tool cover -html=all-units-coverage.out -o all-units-coverage.html
     go tool cover -func=all-units-coverage.out
     @echo "All unit test coverage report generated: all-units-coverage.html"
