@@ -37,6 +37,11 @@ func ProcessInput(c *ishell.Context) {
 // Global context instance to persist across commands
 var globalCtx = context.New()
 
+// GetGlobalContext returns the global context instance for external access.
+func GetGlobalContext() *context.NeuroContext {
+	return globalCtx
+}
+
 // InitializeServices sets up all required services for the NeuroShell environment.
 func InitializeServices(testMode bool) error {
 	// Set test mode on global context
@@ -64,6 +69,10 @@ func InitializeServices(testMode bool) error {
 	}
 
 	if err := services.GetGlobalRegistry().RegisterService(services.NewHelpService()); err != nil {
+		return err
+	}
+
+	if err := services.GetGlobalRegistry().RegisterService(services.NewEditorService()); err != nil {
 		return err
 	}
 
