@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/abiosoft/ishell/v2"
+	"github.com/abiosoft/readline"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	_ "neuroshell/internal/commands/assert"  // Import assert commands (init functions)
@@ -15,6 +16,7 @@ import (
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/orchestration"
+	"neuroshell/internal/services"
 	"neuroshell/internal/shell"
 )
 
@@ -106,6 +108,64 @@ func initConfig() {
 	}
 }
 
+// createCustomReadlineConfig creates a readline configuration with custom key bindings.
+func createCustomReadlineConfig() *readline.Config {
+	cfg := &readline.Config{
+		Prompt:      "neuro> ",
+		HistoryFile: "/tmp/neuro_history",
+	}
+
+	// Set up custom key listener for Ctrl+E editor shortcut
+	cfg.SetListener(func(line []rune, pos int, key rune) (newLine []rune, newPos int, ok bool) {
+		switch key {
+		case 5: // Ctrl+E - Open external editor
+			logger.Debug("Ctrl+E pressed - opening editor", "currentLine", string(line))
+
+			// Get editor content with current line as initial content
+			content, err := openEditorAndGetContent(string(line))
+			if err != nil {
+				// Log error but don't break the input flow
+				logger.Error("Editor operation failed", "error", err)
+				// Return original line unchanged
+				return line, pos, true
+			}
+
+			// Replace current line with editor content
+			newLine := []rune(content)
+			logger.Debug("Editor content applied", "newContent", content)
+			return newLine, len(newLine), true
+
+		default:
+			// Let readline handle other keys normally
+			return line, pos, false
+		}
+	})
+
+	return cfg
+}
+
+// openEditorAndGetContent opens the external editor with initial content and returns the edited content.
+func openEditorAndGetContent(initialContent string) (string, error) {
+	// Get the editor service
+	editorService, err := services.GetGlobalRegistry().GetService("editor")
+	if err != nil {
+		return "", fmt.Errorf("editor service not available: %w", err)
+	}
+
+	es := editorService.(*services.EditorService)
+
+	// Create context for the editor operation
+	ctx := shell.GetGlobalContext()
+
+	// Open editor with initial content
+	content, err := es.OpenEditorWithContent(ctx, initialContent)
+	if err != nil {
+		return "", fmt.Errorf("editor operation failed: %w", err)
+	}
+
+	return content, nil
+}
+
 func runShell(_ *cobra.Command, _ []string) {
 	logger.Info("Starting NeuroShell", "version", version)
 
@@ -116,15 +176,16 @@ func runShell(_ *cobra.Command, _ []string) {
 
 	logger.Info("Services initialized successfully")
 
-	sh := ishell.New()
-	sh.SetPrompt("neuro> ")
+	// Create shell with custom readline configuration
+	cfg := createCustomReadlineConfig()
+	sh := ishell.NewWithConfig(cfg)
 
 	// Remove built-in commands so they become user messages or Neuro commands
 	sh.DeleteCmd("exit")
 	sh.DeleteCmd("help")
 
 	sh.Println(fmt.Sprintf("Neuro Shell v%s - LLM-integrated shell environment", version))
-	sh.Println("Type '\\help' for Neuro commands or '\\exit' to quit.")
+	sh.Println("Type '\\help' for Neuro commands, Ctrl+E for editor, or '\\exit' to quit.")
 
 	sh.NotFound(shell.ProcessInput)
 

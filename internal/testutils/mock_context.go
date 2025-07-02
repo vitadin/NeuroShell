@@ -4,6 +4,7 @@ package testutils
 
 import (
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -230,4 +231,43 @@ func (m *MockContext) SetSystemVariable(name string, value string) error {
 	}
 
 	return fmt.Errorf("variable '%s' is not a system variable", name)
+}
+
+// EditorTestHelper provides utilities for testing editor functionality
+type EditorTestHelper struct {
+	originalEditor string
+	originalPath   string
+}
+
+// SetupMockEditor configures the environment for fast, non-hanging editor tests
+func SetupMockEditor() *EditorTestHelper {
+	helper := &EditorTestHelper{
+		originalEditor: os.Getenv("EDITOR"),
+		originalPath:   os.Getenv("PATH"),
+	}
+
+	// Set EDITOR to echo for fast, predictable testing
+	_ = os.Setenv("EDITOR", "echo")
+
+	return helper
+}
+
+// SetupNoEditor configures the environment to simulate no editor available
+func SetupNoEditor() *EditorTestHelper {
+	helper := &EditorTestHelper{
+		originalEditor: os.Getenv("EDITOR"),
+		originalPath:   os.Getenv("PATH"),
+	}
+
+	// Remove editor and PATH to simulate no editor found
+	_ = os.Unsetenv("EDITOR")
+	_ = os.Setenv("PATH", "")
+
+	return helper
+}
+
+// Cleanup restores the original environment variables
+func (h *EditorTestHelper) Cleanup() {
+	_ = os.Setenv("EDITOR", h.originalEditor)
+	_ = os.Setenv("PATH", h.originalPath)
 }

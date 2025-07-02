@@ -345,6 +345,7 @@ func TestRegistry_RealServices(t *testing.T) {
 		NewScriptService(),
 		NewExecutorService(),
 		NewInterpolationService(),
+		NewEditorService(),
 	}
 
 	for _, service := range services {
@@ -366,6 +367,14 @@ func TestRegistry_RealServices(t *testing.T) {
 	// Initialize all services
 	err := registry.InitializeAll(ctx)
 	assert.NoError(t, err)
+
+	// Cleanup EditorService temp directory
+	editorService, err := registry.GetService("editor")
+	if err == nil {
+		if es, ok := editorService.(*EditorService); ok {
+			_ = es.Cleanup()
+		}
+	}
 }
 
 // Test registry state consistency
