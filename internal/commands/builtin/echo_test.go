@@ -108,6 +108,7 @@ func TestEchoCommand_Execute_VariableInterpolation(t *testing.T) {
 	// Set up test variables
 	require.NoError(t, ctx.SetVariable("name", "Alice"))
 	require.NoError(t, ctx.SetVariable("greeting", "Hello"))
+	require.NoError(t, ctx.SetVariable("x", "1"))
 	require.NoError(t, ctx.SetSystemVariable("_testuser", "testuser"))
 
 	tests := []struct {
@@ -141,9 +142,14 @@ func TestEchoCommand_Execute_VariableInterpolation(t *testing.T) {
 			expected: "Hello ", // Undefined variables become empty strings
 		},
 		{
-			name:     "nested variables behavior",
+			name:     "nested variables",
 			input:    "${${greeting}}",
-			expected: "}", // The interpolation behavior may be different - let's check actual output
+			expected: "", // ${greeting} -> "Hello", then ${Hello} -> empty (doesn't exist)
+		},
+		{
+			name:     "nested numeric variable",
+			input:    "this is ${${name}}",
+			expected: "this is ", // ${name} -> "Alice", then ${Alice} -> empty (doesn't exist)
 		},
 	}
 

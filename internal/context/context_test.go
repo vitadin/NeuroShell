@@ -764,7 +764,7 @@ func TestInterpolateVariables_EdgeCases(t *testing.T) {
 		{
 			name:     "nested braces",
 			input:    "${${normal}}",
-			expected: "}", // Inner ${normal} resolves to 'value', leaving outer ${value} to resolve to empty (missing var) = '}'
+			expected: "", // Inner ${normal} resolves to 'value', then ${value} resolves to empty (missing var)
 		},
 		{
 			name:     "multiple dollar signs",
