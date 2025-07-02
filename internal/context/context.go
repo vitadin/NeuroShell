@@ -159,19 +159,55 @@ func (ctx *NeuroContext) InterpolateVariables(text string) string {
 
 // interpolateOnce performs a single pass of variable interpolation
 func (ctx *NeuroContext) interpolateOnce(text string) string {
-	re := regexp.MustCompile(`\$\{([^}]+)\}`)
+	result := strings.Builder{}
+	i := 0
 
-	return re.ReplaceAllStringFunc(text, func(match string) string {
-		// Extract variable name (remove ${})
-		varName := match[2 : len(match)-1]
+	for i < len(text) {
+		// Look for ${
+		if i < len(text)-1 && text[i] == '$' && text[i+1] == '{' {
+			// Find the matching closing brace
+			braceCount := 1
+			start := i + 2 // Position after ${
+			end := start
 
-		if value, err := ctx.GetVariable(varName); err == nil {
-			return value
+			for end < len(text) && braceCount > 0 {
+				switch text[end] {
+				case '{':
+					braceCount++
+				case '}':
+					braceCount--
+				}
+				if braceCount > 0 {
+					end++
+				}
+			}
+
+			if braceCount == 0 {
+				// Found matching closing brace
+				varName := text[start:end]
+
+				// Special case: empty variable name should be left as-is
+				if varName == "" {
+					result.WriteString("${}")
+				} else if value, err := ctx.GetVariable(varName); err == nil {
+					result.WriteString(value)
+				}
+				// If variable doesn't exist, write nothing (empty string)
+
+				i = end + 1 // Move past the closing brace
+			} else {
+				// No matching closing brace, treat as literal text
+				result.WriteByte(text[i])
+				i++
+			}
+		} else {
+			// Regular character
+			result.WriteByte(text[i])
+			i++
 		}
+	}
 
-		// Graceful handling: missing variables become empty string
-		return ""
-	})
+	return result.String()
 }
 
 // QueueCommand adds a command to the execution queue.
