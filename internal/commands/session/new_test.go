@@ -34,7 +34,7 @@ func TestNewCommand_Usage(t *testing.T) {
 	usage := cmd.Usage()
 	assert.NotEmpty(t, usage)
 	assert.Contains(t, usage, "\\session-new")
-	assert.Contains(t, usage, "name=")
+	assert.Contains(t, usage, "session_name")
 	assert.Contains(t, usage, "system=")
 }
 
@@ -52,34 +52,34 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		expectError bool
 	}{
 		{
-			name:        "create anonymous session",
-			args:        map[string]string{},
-			input:       "",
-			expectError: false,
-		},
-		{
 			name:        "create named session",
-			args:        map[string]string{"name": "test_session"},
-			input:       "",
+			args:        map[string]string{},
+			input:       "test_session",
 			expectError: false,
 		},
 		{
 			name:        "create session with system prompt",
 			args:        map[string]string{"system": "You are a helpful assistant"},
-			input:       "",
+			input:       "assistant_session",
 			expectError: false,
 		},
 		{
-			name:        "create session with initial message",
+			name:        "create session with spaces in name",
 			args:        map[string]string{},
-			input:       "Hello world",
+			input:       "my project work",
 			expectError: false,
 		},
 		{
-			name:        "create session with all options",
-			args:        map[string]string{"name": "full_test", "system": "You are a code reviewer"},
-			input:       "Review this code",
+			name:        "create session with custom system prompt",
+			args:        map[string]string{"system": "You are a code reviewer"},
+			input:       "code review session",
 			expectError: false,
+		},
+		{
+			name:        "missing session name",
+			args:        map[string]string{},
+			input:       "",
+			expectError: true,
 		},
 	}
 
@@ -107,19 +107,15 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotEmpty(t, sessionName)
 
-			// Check if named session has correct name
-			if tt.args["name"] != "" {
-				assert.Equal(t, tt.args["name"], sessionName)
+			// Check session has correct name (from input)
+			if tt.input != "" {
+				assert.Equal(t, tt.input, sessionName)
 			}
 
-			// Check message count
+			// Check message count - no initial messages supported anymore
 			messageCount, err := ctx.GetVariable("#message_count")
 			assert.NoError(t, err)
-			if tt.input != "" {
-				assert.Equal(t, "1", messageCount) // Initial message added
-			} else {
-				assert.Equal(t, "0", messageCount) // No initial message
-			}
+			assert.Equal(t, "0", messageCount) // No initial message support
 
 			// Check system prompt
 			systemPrompt, err := ctx.GetVariable("#system_prompt")
@@ -150,10 +146,10 @@ func TestNewCommand_Execute_InvalidSessionNames(t *testing.T) {
 		errorMsg    string
 	}{
 		{
-			name:        "session name too short",
-			sessionName: "ab",
+			name:        "empty session name",
+			sessionName: "",
 			expectError: true,
-			errorMsg:    "too short",
+			errorMsg:    "session name is required",
 		},
 		{
 			name:        "session name too long",
@@ -162,22 +158,21 @@ func TestNewCommand_Execute_InvalidSessionNames(t *testing.T) {
 			errorMsg:    "too long",
 		},
 		{
-			name:        "invalid characters",
-			sessionName: "test@session",
-			expectError: true,
-			errorMsg:    "invalid session name",
-		},
-		{
 			name:        "reserved name",
 			sessionName: "new",
 			expectError: true,
 			errorMsg:    "reserved",
 		},
 		{
-			name:        "starts with special char",
-			sessionName: "_test",
+			name:        "control characters",
+			sessionName: "test\x00session",
 			expectError: true,
-			errorMsg:    "invalid session name",
+			errorMsg:    "invalid characters",
+		},
+		{
+			name:        "valid name with spaces",
+			sessionName: "my test session",
+			expectError: false,
 		},
 		{
 			name:        "valid name with underscores",
@@ -194,6 +189,11 @@ func TestNewCommand_Execute_InvalidSessionNames(t *testing.T) {
 			sessionName: "test.session.01",
 			expectError: false,
 		},
+		{
+			name:        "valid short name",
+			sessionName: "a",
+			expectError: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -202,8 +202,7 @@ func TestNewCommand_Execute_InvalidSessionNames(t *testing.T) {
 			ctx = context.New()
 			setupSessionTestRegistry(t, ctx)
 
-			args := map[string]string{"name": tt.sessionName}
-			err := cmd.Execute(args, "", ctx)
+			err := cmd.Execute(map[string]string{}, tt.sessionName, ctx)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -223,12 +222,11 @@ func TestNewCommand_Execute_DuplicateSessionNames(t *testing.T) {
 	setupSessionTestRegistry(t, ctx)
 
 	// Create first session
-	args := map[string]string{"name": "duplicate_test"}
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(map[string]string{}, "duplicate_test", ctx)
 	assert.NoError(t, err)
 
 	// Try to create second session with same name
-	err = cmd.Execute(args, "", ctx)
+	err = cmd.Execute(map[string]string{}, "duplicate_test", ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "already in use")
 }
@@ -242,12 +240,11 @@ func TestNewCommand_Execute_VariableInterpolation(t *testing.T) {
 	require.NoError(t, ctx.SetVariable("session_prefix", "test"))
 	require.NoError(t, ctx.SetVariable("assistant_type", "code reviewer"))
 
-	// Create session with variable interpolation in system prompt
+	// Create session with variable interpolation in session name and system prompt
 	args := map[string]string{
-		"name":   "var_test",
 		"system": "You are a ${assistant_type} for ${session_prefix} purposes",
 	}
-	input := "Hello ${session_prefix} session"
+	input := "${session_prefix}_session"
 
 	err := cmd.Execute(args, input, ctx)
 	assert.NoError(t, err)
@@ -257,6 +254,11 @@ func TestNewCommand_Execute_VariableInterpolation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Contains(t, systemPrompt, "code reviewer")
 	assert.Contains(t, systemPrompt, "test purposes")
+
+	// Check that session name was interpolated
+	sessionName, err := ctx.GetVariable("#session_name")
+	assert.NoError(t, err)
+	assert.Equal(t, "test_session", sessionName)
 }
 
 func TestNewCommand_Execute_ServiceNotAvailable(t *testing.T) {
@@ -264,7 +266,7 @@ func TestNewCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	ctx := context.New()
 
 	// Don't setup services - should fail
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "test_session", ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "service not available")
 }

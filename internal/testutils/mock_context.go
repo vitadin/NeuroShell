@@ -19,6 +19,11 @@ type MockContext struct {
 	sessionState neurotypes.SessionState
 	testMode     bool
 
+	// Chat session storage for testing
+	chatSessions    map[string]*neurotypes.ChatSession
+	sessionNameToID map[string]string
+	activeSessionID string
+
 	// For testing error scenarios
 	getVariableError error
 	setVariableError error
@@ -38,6 +43,11 @@ func NewMockContext() *MockContext {
 			UpdatedAt: time.Now(),
 		},
 		testMode: true,
+
+		// Initialize chat session storage
+		chatSessions:    make(map[string]*neurotypes.ChatSession),
+		sessionNameToID: make(map[string]string),
+		activeSessionID: "",
 	}
 }
 
@@ -270,4 +280,48 @@ func SetupNoEditor() *EditorTestHelper {
 func (h *EditorTestHelper) Cleanup() {
 	_ = os.Setenv("EDITOR", h.originalEditor)
 	_ = os.Setenv("PATH", h.originalPath)
+}
+
+// Chat session storage methods for Context interface compliance
+
+// GetChatSessions returns all chat sessions stored in the mock context.
+func (m *MockContext) GetChatSessions() map[string]*neurotypes.ChatSession {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.chatSessions
+}
+
+// SetChatSessions sets the chat sessions map in the mock context.
+func (m *MockContext) SetChatSessions(sessions map[string]*neurotypes.ChatSession) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.chatSessions = sessions
+}
+
+// GetSessionNameToID returns the session name to ID mapping.
+func (m *MockContext) GetSessionNameToID() map[string]string {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.sessionNameToID
+}
+
+// SetSessionNameToID sets the session name to ID mapping in the mock context.
+func (m *MockContext) SetSessionNameToID(nameToID map[string]string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.sessionNameToID = nameToID
+}
+
+// GetActiveSessionID returns the currently active session ID.
+func (m *MockContext) GetActiveSessionID() string {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.activeSessionID
+}
+
+// SetActiveSessionID sets the currently active session ID.
+func (m *MockContext) SetActiveSessionID(sessionID string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.activeSessionID = sessionID
 }

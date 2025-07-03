@@ -14,7 +14,7 @@ import (
 )
 
 // NeuroContext implements the neurotypes.Context interface providing session state management.
-// It maintains variables, message history, execution queues, and metadata for NeuroShell sessions.
+// It maintains variables, message history, execution queues, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
 	variables      map[string]string
 	history        []neurotypes.Message
@@ -22,6 +22,11 @@ type NeuroContext struct {
 	executionQueue []string
 	scriptMetadata map[string]interface{}
 	testMode       bool
+
+	// Chat session storage
+	chatSessions    map[string]*neurotypes.ChatSession // Session storage by ID
+	sessionNameToID map[string]string                  // Name to ID mapping
+	activeSessionID string                             // Currently active session ID
 }
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
@@ -33,6 +38,11 @@ func New() *NeuroContext {
 		executionQueue: make([]string, 0),
 		scriptMetadata: make(map[string]interface{}),
 		testMode:       false,
+
+		// Initialize chat session storage
+		chatSessions:    make(map[string]*neurotypes.ChatSession),
+		sessionNameToID: make(map[string]string),
+		activeSessionID: "",
 	}
 }
 
@@ -116,6 +126,11 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 	case "@os":
 		return fmt.Sprintf("%s/%s", os.Getenv("GOOS"), os.Getenv("GOARCH")), true
 	case "#session_id":
+		// Check if there's a stored chat session ID first
+		if value, ok := ctx.variables["#session_id"]; ok {
+			return value, true
+		}
+		// Fall back to shell session ID
 		return ctx.sessionID, true
 	case "#message_count":
 		// Check if there's a stored session message count first
@@ -311,4 +326,34 @@ func (ctx *NeuroContext) GetAllVariables() map[string]string {
 	}
 
 	return result
+}
+
+// GetChatSessions returns all chat sessions stored in the context.
+func (ctx *NeuroContext) GetChatSessions() map[string]*neurotypes.ChatSession {
+	return ctx.chatSessions
+}
+
+// SetChatSessions sets the chat sessions map in the context.
+func (ctx *NeuroContext) SetChatSessions(sessions map[string]*neurotypes.ChatSession) {
+	ctx.chatSessions = sessions
+}
+
+// GetSessionNameToID returns the session name to ID mapping.
+func (ctx *NeuroContext) GetSessionNameToID() map[string]string {
+	return ctx.sessionNameToID
+}
+
+// SetSessionNameToID sets the session name to ID mapping in the context.
+func (ctx *NeuroContext) SetSessionNameToID(nameToID map[string]string) {
+	ctx.sessionNameToID = nameToID
+}
+
+// GetActiveSessionID returns the currently active session ID.
+func (ctx *NeuroContext) GetActiveSessionID() string {
+	return ctx.activeSessionID
+}
+
+// SetActiveSessionID sets the currently active session ID.
+func (ctx *NeuroContext) SetActiveSessionID(sessionID string) {
+	ctx.activeSessionID = sessionID
 }
