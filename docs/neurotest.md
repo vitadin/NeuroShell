@@ -6,9 +6,11 @@ NeuroTest is an end-to-end testing tool for the Neuro CLI that uses a golden fil
 
 NeuroTest enables you to:
 - Record expected output from `.neuro` scripts as golden files
-- Compare actual output against expected output
+- Compare actual output against expected output with **smart normalization**
+- Use **placeholder syntax** for time-sensitive and machine-dependent data
 - Update golden files when behavior changes are verified
 - Run comprehensive test suites with detailed reporting
+- Get enhanced diff visualization showing exact differences
 
 ## Installation
 
@@ -179,6 +181,51 @@ test/
 └── fixtures/              # Test data files (optional)
 ```
 
+## Smart Comparison and Placeholders
+
+NeuroTest now includes intelligent comparison features that handle time-sensitive and machine-dependent data:
+
+### Placeholder Syntax
+
+Use placeholder syntax in `.expected` files to handle variable content:
+
+- `{{PLACEHOLDER}}` - Matches any content
+- `{{PLACEHOLDER:10:15}}` - Matches content between 10-15 characters
+- `{{TIMESTAMP}}` - Matches timestamps in various formats
+- `{{UUID}}` - Matches UUID strings (session IDs, etc.)
+- `{{PATH}}` - Matches file paths
+- `{{USER}}` - Matches usernames in paths
+
+### Example Usage
+
+**Before (brittle test):**
+```
+Created session 'test' (ID: a5db979f)
+#session_id = session_1751556313
+```
+
+**After (robust test with placeholders):**
+```
+Created session 'test' (ID: {{PLACEHOLDER:8:8}})
+#session_id = {{PLACEHOLDER:10:20}}
+```
+
+### Smart Comparison Process
+
+NeuroTest uses a three-tier comparison strategy:
+
+1. **Exact Match**: Traditional character-by-character comparison
+2. **Placeholder Match**: Compares using placeholder patterns in expected files
+3. **Normalized Match**: Auto-normalizes known patterns (UUIDs, timestamps) before comparison
+
+### Enhanced Diff Output
+
+The `diff` command now shows:
+- Comparison results for each strategy
+- Normalized versions of both expected and actual output
+- Detailed character-level diff with go-diff library
+- Line-by-line comparison with placeholder match indicators
+
 ## Global Flags
 
 - `--neuro-cmd string`: Neuro command to test (default: "neuro")
@@ -239,6 +286,38 @@ test/
    # Output: PASS: basic
    ```
 
+### Creating Robust Tests with Placeholders
+
+1. **Record a test normally**:
+   ```bash
+   ./bin/neurotest record session-test
+   ```
+
+2. **Edit the .expected file to use placeholders**:
+   ```bash
+   # Original recorded output:
+   Created session 'test' (ID: a5db979f)
+   #session_id = session_1751556313
+   #session_name = test
+   
+   # Updated with placeholders:
+   Created session 'test' (ID: {{PLACEHOLDER:8:8}})
+   #session_id = {{PLACEHOLDER:10:20}}
+   #session_name = test
+   ```
+
+3. **Test with verbose mode to verify smart comparison**:
+   ```bash
+   ./bin/neurotest --verbose run session-test
+   # Output: PASS: session-test (using smart comparison)
+   ```
+
+4. **Use diff to see detailed comparison analysis**:
+   ```bash
+   ./bin/neurotest --verbose diff session-test
+   # Shows: exact match, placeholder match, normalized match results
+   ```
+
 ### Continuous Integration
 
 Add to your CI pipeline:
@@ -265,9 +344,10 @@ just test-e2e
 ### Test Script Guidelines
 
 1. **Keep tests focused**: Each test should verify specific functionality
-2. **Avoid non-deterministic elements**: Don't test timestamp-based values like `#session_id`
+2. **Use placeholders for non-deterministic elements**: Use `{{PLACEHOLDER}}` syntax for timestamps, UUIDs, and other variable data
 3. **Use descriptive names**: Name tests based on what they verify
 4. **Add comments**: Document what each test is checking
+5. **Choose appropriate placeholder types**: Use specific placeholders like `{{UUID}}` when possible for better validation
 
 ### Example Test Scripts
 
@@ -292,6 +372,21 @@ just test-e2e
 # Test system variables (avoid timestamps)
 \get[@user]
 \get[#test_mode]
+```
+
+**Session management with placeholders:**
+```neuro
+# Test session creation with time-sensitive data
+\session-new[name="test_session", system="You are helpful"]
+\get[#session_id]
+\get[#session_name]
+```
+
+**Corresponding .expected file:**
+```
+Created session 'test_session' (ID: {{PLACEHOLDER:8:8}})
+#session_id = {{PLACEHOLDER:10:20}}
+#session_name = test_session
 ```
 
 ### Managing Golden Files

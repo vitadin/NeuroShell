@@ -9,15 +9,17 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
 )
 
 var (
-	version     = "0.1.0"
-	testDir     = "test/golden"
-	neurocmd    = "neuro"
-	verbose     bool
-	testTimeout = 30 // seconds
+	version             = "0.1.0"
+	testDir             = "test/golden"
+	neurocmd            = "neuro"
+	verbose             bool
+	testTimeout         = 30 // seconds
+	normalizationEngine *NormalizationEngine
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -95,6 +97,9 @@ func main() {
 }
 
 func init() {
+	// Initialize normalization engine
+	normalizationEngine = NewNormalizationEngine()
+
 	// Add global flags
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
 	rootCmd.PersistentFlags().StringVar(&testDir, "test-dir", "test/golden", "Test directory")
@@ -189,16 +194,41 @@ func runTest(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to run neuro script: %w", err)
 	}
 
-	// Compare outputs
+	// Smart comparison with normalization and placeholders
+	var passed bool
+	var normalized bool
+
+	// First try exact match (for backward compatibility)
 	if strings.TrimSpace(actual) == strings.TrimSpace(expected) {
-		fmt.Printf("PASS: %s\n", testName)
+		passed = true
+	} else {
+		// Try smart comparison with placeholders
+		if normalizationEngine.CompareWithPlaceholders(expected, actual) {
+			passed = true
+			normalized = true
+		} else {
+			// Try normalized comparison (replace known patterns with placeholders)
+			normalizedExpected := normalizationEngine.NormalizeOutput(expected)
+			normalizedActual := normalizationEngine.NormalizeOutput(actual)
+			if strings.TrimSpace(normalizedActual) == strings.TrimSpace(normalizedExpected) {
+				passed = true
+				normalized = true
+			}
+		}
+	}
+
+	if passed {
+		if normalized && verbose {
+			fmt.Printf("PASS: %s (using smart comparison)\n", testName)
+		} else {
+			fmt.Printf("PASS: %s\n", testName)
+		}
 		return nil
 	}
 
 	fmt.Printf("FAIL: %s\n", testName)
 	if verbose {
-		fmt.Printf("Expected:\n%s\n", expected)
-		fmt.Printf("Actual:\n%s\n", actual)
+		showDetailedDiff(expected, actual, testName)
 	}
 	return fmt.Errorf("test failed: output mismatch")
 }
@@ -296,17 +326,92 @@ func diffTest(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to run neuro script: %w", err)
 	}
 
-	// Show diff
-	fmt.Printf("=== Expected ===\n%s\n", expected)
-	fmt.Printf("=== Actual ===\n%s\n", actual)
-
-	if strings.TrimSpace(actual) == strings.TrimSpace(expected) {
-		fmt.Println("=== No differences ===")
-	} else {
-		fmt.Println("=== Differences found ===")
-	}
+	// Show enhanced diff
+	showDetailedDiff(expected, actual, testName)
 
 	return nil
+}
+
+// showDetailedDiff displays an enhanced diff using go-diff library
+func showDetailedDiff(expected, actual, testName string) {
+	// Check for smart comparison results
+	exactMatch := strings.TrimSpace(actual) == strings.TrimSpace(expected)
+	placeholderMatch := normalizationEngine.CompareWithPlaceholders(expected, actual)
+
+	normalizedExpected := normalizationEngine.NormalizeOutput(expected)
+	normalizedActual := normalizationEngine.NormalizeOutput(actual)
+	normalizedMatch := strings.TrimSpace(normalizedActual) == strings.TrimSpace(normalizedExpected)
+
+	fmt.Printf("=== Comparison Results for %s ===\n", testName)
+	fmt.Printf("Exact match: %t\n", exactMatch)
+	fmt.Printf("Placeholder match: %t\n", placeholderMatch)
+	fmt.Printf("Normalized match: %t\n", normalizedMatch)
+	fmt.Println()
+
+	if exactMatch {
+		fmt.Println("=== No differences found ===")
+		return
+	}
+
+	// Show normalized versions if different from original
+	if normalizedExpected != expected || normalizedActual != actual {
+		fmt.Println("=== Normalized Expected ===")
+		fmt.Println(normalizedExpected)
+		fmt.Println("=== Normalized Actual ===")
+		fmt.Println(normalizedActual)
+		fmt.Println()
+	}
+
+	// Create diff using go-diff
+	dmp := diffmatchpatch.New()
+	diffs := dmp.DiffMain(expected, actual, false)
+
+	fmt.Println("=== Detailed Diff ===")
+	for _, diff := range diffs {
+		switch diff.Type {
+		case diffmatchpatch.DiffEqual:
+			fmt.Print(diff.Text)
+		case diffmatchpatch.DiffDelete:
+			fmt.Printf("[-]%s", diff.Text)
+		case diffmatchpatch.DiffInsert:
+			fmt.Printf("[+]%s", diff.Text)
+		}
+	}
+	fmt.Println()
+
+	// Show line-by-line comparison for clarity
+	expectedLines := strings.Split(expected, "\n")
+	actualLines := strings.Split(actual, "\n")
+
+	fmt.Println("=== Line by Line Comparison ===")
+	maxLines := len(expectedLines)
+	if len(actualLines) > maxLines {
+		maxLines = len(actualLines)
+	}
+
+	for i := 0; i < maxLines; i++ {
+		expectedLine := ""
+		actualLine := ""
+
+		if i < len(expectedLines) {
+			expectedLine = expectedLines[i]
+		}
+		if i < len(actualLines) {
+			actualLine = actualLines[i]
+		}
+
+		if expectedLine != actualLine {
+			fmt.Printf("Line %d:\n", i+1)
+			fmt.Printf("  Expected: %q\n", expectedLine)
+			fmt.Printf("  Actual:   %q\n", actualLine)
+
+			// Check if this line would match with placeholders
+			if normalizationEngine.MatchLineWithPlaceholders(expectedLine, actualLine) {
+				fmt.Printf("  (Matches with placeholder support)\n")
+			}
+			fmt.Println()
+		}
+	}
 }
 
 // Helper functions
