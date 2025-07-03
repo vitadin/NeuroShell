@@ -1,5 +1,5 @@
-Created session 'first_session' (ID: 65d24752)
-Created session 'second_session' (ID: 36df428d)
-Created session 'active_session' (ID: 1dcdbaec)
+Created session 'first_session' (ID: 00000001)
+Created session 'second_session' (ID: 00000002)
+Created session 'active_session' (ID: 00000003)
 Sessions (1 total):
-  active_session    (ID: 1dcdbaec, active, 0 messages, created: 2025-07-03)
+  active_session    (ID: 00000003, active, 0 messages, created: 2025-01-01)

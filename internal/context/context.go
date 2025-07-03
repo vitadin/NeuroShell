@@ -31,10 +31,10 @@ type NeuroContext struct {
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
 func New() *NeuroContext {
-	return &NeuroContext{
+	ctx := &NeuroContext{
 		variables:      make(map[string]string),
 		history:        make([]neurotypes.Message, 0),
-		sessionID:      fmt.Sprintf("session_%d", time.Now().Unix()),
+		sessionID:      "", // Will be set after we know test mode
 		executionQueue: make([]string, 0),
 		scriptMetadata: make(map[string]interface{}),
 		testMode:       false,
@@ -44,6 +44,18 @@ func New() *NeuroContext {
 		sessionNameToID: make(map[string]string),
 		activeSessionID: "",
 	}
+
+	// Generate initial session ID (will be deterministic if test mode is set later)
+	ctx.sessionID = ctx.generateSessionID()
+	return ctx
+}
+
+// generateSessionID creates a session ID, deterministic in test mode
+func (ctx *NeuroContext) generateSessionID() string {
+	if ctx.testMode {
+		return "session_1609459200" // Fixed timestamp for test mode
+	}
+	return fmt.Sprintf("session_%d", time.Now().Unix())
 }
 
 // GetVariable retrieves a variable value by name, supporting both user and system variables.
@@ -301,6 +313,8 @@ func (ctx *NeuroContext) ClearScriptMetadata() {
 // SetTestMode enables or disables test mode for deterministic behavior.
 func (ctx *NeuroContext) SetTestMode(testMode bool) {
 	ctx.testMode = testMode
+	// Regenerate session ID to be deterministic in test mode
+	ctx.sessionID = ctx.generateSessionID()
 }
 
 // IsTestMode returns whether test mode is currently enabled.

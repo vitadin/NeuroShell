@@ -3,10 +3,8 @@ package services
 import (
 	"fmt"
 	"strings"
-	"time"
 
-	"github.com/google/uuid"
-
+	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -131,8 +129,8 @@ func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage st
 		return nil, fmt.Errorf("session name '%s' is already in use", processedName)
 	}
 
-	// Generate unique session ID
-	sessionID := uuid.New().String()
+	// Generate unique session ID (deterministic in test mode)
+	sessionID := testutils.GenerateUUID(c.context)
 
 	// Use the processed name
 	name = processedName
@@ -142,8 +140,8 @@ func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage st
 		systemPrompt = "You are a helpful assistant."
 	}
 
-	// Create new session
-	now := time.Now()
+	// Create new session (deterministic time in test mode)
+	now := testutils.GetCurrentTime(c.context)
 	session := &neurotypes.ChatSession{
 		ID:           sessionID,
 		Name:         name,
@@ -157,7 +155,7 @@ func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage st
 	// Add initial user message if provided
 	if initialMessage != "" {
 		userMessage := neurotypes.Message{
-			ID:        uuid.New().String(),
+			ID:        testutils.GenerateUUID(c.context),
 			Role:      "user",
 			Content:   initialMessage,
 			Timestamp: now,
@@ -413,14 +411,14 @@ func (c *ChatSessionService) AddMessage(nameOrID string, role, content string) e
 	}
 
 	message := neurotypes.Message{
-		ID:        uuid.New().String(),
+		ID:        testutils.GenerateUUID(c.context),
 		Role:      role,
 		Content:   content,
-		Timestamp: time.Now(),
+		Timestamp: testutils.GetCurrentTime(c.context),
 	}
 
 	session.Messages = append(session.Messages, message)
-	session.UpdatedAt = time.Now()
+	session.UpdatedAt = testutils.GetCurrentTime(c.context)
 
 	// Update session in context
 	sessions := c.context.GetChatSessions()

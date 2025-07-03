@@ -1,3 +1,3 @@
-Created session 'debug_session' (ID: {{PLACEHOLDER:8:8}})
+Created session 'debug_session' (ID: 00000001)
 Sessions (1 total):
-  debug_session    (ID: {{PLACEHOLDER:8:8}}, active, 0 messages, created: {{PLACEHOLDER:10:10}})
+  debug_session    (ID: 00000001, active, 0 messages, created: 2025-01-01)
