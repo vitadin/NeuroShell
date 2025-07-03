@@ -118,12 +118,35 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 	case "#session_id":
 		return ctx.sessionID, true
 	case "#message_count":
+		// Check if there's a stored session message count first
+		if value, ok := ctx.variables["#message_count"]; ok {
+			return value, true
+		}
+		// Fall back to NeuroShell context history count
 		return fmt.Sprintf("%d", len(ctx.history)), true
 	case "#test_mode":
 		if ctx.testMode {
 			return "true", true
 		}
 		return "false", true
+	case "#session_name":
+		// Look for stored session name variable
+		if value, ok := ctx.variables["#session_name"]; ok {
+			return value, true
+		}
+		return "", false
+	case "#system_prompt":
+		// Look for stored system prompt variable
+		if value, ok := ctx.variables["#system_prompt"]; ok {
+			return value, true
+		}
+		return "", false
+	case "#session_created":
+		// Look for stored session creation time variable
+		if value, ok := ctx.variables["#session_created"]; ok {
+			return value, true
+		}
+		return "", false
 	}
 
 	// Handle message history variables: ${1}, ${2}, etc.

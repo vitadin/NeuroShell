@@ -78,3 +78,15 @@ type CommandArgs struct {
 	Options map[string]string
 	Message string
 }
+
+// ChatSession represents a conversation session with an LLM agent.
+// It maintains conversation history, system context, and metadata for LLM interactions.
+type ChatSession struct {
+	ID           string    `json:"id"`            // Unique session identifier
+	Name         string    `json:"name"`          // User-friendly session name
+	SystemPrompt string    `json:"system_prompt"` // System message for LLM context
+	Messages     []Message `json:"messages"`      // Ordered conversation history
+	CreatedAt    time.Time `json:"created_at"`    // Session creation timestamp
+	UpdatedAt    time.Time `json:"updated_at"`    // Last modification timestamp
+	IsActive     bool      `json:"is_active"`     // Whether this is the current active session
+}
