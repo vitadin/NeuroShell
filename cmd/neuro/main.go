@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 	_ "neuroshell/internal/commands/assert"  // Import assert commands (init functions)
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
+	_ "neuroshell/internal/commands/session" // Import session commands (init functions)
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/orchestration"
