@@ -2,6 +2,6 @@ Created session 'first_session' (ID: 00000001)
 Created session 'second_session' (ID: 00000002)
 Created session 'third_session' (ID: 00000003)
 Sessions (3 total):
-  first_session    (ID: 00000001, 0 messages, created: 2025-01-01)
-  second_session    (ID: 00000002, 0 messages, created: 2025-01-01)
   third_session    (ID: 00000003, active, 0 messages, created: 2025-01-01)
+  second_session    (ID: 00000002, 0 messages, created: 2025-01-01)
+  first_session    (ID: 00000001, 0 messages, created: 2025-01-01)

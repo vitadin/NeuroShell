@@ -15,6 +15,10 @@ var (
 	// Thread-safe counter for deterministic ID generation
 	idCounter uint64
 	idMutex   sync.Mutex
+
+	// Thread-safe counter for deterministic timestamp generation
+	timeCounter int64
+	timeMutex   sync.Mutex
 )
 
 // GenerateUUID generates a UUID that is deterministic in test mode but random in production.
@@ -28,12 +32,12 @@ func GenerateUUID(ctx neurotypes.Context) string {
 }
 
 // GetCurrentTime returns the current time, deterministic in test mode but real in production.
-// In test mode, returns fixed time: 2025-01-01T00:00:00Z
+// In test mode, returns incrementing time starting from 2025-01-01T00:00:00Z
 // In production mode, returns time.Now()
 func GetCurrentTime(ctx neurotypes.Context) time.Time {
 	if ctx.IsTestMode() {
-		// Return fixed deterministic time
-		return time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+		// Return deterministic but incrementing time for proper sorting
+		return getDeterministicTime()
 	}
 	return time.Now()
 }
@@ -68,10 +72,28 @@ func getDeterministicUUID() string {
 	return fmt.Sprintf("%08x-0000-4000-8000-%012x", idCounter, idCounter)
 }
 
+// getDeterministicTime generates incrementing deterministic timestamps for test mode.
+// Each call returns a time that is 1 second later than the previous call.
+// First call: 2025-01-01T00:00:00Z, second call: 2025-01-01T00:00:01Z, etc.
+func getDeterministicTime() time.Time {
+	timeMutex.Lock()
+	defer timeMutex.Unlock()
+
+	timeCounter++
+
+	// Base time: 2025-01-01T00:00:00Z + timeCounter seconds
+	baseTime := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	return baseTime.Add(time.Duration(timeCounter) * time.Second)
+}
+
 // ResetTestCounters resets the deterministic counters for testing.
 // This should only be called from test code to ensure consistent test runs.
 func ResetTestCounters() {
 	idMutex.Lock()
+	timeMutex.Lock()
 	defer idMutex.Unlock()
+	defer timeMutex.Unlock()
+
 	idCounter = 0
+	timeCounter = 0
 }

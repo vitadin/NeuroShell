@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"neuroshell/internal/testutils"
@@ -323,8 +324,21 @@ func (c *ChatSessionService) ListSessions() []*neurotypes.ChatSession {
 
 	sessionMap := c.context.GetChatSessions()
 	sessions := make([]*neurotypes.ChatSession, 0, len(sessionMap))
-	for _, session := range sessionMap {
-		sessions = append(sessions, session)
+
+	// Collect session IDs and sort them for deterministic order
+	sessionIDs := make([]string, 0, len(sessionMap))
+	for sessionID := range sessionMap {
+		sessionIDs = append(sessionIDs, sessionID)
+	}
+
+	// Sort IDs to ensure deterministic base order before any command-level sorting
+	sort.Strings(sessionIDs)
+
+	// Add sessions in deterministic order
+	for _, sessionID := range sessionIDs {
+		if session, exists := sessionMap[sessionID]; exists {
+			sessions = append(sessions, session)
+		}
 	}
 
 	return sessions
