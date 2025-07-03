@@ -1,0 +1,7 @@
+Created session 'first_session' (ID: 17f6edbd)
+Created session 'second_session' (ID: 96ec9b69)
+Created session 'third_session' (ID: 95002030)
+Sessions (3 total):
+  third_session    (ID: 95002030, active, 0 messages, created: 2025-07-03)
+  second_session    (ID: 96ec9b69, 0 messages, created: 2025-07-03)
+  first_session    (ID: 17f6edbd, 0 messages, created: 2025-07-03)

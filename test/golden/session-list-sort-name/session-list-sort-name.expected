@@ -1,0 +1,7 @@
+Created session 'zebra_session' (ID: dabdbd18)
+Created session 'alpha_session' (ID: aafa6677)
+Created session 'beta_session' (ID: 4d623bea)
+Sessions (3 total):
+  alpha_session    (ID: aafa6677, 0 messages, created: 2025-07-03)
+  beta_session    (ID: 4d623bea, active, 0 messages, created: 2025-07-03)
+  zebra_session    (ID: dabdbd18, 0 messages, created: 2025-07-03)

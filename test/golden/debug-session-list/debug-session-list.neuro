@@ -1,0 +1,3 @@
+# Debug test: create one session and list
+\session-new debug_session
+\session-list
