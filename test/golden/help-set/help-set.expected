@@ -1,0 +1,7 @@
+Command: set
+Description: Set a variable
+Usage: \set[var=value] or \set var value
+Parse Mode: Key-Value (supports [key=value] syntax)
+Examples:
+  \set[var=value] or \set var value
+  \set[option=value]

@@ -1,0 +1,7 @@
+Command: get
+Description: Get a variable
+Usage: \get[var] or \get var
+Parse Mode: Key-Value (supports [key=value] syntax)
+Examples:
+  \get[var] or \get var
+  \get[option=value]
