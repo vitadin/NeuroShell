@@ -1,4 +1,4 @@
 # Test that demonstrates smart timestamp handling
-\session-new[name="test_session", system="You are a helpful assistant"]
+\session-new[system="You are a helpful assistant"] test_session
 \get[#session_id]
 \get[#session_name]

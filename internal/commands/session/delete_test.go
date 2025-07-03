@@ -48,7 +48,7 @@ func TestDeleteCommand_Execute_BasicFunctionality(t *testing.T) {
 
 	// Create a session first to delete
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{"name": "test_session"}, "", ctx)
+	err := createCmd.Execute(map[string]string{}, "test_session", ctx)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -70,7 +70,7 @@ func TestDeleteCommand_Execute_BasicFunctionality(t *testing.T) {
 			// Create session before each test
 			ctx = context.New()
 			setupSessionTestRegistry(t, ctx)
-			err := createCmd.Execute(map[string]string{"name": "test_session"}, "", ctx)
+			err := createCmd.Execute(map[string]string{}, "test_session", ctx)
 			require.NoError(t, err)
 
 			err = cmd.Execute(tt.args, tt.input, ctx)
@@ -98,7 +98,7 @@ func TestDeleteCommand_Execute_DeleteByInput(t *testing.T) {
 
 	// Create a session first
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{"name": "input_test"}, "", ctx)
+	err := createCmd.Execute(map[string]string{}, "input_test", ctx)
 	require.NoError(t, err)
 
 	// Delete by input parameter
@@ -119,7 +119,7 @@ func TestDeleteCommand_Execute_DeleteBySessionID(t *testing.T) {
 
 	// Create a session first
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{"name": "id_test"}, "", ctx)
+	err := createCmd.Execute(map[string]string{}, "id_test", ctx)
 	require.NoError(t, err)
 
 	// Get the chat service to access session directly
@@ -162,7 +162,7 @@ func TestDeleteCommand_Execute_SessionNotFound(t *testing.T) {
 	// Try to delete non-existent session
 	err := cmd.Execute(map[string]string{"name": "nonexistent"}, "", ctx)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "not found")
+	assert.Contains(t, err.Error(), "no session found")
 }
 
 func TestDeleteCommand_Execute_VariableInterpolation(t *testing.T) {
@@ -172,7 +172,7 @@ func TestDeleteCommand_Execute_VariableInterpolation(t *testing.T) {
 
 	// Create a session
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{"name": "var_test"}, "", ctx)
+	err := createCmd.Execute(map[string]string{}, "var_test", ctx)
 	require.NoError(t, err)
 
 	// Set up test variable
@@ -254,10 +254,10 @@ func TestDeleteCommand_Execute_SessionVariableManagement(t *testing.T) {
 
 	// Create two sessions
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{"name": "session1"}, "", ctx)
+	err := createCmd.Execute(map[string]string{}, "session1", ctx)
 	require.NoError(t, err)
 
-	err = createCmd.Execute(map[string]string{"name": "session2"}, "", ctx)
+	err = createCmd.Execute(map[string]string{}, "session2", ctx)
 	require.NoError(t, err)
 
 	// Verify session variables are set for session2 (current)
@@ -292,21 +292,23 @@ func TestDeleteCommand_Execute_PriorityOfArguments(t *testing.T) {
 
 	// Create two sessions
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{"name": "priority_test1"}, "", ctx)
+	err := createCmd.Execute(map[string]string{}, "priority_test1", ctx)
 	require.NoError(t, err)
 
-	err = createCmd.Execute(map[string]string{"name": "priority_test2"}, "", ctx)
+	err = createCmd.Execute(map[string]string{}, "priority_test2", ctx)
 	require.NoError(t, err)
 
-	// Test that input argument takes priority over name option
+	// Test that providing both name option and input parameter is now an error
 	err = cmd.Execute(map[string]string{"name": "priority_test1"}, "priority_test2", ctx)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot specify both name option and input parameter")
+
+	// Verify both sessions still exist (no deletion occurred)
+	err = cmd.Execute(map[string]string{"name": "priority_test1"}, "", ctx)
 	assert.NoError(t, err)
 
-	// Verify that priority_test2 was deleted (input argument took priority)
-	output, err := ctx.GetVariable("_output")
+	err = cmd.Execute(map[string]string{"name": "priority_test2"}, "", ctx)
 	assert.NoError(t, err)
-	assert.Contains(t, output, "priority_test2")
-	assert.NotContains(t, output, "priority_test1")
 }
 
 // Interface compliance check

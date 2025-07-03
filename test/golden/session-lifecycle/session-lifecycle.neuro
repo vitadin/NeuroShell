@@ -2,7 +2,7 @@
 # This verifies the bug fix for session-delete command
 
 # Create a named session
-\session-new[name="lifecycle_test", system="You are a test assistant"]
+\session-new[system="You are a test assistant"] lifecycle_test
 \get[#session_name]
 \get[#session_id]
 
@@ -14,7 +14,7 @@
 \get[#session_id]
 
 # Create another session and delete by ID
-\session-new[name="id_test"]
+\session-new id_test
 \get[#session_id]
 \session-delete ${#session_id}
 

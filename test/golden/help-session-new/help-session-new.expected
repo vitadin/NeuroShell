@@ -1,23 +1,27 @@
 Command: session-new
 Description: Create new chat session for LLM interactions
-Usage: \session-new[name=session_name, system=system_prompt] [initial_message]
+Usage: \session-new[system=system_prompt] session_name
 Examples:
-  \session-new                                    # Create anonymous session
-  \session-new[name=work]                         # Create named session
-  \session-new[system=You are a code reviewer]   # Create session with system prompt
-  \session-new[name=debug, system=You are helpful] Debug this code
+  \session-new work project                       # Create session named "work project"
+  \session-new debug                              # Create session named "debug"
+  \session-new[system=You are a code reviewer] code review  # Named "code review" with custom system prompt
+  \session-new "my project"                       # Session name with quotes (auto-processed)
 Options:
-  name   - Session name (3-64 chars, alphanumeric plus _.- )
-  system - System prompt for LLM context
+  system - System prompt for LLM context (optional, defaults to helpful assistant)
+Note: Session name is required and taken from the input parameter.
+      Use quotes if the name contains special characters.
+      Initial messages can be added later with \send command.
 Parse Mode: Key-Value (supports [key=value] syntax)
 Examples:
-  \session-new[name=session_name, system=system_prompt] [initial_message]
+  \session-new[system=system_prompt] session_name
 Examples:
-  \session-new                                    # Create anonymous session
-  \session-new[name=work]                         # Create named session
-  \session-new[system=You are a code reviewer]   # Create session with system prompt
-  \session-new[name=debug, system=You are helpful] Debug this code
+  \session-new work project                       # Create session named "work project"
+  \session-new debug                              # Create session named "debug"
+  \session-new[system=You are a code reviewer] code review  # Named "code review" with custom system prompt
+  \session-new "my project"                       # Session name with quotes (auto-processed)
 Options:
-  name   - Session name (3-64 chars, alphanumeric plus _.- )
-  system - System prompt for LLM context
+  system - System prompt for LLM context (optional, defaults to helpful assistant)
+Note: Session name is required and taken from the input parameter.
+      Use quotes if the name contains special characters.
+      Initial messages can be added later with \send command.
   \session-new[option=value]
