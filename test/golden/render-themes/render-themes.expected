@@ -1,0 +1,8 @@
+This is bold text with default theme
+_output = This is bold text with default theme
+This is italic text with dark theme
+_output = This is italic text with dark theme
+This is a success message
+_output = This is a success message
+This is an error message
+_output = This is an error message

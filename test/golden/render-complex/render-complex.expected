@@ -1,0 +1,9 @@
+Setting cmd1 = \\session-new
+Setting cmd2 = \\session-list
+Commands: \\session-new, \\session-list, and \\help are essential for session management
+styled_output = Commands: \\session-new, \\session-list, and \\help are essential for session management
+Spaces in array: \\get and \\set
+_output = Spaces in array: \\get and \\set
+Quoted keywords: \\bash and \\echo commands
+_output = Quoted keywords: \\bash and \\echo commands
+_output = This should not appear in output but be stored

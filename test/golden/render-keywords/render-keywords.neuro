@@ -1,0 +1,3 @@
+# Test render with keyword highlighting
+\render[keywords=[\get, \set, \vars]] Use \get to retrieve values, \set to store them, and \vars to list all variables
+\get[_output]
