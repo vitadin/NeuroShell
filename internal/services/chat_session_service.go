@@ -13,20 +13,17 @@ import (
 
 // ChatSessionService provides chat session management operations for NeuroShell.
 // It handles creation, storage, and retrieval of LLM conversation sessions.
+// Session data is stored in the context rather than service instance for persistence.
 type ChatSessionService struct {
 	initialized bool
-	sessions    map[string]*neurotypes.ChatSession // Session storage by ID
-	nameToID    map[string]string                  // Name to ID mapping
-	activeID    string                             // Currently active session ID
+	context     neurotypes.Context // Reference to context for session storage
 }
 
 // NewChatSessionService creates a new ChatSessionService instance.
 func NewChatSessionService() *ChatSessionService {
 	return &ChatSessionService{
 		initialized: false,
-		sessions:    make(map[string]*neurotypes.ChatSession),
-		nameToID:    make(map[string]string),
-		activeID:    "",
+		context:     nil, // Will be set during initialization
 	}
 }
 
@@ -36,7 +33,8 @@ func (c *ChatSessionService) Name() string {
 }
 
 // Initialize sets up the ChatSessionService for operation.
-func (c *ChatSessionService) Initialize(_ neurotypes.Context) error {
+func (c *ChatSessionService) Initialize(ctx neurotypes.Context) error {
+	c.context = ctx
 	c.initialized = true
 	return nil
 }
@@ -84,7 +82,8 @@ func (c *ChatSessionService) IsSessionNameAvailable(name string) bool {
 		return true // Empty name is always available (auto-generated)
 	}
 
-	_, exists := c.nameToID[name]
+	nameToID := c.context.GetSessionNameToID()
+	_, exists := nameToID[name]
 	return !exists
 }
 
@@ -141,17 +140,26 @@ func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage st
 		session.Messages = append(session.Messages, userMessage)
 	}
 
+	// Get current sessions and mappings from context
+	sessions := c.context.GetChatSessions()
+	nameToID := c.context.GetSessionNameToID()
+
 	// Deactivate previous active session
-	if c.activeID != "" {
-		if prevSession, exists := c.sessions[c.activeID]; exists {
+	activeID := c.context.GetActiveSessionID()
+	if activeID != "" {
+		if prevSession, exists := sessions[activeID]; exists {
 			prevSession.IsActive = false
 		}
 	}
 
 	// Store session and update mappings
-	c.sessions[sessionID] = session
-	c.nameToID[name] = sessionID
-	c.activeID = sessionID
+	sessions[sessionID] = session
+	nameToID[name] = sessionID
+
+	// Update context with new state
+	c.context.SetChatSessions(sessions)
+	c.context.SetSessionNameToID(nameToID)
+	c.context.SetActiveSessionID(sessionID)
 
 	return session, nil
 }
@@ -162,7 +170,8 @@ func (c *ChatSessionService) GetSession(sessionID string) (*neurotypes.ChatSessi
 		return nil, fmt.Errorf("chat session service not initialized")
 	}
 
-	session, exists := c.sessions[sessionID]
+	sessions := c.context.GetChatSessions()
+	session, exists := sessions[sessionID]
 	if !exists {
 		return nil, fmt.Errorf("session with ID '%s' not found", sessionID)
 	}
@@ -176,7 +185,8 @@ func (c *ChatSessionService) GetSessionByName(name string) (*neurotypes.ChatSess
 		return nil, fmt.Errorf("chat session service not initialized")
 	}
 
-	sessionID, exists := c.nameToID[name]
+	nameToID := c.context.GetSessionNameToID()
+	sessionID, exists := nameToID[name]
 	if !exists {
 		return nil, fmt.Errorf("session with name '%s' not found", name)
 	}
@@ -191,13 +201,16 @@ func (c *ChatSessionService) GetSessionByNameOrID(nameOrID string) (*neurotypes.
 		return nil, fmt.Errorf("chat session service not initialized")
 	}
 
+	nameToID := c.context.GetSessionNameToID()
+	sessions := c.context.GetChatSessions()
+
 	// First try by name
-	if sessionID, exists := c.nameToID[nameOrID]; exists {
+	if sessionID, exists := nameToID[nameOrID]; exists {
 		return c.GetSession(sessionID)
 	}
 
 	// Then try by ID
-	if session, exists := c.sessions[nameOrID]; exists {
+	if session, exists := sessions[nameOrID]; exists {
 		return session, nil
 	}
 
@@ -210,11 +223,12 @@ func (c *ChatSessionService) GetActiveSession() (*neurotypes.ChatSession, error)
 		return nil, fmt.Errorf("chat session service not initialized")
 	}
 
-	if c.activeID == "" {
+	activeID := c.context.GetActiveSessionID()
+	if activeID == "" {
 		return nil, fmt.Errorf("no active session")
 	}
 
-	return c.GetSession(c.activeID)
+	return c.GetSession(activeID)
 }
 
 // SetActiveSession sets the specified session as active by name or ID.
@@ -228,16 +242,22 @@ func (c *ChatSessionService) SetActiveSession(nameOrID string) error {
 		return err
 	}
 
+	sessions := c.context.GetChatSessions()
+
 	// Deactivate previous active session
-	if c.activeID != "" {
-		if prevSession, exists := c.sessions[c.activeID]; exists {
+	activeID := c.context.GetActiveSessionID()
+	if activeID != "" {
+		if prevSession, exists := sessions[activeID]; exists {
 			prevSession.IsActive = false
 		}
 	}
 
 	// Set new active session
 	session.IsActive = true
-	c.activeID = session.ID
+	c.context.SetActiveSessionID(session.ID)
+
+	// Update sessions in context
+	c.context.SetChatSessions(sessions)
 
 	return nil
 }
@@ -253,14 +273,21 @@ func (c *ChatSessionService) DeleteSession(nameOrID string) error {
 		return err
 	}
 
+	sessions := c.context.GetChatSessions()
+	nameToID := c.context.GetSessionNameToID()
+
 	// Remove from mappings
-	delete(c.sessions, session.ID)
-	delete(c.nameToID, session.Name)
+	delete(sessions, session.ID)
+	delete(nameToID, session.Name)
 
 	// Clear active session if it was the deleted one
-	if c.activeID == session.ID {
-		c.activeID = ""
+	if c.context.GetActiveSessionID() == session.ID {
+		c.context.SetActiveSessionID("")
 	}
+
+	// Update context with modified mappings
+	c.context.SetChatSessions(sessions)
+	c.context.SetSessionNameToID(nameToID)
 
 	return nil
 }
@@ -271,8 +298,9 @@ func (c *ChatSessionService) ListSessions() []*neurotypes.ChatSession {
 		return make([]*neurotypes.ChatSession, 0)
 	}
 
-	sessions := make([]*neurotypes.ChatSession, 0, len(c.sessions))
-	for _, session := range c.sessions {
+	sessionMap := c.context.GetChatSessions()
+	sessions := make([]*neurotypes.ChatSession, 0, len(sessionMap))
+	for _, session := range sessionMap {
 		sessions = append(sessions, session)
 	}
 
@@ -300,6 +328,11 @@ func (c *ChatSessionService) AddMessage(nameOrID string, role, content string) e
 	session.Messages = append(session.Messages, message)
 	session.UpdatedAt = time.Now()
 
+	// Update session in context
+	sessions := c.context.GetChatSessions()
+	sessions[session.ID] = session
+	c.context.SetChatSessions(sessions)
+
 	return nil
 }
 
@@ -323,8 +356,9 @@ func (c *ChatSessionService) GetSessionNames() []string {
 		return make([]string, 0)
 	}
 
-	names := make([]string, 0, len(c.nameToID))
-	for name := range c.nameToID {
+	nameToID := c.context.GetSessionNameToID()
+	names := make([]string, 0, len(nameToID))
+	for name := range nameToID {
 		names = append(names, name)
 	}
 
@@ -333,5 +367,10 @@ func (c *ChatSessionService) GetSessionNames() []string {
 
 // HasSessions returns true if any sessions exist.
 func (c *ChatSessionService) HasSessions() bool {
-	return c.initialized && len(c.sessions) > 0
+	if !c.initialized {
+		return false
+	}
+
+	sessions := c.context.GetChatSessions()
+	return len(sessions) > 0
 }

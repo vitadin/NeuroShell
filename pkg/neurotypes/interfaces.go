@@ -18,7 +18,7 @@ const (
 )
 
 // Context provides session state management and variable interpolation for NeuroShell.
-// It maintains variables, message history, and session metadata across command executions.
+// It maintains variables, message history, session metadata, and chat sessions across command executions.
 type Context interface {
 	GetVariable(name string) (string, error)
 	SetVariable(name string, value string) error
@@ -26,6 +26,14 @@ type Context interface {
 	GetSessionState() SessionState
 	SetTestMode(testMode bool)
 	IsTestMode() bool
+
+	// Chat session storage methods
+	GetChatSessions() map[string]*ChatSession
+	SetChatSessions(sessions map[string]*ChatSession)
+	GetSessionNameToID() map[string]string
+	SetSessionNameToID(nameToID map[string]string)
+	GetActiveSessionID() string
+	SetActiveSessionID(sessionID string)
 }
 
 // Service defines the interface for NeuroShell services that provide specific functionality.
