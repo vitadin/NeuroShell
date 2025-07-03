@@ -1,0 +1,3 @@
+# Test basic render functionality
+\render Hello, this is a basic render test
+\get[_output]

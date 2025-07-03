@@ -40,11 +40,10 @@ func ParseInput(input string) *Command {
 	}
 
 	// Try to parse command with brackets: command[content] message
-	bracketRe := regexp.MustCompile(`^([a-zA-Z_][a-zA-Z0-9_-]*)\[([^\]]*)\](.*)$`)
-	if matches := bracketRe.FindStringSubmatch(input); matches != nil {
-		cmd.Name = matches[1]
-		cmd.BracketContent = matches[2]
-		cmd.Message = strings.TrimSpace(matches[3])
+	if parsed := parseCommandWithBrackets(input); parsed != nil {
+		cmd.Name = parsed.Name
+		cmd.BracketContent = parsed.BracketContent
+		cmd.Message = parsed.Message
 	} else {
 		// Simple command without brackets: command message
 		parts := strings.SplitN(input, " ", 2)
@@ -78,6 +77,75 @@ func getParseMode(_ string) neurotypes.ParseMode {
 	// Default to key-value parsing for all commands
 	// Commands that need raw parsing will handle it internally
 	return neurotypes.ParseModeKeyValue
+}
+
+// ParsedCommand represents the result of parsing a command with brackets
+type ParsedCommand struct {
+	Name           string
+	BracketContent string
+	Message        string
+}
+
+// parseCommandWithBrackets parses a command with bracket-aware logic to handle nested brackets
+func parseCommandWithBrackets(input string) *ParsedCommand {
+	// Find command name (first word)
+	spaceIdx := strings.Index(input, " ")
+	bracketIdx := strings.Index(input, "[")
+
+	if bracketIdx == -1 {
+		return nil // No brackets found
+	}
+
+	var commandEnd int
+	if spaceIdx != -1 && spaceIdx < bracketIdx {
+		return nil // Space before bracket, not a bracket command
+	}
+
+	// Find the end of command name (where bracket starts)
+	commandEnd = bracketIdx
+
+	if commandEnd == 0 {
+		return nil // No command name
+	}
+
+	commandName := input[:commandEnd]
+	if !regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_-]*$`).MatchString(commandName) {
+		return nil // Invalid command name
+	}
+
+	// Parse brackets with proper nesting
+	bracketDepth := 0
+	contentStart := bracketIdx + 1
+	contentEnd := -1
+
+	for i := bracketIdx; i < len(input); i++ {
+		switch input[i] {
+		case '[':
+			bracketDepth++
+		case ']':
+			bracketDepth--
+			if bracketDepth == 0 {
+				contentEnd = i
+				break
+			}
+		}
+	}
+
+	if contentEnd == -1 {
+		return nil // Unclosed brackets
+	}
+
+	bracketContent := input[contentStart:contentEnd]
+	var message string
+	if contentEnd+1 < len(input) {
+		message = strings.TrimSpace(input[contentEnd+1:])
+	}
+
+	return &ParsedCommand{
+		Name:           commandName,
+		BracketContent: bracketContent,
+		Message:        message,
+	}
 }
 
 func parseKeyValueOptions(content string, options map[string]string) {
@@ -114,7 +182,9 @@ func splitByComma(s string) []string {
 	var parts []string
 	var current strings.Builder
 	inQuotes := false
+	inBrackets := false
 	quoteChar := byte(0)
+	bracketDepth := 0
 
 	for i := 0; i < len(s); i++ {
 		c := s[i]
@@ -128,7 +198,18 @@ func splitByComma(s string) []string {
 			inQuotes = false
 			quoteChar = 0
 			current.WriteByte(c)
-		case !inQuotes && c == ',':
+		case !inQuotes && c == '[':
+			inBrackets = true
+			bracketDepth++
+			current.WriteByte(c)
+		case !inQuotes && c == ']':
+			bracketDepth--
+			if bracketDepth <= 0 {
+				inBrackets = false
+				bracketDepth = 0
+			}
+			current.WriteByte(c)
+		case !inQuotes && !inBrackets && c == ',':
 			parts = append(parts, current.String())
 			current.Reset()
 		default:
@@ -150,6 +231,39 @@ func unquote(s string) string {
 		}
 	}
 	return s
+}
+
+// ParseArrayValue parses a string that may contain an array notation like "[item1, item2, item3]"
+// and returns the items as a slice. If the input is not an array, returns a single-item slice.
+func ParseArrayValue(value string) []string {
+	value = strings.TrimSpace(value)
+
+	// Check if it's an array notation [...]
+	if len(value) >= 2 && value[0] == '[' && value[len(value)-1] == ']' {
+		// Extract content inside brackets
+		content := value[1 : len(value)-1]
+		content = strings.TrimSpace(content)
+
+		if content == "" {
+			return []string{}
+		}
+
+		// Split by comma and clean up each item
+		items := strings.Split(content, ",")
+		var result []string
+		for _, item := range items {
+			item = strings.TrimSpace(item)
+			if item != "" {
+				// Remove quotes if present
+				item = unquote(item)
+				result = append(result, item)
+			}
+		}
+		return result
+	}
+
+	// Not an array, return single item
+	return []string{unquote(value)}
 }
 
 func (c *Command) String() string {
