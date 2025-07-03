@@ -237,8 +237,8 @@ check-ci:
     @echo "4. Building binary..."
     just build
     @echo "5. Running end-to-end tests..."
-    -just test-e2e
-    @echo "✅ CI checks completed (some e2e tests may fail - this is expected in early development)"
+    just test-e2e
+    @echo "✅ CI checks completed"
 
 # Initialize development environment
 init:
