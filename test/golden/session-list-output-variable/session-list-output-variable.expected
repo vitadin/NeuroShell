@@ -1,0 +1,5 @@
+Created session 'test_session' (ID: 00000001)
+Sessions (1 total):
+  test_session    (ID: 00000001, active, 0 messages, created: 2025-01-01)
+_output = Sessions (1 total):
+  test_session    (ID: 00000001, active, 0 messages, created: 2025-01-01)

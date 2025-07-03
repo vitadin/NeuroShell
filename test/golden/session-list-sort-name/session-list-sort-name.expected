@@ -1,0 +1,7 @@
+Created session 'zebra_session' (ID: 00000001)
+Created session 'alpha_session' (ID: 00000002)
+Created session 'beta_session' (ID: 00000003)
+Sessions (3 total):
+  alpha_session    (ID: 00000002, 0 messages, created: 2025-01-01)
+  beta_session    (ID: 00000003, active, 0 messages, created: 2025-01-01)
+  zebra_session    (ID: 00000001, 0 messages, created: 2025-01-01)

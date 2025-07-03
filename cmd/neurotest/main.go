@@ -452,11 +452,8 @@ func runNeuroScript(scriptPath string) (string, error) {
 		return "", fmt.Errorf("failed to get absolute path: %w", err)
 	}
 
-	// Create the command to run the script using the \run command
-	runCommand := fmt.Sprintf("\\run %s\n\\exit\n", absPath)
-
-	cmd := exec.Command(neurocmd, "--test-mode")
-	cmd.Stdin = strings.NewReader(runCommand)
+	// Use neuro batch command to run the script
+	cmd := exec.Command(neurocmd, "batch", absPath, "--test-mode")
 
 	// Set environment variables for consistent testing
 	cmd.Env = append(os.Environ(),
@@ -505,9 +502,10 @@ func cleanNeuroOutput(output string) string {
 	var cleanLines []string
 
 	skipPatterns := []string{
-		"INFO Starting NeuroShell",
-		"INFO All services initialized",
-		"INFO Services initialized",
+		"INFO ",
+		"DEBUG ",
+		"WARN ",
+		"ERROR ",
 		"Neuro Shell v",
 		"Type '\\help' for Neuro commands",
 		"Goodbye!",
