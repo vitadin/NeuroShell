@@ -126,10 +126,12 @@ func parseCommandWithBrackets(input string) *ParsedCommand {
 			bracketDepth--
 			if bracketDepth == 0 {
 				contentEnd = i
-				break
+				goto bracketParsingDone
 			}
 		}
 	}
+
+bracketParsingDone:
 
 	if contentEnd == -1 {
 		return nil // Unclosed brackets
