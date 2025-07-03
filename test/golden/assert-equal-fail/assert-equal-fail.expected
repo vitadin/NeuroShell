@@ -1,0 +1,9 @@
+Setting expected_value = hello
+Setting actual_value = world
+✗ Assertion failed: values are not equal
+  Expected: hello
+  Actual:   world
+_status = 1
+_assert_result = FAIL
+_assert_expected = hello
+_assert_actual = world

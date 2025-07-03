@@ -1,0 +1,7 @@
+Setting test_value = hello world
+✓ Assertion passed: values are equal
+  Value: hello world
+_status = 0
+_assert_result = PASS
+_assert_expected = hello world
+_assert_actual = hello world
