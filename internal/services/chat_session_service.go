@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
 
@@ -40,36 +39,58 @@ func (c *ChatSessionService) Initialize(ctx neurotypes.Context) error {
 }
 
 // ValidateSessionName checks if a session name is valid according to NeuroShell naming rules.
-func (c *ChatSessionService) ValidateSessionName(name string) error {
-	if name == "" {
-		return nil // Empty name is valid (will be auto-generated)
+// It performs smart preprocessing including trimming whitespace and removing quotes.
+// Returns the processed name and any validation error.
+func (c *ChatSessionService) ValidateSessionName(name string) (string, error) {
+	// Smart preprocessing
+	processed := c.preprocessSessionName(name)
+
+	// After preprocessing, name cannot be empty
+	if processed == "" {
+		return "", fmt.Errorf("session name cannot be empty")
 	}
 
 	// Session name validation rules
-	if len(name) > 64 {
-		return fmt.Errorf("session name too long (max 64 characters)")
+	if len(processed) > 64 {
+		return "", fmt.Errorf("session name too long (max 64 characters)")
 	}
 
-	if len(name) < 3 {
-		return fmt.Errorf("session name too short (min 3 characters)")
-	}
-
-	// Allow alphanumeric, hyphens, underscores, and dots
-	validName := regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.-]*[a-zA-Z0-9]$`)
-	if !validName.MatchString(name) {
-		return fmt.Errorf("invalid session name: must start and end with alphanumeric, contain only letters, numbers, hyphens, underscores, and dots")
+	// Allow spaces and most printable characters, but not control characters
+	for _, char := range processed {
+		if char < 32 || char == 127 { // Control characters
+			return "", fmt.Errorf("session name contains invalid characters")
+		}
 	}
 
 	// Reserved names that cannot be used
 	reservedNames := []string{"new", "list", "active", "current", "default", "temp", "temporary"}
-	lowerName := strings.ToLower(name)
+	lowerName := strings.ToLower(processed)
 	for _, reserved := range reservedNames {
 		if lowerName == reserved {
-			return fmt.Errorf("session name '%s' is reserved", name)
+			return "", fmt.Errorf("session name '%s' is reserved", processed)
 		}
 	}
 
-	return nil
+	return processed, nil
+}
+
+// preprocessSessionName performs smart preprocessing on session names.
+// It trims whitespace, removes surrounding quotes, and handles basic formatting.
+func (c *ChatSessionService) preprocessSessionName(name string) string {
+	// Trim whitespace from beginning and end
+	processed := strings.TrimSpace(name)
+
+	// Remove surrounding quotes if present
+	if len(processed) >= 2 {
+		if (processed[0] == '"' && processed[len(processed)-1] == '"') ||
+			(processed[0] == '\'' && processed[len(processed)-1] == '\'') {
+			processed = processed[1 : len(processed)-1]
+			// Trim again after removing quotes
+			processed = strings.TrimSpace(processed)
+		}
+	}
+
+	return processed
 }
 
 // IsSessionNameAvailable checks if a session name is available for use.
@@ -94,23 +115,27 @@ func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage st
 		return nil, fmt.Errorf("chat session service not initialized")
 	}
 
-	// Validate session name
-	if err := c.ValidateSessionName(name); err != nil {
+	// Validate and preprocess session name
+	processedName, err := c.ValidateSessionName(name)
+	if err != nil {
 		return nil, fmt.Errorf("invalid session name: %w", err)
 	}
 
+	// For CreateSession, name is now required (no auto-generation)
+	if processedName == "" {
+		return nil, fmt.Errorf("session name is required")
+	}
+
 	// Check name availability
-	if name != "" && !c.IsSessionNameAvailable(name) {
-		return nil, fmt.Errorf("session name '%s' is already in use", name)
+	if !c.IsSessionNameAvailable(processedName) {
+		return nil, fmt.Errorf("session name '%s' is already in use", processedName)
 	}
 
 	// Generate unique session ID
 	sessionID := uuid.New().String()
 
-	// Generate name if not provided (use first 8 chars of UUID)
-	if name == "" {
-		name = sessionID[:8]
-	}
+	// Use the processed name
+	name = processedName
 
 	// Set default system prompt if not provided
 	if systemPrompt == "" {
@@ -305,6 +330,75 @@ func (c *ChatSessionService) ListSessions() []*neurotypes.ChatSession {
 	}
 
 	return sessions
+}
+
+// GetSessionsWithPrefix returns all sessions whose names start with the given prefix.
+func (c *ChatSessionService) GetSessionsWithPrefix(prefix string) []*neurotypes.ChatSession {
+	if !c.initialized {
+		return make([]*neurotypes.ChatSession, 0)
+	}
+
+	nameToID := c.context.GetSessionNameToID()
+	sessions := c.context.GetChatSessions()
+
+	var matches []*neurotypes.ChatSession
+
+	for sessionName, sessionID := range nameToID {
+		if strings.HasPrefix(strings.ToLower(sessionName), strings.ToLower(prefix)) {
+			if session, exists := sessions[sessionID]; exists {
+				matches = append(matches, session)
+			}
+		}
+	}
+
+	return matches
+}
+
+// FindSessionByPrefix performs smart session lookup with the following priority:
+// 1. Exact name match
+// 2. Exact ID match
+// 3. Prefix matching (must be unique)
+func (c *ChatSessionService) FindSessionByPrefix(identifier string) (*neurotypes.ChatSession, error) {
+	if !c.initialized {
+		return nil, fmt.Errorf("chat session service not initialized")
+	}
+
+	if identifier == "" {
+		return nil, fmt.Errorf("session identifier cannot be empty")
+	}
+
+	nameToID := c.context.GetSessionNameToID()
+	sessions := c.context.GetChatSessions()
+
+	// 1. Try exact name match first
+	if sessionID, exists := nameToID[identifier]; exists {
+		if session, exists := sessions[sessionID]; exists {
+			return session, nil
+		}
+	}
+
+	// 2. Try exact ID match
+	if session, exists := sessions[identifier]; exists {
+		return session, nil
+	}
+
+	// 3. Try prefix matching
+	matches := c.GetSessionsWithPrefix(identifier)
+
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("no session found for '%s' (tried exact name, exact ID, prefix match)", identifier)
+	}
+
+	if len(matches) > 1 {
+		var matchNames []string
+		for _, match := range matches {
+			matchNames = append(matchNames, match.Name)
+		}
+		return nil, fmt.Errorf("multiple sessions match prefix '%s': %s", identifier, strings.Join(matchNames, ", "))
+	}
+
+	// Exactly one match
+	return matches[0], nil
 }
 
 // AddMessage adds a message to the specified session.

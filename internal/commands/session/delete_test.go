@@ -298,15 +298,15 @@ func TestDeleteCommand_Execute_PriorityOfArguments(t *testing.T) {
 	err = createCmd.Execute(map[string]string{"name": "priority_test2"}, "", ctx)
 	require.NoError(t, err)
 
-	// Test that name argument takes priority over input
+	// Test that input argument takes priority over name option
 	err = cmd.Execute(map[string]string{"name": "priority_test1"}, "priority_test2", ctx)
 	assert.NoError(t, err)
 
-	// Verify that priority_test1 was deleted (name argument took priority)
+	// Verify that priority_test2 was deleted (input argument took priority)
 	output, err := ctx.GetVariable("_output")
 	assert.NoError(t, err)
-	assert.Contains(t, output, "priority_test1")
-	assert.NotContains(t, output, "priority_test2")
+	assert.Contains(t, output, "priority_test2")
+	assert.NotContains(t, output, "priority_test1")
 }
 
 // Interface compliance check

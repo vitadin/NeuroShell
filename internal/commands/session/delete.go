@@ -34,21 +34,35 @@ func (c *DeleteCommand) Usage() string {
 	return `\session-delete[name=session_name] [session_name_or_id]
 
 Examples:
-  \session-delete[name=work]          # Delete session by name
-  \session-delete work                # Delete session by name (shorthand)
-  \session-delete abc123              # Delete session by ID
-  \session-delete[name=debug]         # Delete named session
+  \session-delete work project        # Delete by exact name
+  \session-delete work                # Delete by prefix (if unique match)
+  \session-delete abc123-uuid         # Delete by session ID
+  \session-delete[name=work]          # Delete using name option
+  \session-delete ${#session_id}      # Delete current session by ID variable
+  
+Smart Search Priority:
+  1. Exact session name match
+  2. Exact session ID match  
+  3. Prefix matching (must be unique)
   
 Options:
-  name - Session name to delete (3-64 chars, alphanumeric plus _.- )
+  name - Session name to delete (cannot combine with input parameter)
   
-Note: You can provide session name or ID as either an option or direct input.`
+Error Handling:
+  - Multiple prefix matches: Shows all matching session names
+  - No matches: Indicates tried exact name, ID, and prefix search
+  - Both arguments: Error - cannot specify both name option and input
+
+Note: Session names are user-friendly. Use prefix matching for efficiency.
+      Create sessions with: \session-new session_name_here`
 }
 
-// Execute deletes the specified chat session.
+// Execute deletes the specified chat session using smart search.
 // Options:
 //   - name: session name to delete (optional if provided as input)
-//   - input: session name or ID to delete (optional if provided as name option)
+//
+// Input: session name or ID to delete (optional if provided as name option)
+// Error if both name option and input are provided.
 func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
@@ -62,10 +76,16 @@ func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurot
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Determine session identifier (name or ID)
-	sessionIdentifier := args["name"]
+	// Validate arguments - cannot specify both name option and input
+	nameOption := args["name"]
+	if nameOption != "" && input != "" {
+		return fmt.Errorf("cannot specify both name option and input parameter\n\nUsage: %s", c.Usage())
+	}
+
+	// Determine session identifier
+	sessionIdentifier := input
 	if sessionIdentifier == "" {
-		sessionIdentifier = input
+		sessionIdentifier = nameOption
 	}
 
 	// Validate that we have a session identifier
@@ -79,18 +99,18 @@ func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurot
 		return fmt.Errorf("failed to interpolate variables in session identifier: %w", err)
 	}
 
-	// Get session info before deletion for output message
-	session, err := chatService.GetSessionByNameOrID(sessionIdentifier)
+	// Use smart search to find the session
+	session, err := chatService.FindSessionByPrefix(sessionIdentifier)
 	if err != nil {
-		return fmt.Errorf("session '%s' not found: %w", sessionIdentifier, err)
+		return err // Error message already includes context from FindSessionByPrefix
 	}
 	sessionName := session.Name
 	sessionID := session.ID[:8] // Short ID for display
 
-	// Delete the session
-	err = chatService.DeleteSession(sessionIdentifier)
+	// Delete the session using the exact session ID
+	err = chatService.DeleteSession(session.ID)
 	if err != nil {
-		return fmt.Errorf("failed to delete session '%s': %w", sessionIdentifier, err)
+		return fmt.Errorf("failed to delete session '%s': %w", sessionName, err)
 	}
 
 	// Update session-related variables after deletion

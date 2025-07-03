@@ -31,24 +31,26 @@ func (c *NewCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the session-new command.
 func (c *NewCommand) Usage() string {
-	return `\session-new[name=session_name, system=system_prompt] [initial_message]
+	return `\session-new[system=system_prompt] session_name
 
 Examples:
-  \session-new                                    # Create anonymous session
-  \session-new[name=work]                         # Create named session
-  \session-new[system=You are a code reviewer]   # Create session with system prompt
-  \session-new[name=debug, system=You are helpful] Debug this code
+  \session-new work project                       # Create session named "work project"
+  \session-new debug                              # Create session named "debug"
+  \session-new[system=You are a code reviewer] code review  # Named "code review" with custom system prompt
+  \session-new "my project"                       # Session name with quotes (auto-processed)
   
 Options:
-  name   - Session name (3-64 chars, alphanumeric plus _.- )
-  system - System prompt for LLM context`
+  system - System prompt for LLM context (optional, defaults to helpful assistant)
+  
+Note: Session name is required and taken from the input parameter.
+      Use quotes if the name contains special characters.
+      Initial messages can be added later with \send command.`
 }
 
 // Execute creates a new chat session with the specified parameters.
+// The input parameter is used as the session name (required).
 // Options:
-//   - name: user-friendly session name (optional, auto-generated if omitted)
 //   - system: system prompt for LLM context (optional, default helpful assistant)
-//   - initial_message: first user message to start conversation (optional)
 func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
@@ -62,12 +64,21 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Parse options
-	sessionName := args["name"]
+	// Parse arguments - session name comes from input, not from options
+	sessionName := input
 	systemPrompt := args["system"]
-	initialMessage := input
 
-	// Interpolate variables in system prompt and initial message
+	// Session name is required
+	if sessionName == "" {
+		return fmt.Errorf("session name is required\n\nUsage: %s", c.Usage())
+	}
+
+	// Interpolate variables in session name and system prompt
+	sessionName, err = variableService.InterpolateString(sessionName, ctx)
+	if err != nil {
+		return fmt.Errorf("failed to interpolate variables in session name: %w", err)
+	}
+
 	if systemPrompt != "" {
 		systemPrompt, err = variableService.InterpolateString(systemPrompt, ctx)
 		if err != nil {
@@ -75,26 +86,8 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 		}
 	}
 
-	if initialMessage != "" {
-		initialMessage, err = variableService.InterpolateString(initialMessage, ctx)
-		if err != nil {
-			return fmt.Errorf("failed to interpolate variables in initial message: %w", err)
-		}
-	}
-
-	// Validate session name if provided
-	if sessionName != "" {
-		if err := chatService.ValidateSessionName(sessionName); err != nil {
-			return fmt.Errorf("invalid session name: %w", err)
-		}
-
-		if !chatService.IsSessionNameAvailable(sessionName) {
-			return fmt.Errorf("session name '%s' is already in use", sessionName)
-		}
-	}
-
-	// Create new session
-	session, err := chatService.CreateSession(sessionName, systemPrompt, initialMessage)
+	// Create new session (no initial message support)
+	session, err := chatService.CreateSession(sessionName, systemPrompt, "")
 	if err != nil {
 		return fmt.Errorf("failed to create session: %w", err)
 	}
@@ -105,12 +98,7 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 	}
 
 	// Prepare output message
-	var outputMsg string
-	if initialMessage != "" {
-		outputMsg = fmt.Sprintf("Created session '%s' (ID: %s) with initial message", session.Name, session.ID[:8])
-	} else {
-		outputMsg = fmt.Sprintf("Created session '%s' (ID: %s)", session.Name, session.ID[:8])
-	}
+	outputMsg := fmt.Sprintf("Created session '%s' (ID: %s)", session.Name, session.ID[:8])
 
 	// Store result in _output variable
 	if err := variableService.SetSystemVariable("_output", outputMsg, ctx); err != nil {
