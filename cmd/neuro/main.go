@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/abiosoft/ishell/v2"
-	"github.com/abiosoft/readline"
+	"github.com/chzyer/readline"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	_ "neuroshell/internal/commands/assert"  // Import assert commands (init functions)

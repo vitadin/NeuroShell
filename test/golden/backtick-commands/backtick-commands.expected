@@ -1,0 +1,13 @@
+Setting message_with_code = Here's some code: `function test() { return true; }`
+message_with_code = Here's some code: `function test() { return true; }`
+Setting sql_query = SELECT * FROM users WHERE name = `john` AND status = 'active'
+Setting shell_command = Run `ls -la` to list files
+Setting docker_cmd = Use `docker ps` to see containers
+Setting var_with_backticks = This contains `backticks` in the value
+Setting help_text = Use `\\get[variable]` to retrieve values
+sql_query = SELECT * FROM users WHERE name = `john` AND status = 'active'
+shell_command = Run `ls -la` to list files
+docker_cmd = Use `docker ps` to see containers
+var_with_backticks = This contains `backticks` in the value
+help_text = Use `\\get[variable]` to retrieve values
+#test_mode = true

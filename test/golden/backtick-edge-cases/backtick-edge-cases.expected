@@ -1,0 +1,32 @@
+Setting multiple_backticks = Use `` for empty code or ``` for blocks
+Setting many_backticks = ```````
+Setting with_newlines = `code\nwith\nnewlines`
+Setting with_tabs = `code\twith\ttabs`
+Setting with_quotes = `code 'with' \"quotes\"`
+Setting long_code = `function veryLongFunctionNameThatGoesOnAndOnAndEventuallyEnds() { return 'this is a very long string with backticks'; }`
+Setting unicode_code = `console.log('Hello 世界! 🌍');`
+Setting emoji_code = `const greeting = '👋 Hello!';`
+Setting empty_backticks = ``
+Setting empty_block = ```\n```
+Setting start_backtick = `starts with backtick
+Setting end_backtick = ends with backtick`
+Setting only_backticks = `
+Setting complex_nesting = 'Use `code` in \"quotes\"' and `'quote' in code`
+Setting with_escapes = `console.log('Hello\\nWorld');`
+Setting deeply_nested = ```\n`inner code`\n\"with 'quotes'\"\n```
+multiple_backticks = Use `` for empty code or ``` for blocks
+many_backticks = ```````
+with_newlines = `code\nwith\nnewlines`
+with_tabs = `code\twith\ttabs`
+with_quotes = `code 'with' \"quotes\"`
+long_code = `function veryLongFunctionNameThatGoesOnAndOnAndEventuallyEnds() { return 'this is a very long string with backticks'; }`
+unicode_code = `console.log('Hello 世界! 🌍');`
+emoji_code = `const greeting = '👋 Hello!';`
+empty_backticks = ``
+empty_block = ```\n```
+start_backtick = `starts with backtick
+end_backtick = ends with backtick`
+only_backticks = `
+complex_nesting = 'Use `code` in \"quotes\"' and `'quote' in code`
+with_escapes = `console.log('Hello\\nWorld');`
+deeply_nested = ```\n`inner code`\n\"with 'quotes'\"\n```

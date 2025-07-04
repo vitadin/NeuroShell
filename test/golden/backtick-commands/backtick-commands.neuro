@@ -1,0 +1,27 @@
+# Backticks in commands test
+# Verifies that backticks work correctly in various NeuroShell commands
+
+# Test backticks in \send command (simulated since we're in test mode)
+\set[message_with_code="Here's some code: `function test() { return true; }`"]
+\get[message_with_code]
+
+# Test backticks in \set commands with complex values
+\set[sql_query="SELECT * FROM users WHERE name = `john` AND status = 'active'"]
+\set[shell_command="Run `ls -la` to list files"]
+\set[docker_cmd="Use `docker ps` to see containers"]
+
+# Test backticks in variable names (edge case)
+\set[var_with_backticks="This contains `backticks` in the value"]
+
+# Test help with backticks
+\set[help_text="Use `\\get[variable]` to retrieve values"]
+
+# Retrieve all values
+\get[sql_query]
+\get[shell_command] 
+\get[docker_cmd]
+\get[var_with_backticks]
+\get[help_text]
+
+# Test system variable with backticks
+\get[#test_mode]

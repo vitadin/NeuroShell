@@ -1,0 +1,9 @@
+Setting code = `hello`
+Setting inline = Use `code` for inline
+Setting mixed = Mix 'quotes' and `backticks`
+code = `hello`
+inline = Use `code` for inline
+mixed = Mix 'quotes' and `backticks`
+Setting greeting = Hello
+Setting with_backticks = Say `Hello` loudly
+with_backticks = Say `Hello` loudly
