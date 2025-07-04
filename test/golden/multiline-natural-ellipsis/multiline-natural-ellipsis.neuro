@@ -1,0 +1,10 @@
+# Natural ellipsis preservation test
+# Tests that natural ... in text is preserved
+
+I think... this works
+Also this... works fine
+\send Natural ellipsis like this... should be kept intact
+
+# Test natural ellipsis in middle of text
+Some text... with ellipsis... in multiple places
+\send Testing multiple... natural ellipsis... patterns
