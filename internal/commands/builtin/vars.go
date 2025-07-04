@@ -35,6 +35,22 @@ func (c *VarsCommand) Usage() string {
 	return "\\vars [pattern=regex] [type=user|system|all]"
 }
 
+// HelpInfo returns structured help information for the vars command.
+func (c *VarsCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\vars",
+				Description: "List all variables in the current session",
+			},
+		},
+	}
+}
+
 // Execute lists variables with optional filtering by pattern and type.
 // It retrieves all variables from the variable service and applies filters as specified.
 func (c *VarsCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {

@@ -33,6 +33,22 @@ func (c *BashCommand) Usage() string {
 	return "\\bash command_to_execute"
 }
 
+// HelpInfo returns structured help information for the bash command.
+func (c *BashCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\bash ls -la",
+				Description: "List directory contents with details",
+			},
+		},
+	}
+}
+
 // Execute runs system commands using bash and sets _output, _error, and _status variables.
 func (c *BashCommand) Execute(_ map[string]string, input string, ctx neurotypes.Context) error {
 	// Get the command to execute

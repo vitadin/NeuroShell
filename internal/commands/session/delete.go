@@ -57,6 +57,19 @@ Note: Session names are user-friendly. Use prefix matching for efficiency.
       Create sessions with: \session-new session_name_here`
 }
 
+// HelpInfo returns structured help information for the session-delete command.
+func (c *DeleteCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{Command: "\\session-delete work", Description: "Delete session by name prefix"},
+		},
+	}
+}
+
 // Execute deletes the specified chat session using smart search.
 // Options:
 //   - name: session name to delete (optional if provided as input)

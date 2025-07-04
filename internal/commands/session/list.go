@@ -50,6 +50,19 @@ Note: Options can be combined. Default sort is by creation time (newest first).
       Session list is stored in ${_output} variable.`
 }
 
+// HelpInfo returns structured help information for the session-list command.
+func (c *ListCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{Command: "\\session-list", Description: "List all sessions"},
+		},
+	}
+}
+
 // Execute lists chat sessions with optional filtering and sorting.
 // Options:
 //   - sort: name|created|updated (default: created)

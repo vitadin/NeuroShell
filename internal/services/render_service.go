@@ -286,6 +286,184 @@ func (r *RenderService) HighlightKeywords(text string, keywords []string) (strin
 	return r.RenderWithTheme(text, keywords, "default")
 }
 
+// RenderHelp renders structured help information with professional styling
+func (r *RenderService) RenderHelp(helpInfo neurotypes.HelpInfo, styled bool) (string, error) {
+	if !r.initialized {
+		return "", fmt.Errorf("render service not initialized")
+	}
+
+	// If not styled, render as plain text
+	if !styled {
+		return r.renderHelpPlainText(helpInfo), nil
+	}
+
+	// Render with styling
+	return r.renderHelpStyled(helpInfo)
+}
+
+// renderHelpPlainText renders help information as plain text (backward compatibility)
+func (r *RenderService) renderHelpPlainText(helpInfo neurotypes.HelpInfo) string {
+	var result strings.Builder
+
+	result.WriteString(fmt.Sprintf("Command: %s\n", helpInfo.Command))
+	result.WriteString(fmt.Sprintf("Description: %s\n", helpInfo.Description))
+	result.WriteString(fmt.Sprintf("Usage: %s\n", helpInfo.Usage))
+	result.WriteString(fmt.Sprintf("Parse Mode: %s\n", r.parseModeToString(helpInfo.ParseMode)))
+
+	if len(helpInfo.Options) > 0 {
+		result.WriteString("\nOptions:\n")
+		for _, option := range helpInfo.Options {
+			defaultStr := ""
+			if option.Default != "" {
+				defaultStr = fmt.Sprintf(" (default: %s)", option.Default)
+			}
+			requiredStr := ""
+			if option.Required {
+				requiredStr = " (required)"
+			}
+			result.WriteString(fmt.Sprintf("  %s - %s%s%s\n", option.Name, option.Description, defaultStr, requiredStr))
+		}
+	}
+
+	if len(helpInfo.Examples) > 0 {
+		result.WriteString("\nExamples:\n")
+		for _, example := range helpInfo.Examples {
+			result.WriteString(fmt.Sprintf("  %s\n", example.Command))
+			if example.Description != "" {
+				result.WriteString(fmt.Sprintf("    # %s\n", example.Description))
+			}
+		}
+	}
+
+	if len(helpInfo.Notes) > 0 {
+		result.WriteString("\nNotes:\n")
+		for _, note := range helpInfo.Notes {
+			result.WriteString(fmt.Sprintf("  %s\n", note))
+		}
+	}
+
+	return result.String()
+}
+
+// renderHelpStyled renders help information with professional styling
+func (r *RenderService) renderHelpStyled(helpInfo neurotypes.HelpInfo) (string, error) {
+	theme, exists := r.GetTheme("default")
+	if !exists {
+		return "", fmt.Errorf("default theme not found")
+	}
+
+	var result strings.Builder
+
+	// Title with border
+	titleStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(theme.Command.GetForeground()).
+		Padding(0, 1).
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(theme.Info.GetForeground())
+
+	title := fmt.Sprintf("Command: %s", helpInfo.Command)
+	result.WriteString(titleStyle.Render(title))
+	result.WriteString("\n\n")
+
+	// Description
+	descStyle := theme.Info.Bold(false)
+	result.WriteString(descStyle.Render("Description: "))
+	result.WriteString(helpInfo.Description)
+	result.WriteString("\n\n")
+
+	// Usage with syntax highlighting
+	usageStyle := theme.Bold.Foreground(theme.Success.GetForeground())
+	result.WriteString(usageStyle.Render("Usage: "))
+	styledUsage := r.highlightNeuroShellSyntax(helpInfo.Usage, theme)
+	result.WriteString(styledUsage)
+	result.WriteString("\n\n")
+
+	// Parse Mode
+	parseModeStyle := theme.Info.Bold(false)
+	result.WriteString(parseModeStyle.Render("Parse Mode: "))
+	result.WriteString(r.parseModeToString(helpInfo.ParseMode))
+	result.WriteString("\n")
+
+	// Options section
+	if len(helpInfo.Options) > 0 {
+		result.WriteString("\n")
+		optionHeaderStyle := theme.Bold.Foreground(theme.Warning.GetForeground())
+		result.WriteString(optionHeaderStyle.Render("Options:"))
+		result.WriteString("\n")
+
+		for _, option := range helpInfo.Options {
+			optionNameStyle := theme.Variable.Bold(true)
+			result.WriteString("  ")
+			result.WriteString(optionNameStyle.Render(option.Name))
+			result.WriteString(" - ")
+			result.WriteString(option.Description)
+
+			if option.Default != "" {
+				defaultStyle := theme.Info.Italic(true)
+				result.WriteString(defaultStyle.Render(fmt.Sprintf(" (default: %s)", option.Default)))
+			}
+			if option.Required {
+				requiredStyle := theme.Error.Bold(true)
+				result.WriteString(requiredStyle.Render(" (required)"))
+			}
+			result.WriteString("\n")
+		}
+	}
+
+	// Examples section
+	if len(helpInfo.Examples) > 0 {
+		result.WriteString("\n")
+		exampleHeaderStyle := theme.Bold.Foreground(theme.Success.GetForeground())
+		result.WriteString(exampleHeaderStyle.Render("Examples:"))
+		result.WriteString("\n")
+
+		for _, example := range helpInfo.Examples {
+			result.WriteString("  ")
+			styledExample := r.highlightNeuroShellSyntax(example.Command, theme)
+			result.WriteString(styledExample)
+			result.WriteString("\n")
+			if example.Description != "" {
+				commentStyle := theme.Info.Italic(true)
+				result.WriteString("    ")
+				result.WriteString(commentStyle.Render(fmt.Sprintf("# %s", example.Description)))
+				result.WriteString("\n")
+			}
+		}
+	}
+
+	// Notes section
+	if len(helpInfo.Notes) > 0 {
+		result.WriteString("\n")
+		noteHeaderStyle := theme.Bold.Foreground(theme.Warning.GetForeground())
+		result.WriteString(noteHeaderStyle.Render("Notes:"))
+		result.WriteString("\n")
+
+		for _, note := range helpInfo.Notes {
+			noteStyle := theme.Info.Italic(true)
+			result.WriteString("  ")
+			result.WriteString(noteStyle.Render(note))
+			result.WriteString("\n")
+		}
+	}
+
+	return result.String(), nil
+}
+
+// parseModeToString converts parse mode enum to readable string
+func (r *RenderService) parseModeToString(mode neurotypes.ParseMode) string {
+	switch mode {
+	case neurotypes.ParseModeKeyValue:
+		return "Key-Value (supports [key=value] syntax)"
+	case neurotypes.ParseModeRaw:
+		return "Raw (passes input directly without parsing)"
+	case neurotypes.ParseModeWithOptions:
+		return "With Options (supports additional options)"
+	default:
+		return "Unknown"
+	}
+}
+
 func init() {
 	// Register the RenderService with the global registry
 	if err := GlobalRegistry.RegisterService(NewRenderService()); err != nil {

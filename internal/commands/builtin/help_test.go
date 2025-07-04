@@ -457,6 +457,9 @@ func TestHelpCommand_Execute_ServiceUnavailable(t *testing.T) {
 	assert.Contains(t, err.Error(), "help service not available")
 }
 
+// NOTE: TestHelpCommand_ShowCommandExamples was removed because showCommandExamples method
+// was deprecated in favor of the new HelpInfo-based approach with RenderService integration
+/*
 func TestHelpCommand_ShowCommandExamples(t *testing.T) {
 	// Test the showCommandExamples function with different command types
 	cmd := &HelpCommand{}
@@ -542,6 +545,7 @@ func TestHelpCommand_ShowCommandExamples(t *testing.T) {
 		})
 	}
 }
+*/
 
 // MockCommand for testing (reuse from registry_test.go structure)
 type MockCommand struct {
@@ -576,6 +580,16 @@ func (m *MockCommand) Execute(args map[string]string, input string, ctx neurotyp
 		return m.executeFunc(args, input, ctx)
 	}
 	return nil
+}
+
+func (m *MockCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     m.Name(),
+		Description: m.Description(),
+		Usage:       m.Usage(),
+		ParseMode:   m.ParseMode(),
+		Examples:    []neurotypes.HelpExample{},
+	}
 }
 
 // Benchmark tests

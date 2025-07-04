@@ -288,3 +288,13 @@ func (m *MockHelpCommand) ParseMode() neurotypes.ParseMode {
 func (m *MockHelpCommand) Execute(_ map[string]string, _ string, _ neurotypes.Context) error {
 	return nil
 }
+
+func (m *MockHelpCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     m.Name(),
+		Description: m.Description(),
+		Usage:       m.Usage(),
+		ParseMode:   m.ParseMode(),
+		Examples:    []neurotypes.HelpExample{},
+	}
+}

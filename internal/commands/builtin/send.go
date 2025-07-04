@@ -31,6 +31,22 @@ func (c *SendCommand) Usage() string {
 	return "\\send message"
 }
 
+// HelpInfo returns structured help information for the send command.
+func (c *SendCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\send Hello, how are you?",
+				Description: "Send a message to the LLM agent",
+			},
+		},
+	}
+}
+
 // Execute sends the provided message to an LLM agent.
 // Currently returns a placeholder message as actual LLM integration is not yet implemented.
 func (c *SendCommand) Execute(_ map[string]string, input string, _ neurotypes.Context) error {

@@ -32,6 +32,22 @@ func (c *RunCommand) Usage() string {
 	return "\\run[file=\"script.neuro\"] or \\run script.neuro"
 }
 
+// HelpInfo returns structured help information for the run command.
+func (c *RunCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\run script.neuro",
+				Description: "Execute a .neuro script file",
+			},
+		},
+	}
+}
+
 // Execute loads and runs a .neuro script file using the centralized script execution logic.
 // It validates arguments and delegates to orchestration.ExecuteScript for the actual execution.
 func (c *RunCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {

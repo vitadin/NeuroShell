@@ -47,6 +47,19 @@ Note: Session name is required and taken from the input parameter.
       Initial messages can be added later with \send command.`
 }
 
+// HelpInfo returns structured help information for the session-new command.
+func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{Command: "\\session-new work", Description: "Create new session named 'work'"},
+		},
+	}
+}
+
 // Execute creates a new chat session with the specified parameters.
 // The input parameter is used as the session name (required).
 // Options:

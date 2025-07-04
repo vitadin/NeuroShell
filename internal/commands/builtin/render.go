@@ -34,6 +34,22 @@ func (c *RenderCommand) Usage() string {
 	return "\\render[keywords=[\\get,\\set], style=bold, theme=dark, to=var] text to render"
 }
 
+// HelpInfo returns structured help information for the render command.
+func (c *RenderCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\render[style=bold] Hello World",
+				Description: "Render text with bold styling",
+			},
+		},
+	}
+}
+
 // Execute applies styling and highlighting to text based on the provided options.
 // Options:
 //   - keywords: array of keywords to highlight (e.g., [\\get,\\set])

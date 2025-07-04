@@ -54,6 +54,22 @@ After editing, you can use the content with:
   \set[myvar="${_output}"]  - Store in another variable`
 }
 
+// HelpInfo returns structured help information for the editor command.
+func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     e.Name(),
+		Description: e.Description(),
+		Usage:       "\\editor",
+		ParseMode:   e.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\editor",
+				Description: "Open external editor for composing multi-line input",
+			},
+		},
+	}
+}
+
 // Execute opens the external editor and stores the resulting content in ${_output}.
 func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
 	logger.Debug("Executing editor command", "args", args)

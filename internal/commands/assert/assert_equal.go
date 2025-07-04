@@ -34,6 +34,22 @@ func (c *EqualCommand) Usage() string {
 	return "\\assert-equal[expect=expected_value, actual=actual_value]"
 }
 
+// HelpInfo returns structured help information for the assert-equal command.
+func (c *EqualCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     c.Usage(),
+				Description: "Basic usage example",
+			},
+		},
+	}
+}
+
 // Execute compares two values for equality with variable interpolation support.
 // It sets system variables _status, _assert_result, _assert_expected, and _assert_actual.
 func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {

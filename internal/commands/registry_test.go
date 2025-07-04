@@ -56,6 +56,16 @@ func (m *MockCommand) Execute(args map[string]string, input string, ctx neurotyp
 	return nil
 }
 
+func (m *MockCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     m.Name(),
+		Description: m.Description(),
+		Usage:       m.Usage(),
+		ParseMode:   m.ParseMode(),
+		Examples:    []neurotypes.HelpExample{},
+	}
+}
+
 func (m *MockCommand) SetParseMode(mode neurotypes.ParseMode) {
 	m.parseMode = mode
 }
