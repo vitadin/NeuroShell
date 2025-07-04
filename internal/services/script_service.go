@@ -67,8 +67,48 @@ func (s *ScriptService) LoadScript(filepath string, ctx neurotypes.Context) erro
 			continue
 		}
 
-		// Queue the command for execution
-		neuroCtx.QueueCommand(line)
+		// Check for multiline continuation
+		if strings.HasSuffix(strings.TrimSpace(line), "...") {
+			// Start accumulating multiline command
+			var lines []string
+			lines = append(lines, line)
+
+			// Continue reading lines until we find one that doesn't end with ...
+			for scanner.Scan() {
+				lineNum++
+				nextLine := strings.TrimSpace(scanner.Text())
+
+				// Skip empty lines and comments in multiline context
+				if nextLine == "" || strings.HasPrefix(nextLine, "#") {
+					continue
+				}
+
+				lines = append(lines, nextLine)
+
+				// If this line doesn't end with ..., we're done
+				if !strings.HasSuffix(strings.TrimSpace(nextLine), "...") {
+					break
+				}
+			}
+
+			// Join all lines with newlines
+			multilineCommand := strings.Join(lines, "\n")
+
+			// Remove multiline continuation markers using same logic as ishell
+			// Handle ... before newlines (middle continuation lines)
+			multilineCommand = strings.ReplaceAll(multilineCommand, " ...\n", "\n")
+			multilineCommand = strings.ReplaceAll(multilineCommand, "...\n", "\n")
+
+			// Handle ... at end of string (final continuation line)
+			multilineCommand = strings.TrimSuffix(multilineCommand, " ...")
+			multilineCommand = strings.TrimSuffix(multilineCommand, "...")
+
+			// Queue the processed multiline command
+			neuroCtx.QueueCommand(multilineCommand)
+		} else {
+			// Single line command - queue as is
+			neuroCtx.QueueCommand(line)
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
