@@ -124,6 +124,11 @@ func testProcessInput(mockCtx *MockIShellContext) {
 	rawInput := strings.Join(mockCtx.RawArgs, " ")
 	rawInput = strings.TrimSpace(rawInput)
 
+	// Skip comment lines (same logic as real ProcessInput)
+	if strings.HasPrefix(rawInput, "%%") {
+		return
+	}
+
 	// Parse input
 	cmd := parser.ParseInput(rawInput)
 
@@ -756,6 +761,145 @@ func TestProcessInput_EdgeCases(t *testing.T) {
 			assert.NotPanics(t, func() {
 				testProcessInput(mockCtx)
 			})
+		})
+	}
+}
+
+func TestProcessInput_CommentHandling(t *testing.T) {
+	cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	tests := []struct {
+		name            string
+		rawArgs         []string
+		expectOutput    bool
+		expectExecution bool
+	}{
+		{
+			name:            "simple comment",
+			rawArgs:         []string{"%%", "This", "is", "a", "comment"},
+			expectOutput:    false,
+			expectExecution: false,
+		},
+		{
+			name:            "comment without space",
+			rawArgs:         []string{"%%comment"},
+			expectOutput:    false,
+			expectExecution: false,
+		},
+		{
+			name:            "comment with leading spaces",
+			rawArgs:         []string{"  %%", "comment", "with", "spaces"},
+			expectOutput:    false,
+			expectExecution: false,
+		},
+		{
+			name:            "comment with unicode",
+			rawArgs:         []string{"%%", "unicode", "comment", "世界", "🌍"},
+			expectOutput:    false,
+			expectExecution: false,
+		},
+		{
+			name:            "not a comment - %% in middle",
+			rawArgs:         []string{"text", "with", "%%", "in", "middle"},
+			expectOutput:    true,
+			expectExecution: true,
+		},
+		{
+			name:            "not a comment - starts with text",
+			rawArgs:         []string{"text", "%%", "not", "comment"},
+			expectOutput:    true,
+			expectExecution: true,
+		},
+		{
+			name:            "valid command after comment test",
+			rawArgs:         []string{"\\help"},
+			expectOutput:    true,
+			expectExecution: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockCtx := NewMockIShellContext(tt.rawArgs)
+			testProcessInput(mockCtx)
+
+			output := mockCtx.GetOutput()
+
+			if tt.expectOutput {
+				// For non-comment inputs, we expect some output or execution
+				if tt.expectExecution {
+					// Should either have output or at least no error
+					if len(output) > 0 {
+						// If there's output, it shouldn't be an error for valid commands
+						if strings.Contains(strings.Join(tt.rawArgs, " "), "\\help") {
+							assert.NotContains(t, output, "Error:", "Valid command should not error: %s", output)
+						}
+					}
+				}
+			} else {
+				// For comment inputs, we expect no output and no execution
+				assert.Empty(t, output, "Comment should produce no output, got: %s", output)
+				assert.False(t, mockCtx.WasPrintfCalled(), "Comment should not call Printf")
+				assert.False(t, mockCtx.WasPrintlnCalled(), "Comment should not call Println")
+			}
+		})
+	}
+}
+
+func TestProcessInput_CommentVsCommand(t *testing.T) {
+	cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// Test that comments are truly skipped while commands execute
+	tests := []struct {
+		name     string
+		inputs   [][]string
+		expected map[string]string
+	}{
+		{
+			name: "comment then command",
+			inputs: [][]string{
+				{"%%", "This", "is", "a", "comment"},
+				{"\\set[var=value]"},
+			},
+			expected: map[string]string{"var": "value"},
+		},
+		{
+			name: "command then comment",
+			inputs: [][]string{
+				{"\\set[test=hello]"},
+				{"%%", "Comment", "after", "command"},
+			},
+			expected: map[string]string{"test": "hello"},
+		},
+		{
+			name: "mixed comments and commands",
+			inputs: [][]string{
+				{"%%", "First", "comment"},
+				{"\\set[first=one]"},
+				{"%%", "Second", "comment"},
+				{"\\set[second=two]"},
+				{"%%", "Final", "comment"},
+			},
+			expected: map[string]string{"first": "one", "second": "two"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Execute all inputs in sequence
+			for _, input := range tt.inputs {
+				mockCtx := NewMockIShellContext(input)
+				testProcessInput(mockCtx)
+			}
+
+			// Verify expected variables were set
+			for varName, expectedValue := range tt.expected {
+				actualValue, err := globalCtx.GetVariable(varName)
+				assert.NoError(t, err, "Variable %s should exist", varName)
+				assert.Equal(t, expectedValue, actualValue, "Variable %s should have correct value", varName)
+			}
 		})
 	}
 }

@@ -25,6 +25,12 @@ func ProcessInput(c *ishell.Context) {
 	rawInput := strings.Join(c.RawArgs, " ")
 	rawInput = strings.TrimSpace(rawInput)
 
+	// Skip comment lines (same logic as script service)
+	if strings.HasPrefix(rawInput, "%%") {
+		logger.Debug("Skipping comment line", "input", rawInput)
+		return
+	}
+
 	logger.Debug("Processing user input", "input", rawInput)
 
 	// Parse input - interpolation will happen later at execution time
