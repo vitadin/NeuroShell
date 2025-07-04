@@ -45,9 +45,16 @@ func setupHelpTestEnvironment(t *testing.T, testCommands []neurotypes.Command) n
 	err := testServiceRegistry.RegisterService(helpService)
 	require.NoError(t, err)
 
-	// Create context and initialize service
+	// Create and initialize render service (required by new help command)
+	renderService := services.NewRenderService()
+	err = testServiceRegistry.RegisterService(renderService)
+	require.NoError(t, err)
+
+	// Create context and initialize services
 	ctx := testutils.NewMockContext()
 	err = helpService.Initialize(ctx)
+	require.NoError(t, err)
+	err = renderService.Initialize(ctx)
 	require.NoError(t, err)
 
 	return ctx
@@ -70,7 +77,7 @@ func TestHelpCommand_Description(t *testing.T) {
 
 func TestHelpCommand_Usage(t *testing.T) {
 	cmd := &HelpCommand{}
-	assert.Equal(t, "\\help [command]", cmd.Usage())
+	assert.Equal(t, "\\help[styled=true] [command]", cmd.Usage())
 }
 
 func TestHelpCommand_Execute(t *testing.T) {
@@ -394,6 +401,7 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 				"Parse Mode: Raw",
 				"Examples:",
 				"\\bash command_to_execute",
+				"# Basic usage example",
 			},
 		},
 		{
@@ -406,7 +414,7 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 				"Parse Mode: Key-Value",
 				"Examples:",
 				"\\set[var=value] or \\set var value",
-				"\\set[option=value]",
+				"# Basic usage example",
 			},
 		},
 		{
@@ -588,7 +596,12 @@ func (m *MockCommand) HelpInfo() neurotypes.HelpInfo {
 		Description: m.Description(),
 		Usage:       m.Usage(),
 		ParseMode:   m.ParseMode(),
-		Examples:    []neurotypes.HelpExample{},
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     m.Usage(),
+				Description: "Basic usage example",
+			},
+		},
 	}
 }
 
