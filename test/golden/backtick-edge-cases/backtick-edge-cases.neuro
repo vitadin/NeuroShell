@@ -1,41 +1,41 @@
-# Backtick edge cases test
-# Verifies that complex and edge case scenarios with backticks work correctly
+%% Backtick edge cases test
+%% Verifies that complex and edge case scenarios with backticks work correctly
 
-# Test multiple consecutive backticks
+%% Test multiple consecutive backticks
 \set[multiple_backticks="Use `` for empty code or ``` for blocks"]
 \set[many_backticks="```````"]
 
-# Test backticks with special characters
+%% Test backticks with special characters
 \set[with_newlines="`code\nwith\nnewlines`"]
 \set[with_tabs="`code\twith\ttabs`"]
 \set[with_quotes="`code 'with' \"quotes\"`"]
 
-# Test very long strings with backticks
+%% Test very long strings with backticks
 \set[long_code="`function veryLongFunctionNameThatGoesOnAndOnAndEventuallyEnds() { return 'this is a very long string with backticks'; }`"]
 
-# Test Unicode characters mixed with backticks
+%% Test Unicode characters mixed with backticks
 \set[unicode_code="`console.log('Hello 世界! 🌍');`"]
 \set[emoji_code="`const greeting = '👋 Hello!';`"]
 
-# Test empty backticks
+%% Test empty backticks
 \set[empty_backticks="``"]
 \set[empty_block="```\n```"]
 
-# Test backticks at string boundaries
+%% Test backticks at string boundaries
 \set[start_backtick="`starts with backtick"]
 \set[end_backtick="ends with backtick`"]
 \set[only_backticks="`"]
 
-# Test nested quotes and backticks
+%% Test nested quotes and backticks
 \set[complex_nesting="'Use `code` in \"quotes\"' and `'quote' in code`"]
 
-# Test backticks with escape sequences
+%% Test backticks with escape sequences
 \set[with_escapes="`console.log('Hello\\nWorld');`"]
 
-# Test extremely nested case
+%% Test extremely nested case
 \set[deeply_nested="```\n`inner code`\n\"with 'quotes'\"\n```"]
 
-# Retrieve all edge case values
+%% Retrieve all edge case values
 \get[multiple_backticks]
 \get[many_backticks]
 \get[with_newlines]

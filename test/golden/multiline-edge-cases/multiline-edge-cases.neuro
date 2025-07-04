@@ -1,30 +1,30 @@
-# Edge cases for multiline continuation test
-# Tests various edge cases and boundary conditions
+%% Edge cases for multiline continuation test
+%% Tests various edge cases and boundary conditions
 
-# Just dots without spaces
+%% Just dots without spaces
 just_dots...
 
-# Spaces before continuation marker
+%% Spaces before continuation marker
 spaces_before ...
 
-# Multiple spaces around marker
+%% Multiple spaces around marker
 multiple_spaces   ...   
 
-# Empty continuation line
+%% Empty continuation line
 empty_continuation ...
 
-# Continuation with only whitespace
+%% Continuation with only whitespace
 whitespace_only ...
    
-# Mixed whitespace patterns
+%% Mixed whitespace patterns
 \send Tab before	...
 space after ... 
 both	...	
 
-# Test with special characters
+%% Test with special characters
 special_chars !@#$%^&*() ...
 more special chars
 
-# Unicode with continuation
+%% Unicode with continuation
 unicode_test 世界 ...
 hello world

@@ -1,11 +1,11 @@
-Created session 'lifecycle_test' (ID: {{PLACEHOLDER:8:8}})
+Created session 'lifecycle_test' (ID: 00000001)
 #session_name = lifecycle_test
-#session_id = {{UUID}}
-Deleted session 'lifecycle_test' (ID: {{PLACEHOLDER:8:8}})
+#session_id = 00000001-0000-4000-8000-000000000001
+Deleted session 'lifecycle_test' (ID: 00000001)
 #session_name = 
 #session_id = 
-Created session 'id_test' (ID: {{PLACEHOLDER:8:8}})
-#session_id = {{UUID}}
-Deleted session 'id_test' (ID: {{PLACEHOLDER:8:8}})
+Created session 'id_test' (ID: 00000002)
+#session_id = 00000002-0000-4000-8000-000000000002
+Deleted session 'id_test' (ID: 00000002)
 #session_name = 
 #session_id = 

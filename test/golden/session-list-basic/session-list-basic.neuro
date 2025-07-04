@@ -1,10 +1,10 @@
-# Test basic session list functionality
-# Create multiple sessions and list them with default behavior (sort by created, newest first)
+%% Test basic session list functionality
+%% Create multiple sessions and list them with default behavior (sort by created, newest first)
 
-# Create sessions in order
+%% Create sessions in order
 \session-new first_session
 \session-new second_session  
 \session-new third_session
 
-# List all sessions (default: sort by created, newest first)
+%% List all sessions (default: sort by created, newest first)
 \session-list

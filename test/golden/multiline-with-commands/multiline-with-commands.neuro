@@ -1,16 +1,16 @@
-# Commands with multiline continuation test
-# Tests multiline functionality with various neuro commands
+%% Commands with multiline continuation test
+%% Tests multiline functionality with various neuro commands
 
-# Test with \set command
+%% Test with \set command
 \set[message="Hello World"]
 \get[message]
 
-# Test with \send command  
+%% Test with \send command  
 \send This is an important message ...
 that needs to be on multiple lines ...
 for better readability
 
-# Test with variable interpolation in multiline
+%% Test with variable interpolation in multiline
 \set[greeting="Hello"]
 \set[name="World"]
 \send ${greeting} ...

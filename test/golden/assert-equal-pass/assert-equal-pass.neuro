@@ -1,4 +1,4 @@
-# Test assert-equal command with values that should be equal (PASS case)
+%% Test assert-equal command with values that should be equal (PASS case)
 \set[test_value="hello world"]
 \assert-equal[expect="hello world", actual="${test_value}"]
 \get[_status]

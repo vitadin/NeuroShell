@@ -1,4 +1,4 @@
-# Basic functionality test
+%% Basic functionality test
 \set[name="test"]
 \set[status="working"]
 \get[name]

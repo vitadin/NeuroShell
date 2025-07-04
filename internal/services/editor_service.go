@@ -131,9 +131,9 @@ func (e *EditorService) createTempFileWithContent(content string) (string, error
 
 	// If content is empty, add helpful header
 	if strings.TrimSpace(content) == "" {
-		content = `# NeuroShell Editor Mode
-# Enter your message or command below.
-# Save and exit to capture the content.
+		content = `%% NeuroShell Editor Mode
+%% Enter your message or command below.
+%% Save and exit to capture the content.
 
 `
 	}
