@@ -1,0 +1,44 @@
+%% Echo command edge cases test
+%% Tests edge cases, special characters, and error conditions
+
+%% Test Unicode characters with raw mode
+\echo[raw=true] Unicode: 世界\nEmoji: 🌍
+
+%% Test Unicode characters with normal mode
+\echo[raw=false] Unicode: 世界\nEmoji: 🌍
+
+%% Test complex quotes and escapes in raw mode
+\echo[raw=true] Complex: \"He said: 'Hello\\nWorld'\"\tEnd
+
+%% Test complex quotes and escapes in normal mode
+\echo[raw=false] Complex: \"He said: 'Hello\\nWorld'\"\tEnd
+
+%% Test only escape sequences
+\echo[raw=true] \n\t\r\\\"\'
+
+%% Test only escape sequences interpreted
+\echo[raw=false] \n\t\r\\\"\'
+
+%% Test very long content
+\echo[raw=true] Very long content with escapes\nand multiple\tlines that should\rtest the system's handling of\nlarge text blocks with various\tescape sequences
+
+%% Test content that already ends with newline (raw)
+\echo[raw=true] Already ends with newline\n
+
+%% Test content that already ends with newline (normal)
+\echo[raw=false] Already ends with newline\n
+
+%% Test whitespace handling
+\echo[raw=true]    Leading and trailing spaces   \n\t
+
+%% Test whitespace handling interpreted
+\echo[raw=false]    Leading and trailing spaces   \n\t
+
+%% Test special shell characters
+\echo[raw=true] Shell chars: $PATH ${HOME} `command` $(subshell)
+
+%% Test backslash variations
+\echo[raw=true] Backslashes: \\ \\\\ \\n \\t \\r
+
+%% Test backslash variations interpreted
+\echo[raw=false] Backslashes: \\ \\\\ \\n \\t \\r

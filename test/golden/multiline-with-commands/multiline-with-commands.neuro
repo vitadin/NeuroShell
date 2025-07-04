@@ -5,13 +5,13 @@
 \set[message="Hello World"]
 \get[message]
 
-%% Test with \send command  
-\send This is an important message ...
+%% Test with \echo command  
+\echo This is an important message ...
 that needs to be on multiple lines ...
 for better readability
 
 %% Test with variable interpolation in multiline
 \set[greeting="Hello"]
 \set[name="World"]
-\send ${greeting} ...
+\echo ${greeting} ...
 ${name} from multiline

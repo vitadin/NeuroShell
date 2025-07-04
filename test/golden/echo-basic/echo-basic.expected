@@ -1,0 +1,7 @@
+Simple text output
+Stored in variable
+custom_var = Stored in variable
+_output = Silent output test
+Default behavior stores in _output
+_output = Default behavior stores in _output
+Special chars: !@#$%^&*()
