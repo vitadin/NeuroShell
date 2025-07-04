@@ -1,0 +1,9 @@
+Setting message = Hello World
+message = Hello World
+Sending: This is an important message
+that needs to be on multiple lines
+for better readability
+Setting greeting = Hello
+Setting name = World
+Sending: Hello
+World from multiline

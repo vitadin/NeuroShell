@@ -305,10 +305,8 @@ func (s *Shell) read() ([]string, error) {
 		} else {
 			return line != eof
 		}
-		return strings.HasSuffix(strings.TrimSpace(line), "\\")
+		return strings.HasSuffix(strings.TrimSpace(line), "...")
 	})
-
-	s.rawArgs = strings.Fields(lines)
 
 	if heredoc {
 		s := strings.SplitN(lines, "<<", 2)
@@ -322,7 +320,21 @@ func (s *Shell) read() ([]string, error) {
 		return args, err
 	}
 
-	lines = strings.Replace(lines, "\\\n", " \n", -1)
+	// Remove multiline continuation markers: ... + trailing spaces + (newline or end of string)
+	// Handle ... before newlines (middle continuation lines)
+	lines = strings.ReplaceAll(lines, " ...\n", "\n")
+	lines = strings.ReplaceAll(lines, "...\n", "\n")
+
+	// Handle ... at end of string (final continuation line)
+	if strings.HasSuffix(lines, " ...") {
+		lines = strings.TrimSuffix(lines, " ...")
+	}
+	if strings.HasSuffix(lines, "...") {
+		lines = strings.TrimSuffix(lines, "...")
+	}
+
+	// Set rawArgs from processed lines (after removing continuation markers)
+	s.rawArgs = strings.Fields(lines)
 
 	args, err1 := shellquote.Split(lines)
 	if err1 != nil {

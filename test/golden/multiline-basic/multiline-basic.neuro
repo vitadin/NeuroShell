@@ -1,0 +1,9 @@
+# Basic multiline continuation test
+# Tests fundamental ... continuation functionality
+
+hello world ...
+this is continued
+
+# Test with \send command
+\send This is a message ...
+that spans two lines
