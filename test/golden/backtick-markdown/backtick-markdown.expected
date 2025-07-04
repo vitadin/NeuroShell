@@ -1,0 +1,14 @@
+Setting inline_code = Use `console.log()` for debugging
+Setting function_ref = Call the `getData()` function
+Setting code_block = ```\nfunction hello() {\n  console.log('world');\n}\n```
+Setting bash_block = ```bash\nls -la\ngrep pattern file.txt\n```
+Setting nested = Inside `code` we can have ```blocks```
+Setting complex = Mix `inline`, ```blocks```, and 'quotes'
+Setting readme = # README\n\nInstall with `npm install`\n\n```javascript\nconst app = require('app');\n```
+inline_code = Use `console.log()` for debugging
+function_ref = Call the `getData()` function
+code_block = ```\nfunction hello() {\n  console.log('world');\n}\n```
+bash_block = ```bash\nls -la\ngrep pattern file.txt\n```
+nested = Inside `code` we can have ```blocks```
+complex = Mix `inline`, ```blocks```, and 'quotes'
+readme = # README\n\nInstall with `npm install`\n\n```javascript\nconst app = require('app');\n```
