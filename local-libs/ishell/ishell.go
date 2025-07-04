@@ -305,7 +305,7 @@ func (s *Shell) read() ([]string, error) {
 		} else {
 			return line != eof
 		}
-		return strings.HasSuffix(strings.TrimSpace(line), "\\")
+		return strings.HasSuffix(strings.TrimSpace(line), "...")
 	})
 
 	s.rawArgs = strings.Fields(lines)
@@ -322,7 +322,7 @@ func (s *Shell) read() ([]string, error) {
 		return args, err
 	}
 
-	lines = strings.Replace(lines, "\\\n", " \n", -1)
+	lines = strings.Replace(lines, "...\n", " \n", -1)
 
 	args, err1 := shellquote.Split(lines)
 	if err1 != nil {
