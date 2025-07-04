@@ -13,15 +13,5 @@ Note: Session name is required and taken from the input parameter.
       Initial messages can be added later with \send command.
 Parse Mode: Key-Value (supports [key=value] syntax)
 Examples:
-  \session-new[system=system_prompt] session_name
-Examples:
-  \session-new work project                       # Create session named "work project"
-  \session-new debug                              # Create session named "debug"
-  \session-new[system=You are a code reviewer] code review  # Named "code review" with custom system prompt
-  \session-new "my project"                       # Session name with quotes (auto-processed)
-Options:
-  system - System prompt for LLM context (optional, defaults to helpful assistant)
-Note: Session name is required and taken from the input parameter.
-      Use quotes if the name contains special characters.
-      Initial messages can be added later with \send command.
-  \session-new[option=value]
+  \session-new work
+    # Create new session named 'work'
