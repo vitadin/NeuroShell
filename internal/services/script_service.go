@@ -63,7 +63,7 @@ func (s *ScriptService) LoadScript(filepath string, ctx neurotypes.Context) erro
 		line := strings.TrimSpace(scanner.Text())
 
 		// Skip empty lines and comments
-		if line == "" || strings.HasPrefix(line, "#") {
+		if line == "" || strings.HasPrefix(line, "%%") {
 			continue
 		}
 
@@ -79,7 +79,7 @@ func (s *ScriptService) LoadScript(filepath string, ctx neurotypes.Context) erro
 				nextLine := strings.TrimSpace(scanner.Text())
 
 				// Skip empty lines and comments in multiline context
-				if nextLine == "" || strings.HasPrefix(nextLine, "#") {
+				if nextLine == "" || strings.HasPrefix(nextLine, "%%") {
 					continue
 				}
 

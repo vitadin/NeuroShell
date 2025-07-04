@@ -33,7 +33,7 @@ go build -o bin/neurotest ./cmd/neurotest
    ```bash
    mkdir -p test/golden/example
    cat > test/golden/example/example.neuro << 'EOF'
-   # Example test
+   %% Example test
    \set[greeting="Hello"]
    \set[name="World"]
    \get[greeting]
@@ -241,7 +241,7 @@ The `diff` command now shows:
    ```bash
    mkdir -p test/golden/interpolation
    cat > test/golden/interpolation/interpolation.neuro << 'EOF'
-   # Test variable interpolation
+   %% Test variable interpolation
    \set[first="Hello"]
    \set[second="World"]
    \set[combined="${first}, ${second}!"]
@@ -360,7 +360,7 @@ just test-e2e
 
 **Variable interpolation test:**
 ```neuro
-# Test nested variable interpolation
+%% Test nested variable interpolation
 \set[greeting="Hello"]
 \set[name="World"]
 \set[message="${greeting}, ${name}!"]
@@ -369,14 +369,14 @@ just test-e2e
 
 **System variables test:**
 ```neuro
-# Test system variables (avoid timestamps)
+%% Test system variables (avoid timestamps)
 \get[@user]
 \get[#test_mode]
 ```
 
 **Session management with placeholders:**
 ```neuro
-# Test session creation with time-sensitive data
+%% Test session creation with time-sensitive data
 \session-new[name="test_session", system="You are helpful"]
 \get[#session_id]
 \get[#session_name]
