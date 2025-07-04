@@ -428,6 +428,366 @@ func TestEchoCommand_Execute_NewlineHandling(t *testing.T) {
 	}
 }
 
+func TestEchoCommand_Execute_RawOption(t *testing.T) {
+	cmd := &EchoCommand{}
+	ctx := context.New()
+
+	// Setup test registry with variable service
+	setupEchoTestRegistry(t, ctx)
+
+	tests := []struct {
+		name           string
+		args           map[string]string
+		input          string
+		expectedOutput string
+		expectedStored string
+	}{
+		{
+			name:           "raw true - newline escape sequence",
+			args:           map[string]string{"raw": "true"},
+			input:          "Line 1\\nLine 2",
+			expectedOutput: "Line 1\\nLine 2\n", // Literal backslash-n, plus added newline
+			expectedStored: "Line 1\\nLine 2",   // Stored without added newline
+		},
+		{
+			name:           "raw false - newline escape sequence",
+			args:           map[string]string{"raw": "false"},
+			input:          "Line 1\\nLine 2",
+			expectedOutput: "Line 1\nLine 2\n", // Interpreted newline, plus added newline
+			expectedStored: "Line 1\nLine 2",   // Stored without added newline
+		},
+		{
+			name:           "raw true - tab escape sequence",
+			args:           map[string]string{"raw": "true"},
+			input:          "A\\tB\\tC",
+			expectedOutput: "A\\tB\\tC\n", // Literal backslash-t, plus added newline
+			expectedStored: "A\\tB\\tC",   // Stored without added newline
+		},
+		{
+			name:           "raw false - tab escape sequence",
+			args:           map[string]string{"raw": "false"},
+			input:          "A\\tB\\tC",
+			expectedOutput: "A\tB\tC\n", // Interpreted tabs, plus added newline
+			expectedStored: "A\tB\tC",   // Stored without added newline
+		},
+		{
+			name:           "raw true - multiple escape sequences",
+			args:           map[string]string{"raw": "true"},
+			input:          "Hello\\nWorld\\t!\\r\\\\",
+			expectedOutput: "Hello\\nWorld\\t!\\r\\\\\n", // All literal, plus added newline
+			expectedStored: "Hello\\nWorld\\t!\\r\\\\",   // Stored without added newline
+		},
+		{
+			name:           "raw false - multiple escape sequences",
+			args:           map[string]string{"raw": "false"},
+			input:          "Hello\\nWorld\\t!\\r\\\\",
+			expectedOutput: "Hello\nWorld\t!\r\\\n", // All interpreted, plus added newline
+			expectedStored: "Hello\nWorld\t!\r\\",   // Stored without added newline
+		},
+		{
+			name:           "raw true - quote escape sequences",
+			args:           map[string]string{"raw": "true"},
+			input:          "Say \\\"Hello\\\" to me",
+			expectedOutput: "Say \\\"Hello\\\" to me\n", // Literal backslash-quote, plus added newline
+			expectedStored: "Say \\\"Hello\\\" to me",   // Stored without added newline
+		},
+		{
+			name:           "raw false - quote escape sequences",
+			args:           map[string]string{"raw": "false"},
+			input:          "Say \\\"Hello\\\" to me",
+			expectedOutput: "Say \"Hello\" to me\n", // Interpreted quotes, plus added newline
+			expectedStored: "Say \"Hello\" to me",   // Stored without added newline
+		},
+		{
+			name:           "raw true - no escape sequences",
+			args:           map[string]string{"raw": "true"},
+			input:          "Normal text with no escapes",
+			expectedOutput: "Normal text with no escapes\n", // Same as normal, plus added newline
+			expectedStored: "Normal text with no escapes",   // Stored without added newline
+		},
+		{
+			name:           "raw false - no escape sequences",
+			args:           map[string]string{"raw": "false"},
+			input:          "Normal text with no escapes",
+			expectedOutput: "Normal text with no escapes\n", // Same as normal, plus added newline
+			expectedStored: "Normal text with no escapes",   // Stored without added newline
+		},
+		{
+			name:           "default behavior (no raw option)",
+			args:           map[string]string{},
+			input:          "Text\\nwith\\tescapes",
+			expectedOutput: "Text\nwith\tescapes\n", // Default is raw=false, plus added newline
+			expectedStored: "Text\nwith\tescapes",   // Stored without added newline
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Capture stdout
+			output := captureOutput(func() {
+				err := cmd.Execute(tt.args, tt.input, ctx)
+				assert.NoError(t, err)
+			})
+
+			assert.Equal(t, tt.expectedOutput, output)
+
+			// Check that result is stored correctly in ${_output}
+			value, err := ctx.GetVariable("_output")
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedStored, value)
+		})
+	}
+}
+
+func TestEchoCommand_Execute_RawOptionWithVariableInterpolation(t *testing.T) {
+	cmd := &EchoCommand{}
+	ctx := context.New()
+
+	// Setup test registry with variable service
+	setupEchoTestRegistry(t, ctx)
+
+	// Set up test variables
+	require.NoError(t, ctx.SetVariable("text", "Hello\\nWorld"))
+	require.NoError(t, ctx.SetVariable("name", "Alice"))
+
+	tests := []struct {
+		name           string
+		args           map[string]string
+		input          string
+		expectedOutput string
+		expectedStored string
+	}{
+		{
+			name:           "raw true with variable interpolation",
+			args:           map[string]string{"raw": "true"},
+			input:          "Message: ${text}",
+			expectedOutput: "Message: Hello\\nWorld\n", // Variable expanded, then literal output
+			expectedStored: "Message: Hello\\nWorld",   // Stored without added newline
+		},
+		{
+			name:           "raw false with variable interpolation",
+			args:           map[string]string{"raw": "false"},
+			input:          "Message: ${text}",
+			expectedOutput: "Message: Hello\nWorld\n", // Variable expanded, then interpreted
+			expectedStored: "Message: Hello\nWorld",   // Stored without added newline
+		},
+		{
+			name:           "raw true with multiple variables",
+			args:           map[string]string{"raw": "true"},
+			input:          "Hello ${name}\\nWelcome to ${text}",
+			expectedOutput: "Hello Alice\\nWelcome to Hello\\nWorld\n", // All literal after expansion
+			expectedStored: "Hello Alice\\nWelcome to Hello\\nWorld",   // Stored without added newline
+		},
+		{
+			name:           "raw false with multiple variables",
+			args:           map[string]string{"raw": "false"},
+			input:          "Hello ${name}\\nWelcome to ${text}",
+			expectedOutput: "Hello Alice\nWelcome to Hello\nWorld\n", // All interpreted after expansion
+			expectedStored: "Hello Alice\nWelcome to Hello\nWorld",   // Stored without added newline
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Capture stdout
+			output := captureOutput(func() {
+				err := cmd.Execute(tt.args, tt.input, ctx)
+				assert.NoError(t, err)
+			})
+
+			assert.Equal(t, tt.expectedOutput, output)
+
+			// Check that result is stored correctly in ${_output}
+			value, err := ctx.GetVariable("_output")
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedStored, value)
+		})
+	}
+}
+
+func TestEchoCommand_Execute_RawOptionCombinations(t *testing.T) {
+	cmd := &EchoCommand{}
+	ctx := context.New()
+
+	// Setup test registry with variable service
+	setupEchoTestRegistry(t, ctx)
+
+	tests := []struct {
+		name           string
+		args           map[string]string
+		input          string
+		expectedOutput string
+		expectedVar    string
+		expectedValue  string
+		shouldPrint    bool
+	}{
+		{
+			name:           "raw=true with silent=true",
+			args:           map[string]string{"raw": "true", "silent": "true"},
+			input:          "Hidden\\nmessage",
+			expectedOutput: "",                 // No output due to silent
+			expectedVar:    "_output",          // Default variable
+			expectedValue:  "Hidden\\nmessage", // Stored as literal
+			shouldPrint:    false,
+		},
+		{
+			name:           "raw=true with custom to variable",
+			args:           map[string]string{"raw": "true", "to": "custom_var"},
+			input:          "Custom\\tvalue",
+			expectedOutput: "Custom\\tvalue\n", // Literal output
+			expectedVar:    "custom_var",       // Custom variable
+			expectedValue:  "Custom\\tvalue",   // Stored as literal
+			shouldPrint:    true,
+		},
+		{
+			name:           "raw=true with silent=true and custom to variable",
+			args:           map[string]string{"raw": "true", "silent": "true", "to": "secret"},
+			input:          "Secret\\r\\nmessage",
+			expectedOutput: "",                    // No output due to silent
+			expectedVar:    "secret",              // Custom variable
+			expectedValue:  "Secret\\r\\nmessage", // Stored as literal
+			shouldPrint:    false,
+		},
+		{
+			name:           "raw=false with silent=true and custom to variable",
+			args:           map[string]string{"raw": "false", "silent": "true", "to": "interpreted"},
+			input:          "Normal\\tmode",
+			expectedOutput: "",             // No output due to silent
+			expectedVar:    "interpreted",  // Custom variable
+			expectedValue:  "Normal\tmode", // Stored as interpreted
+			shouldPrint:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Capture stdout
+			output := captureOutput(func() {
+				err := cmd.Execute(tt.args, tt.input, ctx)
+				assert.NoError(t, err)
+			})
+
+			if tt.shouldPrint {
+				assert.Equal(t, tt.expectedOutput, output)
+			} else {
+				assert.Empty(t, output, "Silent mode should produce no output")
+			}
+
+			// Check that result is stored in correct variable
+			value, err := ctx.GetVariable(tt.expectedVar)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedValue, value)
+		})
+	}
+}
+
+func TestEchoCommand_Execute_InvalidRawOption(t *testing.T) {
+	cmd := &EchoCommand{}
+	ctx := context.New()
+
+	// Setup test registry with variable service
+	setupEchoTestRegistry(t, ctx)
+
+	args := map[string]string{"raw": "invalid"}
+	input := "Test message"
+
+	err := cmd.Execute(args, input, ctx)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid value for raw option")
+	assert.Contains(t, err.Error(), "must be true or false")
+}
+
+func TestEchoCommand_Execute_RawOptionEdgeCases(t *testing.T) {
+	cmd := &EchoCommand{}
+	ctx := context.New()
+
+	// Setup test registry with variable service
+	setupEchoTestRegistry(t, ctx)
+
+	tests := []struct {
+		name           string
+		args           map[string]string
+		input          string
+		expectedOutput string
+		expectedStored string
+	}{
+		{
+			name:           "raw true - only escape sequences",
+			args:           map[string]string{"raw": "true"},
+			input:          "\\n\\t\\r",
+			expectedOutput: "\\n\\t\\r\n", // All literal, plus added newline
+			expectedStored: "\\n\\t\\r",   // Stored without added newline
+		},
+		{
+			name:           "raw false - only escape sequences",
+			args:           map[string]string{"raw": "false"},
+			input:          "\\n\\t\\r",
+			expectedOutput: "\n\t\r\n", // All interpreted, plus added newline
+			expectedStored: "\n\t\r",   // Stored without added newline
+		},
+		{
+			name:           "raw true - text already ends with literal newline",
+			args:           map[string]string{"raw": "true"},
+			input:          "Text\\n",
+			expectedOutput: "Text\\n\n", // Literal backslash-n, plus added newline
+			expectedStored: "Text\\n",   // Stored without added newline
+		},
+		{
+			name:           "raw false - text already ends with interpreted newline",
+			args:           map[string]string{"raw": "false"},
+			input:          "Text\\n",
+			expectedOutput: "Text\n", // Interpreted newline, no additional newline
+			expectedStored: "Text\n", // Stored as-is
+		},
+		{
+			name:           "raw true - empty string",
+			args:           map[string]string{"raw": "true"},
+			input:          "",
+			expectedOutput: "", // Should return usage error, but we handle this in basic test
+			expectedStored: "",
+		},
+		{
+			name:           "raw true - unicode with escapes",
+			args:           map[string]string{"raw": "true"},
+			input:          "Hello 世界\\nWorld 🌍",
+			expectedOutput: "Hello 世界\\nWorld 🌍\n", // Unicode preserved, escapes literal
+			expectedStored: "Hello 世界\\nWorld 🌍",   // Stored without added newline
+		},
+		{
+			name:           "raw false - unicode with escapes",
+			args:           map[string]string{"raw": "false"},
+			input:          "Hello 世界\\nWorld 🌍",
+			expectedOutput: "Hello 世界\nWorld 🌍\n", // Unicode preserved, escapes interpreted
+			expectedStored: "Hello 世界\nWorld 🌍",   // Stored without added newline
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.input == "" {
+				// Test empty input should return error
+				err := cmd.Execute(tt.args, tt.input, ctx)
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "Usage:")
+				return
+			}
+
+			// Capture stdout
+			output := captureOutput(func() {
+				err := cmd.Execute(tt.args, tt.input, ctx)
+				assert.NoError(t, err)
+			})
+
+			assert.Equal(t, tt.expectedOutput, output)
+
+			// Check that result is stored correctly in ${_output}
+			value, err := ctx.GetVariable("_output")
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectedStored, value)
+		})
+	}
+}
+
 // setupEchoTestRegistry sets up a test environment with variable service
 func setupEchoTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	// Create a new registry for testing

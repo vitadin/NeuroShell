@@ -1,0 +1,21 @@
+Setting greeting = Hello
+Setting name = World
+Setting text_with_escapes = Line1\nLine2
+Hello, World!
+Message: Line1\nLine2
+Message: Line1
+Line2
+Hello\nWorld\tGreeting
+Hello
+World	Greeting
+Result: Hello\nWorld
+raw_result = Result: Hello\nWorld
+Result: Hello
+World
+interpreted_result = Result: Hello
+World
+System info: User=sunyaojin, TestMode=true
+Undefined: \nDefined: World
+Setting complex = Value with Hello and escapes\n
+Complex: Value with Hello and escapes\n
+Complex: Value with Hello and escapes

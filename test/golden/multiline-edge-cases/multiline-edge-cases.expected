@@ -3,7 +3,7 @@ spaces_before
 multiple_spaces  
 empty_continuation
 whitespace_only
-\send Tab before	
+\echo Tab before	
 space after
 both	
 special_chars !@#$%^&*()

@@ -1,0 +1,22 @@
+test1 = Silent\nraw\tmode
+test2 = Silent
+interpreted	mode
+_output = Default\nvariable\traw
+_output = Default
+variable	interpreted
+Verbose\nraw\tmode
+test3 = Verbose\nraw\tmode
+Verbose
+interpreted	mode
+test4 = Verbose
+interpreted	mode
+Setting message = Hello\nWorld
+combo1 = Variable: Hello\nWorld\tEnd
+combo2 = Variable: Hello
+World	End
+Setting complex = Multi\nLine\tContent
+final_test = Complex: Multi\nLine\tContent\nWith more\tescapes
+Explicit
+options	test
+explicit = Explicit
+options	test

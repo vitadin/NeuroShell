@@ -1,7 +1,7 @@
 %% Backticks in commands test
 %% Verifies that backticks work correctly in various NeuroShell commands
 
-%% Test backticks in \send command (simulated since we're in test mode)
+%% Test backticks in \echo command (simulated since we're in test mode)
 \set[message_with_code="Here's some code: `function test() { return true; }`"]
 \get[message_with_code]
 

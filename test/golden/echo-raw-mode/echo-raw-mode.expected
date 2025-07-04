@@ -1,0 +1,15 @@
+Line 1
+Line 2	Tabbed
+Line 1\nLine 2\tTabbed
+Raw\n\tescapes
+literal = Raw\n\tescapes
+Interpreted
+	escapes
+interpreted = Interpreted
+	escapes
+Multiple escapes: \n\t\r\\\"\'
+Multiple escapes: 
+	\"'
+Default mode: 
+Quotes: \"Hello\" and \'World\'
+Quotes: "Hello" and 'World'

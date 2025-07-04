@@ -3,6 +3,7 @@ package builtin
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
@@ -25,18 +26,19 @@ func (c *EchoCommand) ParseMode() neurotypes.ParseMode {
 
 // Description returns a brief description of what the echo command does.
 func (c *EchoCommand) Description() string {
-	return "Expand variables and output text"
+	return "Expand variables and output text with optional raw mode"
 }
 
 // Usage returns the syntax and usage examples for the echo command.
 func (c *EchoCommand) Usage() string {
-	return "\\echo [to=var_name] [silent=true] message"
+	return "\\echo [to=var_name] [silent=true] [raw=true] message"
 }
 
 // Execute expands variables in the input message and outputs or stores the result.
 // Options:
 //   - to: store result in specified variable (default: ${_output})
 //   - silent: suppress console output (default: false)
+//   - raw: output string literals without interpreting escape sequences (default: false)
 func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
@@ -69,13 +71,36 @@ func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotyp
 		}
 	}
 
+	rawStr := args["raw"]
+	raw := false
+	if rawStr != "" {
+		raw, err = strconv.ParseBool(rawStr)
+		if err != nil {
+			return fmt.Errorf("invalid value for raw option: %s (must be true or false)", rawStr)
+		}
+	}
+
+	// Determine what to store and what to display
+	var displayMessage string
+	var storeMessage string
+
+	if raw {
+		// Raw mode: display and store without interpreting escape sequences
+		displayMessage = expandedMessage
+		storeMessage = expandedMessage
+	} else {
+		// Normal mode: interpret escape sequences for display, store interpreted version
+		displayMessage = interpretEscapeSequences(expandedMessage)
+		storeMessage = displayMessage
+	}
+
 	// Store result in target variable
 	if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
 		// Store in system variable (only for specific system variables)
-		err = variableService.SetSystemVariable(targetVar, expandedMessage, ctx)
+		err = variableService.SetSystemVariable(targetVar, storeMessage, ctx)
 	} else {
 		// Store in user variable (including custom variables with _ prefix)
-		err = variableService.Set(targetVar, expandedMessage, ctx)
+		err = variableService.Set(targetVar, storeMessage, ctx)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to store result in variable '%s': %w", targetVar, err)
@@ -83,9 +108,9 @@ func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotyp
 
 	// Output to console unless silent mode is enabled
 	if !silent {
-		fmt.Print(expandedMessage)
+		fmt.Print(displayMessage)
 		// Only add newline if the message doesn't already end with one
-		if len(expandedMessage) > 0 && expandedMessage[len(expandedMessage)-1] != '\n' {
+		if len(displayMessage) > 0 && displayMessage[len(displayMessage)-1] != '\n' {
 			fmt.Println()
 		}
 	}
@@ -106,6 +131,18 @@ func (c *EchoCommand) getVariableService() (*services.VariableService, error) {
 	}
 
 	return variableService, nil
+}
+
+// interpretEscapeSequences converts escape sequences in a string to their actual characters
+func interpretEscapeSequences(s string) string {
+	// Replace common escape sequences
+	s = strings.ReplaceAll(s, "\\n", "\n")
+	s = strings.ReplaceAll(s, "\\t", "\t")
+	s = strings.ReplaceAll(s, "\\r", "\r")
+	s = strings.ReplaceAll(s, "\\\\", "\\")
+	s = strings.ReplaceAll(s, "\\\"", "\"")
+	s = strings.ReplaceAll(s, "\\'", "'")
+	return s
 }
 
 func init() {
