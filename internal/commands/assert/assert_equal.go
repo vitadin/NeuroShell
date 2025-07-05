@@ -34,6 +34,56 @@ func (c *EqualCommand) Usage() string {
 	return "\\assert-equal[expect=expected_value, actual=actual_value]"
 }
 
+// HelpInfo returns structured help information for the assert-equal command.
+func (c *EqualCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "expect",
+				Description: "Expected value for comparison",
+				Required:    true,
+				Type:        "string",
+			},
+			{
+				Name:        "actual",
+				Description: "Actual value to compare against expected",
+				Required:    true,
+				Type:        "string",
+			},
+		},
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\assert-equal[expect=\"hello\", actual=\"hello\"]",
+				Description: "Compare two literal string values",
+			},
+			{
+				Command:     "\\assert-equal[expect=\"${expected_result}\", actual=\"${_output}\"]",
+				Description: "Compare variables with interpolation",
+			},
+			{
+				Command:     "\\assert-equal[expect=\"5\", actual=\"${count}\"]",
+				Description: "Validate command output against expected value",
+			},
+			{
+				Command:     "\\assert-equal[expect=\"success\", actual=\"${_status}\"]",
+				Description: "Check status of previous operation",
+			},
+		},
+		Notes: []string{
+			"Values are compared as strings after variable interpolation",
+			"Sets ${_assert_result} to 'pass' or 'fail' based on comparison",
+			"Sets ${_assert_expected} and ${_assert_actual} with interpolated values",
+			"Updates ${_status} to '0' (pass) or '1' (fail) for script automation",
+			"Useful for testing and validation in .neuro scripts",
+			"Supports whitespace and case-sensitive comparison",
+		},
+	}
+}
+
 // Execute compares two values for equality with variable interpolation support.
 // It sets system variables _status, _assert_result, _assert_expected, and _assert_actual.
 func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {

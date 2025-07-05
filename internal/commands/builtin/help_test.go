@@ -45,9 +45,16 @@ func setupHelpTestEnvironment(t *testing.T, testCommands []neurotypes.Command) n
 	err := testServiceRegistry.RegisterService(helpService)
 	require.NoError(t, err)
 
-	// Create context and initialize service
+	// Create and initialize render service (required by new help command)
+	renderService := services.NewRenderService()
+	err = testServiceRegistry.RegisterService(renderService)
+	require.NoError(t, err)
+
+	// Create context and initialize services
 	ctx := testutils.NewMockContext()
 	err = helpService.Initialize(ctx)
+	require.NoError(t, err)
+	err = renderService.Initialize(ctx)
 	require.NoError(t, err)
 
 	return ctx
@@ -70,7 +77,7 @@ func TestHelpCommand_Description(t *testing.T) {
 
 func TestHelpCommand_Usage(t *testing.T) {
 	cmd := &HelpCommand{}
-	assert.Equal(t, "\\help [command]", cmd.Usage())
+	assert.Equal(t, "\\help[styled=true] [command]", cmd.Usage())
 }
 
 func TestHelpCommand_Execute(t *testing.T) {
@@ -236,7 +243,7 @@ func TestHelpCommand_Execute_WithArgs(t *testing.T) {
 }
 
 func TestHelpCommand_Execute_WithInput(t *testing.T) {
-	// Test that help command ignores input (current implementation doesn't use it)
+	// Test that help command uses input to show specific command help
 	testCommands := []neurotypes.Command{
 		&MockCommand{name: "test", description: "Test", usage: "\\test"},
 	}
@@ -244,8 +251,8 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 	ctx := setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
 
-	// Test with input
-	input := "some input text"
+	// Test with valid command name in input
+	input := "test"
 
 	// Capture stdout
 	originalStdout := os.Stdout
@@ -263,8 +270,9 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 	outputStr := string(output)
 
 	assert.NoError(t, err)
-	// Should still show all commands (current implementation doesn't use input)
-	assert.Contains(t, outputStr, "Neuro Shell Commands:")
+	// Should show specific command help
+	assert.Contains(t, outputStr, "Command: test")
+	assert.Contains(t, outputStr, "Description: Test")
 }
 
 func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
@@ -394,6 +402,7 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 				"Parse Mode: Raw",
 				"Examples:",
 				"\\bash command_to_execute",
+				"%% Basic usage example",
 			},
 		},
 		{
@@ -406,7 +415,7 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 				"Parse Mode: Key-Value",
 				"Examples:",
 				"\\set[var=value] or \\set var value",
-				"\\set[option=value]",
+				"%% Basic usage example",
 			},
 		},
 		{
@@ -457,6 +466,9 @@ func TestHelpCommand_Execute_ServiceUnavailable(t *testing.T) {
 	assert.Contains(t, err.Error(), "help service not available")
 }
 
+// NOTE: TestHelpCommand_ShowCommandExamples was removed because showCommandExamples method
+// was deprecated in favor of the new HelpInfo-based approach with RenderService integration
+/*
 func TestHelpCommand_ShowCommandExamples(t *testing.T) {
 	// Test the showCommandExamples function with different command types
 	cmd := &HelpCommand{}
@@ -542,6 +554,7 @@ func TestHelpCommand_ShowCommandExamples(t *testing.T) {
 		})
 	}
 }
+*/
 
 // MockCommand for testing (reuse from registry_test.go structure)
 type MockCommand struct {
@@ -576,6 +589,21 @@ func (m *MockCommand) Execute(args map[string]string, input string, ctx neurotyp
 		return m.executeFunc(args, input, ctx)
 	}
 	return nil
+}
+
+func (m *MockCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     m.Name(),
+		Description: m.Description(),
+		Usage:       m.Usage(),
+		ParseMode:   m.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     m.Usage(),
+				Description: "Basic usage example",
+			},
+		},
+	}
 }
 
 // Benchmark tests

@@ -50,6 +50,7 @@ type Command interface {
 	ParseMode() ParseMode
 	Description() string
 	Usage() string
+	HelpInfo() HelpInfo
 	Execute(args map[string]string, input string, ctx Context) error
 }
 
@@ -97,4 +98,31 @@ type ChatSession struct {
 	CreatedAt    time.Time `json:"created_at"`    // Session creation timestamp
 	UpdatedAt    time.Time `json:"updated_at"`    // Last modification timestamp
 	IsActive     bool      `json:"is_active"`     // Whether this is the current active session
+}
+
+// HelpInfo represents structured help information for a command.
+// It provides rich help data that can be rendered in both plain text and styled formats.
+type HelpInfo struct {
+	Command     string        `json:"command"`            // Command name
+	Description string        `json:"description"`        // Brief description of what the command does
+	Usage       string        `json:"usage"`              // Usage syntax
+	ParseMode   ParseMode     `json:"parse_mode"`         // How the command parses arguments
+	Options     []HelpOption  `json:"options,omitempty"`  // Command options/parameters
+	Examples    []HelpExample `json:"examples,omitempty"` // Usage examples
+	Notes       []string      `json:"notes,omitempty"`    // Additional notes or warnings
+}
+
+// HelpOption represents a command option/parameter with detailed information.
+type HelpOption struct {
+	Name        string `json:"name"`              // Option name
+	Description string `json:"description"`       // What this option does
+	Required    bool   `json:"required"`          // Whether this option is required
+	Type        string `json:"type"`              // Data type (string, bool, int, etc.)
+	Default     string `json:"default,omitempty"` // Default value if not specified
+}
+
+// HelpExample represents a usage example with explanation.
+type HelpExample struct {
+	Command     string `json:"command"`     // Example command
+	Description string `json:"description"` // What this example demonstrates
 }

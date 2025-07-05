@@ -32,6 +32,50 @@ func (c *RunCommand) Usage() string {
 	return "\\run[file=\"script.neuro\"] or \\run script.neuro"
 }
 
+// HelpInfo returns structured help information for the run command.
+func (c *RunCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "file",
+				Description: "Path to .neuro script file to execute",
+				Required:    true,
+				Type:        "string",
+			},
+		},
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\run script.neuro",
+				Description: "Execute a .neuro script file using space syntax",
+			},
+			{
+				Command:     "\\run[file=\"analysis.neuro\"]",
+				Description: "Execute script using bracket syntax",
+			},
+			{
+				Command:     "\\run workflows/setup.neuro",
+				Description: "Execute script from subdirectory",
+			},
+			{
+				Command:     "\\run ${script_path}",
+				Description: "Execute script using variable interpolation",
+			},
+		},
+		Notes: []string{
+			"Script files use .neuro extension by convention",
+			"Commands in scripts are executed line by line",
+			"Variables are interpolated before each command execution",
+			"Empty lines and lines starting with %% are ignored as comments",
+			"Scripts inherit the current session context and variables",
+			"Supports both relative and absolute file paths",
+		},
+	}
+}
+
 // Execute loads and runs a .neuro script file using the centralized script execution logic.
 // It validates arguments and delegates to orchestration.ExecuteScript for the actual execution.
 func (c *RunCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {

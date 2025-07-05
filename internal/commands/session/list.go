@@ -36,11 +36,11 @@ func (c *ListCommand) Usage() string {
 	return `\session-list[sort=name|created|updated][filter=active]
 
 Examples:
-  \session-list                           # List all sessions (default: sorted by created, newest first)
-  \session-list[sort=name]                # List sessions sorted alphabetically by name
-  \session-list[sort=updated]             # List sessions sorted by last update (newest first)
-  \session-list[filter=active]            # Show only the active session
-  \session-list[sort=name,filter=active]  # Show active session only, sorted by name
+  \session-list                           %% List all sessions (default: sorted by created, newest first)
+  \session-list[sort=name]                %% List sessions sorted alphabetically by name
+  \session-list[sort=updated]             %% List sessions sorted by last update (newest first)
+  \session-list[filter=active]            %% Show only the active session
+  \session-list[sort=name,filter=active]  %% Show active session only, sorted by name
   
 Options:
   sort   - Sort order: name (alphabetical), created (newest first), updated (newest first)
@@ -48,6 +48,57 @@ Options:
   
 Note: Options can be combined. Default sort is by creation time (newest first).
       Session list is stored in ${_output} variable.`
+}
+
+// HelpInfo returns structured help information for the session-list command.
+func (c *ListCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       "\\session-list[sort=name|created|updated][filter=active]",
+		ParseMode:   c.ParseMode(),
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "sort",
+				Description: "Sort order: name (alphabetical), created (newest first), updated (newest first)",
+				Required:    false,
+				Type:        "string",
+				Default:     "created",
+			},
+			{
+				Name:        "filter",
+				Description: "Filter criteria: active (only active session), all (default)",
+				Required:    false,
+				Type:        "string",
+				Default:     "all",
+			},
+		},
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\session-list",
+				Description: "List all sessions sorted by creation time (newest first)",
+			},
+			{
+				Command:     "\\session-list[sort=name]",
+				Description: "List sessions sorted alphabetically by name",
+			},
+			{
+				Command:     "\\session-list[filter=active]",
+				Description: "Show only the currently active session",
+			},
+			{
+				Command:     "\\session-list[sort=updated, filter=all]",
+				Description: "List all sessions by last update time",
+			},
+		},
+		Notes: []string{
+			"Options can be combined (e.g., sort=name,filter=active)",
+			"Default sort is by creation time with newest sessions first",
+			"Session list output is stored in ${_output} variable",
+			"Shows session name, ID (short), active status, message count, and creation date",
+			"Active session is marked with 'active' status indicator",
+		},
+	}
 }
 
 // Execute lists chat sessions with optional filtering and sorting.

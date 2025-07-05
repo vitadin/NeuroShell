@@ -32,6 +32,27 @@ func (c *ExitCommand) Usage() string {
 	return "\\exit"
 }
 
+// HelpInfo returns structured help information for the exit command.
+func (c *ExitCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\exit",
+				Description: "Exit the NeuroShell session cleanly",
+			},
+		},
+		Notes: []string{
+			"Exits NeuroShell immediately with a goodbye message",
+			"All unsaved session data will be lost",
+			"Use Ctrl+C as an alternative exit method",
+		},
+	}
+}
+
 // Execute terminates the NeuroShell session by calling os.Exit(0).
 // This provides an immediate exit from the shell environment.
 func (c *ExitCommand) Execute(_ map[string]string, _ string, _ neurotypes.Context) error {

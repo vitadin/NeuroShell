@@ -34,11 +34,11 @@ func (c *DeleteCommand) Usage() string {
 	return `\session-delete[name=session_name] [session_name_or_id]
 
 Examples:
-  \session-delete work project        # Delete by exact name
-  \session-delete work                # Delete by prefix (if unique match)
-  \session-delete abc123-uuid         # Delete by session ID
-  \session-delete[name=work]          # Delete using name option
-  \session-delete ${#session_id}      # Delete current session by ID variable
+  \session-delete work project        %% Delete by exact name
+  \session-delete work                %% Delete by prefix (if unique match)
+  \session-delete abc123-uuid         %% Delete by session ID
+  \session-delete[name=work]          %% Delete using name option
+  \session-delete ${#session_id}      %% Delete current session by ID variable
   
 Smart Search Priority:
   1. Exact session name match
@@ -55,6 +55,54 @@ Error Handling:
 
 Note: Session names are user-friendly. Use prefix matching for efficiency.
       Create sessions with: \session-new session_name_here`
+}
+
+// HelpInfo returns structured help information for the session-delete command.
+func (c *DeleteCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       "\\session-delete[name=session_name] [session_name_or_id]",
+		ParseMode:   c.ParseMode(),
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "name",
+				Description: "Session name to delete (cannot combine with input parameter)",
+				Required:    false,
+				Type:        "string",
+			},
+		},
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\session-delete work",
+				Description: "Delete session by name prefix (smart search)",
+			},
+			{
+				Command:     "\\session-delete work project",
+				Description: "Delete session by exact name match",
+			},
+			{
+				Command:     "\\session-delete abc123-uuid",
+				Description: "Delete session by exact ID match",
+			},
+			{
+				Command:     "\\session-delete[name=work]",
+				Description: "Delete using name option syntax",
+			},
+			{
+				Command:     "\\session-delete ${#session_id}",
+				Description: "Delete current session using session ID variable",
+			},
+		},
+		Notes: []string{
+			"Smart search: tries exact name → exact ID → prefix matching",
+			"Prefix matching must result in a unique match or shows all candidates",
+			"Cannot specify both name option and input parameter",
+			"Variables in session identifier are interpolated before search",
+			"Session variables are updated or cleared after deletion",
+			"Deletion result is stored in ${_output} variable",
+		},
+	}
 }
 
 // Execute deletes the specified chat session using smart search.

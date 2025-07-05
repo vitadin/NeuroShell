@@ -34,10 +34,10 @@ func (c *NewCommand) Usage() string {
 	return `\session-new[system=system_prompt] session_name
 
 Examples:
-  \session-new work project                       # Create session named "work project"
-  \session-new debug                              # Create session named "debug"
-  \session-new[system=You are a code reviewer] code review  # Named "code review" with custom system prompt
-  \session-new "my project"                       # Session name with quotes (auto-processed)
+  \session-new work project                       %% Create session named "work project"
+  \session-new debug                              %% Create session named "debug"
+  \session-new[system=You are a code reviewer] code review  %% Named "code review" with custom system prompt
+  \session-new "my project"                       %% Session name with quotes (auto-processed)
   
 Options:
   system - System prompt for LLM context (optional, defaults to helpful assistant)
@@ -45,6 +45,51 @@ Options:
 Note: Session name is required and taken from the input parameter.
       Use quotes if the name contains special characters.
       Initial messages can be added later with \send command.`
+}
+
+// HelpInfo returns structured help information for the session-new command.
+func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       "\\session-new[system=system_prompt] session_name",
+		ParseMode:   c.ParseMode(),
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "system",
+				Description: "System prompt for LLM context",
+				Required:    false,
+				Type:        "string",
+				Default:     "helpful assistant",
+			},
+		},
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\session-new work",
+				Description: "Create new session named 'work'",
+			},
+			{
+				Command:     "\\session-new[system=You are a code reviewer] code-review",
+				Description: "Create session with custom system prompt",
+			},
+			{
+				Command:     "\\session-new \"my project\"",
+				Description: "Create session with quoted name containing spaces",
+			},
+			{
+				Command:     "\\session-new debug-${@date}",
+				Description: "Create session with interpolated variables in name",
+			},
+		},
+		Notes: []string{
+			"Session name is required and taken from the input parameter",
+			"Use quotes if the name contains special characters or spaces",
+			"Variables in session name and system prompt are interpolated",
+			"Session becomes active immediately after creation",
+			"Session ID and metadata are stored in system variables (${#session_id}, etc.)",
+			"Initial messages can be added later with \\send command",
+		},
+	}
 }
 
 // Execute creates a new chat session with the specified parameters.

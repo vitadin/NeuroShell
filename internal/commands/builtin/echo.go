@@ -34,6 +34,68 @@ func (c *EchoCommand) Usage() string {
 	return "\\echo [to=var_name] [silent=true] [raw=true] message"
 }
 
+// HelpInfo returns structured help information for the echo command.
+func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       "\\echo[to=var_name, silent=true, raw=true] message",
+		ParseMode:   c.ParseMode(),
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "to",
+				Description: "Variable name to store the result",
+				Required:    false,
+				Type:        "string",
+				Default:     "_output",
+			},
+			{
+				Name:        "silent",
+				Description: "Suppress console output",
+				Required:    false,
+				Type:        "bool",
+				Default:     "false",
+			},
+			{
+				Name:        "raw",
+				Description: "Output string literals without interpreting escape sequences",
+				Required:    false,
+				Type:        "bool",
+				Default:     "false",
+			},
+		},
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\echo Hello, World!",
+				Description: "Simple text output with variable interpolation",
+			},
+			{
+				Command:     "\\echo[raw=true] Line 1\\nLine 2",
+				Description: "Raw output showing literal escape sequences",
+			},
+			{
+				Command:     "\\echo[to=greeting] Hello ${name}!",
+				Description: "Store interpolated result in 'greeting' variable",
+			},
+			{
+				Command:     "\\echo[silent=true] Processing...",
+				Description: "Store result without console output",
+			},
+			{
+				Command:     "\\echo[to=formatted, raw=false] Tab:\\tNew line:\\n",
+				Description: "Store formatted text with interpreted escape sequences",
+			},
+		},
+		Notes: []string{
+			"All variables (${var}) are interpolated before output",
+			"When raw=true, escape sequences like \\n are shown literally",
+			"When raw=false, escape sequences are interpreted (\\n becomes newline)",
+			"Result is always stored in the specified variable (default: _output)",
+			"Use silent=true to suppress console output while still storing result",
+		},
+	}
+}
+
 // Execute expands variables in the input message and outputs or stores the result.
 // Options:
 //   - to: store result in specified variable (default: ${_output})

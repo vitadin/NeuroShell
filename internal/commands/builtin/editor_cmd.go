@@ -54,6 +54,41 @@ After editing, you can use the content with:
   \set[myvar="${_output}"]  - Store in another variable`
 }
 
+// HelpInfo returns structured help information for the editor command.
+func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     e.Name(),
+		Description: e.Description(),
+		Usage:       "\\editor",
+		ParseMode:   e.ParseMode(),
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\editor",
+				Description: "Open external editor for composing multi-line input",
+			},
+			{
+				Command:     "\\set[@editor=\"code --wait\"]",
+				Description: "Configure VS Code as your preferred editor",
+			},
+			{
+				Command:     "\\editor",
+				Description: "Edit content, then use with \\send ${_output}",
+			},
+			{
+				Command:     "\\set[myvar=\"${_output}\"]",
+				Description: "Store editor content in a custom variable",
+			},
+		},
+		Notes: []string{
+			"Editor opens with ${_output} content, or a default template if empty",
+			"Content is stored in ${_output} variable when editor is saved and closed",
+			"Editor preference: 1) ${@editor} variable, 2) $EDITOR env var, 3) auto-detect",
+			"Supports vim, nano, code, subl, atom, and other common editors",
+			"Use 'editor --wait' flag for GUI editors to wait for file closure",
+		},
+	}
+}
+
 // Execute opens the external editor and stores the resulting content in ${_output}.
 func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
 	logger.Debug("Executing editor command", "args", args)

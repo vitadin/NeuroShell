@@ -32,6 +32,43 @@ func (c *GetCommand) Usage() string {
 	return "\\get[var] or \\get var"
 }
 
+// HelpInfo returns structured help information for the get command.
+func (c *GetCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       "\\get[var] or \\get var",
+		ParseMode:   c.ParseMode(),
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "var",
+				Description: "Variable name to retrieve",
+				Required:    true,
+				Type:        "string",
+			},
+		},
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\get[name]",
+				Description: "Get the value of variable 'name' using bracket syntax",
+			},
+			{
+				Command:     "\\get name",
+				Description: "Get the value of variable 'name' using space syntax",
+			},
+			{
+				Command:     "\\get @pwd",
+				Description: "Get system variable for current directory",
+			},
+		},
+		Notes: []string{
+			"Supports both bracket syntax (\\get[var]) and space syntax (\\get var)",
+			"System variables start with @ (e.g., @pwd, @user, @date)",
+			"Message history variables use numbers (e.g., ${1}, ${2})",
+		},
+	}
+}
+
 // Execute retrieves and displays the value of the specified variable.
 // It handles both bracket and space syntax for variable specification.
 func (c *GetCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {

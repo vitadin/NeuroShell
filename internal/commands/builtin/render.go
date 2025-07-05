@@ -34,6 +34,81 @@ func (c *RenderCommand) Usage() string {
 	return "\\render[keywords=[\\get,\\set], style=bold, theme=dark, to=var] text to render"
 }
 
+// HelpInfo returns structured help information for the render command.
+func (c *RenderCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "keywords",
+				Description: "Array of keywords to highlight (e.g., [\\get,\\set])",
+				Required:    false,
+				Type:        "array",
+			},
+			{
+				Name:        "style",
+				Description: "Named style: bold, italic, underline, success, error, warning, info, highlight",
+				Required:    false,
+				Type:        "string",
+			},
+			{
+				Name:        "theme",
+				Description: "Color theme: default, dark, light",
+				Required:    false,
+				Type:        "string",
+				Default:     "default",
+			},
+			{
+				Name:        "to",
+				Description: "Variable to store result",
+				Required:    false,
+				Type:        "string",
+				Default:     "_output",
+			},
+			{
+				Name:        "silent",
+				Description: "Suppress console output",
+				Required:    false,
+				Type:        "bool",
+				Default:     "false",
+			},
+		},
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\render[style=bold] Hello World",
+				Description: "Render text with bold styling",
+			},
+			{
+				Command:     "\\render[keywords=[\\get,\\set]] Use \\get and \\set commands",
+				Description: "Highlight specific NeuroShell commands in text",
+			},
+			{
+				Command:     "\\render[style=success, theme=dark] Operation completed!",
+				Description: "Success message with dark theme styling",
+			},
+			{
+				Command:     "\\render[to=styled_output, silent=true] Formatted text",
+				Description: "Store styled text in variable without console output",
+			},
+			{
+				Command:     "\\render[color=#FF5733, background=#000000] Colorful text",
+				Description: "Custom foreground and background colors",
+			},
+		},
+		Notes: []string{
+			"Uses lipgloss library for professional terminal styling",
+			"Keywords are highlighted with special colors when specified",
+			"Supports both hex colors (#FF5733) and named colors (red, blue, etc.)",
+			"Style options can be combined (e.g., bold + italic + color)",
+			"Rendered output is stored in specified variable for reuse",
+			"Themes provide coordinated color schemes for consistency",
+		},
+	}
+}
+
 // Execute applies styling and highlighting to text based on the provided options.
 // Options:
 //   - keywords: array of keywords to highlight (e.g., [\\get,\\set])
