@@ -330,7 +330,7 @@ func (r *RenderService) renderHelpPlainText(helpInfo neurotypes.HelpInfo) string
 		for _, example := range helpInfo.Examples {
 			result.WriteString(fmt.Sprintf("  %s\n", example.Command))
 			if example.Description != "" {
-				result.WriteString(fmt.Sprintf("    # %s\n", example.Description))
+				result.WriteString("    %% " + example.Description + "\n")
 			}
 		}
 	}
@@ -426,7 +426,7 @@ func (r *RenderService) renderHelpStyled(helpInfo neurotypes.HelpInfo) (string, 
 			if example.Description != "" {
 				commentStyle := theme.Info.Italic(true)
 				result.WriteString("    ")
-				result.WriteString(commentStyle.Render(fmt.Sprintf("# %s", example.Description)))
+				result.WriteString(commentStyle.Render("%% " + example.Description))
 				result.WriteString("\n")
 			}
 		}

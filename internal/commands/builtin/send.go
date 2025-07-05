@@ -41,8 +41,27 @@ func (c *SendCommand) HelpInfo() neurotypes.HelpInfo {
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\send Hello, how are you?",
-				Description: "Send a message to the LLM agent",
+				Description: "Send a simple message to the LLM agent",
 			},
+			{
+				Command:     "\\send Analyze this data: ${data_variable}",
+				Description: "Send message with variable interpolation",
+			},
+			{
+				Command:     "\\send ${_output}",
+				Description: "Send content from editor or previous command output",
+			},
+			{
+				Command:     "\\send Please review this code: \\n${code_content}",
+				Description: "Send multi-line message with embedded content",
+			},
+		},
+		Notes: []string{
+			"Messages are sent to the active LLM session",
+			"Variables are interpolated before sending",
+			"Supports multi-line messages and embedded content",
+			"Response will be stored in message history variables (${1}, ${2}, etc.)",
+			"Use without explicit \\send for convenience - plain text is auto-sent",
 		},
 	}
 }

@@ -42,11 +42,48 @@ func (c *VarsCommand) HelpInfo() neurotypes.HelpInfo {
 		Description: c.Description(),
 		Usage:       c.Usage(),
 		ParseMode:   c.ParseMode(),
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "pattern",
+				Description: "Regular expression pattern to filter variable names",
+				Required:    false,
+				Type:        "string",
+			},
+			{
+				Name:        "type",
+				Description: "Filter by variable type: user, system, or all",
+				Required:    false,
+				Type:        "string",
+				Default:     "all",
+			},
+		},
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\vars",
 				Description: "List all variables in the current session",
 			},
+			{
+				Command:     "\\vars[type=user]",
+				Description: "Show only user-defined variables",
+			},
+			{
+				Command:     "\\vars[type=system]",
+				Description: "Show only system variables (@, #, _ prefixed)",
+			},
+			{
+				Command:     "\\vars[pattern=^name]",
+				Description: "Show variables starting with 'name'",
+			},
+			{
+				Command:     "\\vars[pattern=session, type=system]",
+				Description: "Show system variables containing 'session'",
+			},
+		},
+		Notes: []string{
+			"User variables: custom variables set with \\set command",
+			"System variables: @ (environment), # (metadata), _ (command output)",
+			"Pattern uses regular expression syntax for flexible filtering",
+			"Long values are truncated with length information displayed",
 		},
 	}
 }

@@ -6,11 +6,11 @@ Options:
   var - Variable name to retrieve (required)
 Examples:
   \get[name]
-    # Get the value of variable 'name' using bracket syntax
+    %% Get the value of variable 'name' using bracket syntax
   \get name
-    # Get the value of variable 'name' using space syntax
+    %% Get the value of variable 'name' using space syntax
   \get @pwd
-    # Get system variable for current directory
+    %% Get system variable for current directory
 Notes:
   Supports both bracket syntax (\get[var]) and space syntax (\get var)
   System variables start with @ (e.g., @pwd, @user, @date)

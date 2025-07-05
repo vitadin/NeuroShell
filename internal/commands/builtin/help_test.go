@@ -401,7 +401,7 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 				"Parse Mode: Raw",
 				"Examples:",
 				"\\bash command_to_execute",
-				"# Basic usage example",
+				"%% Basic usage example",
 			},
 		},
 		{
@@ -414,7 +414,7 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 				"Parse Mode: Key-Value",
 				"Examples:",
 				"\\set[var=value] or \\set var value",
-				"# Basic usage example",
+				"%% Basic usage example",
 			},
 		},
 		{

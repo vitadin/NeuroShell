@@ -45,6 +45,30 @@ func (c *BashCommand) HelpInfo() neurotypes.HelpInfo {
 				Command:     "\\bash ls -la",
 				Description: "List directory contents with details",
 			},
+			{
+				Command:     "\\bash pwd",
+				Description: "Show current working directory",
+			},
+			{
+				Command:     "\\bash echo \"Hello, ${name}!\"",
+				Description: "Execute command with variable interpolation",
+			},
+			{
+				Command:     "\\bash cat file.txt | grep pattern",
+				Description: "Use pipes and command chaining",
+			},
+			{
+				Command:     "\\bash python -c \"print('hello')\"",
+				Description: "Execute Python or other language commands",
+			},
+		},
+		Notes: []string{
+			"Commands are executed using bash -c for full shell capabilities",
+			"Variables are interpolated before execution",
+			"Output is stored in ${_output}, errors in ${_error}, exit code in ${_status}",
+			"Supports pipes, redirection, and all bash features",
+			"Use quotes to protect special characters from shell expansion",
+			"Commands run with a configurable timeout (default: 2 minutes)",
 		},
 	}
 }

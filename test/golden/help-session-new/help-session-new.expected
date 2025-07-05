@@ -1,17 +1,22 @@
 Command: session-new
 Description: Create new chat session for LLM interactions
 Usage: \session-new[system=system_prompt] session_name
-Examples:
-  \session-new work project                       # Create session named "work project"
-  \session-new debug                              # Create session named "debug"
-  \session-new[system=You are a code reviewer] code review  # Named "code review" with custom system prompt
-  \session-new "my project"                       # Session name with quotes (auto-processed)
-Options:
-  system - System prompt for LLM context (optional, defaults to helpful assistant)
-Note: Session name is required and taken from the input parameter.
-      Use quotes if the name contains special characters.
-      Initial messages can be added later with \send command.
 Parse Mode: Key-Value (supports [key=value] syntax)
+Options:
+  system - System prompt for LLM context (default: helpful assistant)
 Examples:
   \session-new work
-    # Create new session named 'work'
+    %% Create new session named 'work'
+  \session-new[system=You are a code reviewer] code-review
+    %% Create session with custom system prompt
+  \session-new "my project"
+    %% Create session with quoted name containing spaces
+  \session-new debug-${@date}
+    %% Create session with interpolated variables in name
+Notes:
+  Session name is required and taken from the input parameter
+  Use quotes if the name contains special characters or spaces
+  Variables in session name and system prompt are interpolated
+  Session becomes active immediately after creation
+  Session ID and metadata are stored in system variables (${#session_id}, etc.)
+  Initial messages can be added later with \send command

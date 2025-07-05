@@ -66,6 +66,25 @@ func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
 				Command:     "\\editor",
 				Description: "Open external editor for composing multi-line input",
 			},
+			{
+				Command:     "\\set[@editor=\"code --wait\"]",
+				Description: "Configure VS Code as your preferred editor",
+			},
+			{
+				Command:     "\\editor",
+				Description: "Edit content, then use with \\send ${_output}",
+			},
+			{
+				Command:     "\\set[myvar=\"${_output}\"]",
+				Description: "Store editor content in a custom variable",
+			},
+		},
+		Notes: []string{
+			"Editor opens with ${_output} content, or a default template if empty",
+			"Content is stored in ${_output} variable when editor is saved and closed",
+			"Editor preference: 1) ${@editor} variable, 2) $EDITOR env var, 3) auto-detect",
+			"Supports vim, nano, code, subl, atom, and other common editors",
+			"Use 'editor --wait' flag for GUI editors to wait for file closure",
 		},
 	}
 }
