@@ -31,7 +31,7 @@ func (c *DeleteCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the session-delete command.
 func (c *DeleteCommand) Usage() string {
-	return `\session-delete[name=session_name] [session_name_or_id]
+	return `\session-delete[name=session_name] or \session-delete session_name_or_id
 
 Examples:
   \session-delete work project        %% Delete by exact name
@@ -62,7 +62,7 @@ func (c *DeleteCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\session-delete[name=session_name] [session_name_or_id]",
+		Usage:       "\\session-delete[name=session_name] or \\session-delete session_name_or_id",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{

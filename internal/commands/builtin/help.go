@@ -31,7 +31,7 @@ func (c *HelpCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the help command.
 func (c *HelpCommand) Usage() string {
-	return "\\help[styled=true] [command]"
+	return "\\help[styled=true, command_name] or \\help[styled=true] command_name"
 }
 
 // HelpInfo returns structured help information for the help command.
@@ -39,7 +39,7 @@ func (c *HelpCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\help[styled=true] [command]",
+		Usage:       "\\help[styled=true, command_name] or \\help[styled=true] command_name",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{

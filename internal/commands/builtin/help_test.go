@@ -77,7 +77,7 @@ func TestHelpCommand_Description(t *testing.T) {
 
 func TestHelpCommand_Usage(t *testing.T) {
 	cmd := &HelpCommand{}
-	assert.Equal(t, "\\help[styled=true] [command]", cmd.Usage())
+	assert.Equal(t, "\\help[styled=true, command_name] or \\help[styled=true] command_name", cmd.Usage())
 }
 
 func TestHelpCommand_Execute(t *testing.T) {
