@@ -33,7 +33,7 @@ func (c *ListCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the session-list command.
 func (c *ListCommand) Usage() string {
-	return `\session-list[sort=name|created|updated][filter=active]
+	return `\session-list[sort=name|created|updated, filter=active]
 
 Examples:
   \session-list                           %% List all sessions (default: sorted by created, newest first)
@@ -55,7 +55,7 @@ func (c *ListCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\session-list[sort=name|created|updated][filter=active]",
+		Usage:       "\\session-list[sort=name|created|updated, filter=active]",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{

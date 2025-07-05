@@ -31,7 +31,7 @@ func (c *CheckCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the check command.
 func (c *CheckCommand) Usage() string {
-	return "\\check [service=name] [all=true] [quiet=true]"
+	return "\\check[service=name, all=true, quiet=true]"
 }
 
 // HelpInfo returns structured help information for the check command.

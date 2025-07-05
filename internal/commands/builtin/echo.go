@@ -31,7 +31,7 @@ func (c *EchoCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the echo command.
 func (c *EchoCommand) Usage() string {
-	return "\\echo [to=var_name] [silent=true] [raw=true] message"
+	return "\\echo[to=var_name, silent=true, raw=true] message"
 }
 
 // HelpInfo returns structured help information for the echo command.

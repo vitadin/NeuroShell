@@ -32,7 +32,7 @@ func (c *VarsCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the vars command.
 func (c *VarsCommand) Usage() string {
-	return "\\vars [pattern=regex] [type=user|system|all]"
+	return "\\vars[pattern=regex, type=user|system|all]"
 }
 
 // HelpInfo returns structured help information for the vars command.
