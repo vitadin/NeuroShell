@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
@@ -93,6 +92,10 @@ func TestGetCommand_Execute_BracketSyntax(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContextWithVars(tt.setupVars)
+
+			// Setup services for testing
+			setupTestServices(ctx)
+			defer cleanupTestServices()
 
 			// Capture stdout
 			originalStdout := os.Stdout
@@ -186,6 +189,10 @@ func TestGetCommand_Execute_SpaceSyntax(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContextWithVars(tt.setupVars)
 
+			// Setup services for testing
+			setupTestServices(ctx)
+			defer cleanupTestServices()
+
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
@@ -222,6 +229,10 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 		"spacevar":   "spacevalue",
 	})
 
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
+
 	// When both args and input are provided, args (bracket syntax) should take priority
 	args := map[string]string{"bracketvar": ""}
 	input := "spacevar"
@@ -251,6 +262,10 @@ func TestGetCommand_Execute_ContextError(t *testing.T) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
 
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
+
 	// Set up context to return an error
 	ctx.SetGetVariableError(fmt.Errorf("context error"))
 
@@ -266,6 +281,10 @@ func TestGetCommand_Execute_ContextError(t *testing.T) {
 func TestGetCommand_Execute_EmptyVariableName(t *testing.T) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
+
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name  string
@@ -311,6 +330,10 @@ func TestGetCommand_Execute_VariableWithSpecialCharacters(t *testing.T) {
 
 	ctx := testutils.NewMockContextWithVars(specialVars)
 
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
+
 	for varName, expectedValue := range specialVars {
 		t.Run(fmt.Sprintf("get_%s", varName), func(t *testing.T) {
 			args := map[string]string{varName: ""}
@@ -342,6 +365,10 @@ func TestGetCommand_Execute_EmptyVariableValue(t *testing.T) {
 	ctx := testutils.NewMockContextWithVars(map[string]string{
 		"empty_var": "",
 	})
+
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	args := map[string]string{"empty_var": ""}
 
@@ -405,6 +432,10 @@ func BenchmarkGetCommand_Execute_SpaceSyntax(b *testing.B) {
 func BenchmarkGetCommand_Execute_SystemVariable(b *testing.B) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
+
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 	args := map[string]string{"@user": ""}
 
 	// Redirect stdout to avoid benchmark noise

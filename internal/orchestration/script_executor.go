@@ -116,12 +116,12 @@ func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
 	}
 
 	// Phase 5: Set success status variables for caller access
-	if err := vs.SetSystemVariable("_status", "0", ctx); err != nil {
+	if err := vs.SetSystemVariable("_status", "0"); err != nil {
 		logger.Debug("Failed to set _status variable", "error", err)
 	}
 
 	successMessage := fmt.Sprintf("Script %s executed successfully (%d commands)", scriptPath, commandCount)
-	if err := vs.SetSystemVariable("_output", successMessage, ctx); err != nil {
+	if err := vs.SetSystemVariable("_output", successMessage); err != nil {
 		logger.Debug("Failed to set _output variable", "error", err)
 	}
 

@@ -116,7 +116,7 @@ func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes
 	vs := variableService.(*services.VariableService)
 
 	// Store the content in _output system variable
-	if err := vs.SetSystemVariable("_output", content, ctx); err != nil {
+	if err := vs.SetSystemVariable("_output", content); err != nil {
 		return fmt.Errorf("failed to store editor content: %w", err)
 	}
 

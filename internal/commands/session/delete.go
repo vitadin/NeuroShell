@@ -111,7 +111,7 @@ func (c *DeleteCommand) HelpInfo() neurotypes.HelpInfo {
 //
 // Input: session name or ID to delete (optional if provided as name option)
 // Error if both name option and input are provided.
-func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *DeleteCommand) Execute(args map[string]string, input string, _ neurotypes.Context) error {
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
 	if err != nil {
@@ -142,7 +142,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurot
 	}
 
 	// Interpolate variables in session identifier
-	sessionIdentifier, err = variableService.InterpolateString(sessionIdentifier, ctx)
+	sessionIdentifier, err = variableService.InterpolateString(sessionIdentifier)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables in session identifier: %w", err)
 	}
@@ -162,7 +162,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurot
 	}
 
 	// Update session-related variables after deletion
-	if err := c.updateSessionVariablesAfterDeletion(variableService, ctx); err != nil {
+	if err := c.updateSessionVariablesAfterDeletion(variableService); err != nil {
 		return fmt.Errorf("failed to update session variables: %w", err)
 	}
 
@@ -170,7 +170,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurot
 	outputMsg := fmt.Sprintf("Deleted session '%s' (ID: %s)", sessionName, sessionID)
 
 	// Store result in _output variable
-	if err := variableService.SetSystemVariable("_output", outputMsg, ctx); err != nil {
+	if err := variableService.SetSystemVariable("_output", outputMsg); err != nil {
 		return fmt.Errorf("failed to store result: %w", err)
 	}
 
@@ -181,7 +181,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurot
 }
 
 // updateSessionVariablesAfterDeletion clears session-related system variables if the deleted session was active
-func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *services.VariableService, ctx neurotypes.Context) error {
+func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *services.VariableService) error {
 	// Get chat session service to check current session
 	chatService, err := c.getChatSessionService()
 	if err != nil {
@@ -209,7 +209,7 @@ func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *ser
 		}
 
 		for name, value := range variables {
-			if err := variableService.SetSystemVariable(name, value, ctx); err != nil {
+			if err := variableService.SetSystemVariable(name, value); err != nil {
 				return fmt.Errorf("failed to set variable %s: %w", name, err)
 			}
 		}
@@ -224,7 +224,7 @@ func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *ser
 		}
 
 		for _, name := range sessionVariables {
-			if err := variableService.SetSystemVariable(name, "", ctx); err != nil {
+			if err := variableService.SetSystemVariable(name, ""); err != nil {
 				return fmt.Errorf("failed to clear variable %s: %w", name, err)
 			}
 		}

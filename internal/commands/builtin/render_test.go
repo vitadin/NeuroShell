@@ -20,12 +20,12 @@ func TestRenderCommand_BasicFunctionality(t *testing.T) {
 }
 
 func TestRenderCommand_Execute_BasicStyling(t *testing.T) {
-	// Setup services
-	setupTestServices(t)
-	defer cleanupTestServices()
-
 	cmd := &RenderCommand{}
 	ctx := context.New()
+
+	// Setup services
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name  string
@@ -84,12 +84,12 @@ func TestRenderCommand_Execute_BasicStyling(t *testing.T) {
 }
 
 func TestRenderCommand_Execute_KeywordHighlighting(t *testing.T) {
-	// Setup services
-	setupTestServices(t)
-	defer cleanupTestServices()
-
 	cmd := &RenderCommand{}
 	ctx := context.New()
+
+	// Setup services
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name     string
@@ -149,12 +149,12 @@ func TestRenderCommand_Execute_KeywordHighlighting(t *testing.T) {
 }
 
 func TestRenderCommand_Execute_VariableInterpolation(t *testing.T) {
-	// Setup services
-	setupTestServices(t)
-	defer cleanupTestServices()
-
 	cmd := &RenderCommand{}
 	ctx := context.New()
+
+	// Setup services
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Set up test variables
 	err := ctx.SetVariable("test_cmd", "\\session-new")
@@ -188,12 +188,12 @@ func TestRenderCommand_Execute_VariableInterpolation(t *testing.T) {
 }
 
 func TestRenderCommand_Execute_OutputVariable(t *testing.T) {
-	// Setup services
-	setupTestServices(t)
-	defer cleanupTestServices()
-
 	cmd := &RenderCommand{}
 	ctx := context.New()
+
+	// Setup services
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name      string
@@ -243,12 +243,12 @@ func TestRenderCommand_Execute_OutputVariable(t *testing.T) {
 }
 
 func TestRenderCommand_Execute_SilentMode(t *testing.T) {
-	// Setup services
-	setupTestServices(t)
-	defer cleanupTestServices()
-
 	cmd := &RenderCommand{}
 	ctx := context.New()
+
+	// Setup services
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name   string
@@ -288,12 +288,12 @@ func TestRenderCommand_Execute_SilentMode(t *testing.T) {
 }
 
 func TestRenderCommand_Execute_ErrorCases(t *testing.T) {
-	// Setup services
-	setupTestServices(t)
-	defer cleanupTestServices()
-
 	cmd := &RenderCommand{}
 	ctx := context.New()
+
+	// Setup services
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name    string
@@ -408,30 +408,4 @@ func TestRenderCommand_ParseRenderOptions(t *testing.T) {
 			assert.True(t, tt.expected(options), "Options should match expected values")
 		})
 	}
-}
-
-// Helper functions for test setup
-
-func setupTestServices(t *testing.T) {
-	// Reset global registry for testing
-	services.GlobalRegistry = services.NewRegistry()
-
-	// Register required services
-	err := services.GlobalRegistry.RegisterService(services.NewRenderService())
-	require.NoError(t, err)
-
-	err = services.GlobalRegistry.RegisterService(services.NewVariableService())
-	require.NoError(t, err)
-
-	err = services.GlobalRegistry.RegisterService(services.NewInterpolationService())
-	require.NoError(t, err)
-
-	// Initialize services
-	ctx := context.New()
-	err = services.GlobalRegistry.InitializeAll(ctx)
-	require.NoError(t, err)
-}
-
-func cleanupTestServices() {
-	// Could reset registry here if needed
 }

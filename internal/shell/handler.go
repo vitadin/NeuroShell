@@ -92,6 +92,10 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
+	if err := services.GetGlobalRegistry().RegisterService(services.NewCatalogService()); err != nil {
+		return err
+	}
+
 	// Initialize all services with the global context
 	if err := services.GetGlobalRegistry().InitializeAll(globalCtx); err != nil {
 		return err

@@ -5,6 +5,7 @@ package model
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
@@ -33,19 +34,24 @@ func (c *NewCommand) Description() string {
 // Usage returns the syntax and usage examples for the model-new command.
 func (c *NewCommand) Usage() string {
 	return `\model-new[provider=provider_name, base_model=model_name, temperature=0.7, max_tokens=1000, ...] model_name
+\model-new[from_id=existing_model_id, temperature=0.8, ...] new_model_name
 
 Examples:
   \model-new[provider=openai, base_model=gpt-4] my-gpt4                    %% Create OpenAI GPT-4 model
   \model-new[provider=anthropic, base_model=claude-3-sonnet] claude-work   %% Create Anthropic Claude model
   \model-new[provider=openai, base_model=gpt-3.5-turbo, temperature=0.9] creative-gpt  %% Custom temperature
-  \model-new[provider=local, base_model=llama-2, max_tokens=2048] local-llama  %% Local model with custom max tokens
-  \model-new[provider=openai, base_model=gpt-4, description="Production model for analysis"] prod-model  %% With description
+  \model-new[from_id=${_catalog_model_id}, temperature=0.1] precise-model  %% Create from catalog discovery
+  \model-new[from_id=existing-model, max_tokens=2000] custom-model         %% Clone and customize existing model
   
-Required Options:
-  provider - LLM provider name (e.g., openai, anthropic, local)
-  base_model - Provider's model identifier (e.g., gpt-4, claude-3-sonnet, llama-2)
-  
-Optional Parameters:
+Creation Methods:
+  Method 1 - From Provider/Base Model:
+    provider - LLM provider name (e.g., openai, anthropic, local) [REQUIRED]
+    base_model - Provider's model identifier (e.g., gpt-4, claude-3-sonnet) [REQUIRED]
+    
+  Method 2 - From Existing Model:
+    from_id - ID of existing model to clone/customize [REQUIRED]
+    
+Optional Parameters (both methods):
   temperature - Controls randomness (0.0-1.0, default varies by provider)
   max_tokens - Maximum tokens to generate (positive integer)
   top_p - Nucleus sampling parameter (0.0-1.0)
@@ -56,6 +62,7 @@ Optional Parameters:
   
 Note: Model name is required and taken from the input parameter.
       Model names must be unique and cannot contain spaces.
+      Cannot combine from_id with provider/base_model options.
       Additional provider-specific parameters can be passed and will be stored.`
 }
 
@@ -64,19 +71,25 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\model-new[provider=provider_name, base_model=model_name, ...] model_name",
+		Usage:       "\\model-new[provider=provider_name, base_model=model_name, ...] model_name or \\model-new[from_id=existing_model_id, ...] new_model_name",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "provider",
-				Description: "LLM provider name (e.g., openai, anthropic, local)",
-				Required:    true,
+				Description: "LLM provider name (e.g., openai, anthropic, local) [Method 1]",
+				Required:    false,
 				Type:        "string",
 			},
 			{
 				Name:        "base_model",
-				Description: "Provider's model identifier (e.g., gpt-4, claude-3-sonnet)",
-				Required:    true,
+				Description: "Provider's model identifier (e.g., gpt-4, claude-3-sonnet) [Method 1]",
+				Required:    false,
+				Type:        "string",
+			},
+			{
+				Name:        "from_id",
+				Description: "ID of existing model to clone/customize [Method 2]",
+				Required:    false,
 				Type:        "string",
 			},
 			{
@@ -136,14 +149,19 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Create model with custom temperature setting",
 			},
 			{
-				Command:     "\\model-new[provider=local, base_model=llama-2, max_tokens=2048] local-llama",
-				Description: "Create local model with custom token limit",
+				Command:     "\\model-new[from_id=${_catalog_model_id}, temperature=0.1] precise-model",
+				Description: "Create model from catalog discovery with custom temperature",
+			},
+			{
+				Command:     "\\model-new[from_id=existing-model, max_tokens=2000] custom-model",
+				Description: "Clone existing model with custom token limit",
 			},
 		},
 		Notes: []string{
 			"Model name is required and taken from the input parameter",
 			"Model names must be unique and cannot contain spaces",
-			"Provider and base_model are required parameters",
+			"Use either provider+base_model OR from_id, not both",
+			"from_id enables cloning/templating from existing models or catalog discoveries",
 			"Variables in model name and parameters are interpolated",
 			"Additional provider-specific parameters can be included",
 			"Created model ID and metadata are stored in system variables",
@@ -153,7 +171,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute creates a new model configuration with the specified parameters.
 // The input parameter is used as the model name (required).
-// Required options: provider, base_model
+// Creation methods: 1) provider+base_model, 2) from_id
 // Optional parameters: temperature, max_tokens, top_p, top_k, presence_penalty, frequency_penalty, description
 func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
 	// Get model service
@@ -168,36 +186,115 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Parse required arguments
+	// Parse model name
 	modelName := input
-	provider := args["provider"]
-	baseModel := args["base_model"]
-
-	// Validate required parameters
 	if modelName == "" {
 		return fmt.Errorf("model name is required\\n\\nUsage: %s", c.Usage())
 	}
 
-	if provider == "" {
-		return fmt.Errorf("provider is required\\n\\nUsage: %s", c.Usage())
-	}
-
-	if baseModel == "" {
-		return fmt.Errorf("base_model is required\\n\\nUsage: %s", c.Usage())
-	}
-
-	// Interpolate variables in all string parameters
-	modelName, err = variableService.InterpolateString(modelName, ctx)
+	// Interpolate model name
+	modelName, err = variableService.InterpolateString(modelName)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables in model name: %w", err)
 	}
 
-	provider, err = variableService.InterpolateString(provider, ctx)
+	// Determine creation method
+	fromID := args["from_id"]
+	provider := args["provider"]
+	baseModel := args["base_model"]
+
+	// Check for conflicting options
+	if fromID != "" && (provider != "" || baseModel != "") {
+		return fmt.Errorf("cannot combine from_id with provider/base_model options\\n\\nUsage: %s", c.Usage())
+	}
+
+	// Route to appropriate creation method
+	if fromID != "" {
+		return c.executeFromExisting(args, modelName, fromID, variableService, modelService, ctx)
+	}
+	return c.executeFromProvider(args, modelName, provider, baseModel, variableService, modelService, ctx)
+}
+
+// executeFromExisting creates a model by cloning an existing model with optional parameter overrides.
+func (c *NewCommand) executeFromExisting(args map[string]string, modelName, fromID string, variableService *services.VariableService, modelService *services.ModelService, ctx neurotypes.Context) error {
+	// Interpolate from_id
+	fromID, err := variableService.InterpolateString(fromID)
+	if err != nil {
+		return fmt.Errorf("failed to interpolate variables in from_id: %w", err)
+	}
+
+	// Get base model configuration
+	baseModel, err := modelService.GetModel(fromID)
+	if err != nil {
+		return fmt.Errorf("base model with ID '%s' not found: %w", fromID, err)
+	}
+
+	// Create new model by copying base model
+	newModel := *baseModel // Copy struct
+	newModel.ID = c.generateModelID()
+	newModel.Name = modelName
+	newModel.CreatedAt = time.Now()
+
+	// Update description to indicate cloning
+	if newModel.Description == "" {
+		newModel.Description = fmt.Sprintf("Cloned from model '%s'", baseModel.Name)
+	} else {
+		newModel.Description = fmt.Sprintf("Cloned from '%s': %s", baseModel.Name, newModel.Description)
+	}
+
+	// Apply parameter overrides
+	if err := c.applyParameterOverrides(&newModel, args, variableService, ctx); err != nil {
+		return fmt.Errorf("failed to apply parameter overrides: %w", err)
+	}
+
+	// Validate parameters
+	if err := modelService.ValidateModelParameters(newModel.Parameters); err != nil {
+		return fmt.Errorf("invalid parameters: %w", err)
+	}
+
+	// Store model using CreateModel (which handles storage internally)
+	createdModel, err := modelService.CreateModel(
+		newModel.Name,
+		newModel.Provider,
+		newModel.BaseModel,
+		newModel.Parameters,
+		newModel.Description,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to store model: %w", err)
+	}
+
+	// Update result variables
+	if err := c.updateModelVariables(createdModel, variableService, ctx); err != nil {
+		return fmt.Errorf("failed to update model variables: %w", err)
+	}
+
+	// Print confirmation
+	fmt.Printf("Created model '%s' (ID: %s) from base model '%s'\n",
+		createdModel.Name, createdModel.ID[:8], baseModel.Name)
+
+	return nil
+}
+
+// executeFromProvider creates a model from provider and base model specifications.
+func (c *NewCommand) executeFromProvider(args map[string]string, modelName, provider, baseModel string, variableService *services.VariableService, modelService *services.ModelService, ctx neurotypes.Context) error {
+	// Validate required parameters
+	if provider == "" {
+		return fmt.Errorf("provider is required for provider-based creation\\n\\nUsage: %s", c.Usage())
+	}
+
+	if baseModel == "" {
+		return fmt.Errorf("base_model is required for provider-based creation\\n\\nUsage: %s", c.Usage())
+	}
+
+	// Interpolate variables in string parameters
+	var err error
+	provider, err = variableService.InterpolateString(provider)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables in provider: %w", err)
 	}
 
-	baseModel, err = variableService.InterpolateString(baseModel, ctx)
+	baseModel, err = variableService.InterpolateString(baseModel)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables in base_model: %w", err)
 	}
@@ -208,7 +305,7 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 
 	// Handle description separately
 	if desc, exists := args["description"]; exists {
-		description, err = variableService.InterpolateString(desc, ctx)
+		description, err = variableService.InterpolateString(desc)
 		if err != nil {
 			return fmt.Errorf("failed to interpolate variables in description: %w", err)
 		}
@@ -225,7 +322,7 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 	}
 
 	// Create model configuration
-	model, err := modelService.CreateModel(modelName, provider, baseModel, parameters, description, ctx)
+	model, err := modelService.CreateModel(modelName, provider, baseModel, parameters, description)
 	if err != nil {
 		return fmt.Errorf("failed to create model: %w", err)
 	}
@@ -240,12 +337,46 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 		model.Name, model.ID[:8], model.Provider, model.BaseModel)
 
 	// Store result in _output variable
-	if err := variableService.SetSystemVariable("_output", outputMsg, ctx); err != nil {
+	if err := variableService.SetSystemVariable("_output", outputMsg); err != nil {
 		return fmt.Errorf("failed to store result: %w", err)
 	}
 
 	// Print confirmation
 	fmt.Println(outputMsg)
+
+	return nil
+}
+
+// generateModelID generates a unique ID for a new model.
+func (c *NewCommand) generateModelID() string {
+	return fmt.Sprintf("%d", time.Now().UnixNano())
+}
+
+// applyParameterOverrides applies parameter overrides from args to an existing model configuration.
+func (c *NewCommand) applyParameterOverrides(model *neurotypes.ModelConfig, args map[string]string, variableService *services.VariableService, _ neurotypes.Context) error {
+	// Handle description override
+	if desc, exists := args["description"]; exists {
+		interpolatedDesc, err := variableService.InterpolateString(desc)
+		if err != nil {
+			return fmt.Errorf("failed to interpolate variables in description: %w", err)
+		}
+		model.Description = interpolatedDesc
+	}
+
+	// Parse and apply parameter overrides
+	parameterOverrides := make(map[string]any)
+	if err := c.parseParameters(args, parameterOverrides); err != nil {
+		return fmt.Errorf("failed to parse parameter overrides: %w", err)
+	}
+
+	// Apply overrides to existing parameters
+	if model.Parameters == nil {
+		model.Parameters = make(map[string]any)
+	}
+
+	for key, value := range parameterOverrides {
+		model.Parameters[key] = value
+	}
 
 	return nil
 }
@@ -323,7 +454,7 @@ func (c *NewCommand) parseParameters(args map[string]string, parameters map[stri
 }
 
 // updateModelVariables sets model-related system variables.
-func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variableService *services.VariableService, ctx neurotypes.Context) error {
+func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variableService *services.VariableService, _ neurotypes.Context) error {
 	// Set model variables
 	variables := map[string]string{
 		"#model_id":       model.ID,
@@ -342,7 +473,7 @@ func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variabl
 	}
 
 	for name, value := range variables {
-		if err := variableService.SetSystemVariable(name, value, ctx); err != nil {
+		if err := variableService.SetSystemVariable(name, value); err != nil {
 			return fmt.Errorf("failed to set variable %s: %w", name, err)
 		}
 	}

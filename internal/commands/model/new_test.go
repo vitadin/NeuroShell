@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/context"
-	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -49,17 +48,17 @@ func TestNewCommand_HelpInfo(t *testing.T) {
 	assert.NotEmpty(t, helpInfo.Usage)
 	assert.Equal(t, neurotypes.ParseModeKeyValue, helpInfo.ParseMode)
 
-	// Check that required options are present
-	requiredOptions := []string{"provider", "base_model"}
-	for _, reqOpt := range requiredOptions {
+	// Check that essential options are present (but not necessarily required since from_id is alternative)
+	essentialOptions := []string{"provider", "base_model", "from_id"}
+	for _, essOpt := range essentialOptions {
 		found := false
 		for _, opt := range helpInfo.Options {
-			if opt.Name == reqOpt && opt.Required {
+			if opt.Name == essOpt {
 				found = true
 				break
 			}
 		}
-		assert.True(t, found, "Required option %s should be in help info", reqOpt)
+		assert.True(t, found, "Essential option %s should be in help info", essOpt)
 	}
 
 	// Check that examples are provided
@@ -72,7 +71,8 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 	ctx := context.New()
 
 	// Setup test registry with required services
-	setupModelTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name        string
@@ -161,7 +161,8 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset context for each test
 			ctx = context.New()
-			setupModelTestRegistry(t, ctx)
+			setupTestServices(ctx)
+			defer cleanupTestServices()
 
 			err := cmd.Execute(tt.args, tt.input, ctx)
 
@@ -211,7 +212,8 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 func TestNewCommand_Execute_ParameterValidation(t *testing.T) {
 	cmd := &NewCommand{}
 	ctx := context.New()
-	setupModelTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name        string
@@ -315,7 +317,8 @@ func TestNewCommand_Execute_ParameterValidation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset context for each test
 			ctx = context.New()
-			setupModelTestRegistry(t, ctx)
+			setupTestServices(ctx)
+			defer cleanupTestServices()
 
 			err := cmd.Execute(tt.args, tt.input, ctx)
 
@@ -334,7 +337,8 @@ func TestNewCommand_Execute_ParameterValidation(t *testing.T) {
 func TestNewCommand_Execute_ModelNameValidation(t *testing.T) {
 	cmd := &NewCommand{}
 	ctx := context.New()
-	setupModelTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name        string
@@ -408,7 +412,8 @@ func TestNewCommand_Execute_ModelNameValidation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset context for each test
 			ctx = context.New()
-			setupModelTestRegistry(t, ctx)
+			setupTestServices(ctx)
+			defer cleanupTestServices()
 
 			err := cmd.Execute(baseArgs, tt.modelName, ctx)
 
@@ -427,7 +432,8 @@ func TestNewCommand_Execute_ModelNameValidation(t *testing.T) {
 func TestNewCommand_Execute_DuplicateModelNames(t *testing.T) {
 	cmd := &NewCommand{}
 	ctx := context.New()
-	setupModelTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	baseArgs := map[string]string{
 		"provider":   "openai",
@@ -447,7 +453,8 @@ func TestNewCommand_Execute_DuplicateModelNames(t *testing.T) {
 func TestNewCommand_Execute_VariableInterpolation(t *testing.T) {
 	cmd := &NewCommand{}
 	ctx := context.New()
-	setupModelTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Set up test variables
 	require.NoError(t, ctx.SetVariable("model_prefix", "test"))
@@ -482,7 +489,8 @@ func TestNewCommand_Execute_VariableInterpolation(t *testing.T) {
 func TestNewCommand_Execute_CustomParameters(t *testing.T) {
 	cmd := &NewCommand{}
 	ctx := context.New()
-	setupModelTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Test with custom provider-specific parameters
 	args := map[string]string{
@@ -527,7 +535,8 @@ func TestNewCommand_Execute_ServiceNotAvailable(t *testing.T) {
 func TestNewCommand_Execute_EdgeCases(t *testing.T) {
 	cmd := &NewCommand{}
 	ctx := context.New()
-	setupModelTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name        string
@@ -596,7 +605,8 @@ func TestNewCommand_Execute_EdgeCases(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset context for each test
 			ctx = context.New()
-			setupModelTestRegistry(t, ctx)
+			setupTestServices(ctx)
+			defer cleanupTestServices()
 
 			err := cmd.Execute(tt.args, tt.input, ctx)
 
@@ -612,27 +622,273 @@ func TestNewCommand_Execute_EdgeCases(t *testing.T) {
 	}
 }
 
-// setupModelTestRegistry sets up a test environment with required services
-func setupModelTestRegistry(t *testing.T, ctx neurotypes.Context) {
-	// Create a new registry for testing
-	oldRegistry := services.GetGlobalRegistry()
-	services.SetGlobalRegistry(services.NewRegistry())
+func TestNewCommand_Execute_FromExisting(t *testing.T) {
+	cmd := &NewCommand{}
+	ctx := context.New()
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
-	// Register required services
-	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	// First create a base model to clone from
+	baseArgs := map[string]string{
+		"provider":    "openai",
+		"base_model":  "gpt-4",
+		"temperature": "0.7",
+		"max_tokens":  "1000",
+		"description": "Base model for cloning",
+	}
+	err := cmd.Execute(baseArgs, "base-model", ctx)
 	require.NoError(t, err)
 
-	err = services.GetGlobalRegistry().RegisterService(services.NewModelService())
+	// Get the created model ID
+	baseModelID, err := ctx.GetVariable("#model_id")
 	require.NoError(t, err)
+	require.NotEmpty(t, baseModelID)
 
-	// Initialize services
-	err = services.GetGlobalRegistry().InitializeAll(ctx)
-	require.NoError(t, err)
+	tests := []struct {
+		name        string
+		args        map[string]string
+		input       string
+		expectError bool
+		checkFunc   func(t *testing.T, ctx neurotypes.Context)
+	}{
+		{
+			name: "clone basic model",
+			args: map[string]string{
+				"from_id": baseModelID,
+			},
+			input:       "cloned-model",
+			expectError: false,
+			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
+				// Check that cloned model was created
+				clonedModelID, err := ctx.GetVariable("#model_id")
+				assert.NoError(t, err)
+				assert.NotEmpty(t, clonedModelID)
+				assert.NotEqual(t, baseModelID, clonedModelID) // Should be different IDs
 
-	// Cleanup function to restore original registry
-	t.Cleanup(func() {
-		services.SetGlobalRegistry(oldRegistry)
-	})
+				// Check model name
+				modelName, err := ctx.GetVariable("#model_name")
+				assert.NoError(t, err)
+				assert.Equal(t, "cloned-model", modelName)
+
+				// Check provider inheritance
+				provider, err := ctx.GetVariable("#model_provider")
+				assert.NoError(t, err)
+				assert.Equal(t, "openai", provider)
+
+				// Check base model inheritance
+				baseModel, err := ctx.GetVariable("#model_base")
+				assert.NoError(t, err)
+				assert.Equal(t, "gpt-4", baseModel)
+			},
+		},
+		{
+			name: "clone with parameter overrides",
+			args: map[string]string{
+				"from_id":     baseModelID,
+				"temperature": "0.9",
+				"max_tokens":  "2000",
+				"description": "Custom cloned model",
+			},
+			input:       "custom-clone",
+			expectError: false,
+			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
+				// Verify model was created
+				modelID, err := ctx.GetVariable("#model_id")
+				assert.NoError(t, err)
+				assert.NotEmpty(t, modelID)
+
+				// Check description override
+				description, err := ctx.GetVariable("#model_description")
+				assert.NoError(t, err)
+				assert.Equal(t, "Custom cloned model", description)
+
+				// Verify parameter count includes overrides
+				paramCount, err := ctx.GetVariable("#model_param_count")
+				assert.NoError(t, err)
+				// Should have temperature, max_tokens from overrides
+				assert.True(t, paramCount != "0")
+			},
+		},
+		{
+			name: "clone with variable interpolation in from_id",
+			args: map[string]string{
+				"from_id": "${#model_id}", // Should reference the last created model
+			},
+			input:       "interpolated-clone",
+			expectError: false,
+			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
+				modelName, err := ctx.GetVariable("#model_name")
+				assert.NoError(t, err)
+				assert.Equal(t, "interpolated-clone", modelName)
+			},
+		},
+		{
+			name: "clone nonexistent model",
+			args: map[string]string{
+				"from_id": "nonexistent-model-id",
+			},
+			input:       "should-fail",
+			expectError: true,
+		},
+		{
+			name: "clone with conflicting provider options",
+			args: map[string]string{
+				"from_id":    baseModelID,
+				"provider":   "anthropic", // Should conflict with from_id
+				"base_model": "claude-3-sonnet",
+			},
+			input:       "conflict-model",
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := cmd.Execute(tt.args, tt.input, ctx)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				if tt.checkFunc != nil {
+					tt.checkFunc(t, ctx)
+				}
+			}
+		})
+	}
+}
+
+func TestNewCommand_Execute_MethodValidation(t *testing.T) {
+	cmd := &NewCommand{}
+	ctx := context.New()
+	setupTestServices(ctx)
+	defer cleanupTestServices()
+
+	tests := []struct {
+		name        string
+		args        map[string]string
+		input       string
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name: "missing provider and from_id",
+			args: map[string]string{
+				"base_model": "gpt-4",
+			},
+			input:       "invalid-model",
+			expectError: true,
+			errorMsg:    "provider is required",
+		},
+		{
+			name: "missing base_model with provider",
+			args: map[string]string{
+				"provider": "openai",
+			},
+			input:       "invalid-model",
+			expectError: true,
+			errorMsg:    "base_model is required",
+		},
+		{
+			name: "empty model name",
+			args: map[string]string{
+				"provider":   "openai",
+				"base_model": "gpt-4",
+			},
+			input:       "",
+			expectError: true,
+			errorMsg:    "model name is required",
+		},
+		{
+			name: "invalid temperature",
+			args: map[string]string{
+				"provider":    "openai",
+				"base_model":  "gpt-4",
+				"temperature": "invalid",
+			},
+			input:       "test-model",
+			expectError: true,
+			errorMsg:    "invalid temperature",
+		},
+		{
+			name: "invalid max_tokens",
+			args: map[string]string{
+				"provider":   "openai",
+				"base_model": "gpt-4",
+				"max_tokens": "invalid",
+			},
+			input:       "test-model",
+			expectError: true,
+			errorMsg:    "invalid max_tokens",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := cmd.Execute(tt.args, tt.input, ctx)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorMsg != "" {
+					assert.Contains(t, err.Error(), tt.errorMsg)
+				}
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestNewCommand_UpdatedUsage(t *testing.T) {
+	cmd := &NewCommand{}
+	usage := cmd.Usage()
+
+	// Verify from_id option is documented
+	assert.Contains(t, usage, "from_id")
+	assert.Contains(t, usage, "Method 1 - From Provider/Base Model")
+	assert.Contains(t, usage, "Method 2 - From Existing Model")
+
+	// Verify both creation methods are shown in examples
+	assert.Contains(t, usage, "from_id=${_catalog_model_id}")
+	assert.Contains(t, usage, "from_id=existing-model")
+}
+
+func TestNewCommand_UpdatedHelpInfo(t *testing.T) {
+	cmd := &NewCommand{}
+	helpInfo := cmd.HelpInfo()
+
+	// Check that from_id option is present
+	hasFromIDOption := false
+	for _, option := range helpInfo.Options {
+		if option.Name == "from_id" {
+			hasFromIDOption = true
+			assert.Contains(t, option.Description, "clone")
+			assert.Equal(t, "string", option.Type)
+			assert.False(t, option.Required) // Should be optional
+			break
+		}
+	}
+	assert.True(t, hasFromIDOption, "from_id option should be present in help info")
+
+	// Check examples include from_id usage
+	hasFromIDExample := false
+	for _, example := range helpInfo.Examples {
+		if strings.Contains(example.Command, "from_id") {
+			hasFromIDExample = true
+			break
+		}
+	}
+	assert.True(t, hasFromIDExample, "should have example showing from_id usage")
+
+	// Check notes mention the conflict restriction
+	hasConflictNote := false
+	for _, note := range helpInfo.Notes {
+		if strings.Contains(note, "provider+base_model OR from_id") {
+			hasConflictNote = true
+			break
+		}
+	}
+	assert.True(t, hasConflictNote, "should have note about conflicting options")
 }
 
 // Interface compliance check

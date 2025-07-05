@@ -158,10 +158,10 @@ func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurot
 
 	if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
 		// Store in system variable
-		err = variableService.SetSystemVariable(targetVar, styledText, ctx)
+		err = variableService.SetSystemVariable(targetVar, styledText)
 	} else {
 		// Store in user variable
-		err = variableService.Set(targetVar, styledText, ctx)
+		err = variableService.Set(targetVar, styledText)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to store result in variable '%s': %w", targetVar, err)

@@ -1,0 +1,341 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2024-01-15",
+  "providers": {
+    "openai": {
+      "name": "OpenAI",
+      "description": "OpenAI's GPT models and embeddings",
+      "website": "https://openai.com",
+      "models": [
+        {
+          "id": "gpt-4",
+          "name": "GPT-4",
+          "description": "Most capable model, best for complex reasoning and detailed analysis",
+          "context_length": 8192,
+          "max_output_tokens": 4096,
+          "pricing_tier": "premium",
+          "capabilities": ["text", "function_calling", "json_mode"],
+          "release_date": "2023-03-14",
+          "status": "stable",
+          "parameters": {
+            "temperature": {
+              "min": 0.0,
+              "max": 2.0,
+              "default": 1.0,
+              "type": "float"
+            },
+            "max_tokens": {
+              "min": 1,
+              "max": 4096,
+              "default": 1000,
+              "type": "int"
+            },
+            "top_p": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 1.0,
+              "type": "float"
+            },
+            "presence_penalty": {
+              "min": -2.0,
+              "max": 2.0,
+              "default": 0.0,
+              "type": "float"
+            },
+            "frequency_penalty": {
+              "min": -2.0,
+              "max": 2.0,
+              "default": 0.0,
+              "type": "float"
+            }
+          }
+        },
+        {
+          "id": "gpt-4-turbo",
+          "name": "GPT-4 Turbo",
+          "description": "Latest GPT-4 with improved speed, cost efficiency, and larger context window",
+          "context_length": 128000,
+          "max_output_tokens": 4096,
+          "pricing_tier": "premium",
+          "capabilities": ["text", "function_calling", "json_mode", "vision"],
+          "release_date": "2023-11-06",
+          "status": "stable",
+          "parameters": {
+            "temperature": {
+              "min": 0.0,
+              "max": 2.0,
+              "default": 1.0,
+              "type": "float"
+            },
+            "max_tokens": {
+              "min": 1,
+              "max": 4096,
+              "default": 1000,
+              "type": "int"
+            },
+            "top_p": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 1.0,
+              "type": "float"
+            },
+            "presence_penalty": {
+              "min": -2.0,
+              "max": 2.0,
+              "default": 0.0,
+              "type": "float"
+            },
+            "frequency_penalty": {
+              "min": -2.0,
+              "max": 2.0,
+              "default": 0.0,
+              "type": "float"
+            }
+          }
+        },
+        {
+          "id": "gpt-3.5-turbo",
+          "name": "GPT-3.5 Turbo",
+          "description": "Fast and efficient model for most conversational and text processing tasks",
+          "context_length": 16385,
+          "max_output_tokens": 4096,
+          "pricing_tier": "standard",
+          "capabilities": ["text", "function_calling", "json_mode"],
+          "release_date": "2023-03-01",
+          "status": "stable",
+          "parameters": {
+            "temperature": {
+              "min": 0.0,
+              "max": 2.0,
+              "default": 1.0,
+              "type": "float"
+            },
+            "max_tokens": {
+              "min": 1,
+              "max": 4096,
+              "default": 1000,
+              "type": "int"
+            },
+            "top_p": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 1.0,
+              "type": "float"
+            },
+            "presence_penalty": {
+              "min": -2.0,
+              "max": 2.0,
+              "default": 0.0,
+              "type": "float"
+            },
+            "frequency_penalty": {
+              "min": -2.0,
+              "max": 2.0,
+              "default": 0.0,
+              "type": "float"
+            }
+          }
+        }
+      ]
+    },
+    "anthropic": {
+      "name": "Anthropic",
+      "description": "Anthropic's Claude models for safe and helpful AI assistance",
+      "website": "https://anthropic.com",
+      "models": [
+        {
+          "id": "claude-3-opus",
+          "name": "Claude 3 Opus",
+          "description": "Most powerful Claude model for complex reasoning and analysis",
+          "context_length": 200000,
+          "max_output_tokens": 4096,
+          "pricing_tier": "premium",
+          "capabilities": ["text", "vision", "tool_use"],
+          "release_date": "2024-02-29",
+          "status": "stable",
+          "parameters": {
+            "temperature": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 0.7,
+              "type": "float"
+            },
+            "max_tokens": {
+              "min": 1,
+              "max": 4096,
+              "default": 1000,
+              "type": "int"
+            },
+            "top_p": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 1.0,
+              "type": "float"
+            },
+            "top_k": {
+              "min": 1,
+              "max": 500,
+              "default": 5,
+              "type": "int"
+            }
+          }
+        },
+        {
+          "id": "claude-3-sonnet",
+          "name": "Claude 3 Sonnet",
+          "description": "Balanced Claude model offering good performance and cost efficiency",
+          "context_length": 200000,
+          "max_output_tokens": 4096,
+          "pricing_tier": "standard",
+          "capabilities": ["text", "vision", "tool_use"],
+          "release_date": "2024-02-29",
+          "status": "stable",
+          "parameters": {
+            "temperature": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 0.7,
+              "type": "float"
+            },
+            "max_tokens": {
+              "min": 1,
+              "max": 4096,
+              "default": 1000,
+              "type": "int"
+            },
+            "top_p": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 1.0,
+              "type": "float"
+            },
+            "top_k": {
+              "min": 1,
+              "max": 500,
+              "default": 5,
+              "type": "int"
+            }
+          }
+        },
+        {
+          "id": "claude-3-haiku",
+          "name": "Claude 3 Haiku",
+          "description": "Fastest Claude model optimized for speed and efficiency",
+          "context_length": 200000,
+          "max_output_tokens": 4096,
+          "pricing_tier": "economy",
+          "capabilities": ["text", "vision", "tool_use"],
+          "release_date": "2024-02-29",
+          "status": "stable",
+          "parameters": {
+            "temperature": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 0.7,
+              "type": "float"
+            },
+            "max_tokens": {
+              "min": 1,
+              "max": 4096,
+              "default": 1000,
+              "type": "int"
+            },
+            "top_p": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 1.0,
+              "type": "float"
+            },
+            "top_k": {
+              "min": 1,
+              "max": 500,
+              "default": 5,
+              "type": "int"
+            }
+          }
+        }
+      ]
+    },
+    "local": {
+      "name": "Local Models",
+      "description": "Local model servers (Ollama, LocalAI, etc.)",
+      "website": "https://ollama.ai",
+      "models": [
+        {
+          "id": "llama2",
+          "name": "Llama 2",
+          "description": "Meta's Llama 2 model for local deployment",
+          "context_length": 4096,
+          "max_output_tokens": 2048,
+          "pricing_tier": "free",
+          "capabilities": ["text"],
+          "release_date": "2023-07-18",
+          "status": "stable",
+          "parameters": {
+            "temperature": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 0.7,
+              "type": "float"
+            },
+            "max_tokens": {
+              "min": 1,
+              "max": 2048,
+              "default": 1000,
+              "type": "int"
+            },
+            "top_p": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 0.9,
+              "type": "float"
+            },
+            "top_k": {
+              "min": 1,
+              "max": 100,
+              "default": 40,
+              "type": "int"
+            }
+          }
+        },
+        {
+          "id": "mistral",
+          "name": "Mistral 7B",
+          "description": "Mistral's 7B parameter model for local deployment",
+          "context_length": 8192,
+          "max_output_tokens": 4096,
+          "pricing_tier": "free",
+          "capabilities": ["text"],
+          "release_date": "2023-09-27",
+          "status": "stable",
+          "parameters": {
+            "temperature": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 0.7,
+              "type": "float"
+            },
+            "max_tokens": {
+              "min": 1,
+              "max": 4096,
+              "default": 1000,
+              "type": "int"
+            },
+            "top_p": {
+              "min": 0.0,
+              "max": 1.0,
+              "default": 0.9,
+              "type": "float"
+            },
+            "top_k": {
+              "min": 1,
+              "max": 100,
+              "default": 40,
+              "type": "int"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

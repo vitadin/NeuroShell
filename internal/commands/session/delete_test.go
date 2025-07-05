@@ -44,7 +44,8 @@ func TestDeleteCommand_Execute_BasicFunctionality(t *testing.T) {
 	ctx := context.New()
 
 	// Setup test registry with required services
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create a session first to delete
 	createCmd := &NewCommand{}
@@ -69,7 +70,8 @@ func TestDeleteCommand_Execute_BasicFunctionality(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create session before each test
 			ctx = context.New()
-			setupSessionTestRegistry(t, ctx)
+			setupTestServices(ctx)
+			defer cleanupTestServices()
 			err := createCmd.Execute(map[string]string{}, "test_session", ctx)
 			require.NoError(t, err)
 
@@ -94,7 +96,8 @@ func TestDeleteCommand_Execute_BasicFunctionality(t *testing.T) {
 func TestDeleteCommand_Execute_DeleteByInput(t *testing.T) {
 	cmd := &DeleteCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create a session first
 	createCmd := &NewCommand{}
@@ -115,7 +118,8 @@ func TestDeleteCommand_Execute_DeleteByInput(t *testing.T) {
 func TestDeleteCommand_Execute_DeleteBySessionID(t *testing.T) {
 	cmd := &DeleteCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create a session first
 	createCmd := &NewCommand{}
@@ -145,7 +149,8 @@ func TestDeleteCommand_Execute_DeleteBySessionID(t *testing.T) {
 func TestDeleteCommand_Execute_MissingSessionIdentifier(t *testing.T) {
 	cmd := &DeleteCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Try to delete without providing session name or ID
 	err := cmd.Execute(map[string]string{}, "", ctx)
@@ -157,7 +162,8 @@ func TestDeleteCommand_Execute_MissingSessionIdentifier(t *testing.T) {
 func TestDeleteCommand_Execute_SessionNotFound(t *testing.T) {
 	cmd := &DeleteCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Try to delete non-existent session
 	err := cmd.Execute(map[string]string{"name": "nonexistent"}, "", ctx)
@@ -168,7 +174,8 @@ func TestDeleteCommand_Execute_SessionNotFound(t *testing.T) {
 func TestDeleteCommand_Execute_VariableInterpolation(t *testing.T) {
 	cmd := &DeleteCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create a session
 	createCmd := &NewCommand{}
@@ -250,7 +257,8 @@ func TestDeleteCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 func TestDeleteCommand_Execute_SessionVariableManagement(t *testing.T) {
 	cmd := &DeleteCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create two sessions
 	createCmd := &NewCommand{}
@@ -288,7 +296,8 @@ func TestDeleteCommand_Execute_SessionVariableManagement(t *testing.T) {
 func TestDeleteCommand_Execute_PriorityOfArguments(t *testing.T) {
 	cmd := &DeleteCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create two sessions
 	createCmd := &NewCommand{}

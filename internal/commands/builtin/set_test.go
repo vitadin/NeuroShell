@@ -91,6 +91,10 @@ func TestSetCommand_Execute_BracketSyntax(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContext()
 
+			// Setup services for testing
+			setupTestServices(ctx)
+			defer cleanupTestServices()
+
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
@@ -202,6 +206,10 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContext()
 
+			// Setup services for testing
+			setupTestServices(ctx)
+			defer cleanupTestServices()
+
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
@@ -240,6 +248,10 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 func TestSetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// When both args and input are provided, args (bracket syntax) should take priority
 	args := map[string]string{"bracketvar": "bracketvalue"}
@@ -280,6 +292,10 @@ func TestSetCommand_Execute_ContextError(t *testing.T) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
 
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
+
 	// Set up context to return an error
 	ctx.SetSetVariableError(fmt.Errorf("context error"))
 
@@ -315,6 +331,10 @@ func TestSetCommand_Execute_EmptyInputAndArgs(t *testing.T) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
 
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
+
 	err := cmd.Execute(map[string]string{}, "", ctx)
 
 	assert.Error(t, err)
@@ -326,6 +346,10 @@ func TestSetCommand_Execute_VariableOverwrite(t *testing.T) {
 	ctx := testutils.NewMockContextWithVars(map[string]string{
 		"existing": "oldvalue",
 	})
+
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	args := map[string]string{"existing": "newvalue"}
 
@@ -359,6 +383,10 @@ func TestSetCommand_Execute_VariableOverwrite(t *testing.T) {
 func TestSetCommand_Execute_SpecialVariableNames(t *testing.T) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	specialNames := []struct {
 		name  string
@@ -408,6 +436,10 @@ func TestSetCommand_Execute_SpecialVariableNames(t *testing.T) {
 func TestSetCommand_Execute_LargeValues(t *testing.T) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Test with large value
 	largeValue := make([]byte, 1000)

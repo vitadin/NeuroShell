@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/context"
-	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -53,8 +52,9 @@ func TestVarsCommand_Execute_NoVariables(t *testing.T) {
 	cmd := &VarsCommand{}
 	ctx := context.New()
 
-	// Setup test registry with variable service
-	setupVarsTestRegistry(t, ctx)
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Capture stdout
 	output := captureOutput(func() {
@@ -80,8 +80,9 @@ func TestVarsCommand_Execute_WithUserVariables(t *testing.T) {
 	cmd := &VarsCommand{}
 	ctx := context.New()
 
-	// Setup test registry with variable service
-	setupVarsTestRegistry(t, ctx)
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Set some user variables
 	require.NoError(t, ctx.SetVariable("name", "John"))
@@ -111,8 +112,9 @@ func TestVarsCommand_Execute_TypeFilter_User(t *testing.T) {
 	cmd := &VarsCommand{}
 	ctx := context.New()
 
-	// Setup test registry with variable service
-	setupVarsTestRegistry(t, ctx)
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Set mixed variables
 	require.NoError(t, ctx.SetVariable("user_var", "value1"))
@@ -144,8 +146,9 @@ func TestVarsCommand_Execute_TypeFilter_System(t *testing.T) {
 	cmd := &VarsCommand{}
 	ctx := context.New()
 
-	// Setup test registry with variable service
-	setupVarsTestRegistry(t, ctx)
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Set mixed variables
 	require.NoError(t, ctx.SetVariable("user_var", "value1"))
@@ -177,8 +180,9 @@ func TestVarsCommand_Execute_PatternFilter(t *testing.T) {
 	cmd := &VarsCommand{}
 	ctx := context.New()
 
-	// Setup test registry with variable service
-	setupVarsTestRegistry(t, ctx)
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Set variables with different patterns
 	require.NoError(t, ctx.SetVariable("test_var1", "value1"))
@@ -211,8 +215,9 @@ func TestVarsCommand_Execute_InvalidRegex(t *testing.T) {
 	cmd := &VarsCommand{}
 	ctx := context.New()
 
-	// Setup test registry with variable service
-	setupVarsTestRegistry(t, ctx)
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	args := map[string]string{"pattern": "[invalid"}
 
@@ -229,8 +234,9 @@ func TestVarsCommand_Execute_CombinedFilters(t *testing.T) {
 	cmd := &VarsCommand{}
 	ctx := context.New()
 
-	// Setup test registry with variable service
-	setupVarsTestRegistry(t, ctx)
+	// Setup services for testing
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Set mixed variables
 	require.NoError(t, ctx.SetVariable("user_test", "value1"))
@@ -452,26 +458,6 @@ func BenchmarkVarsCommand_PatternFilter(b *testing.B) {
 		_ = cmd.Execute(args, "", ctx)
 		os.Stdout = old
 	}
-}
-
-// setupVarsTestRegistry sets up a test environment with variable service
-func setupVarsTestRegistry(t *testing.T, ctx neurotypes.Context) {
-	// Create a new registry for testing
-	oldRegistry := services.GetGlobalRegistry()
-	services.SetGlobalRegistry(services.NewRegistry())
-
-	// Register variable service
-	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
-	require.NoError(t, err)
-
-	// Initialize services
-	err = services.GetGlobalRegistry().InitializeAll(ctx)
-	require.NoError(t, err)
-
-	// Cleanup function to restore original registry
-	t.Cleanup(func() {
-		services.SetGlobalRegistry(oldRegistry)
-	})
 }
 
 // Interface compliance check

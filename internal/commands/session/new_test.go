@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/context"
-	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -43,7 +42,8 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 	ctx := context.New()
 
 	// Setup test registry with required services
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name        string
@@ -87,7 +87,8 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset context for each test
 			ctx = context.New()
-			setupSessionTestRegistry(t, ctx)
+			setupTestServices(ctx)
+			defer cleanupTestServices()
 
 			err := cmd.Execute(tt.args, tt.input, ctx)
 
@@ -137,7 +138,8 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 func TestNewCommand_Execute_InvalidSessionNames(t *testing.T) {
 	cmd := &NewCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	tests := []struct {
 		name        string
@@ -200,7 +202,8 @@ func TestNewCommand_Execute_InvalidSessionNames(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset context for each test
 			ctx = context.New()
-			setupSessionTestRegistry(t, ctx)
+			setupTestServices(ctx)
+			defer cleanupTestServices()
 
 			err := cmd.Execute(map[string]string{}, tt.sessionName, ctx)
 
@@ -219,7 +222,8 @@ func TestNewCommand_Execute_InvalidSessionNames(t *testing.T) {
 func TestNewCommand_Execute_DuplicateSessionNames(t *testing.T) {
 	cmd := &NewCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create first session
 	err := cmd.Execute(map[string]string{}, "duplicate_test", ctx)
@@ -234,7 +238,8 @@ func TestNewCommand_Execute_DuplicateSessionNames(t *testing.T) {
 func TestNewCommand_Execute_VariableInterpolation(t *testing.T) {
 	cmd := &NewCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Set up test variables
 	require.NoError(t, ctx.SetVariable("session_prefix", "test"))
@@ -269,29 +274,6 @@ func TestNewCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	err := cmd.Execute(map[string]string{}, "test_session", ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "service not available")
-}
-
-// setupSessionTestRegistry sets up a test environment with required services
-func setupSessionTestRegistry(t *testing.T, ctx neurotypes.Context) {
-	// Create a new registry for testing
-	oldRegistry := services.GetGlobalRegistry()
-	services.SetGlobalRegistry(services.NewRegistry())
-
-	// Register required services
-	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
-	require.NoError(t, err)
-
-	err = services.GetGlobalRegistry().RegisterService(services.NewChatSessionService())
-	require.NoError(t, err)
-
-	// Initialize services
-	err = services.GetGlobalRegistry().InitializeAll(ctx)
-	require.NoError(t, err)
-
-	// Cleanup function to restore original registry
-	t.Cleanup(func() {
-		services.SetGlobalRegistry(oldRegistry)
-	})
 }
 
 // Interface compliance check

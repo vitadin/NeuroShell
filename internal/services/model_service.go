@@ -14,6 +14,7 @@ import (
 // with bidirectional mapping support for unique model names and IDs.
 type ModelService struct {
 	initialized bool
+	ctx         neurotypes.Context
 }
 
 // NewModelService creates a new ModelService instance.
@@ -29,7 +30,8 @@ func (m *ModelService) Name() string {
 }
 
 // Initialize sets up the ModelService for operation.
-func (m *ModelService) Initialize(_ neurotypes.Context) error {
+func (m *ModelService) Initialize(ctx neurotypes.Context) error {
+	m.ctx = ctx
 	m.initialized = true
 	return nil
 }
@@ -37,10 +39,13 @@ func (m *ModelService) Initialize(_ neurotypes.Context) error {
 // CreateModel creates a new model configuration with the given parameters.
 // It validates the model name (no spaces, unique), generates a unique ID,
 // and maintains bidirectional mapping between names and IDs.
-func (m *ModelService) CreateModel(name, provider, baseModel string, parameters map[string]any, description string, ctx neurotypes.Context) (*neurotypes.ModelConfig, error) {
+func (m *ModelService) CreateModel(name, provider, baseModel string, parameters map[string]any, description string) (*neurotypes.ModelConfig, error) {
 	if !m.initialized {
 		return nil, fmt.Errorf("model service not initialized")
 	}
+
+	// Use stored context reference
+	ctx := m.ctx
 
 	// Validate model name
 	if err := m.validateModelName(name); err != nil {
@@ -83,7 +88,7 @@ func (m *ModelService) CreateModel(name, provider, baseModel string, parameters 
 	}
 
 	// Store model in context with bidirectional mapping
-	if err := m.storeModel(model, ctx); err != nil {
+	if err := m.storeModel(model); err != nil {
 		return nil, fmt.Errorf("failed to store model: %w", err)
 	}
 
@@ -91,11 +96,12 @@ func (m *ModelService) CreateModel(name, provider, baseModel string, parameters 
 }
 
 // GetModel retrieves a model configuration by ID.
-func (m *ModelService) GetModel(id string, ctx neurotypes.Context) (*neurotypes.ModelConfig, error) {
+func (m *ModelService) GetModel(id string) (*neurotypes.ModelConfig, error) {
 	if !m.initialized {
 		return nil, fmt.Errorf("model service not initialized")
 	}
 
+	ctx := m.ctx
 	models := ctx.GetModels()
 	model, exists := models[id]
 	if !exists {
@@ -106,11 +112,12 @@ func (m *ModelService) GetModel(id string, ctx neurotypes.Context) (*neurotypes.
 }
 
 // GetModelByName retrieves a model configuration by name.
-func (m *ModelService) GetModelByName(name string, ctx neurotypes.Context) (*neurotypes.ModelConfig, error) {
+func (m *ModelService) GetModelByName(name string) (*neurotypes.ModelConfig, error) {
 	if !m.initialized {
 		return nil, fmt.Errorf("model service not initialized")
 	}
 
+	ctx := m.ctx
 	// Get ID from name mapping
 	nameToID := ctx.GetModelNameToID()
 	modelID, exists := nameToID[name]
@@ -119,25 +126,27 @@ func (m *ModelService) GetModelByName(name string, ctx neurotypes.Context) (*neu
 	}
 
 	// Get model by ID
-	return m.GetModel(modelID, ctx)
+	return m.GetModel(modelID)
 }
 
 // ListModels returns all model configurations.
-func (m *ModelService) ListModels(ctx neurotypes.Context) (map[string]*neurotypes.ModelConfig, error) {
+func (m *ModelService) ListModels() (map[string]*neurotypes.ModelConfig, error) {
 	if !m.initialized {
 		return nil, fmt.Errorf("model service not initialized")
 	}
 
+	ctx := m.ctx
 	return ctx.GetModels(), nil
 }
 
 // DeleteModel removes a model configuration by ID.
 // It maintains bidirectional mapping consistency by removing both name->ID and ID->name mappings.
-func (m *ModelService) DeleteModel(id string, ctx neurotypes.Context) error {
+func (m *ModelService) DeleteModel(id string) error {
 	if !m.initialized {
 		return fmt.Errorf("model service not initialized")
 	}
 
+	ctx := m.ctx
 	// Check if model exists
 	models := ctx.GetModels()
 	model, exists := models[id]
@@ -165,11 +174,12 @@ func (m *ModelService) DeleteModel(id string, ctx neurotypes.Context) error {
 }
 
 // DeleteModelByName removes a model configuration by name.
-func (m *ModelService) DeleteModelByName(name string, ctx neurotypes.Context) error {
+func (m *ModelService) DeleteModelByName(name string) error {
 	if !m.initialized {
 		return fmt.Errorf("model service not initialized")
 	}
 
+	ctx := m.ctx
 	// Get ID from name mapping
 	nameToID := ctx.GetModelNameToID()
 	modelID, exists := nameToID[name]
@@ -178,7 +188,7 @@ func (m *ModelService) DeleteModelByName(name string, ctx neurotypes.Context) er
 	}
 
 	// Delete by ID
-	return m.DeleteModel(modelID, ctx)
+	return m.DeleteModel(modelID)
 }
 
 // validateModelName validates that a model name meets requirements:
@@ -207,7 +217,9 @@ func (m *ModelService) validateModelName(name string) error {
 }
 
 // storeModel stores a model configuration in the context with bidirectional mapping.
-func (m *ModelService) storeModel(model *neurotypes.ModelConfig, ctx neurotypes.Context) error {
+func (m *ModelService) storeModel(model *neurotypes.ModelConfig) error {
+	ctx := m.ctx
+
 	// Get current mappings
 	models := ctx.GetModels()
 	nameToID := ctx.GetModelNameToID()

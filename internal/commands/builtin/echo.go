@@ -101,7 +101,7 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 //   - to: store result in specified variable (default: ${_output})
 //   - silent: suppress console output (default: false)
 //   - raw: output string literals without interpreting escape sequences (default: false)
-func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *EchoCommand) Execute(args map[string]string, input string, _ neurotypes.Context) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
@@ -113,7 +113,7 @@ func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotyp
 	}
 
 	// Interpolate variables in the input message
-	expandedMessage, err := variableService.InterpolateString(input, ctx)
+	expandedMessage, err := variableService.InterpolateString(input)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables: %w", err)
 	}
@@ -159,10 +159,10 @@ func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotyp
 	// Store result in target variable
 	if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
 		// Store in system variable (only for specific system variables)
-		err = variableService.SetSystemVariable(targetVar, storeMessage, ctx)
+		err = variableService.SetSystemVariable(targetVar, storeMessage)
 	} else {
 		// Store in user variable (including custom variables with _ prefix)
-		err = variableService.Set(targetVar, storeMessage, ctx)
+		err = variableService.Set(targetVar, storeMessage)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to store result in variable '%s': %w", targetVar, err)

@@ -105,7 +105,7 @@ func (c *ListCommand) HelpInfo() neurotypes.HelpInfo {
 // Options:
 //   - sort: name|created|updated (default: created)
 //   - filter: active|all (default: all)
-func (c *ListCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
+func (c *ListCommand) Execute(args map[string]string, _ string, _ neurotypes.Context) error {
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
 	if err != nil {
@@ -149,7 +149,7 @@ func (c *ListCommand) Execute(args map[string]string, _ string, ctx neurotypes.C
 	output := c.formatSessionList(sessions)
 
 	// Store result in _output variable
-	if err := variableService.SetSystemVariable("_output", output, ctx); err != nil {
+	if err := variableService.SetSystemVariable("_output", output); err != nil {
 		return fmt.Errorf("failed to store result: %w", err)
 	}
 

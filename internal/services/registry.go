@@ -94,3 +94,31 @@ func SetGlobalRegistry(registry *Registry) {
 	defer globalRegistryMu.Unlock()
 	GlobalRegistry = registry
 }
+
+// Testing support functions
+
+var originalGlobalRegistry *Registry
+
+// SetGlobalRegistryForTesting temporarily replaces the global registry for tests
+func SetGlobalRegistryForTesting(registry *Registry) {
+	globalRegistryMu.Lock()
+	defer globalRegistryMu.Unlock()
+
+	// Save the original registry if this is the first time
+	if originalGlobalRegistry == nil {
+		originalGlobalRegistry = GlobalRegistry
+	}
+
+	GlobalRegistry = registry
+}
+
+// ResetGlobalRegistryForTesting restores the original global registry after tests
+func ResetGlobalRegistryForTesting() {
+	globalRegistryMu.Lock()
+	defer globalRegistryMu.Unlock()
+
+	if originalGlobalRegistry != nil {
+		GlobalRegistry = originalGlobalRegistry
+		originalGlobalRegistry = nil
+	}
+}

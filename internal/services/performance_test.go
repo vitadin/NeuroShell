@@ -100,14 +100,14 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			varName := fmt.Sprintf("var_%d", i%10000)
-			_, _ = service.Get(varName, ctx)
+			_, _ = service.Get(varName)
 		}
 	})
 
 	b.Run("Get_NonExisting", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_, _ = service.Get("nonexistent_var", ctx)
+			_, _ = service.Get("nonexistent_var")
 		}
 	})
 
@@ -116,7 +116,7 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			varName := fmt.Sprintf("new_var_%d", i)
 			varValue := fmt.Sprintf("new_value_%d", i)
-			_ = service.Set(varName, varValue, ctx)
+			_ = service.Set(varName, varValue)
 		}
 	})
 }
@@ -234,8 +234,8 @@ func BenchmarkConcurrentServiceUsage(b *testing.B) {
 			for pb.Next() {
 				varName := fmt.Sprintf("concurrent_var_%d", i)
 				varValue := fmt.Sprintf("concurrent_value_%d", i)
-				_ = service.Set(varName, varValue, ctx)
-				_, _ = service.Get(varName, ctx)
+				_ = service.Set(varName, varValue)
+				_, _ = service.Get(varName)
 				i++
 			}
 		})

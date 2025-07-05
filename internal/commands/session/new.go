@@ -96,7 +96,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 // The input parameter is used as the session name (required).
 // Options:
 //   - system: system prompt for LLM context (optional, default helpful assistant)
-func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *NewCommand) Execute(args map[string]string, input string, _ neurotypes.Context) error {
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
 	if err != nil {
@@ -119,13 +119,13 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 	}
 
 	// Interpolate variables in session name and system prompt
-	sessionName, err = variableService.InterpolateString(sessionName, ctx)
+	sessionName, err = variableService.InterpolateString(sessionName)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables in session name: %w", err)
 	}
 
 	if systemPrompt != "" {
-		systemPrompt, err = variableService.InterpolateString(systemPrompt, ctx)
+		systemPrompt, err = variableService.InterpolateString(systemPrompt)
 		if err != nil {
 			return fmt.Errorf("failed to interpolate variables in system prompt: %w", err)
 		}
@@ -138,7 +138,7 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 	}
 
 	// Update session-related variables
-	if err := c.updateSessionVariables(session, variableService, ctx); err != nil {
+	if err := c.updateSessionVariables(session, variableService); err != nil {
 		return fmt.Errorf("failed to update session variables: %w", err)
 	}
 
@@ -146,7 +146,7 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 	outputMsg := fmt.Sprintf("Created session '%s' (ID: %s)", session.Name, session.ID[:8])
 
 	// Store result in _output variable
-	if err := variableService.SetSystemVariable("_output", outputMsg, ctx); err != nil {
+	if err := variableService.SetSystemVariable("_output", outputMsg); err != nil {
 		return fmt.Errorf("failed to store result: %w", err)
 	}
 
@@ -157,7 +157,7 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 }
 
 // updateSessionVariables sets session-related system variables
-func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, variableService *services.VariableService, ctx neurotypes.Context) error {
+func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, variableService *services.VariableService) error {
 	// Set session variables
 	variables := map[string]string{
 		"#session_id":      session.ID,
@@ -168,7 +168,7 @@ func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, var
 	}
 
 	for name, value := range variables {
-		if err := variableService.SetSystemVariable(name, value, ctx); err != nil {
+		if err := variableService.SetSystemVariable(name, value); err != nil {
 			return fmt.Errorf("failed to set variable %s: %w", name, err)
 		}
 	}

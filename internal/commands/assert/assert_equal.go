@@ -129,20 +129,20 @@ func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.
 	// Set system variables based on result
 	if isEqual {
 		// Assertion passed
-		_ = variableService.SetSystemVariable("_status", "0", ctx)
-		_ = variableService.SetSystemVariable("_assert_result", "PASS", ctx)
-		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected, ctx)
-		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual, ctx)
+		_ = variableService.SetSystemVariable("_status", "0")
+		_ = variableService.SetSystemVariable("_assert_result", "PASS")
+		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected)
+		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual)
 
 		// Output success message
 		fmt.Printf("✓ Assertion passed: values are equal\n")
 		fmt.Printf("  Value: %s\n", interpolatedExpected)
 	} else {
 		// Assertion failed
-		_ = variableService.SetSystemVariable("_status", "1", ctx)
-		_ = variableService.SetSystemVariable("_assert_result", "FAIL", ctx)
-		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected, ctx)
-		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual, ctx)
+		_ = variableService.SetSystemVariable("_status", "1")
+		_ = variableService.SetSystemVariable("_assert_result", "FAIL")
+		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected)
+		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual)
 
 		// Output failure message with diff-style information
 		fmt.Printf("✗ Assertion failed: values are not equal\n")

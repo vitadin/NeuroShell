@@ -42,7 +42,8 @@ func TestListCommand_Usage(t *testing.T) {
 func TestListCommand_Execute_EmptySessionList(t *testing.T) {
 	cmd := &ListCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	err := cmd.Execute(map[string]string{}, "", ctx)
 	assert.NoError(t, err)
@@ -56,7 +57,8 @@ func TestListCommand_Execute_EmptySessionList(t *testing.T) {
 func TestListCommand_Execute_SingleSession(t *testing.T) {
 	cmd := &ListCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create a session first
 	newCmd := &NewCommand{}
@@ -79,7 +81,8 @@ func TestListCommand_Execute_SingleSession(t *testing.T) {
 func TestListCommand_Execute_MultipleSessions(t *testing.T) {
 	cmd := &ListCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create multiple sessions with slight delays to ensure different timestamps
 	newCmd := &NewCommand{}
@@ -112,7 +115,8 @@ func TestListCommand_Execute_MultipleSessions(t *testing.T) {
 func TestListCommand_Execute_SortByName(t *testing.T) {
 	cmd := &ListCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create sessions in reverse alphabetical order
 	newCmd := &NewCommand{}
@@ -143,7 +147,8 @@ func TestListCommand_Execute_SortByName(t *testing.T) {
 func TestListCommand_Execute_SortByCreated(t *testing.T) {
 	cmd := &ListCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create sessions with time delays
 	newCmd := &NewCommand{}
@@ -178,7 +183,8 @@ func TestListCommand_Execute_SortByCreated(t *testing.T) {
 func TestListCommand_Execute_FilterActive(t *testing.T) {
 	cmd := &ListCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create multiple sessions
 	newCmd := &NewCommand{}
@@ -206,7 +212,8 @@ func TestListCommand_Execute_FilterActive(t *testing.T) {
 func TestListCommand_Execute_FilterActiveNoActiveSession(t *testing.T) {
 	cmd := &ListCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Filter for active session when none exists
 	err := cmd.Execute(map[string]string{"filter": "active"}, "", ctx)
@@ -221,7 +228,8 @@ func TestListCommand_Execute_FilterActiveNoActiveSession(t *testing.T) {
 func TestListCommand_Execute_CombinedOptions(t *testing.T) {
 	cmd := &ListCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	// Create multiple sessions
 	newCmd := &NewCommand{}
@@ -245,7 +253,8 @@ func TestListCommand_Execute_CombinedOptions(t *testing.T) {
 func TestListCommand_Execute_InvalidSortOption(t *testing.T) {
 	cmd := &ListCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	err := cmd.Execute(map[string]string{"sort": "invalid"}, "", ctx)
 	assert.Error(t, err)
@@ -255,7 +264,8 @@ func TestListCommand_Execute_InvalidSortOption(t *testing.T) {
 func TestListCommand_Execute_InvalidFilterOption(t *testing.T) {
 	cmd := &ListCommand{}
 	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
+	setupTestServices(ctx)
+	defer cleanupTestServices()
 
 	err := cmd.Execute(map[string]string{"filter": "invalid"}, "", ctx)
 	assert.Error(t, err)

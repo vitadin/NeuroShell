@@ -5,6 +5,7 @@ package testutils
 import (
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,6 +33,9 @@ type MockContext struct {
 	// For testing error scenarios
 	getVariableError error
 	setVariableError error
+
+	// Script metadata for testing
+	scriptMetadata map[string]interface{}
 }
 
 // NewMockContext creates a new mock context with default values
@@ -58,6 +62,9 @@ func NewMockContext() *MockContext {
 		models:        make(map[string]*neurotypes.ModelConfig),
 		modelNameToID: make(map[string]string),
 		modelIDToName: make(map[string]string),
+
+		// Initialize script metadata
+		scriptMetadata: make(map[string]interface{}),
 	}
 }
 
@@ -204,18 +211,6 @@ func (m *MockContext) SetSessionID(id string) {
 	m.sessionState.ID = id
 }
 
-// GetAllVariables returns all variables for testing
-func (m *MockContext) GetAllVariables() map[string]string {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-
-	result := make(map[string]string)
-	for k, v := range m.variables {
-		result[k] = v
-	}
-	return result
-}
-
 // ClearVariables clears all variables for testing
 func (m *MockContext) ClearVariables() {
 	m.mu.Lock()
@@ -251,6 +246,44 @@ func (m *MockContext) SetSystemVariable(name string, value string) error {
 	}
 
 	return fmt.Errorf("variable '%s' is not a system variable", name)
+}
+
+// InterpolateVariables processes ${var} replacements in a string (for NeuroContext compatibility)
+func (m *MockContext) InterpolateVariables(text string) string {
+	// Simple variable interpolation for testing
+	result := text
+	for name, value := range m.variables {
+		placeholder := "${" + name + "}"
+		result = strings.ReplaceAll(result, placeholder, value)
+	}
+	return result
+}
+
+// GetAllVariables returns all variables (for NeuroContext compatibility)
+func (m *MockContext) GetAllVariables() map[string]string {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	result := make(map[string]string)
+	for k, v := range m.variables {
+		result[k] = v
+	}
+	return result
+}
+
+// SetScriptMetadata sets script metadata (for NeuroContext compatibility)
+func (m *MockContext) SetScriptMetadata(key string, value interface{}) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.scriptMetadata[key] = value
+}
+
+// GetScriptMetadata gets script metadata (for NeuroContext compatibility)
+func (m *MockContext) GetScriptMetadata(key string) (interface{}, bool) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	value, exists := m.scriptMetadata[key]
+	return value, exists
 }
 
 // EditorTestHelper provides utilities for testing editor functionality

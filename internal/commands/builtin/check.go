@@ -208,7 +208,7 @@ func (c *CheckCommand) isServiceInitialized(_ neurotypes.Service) bool {
 }
 
 // setResultVariables sets the result variables based on the check results.
-func (c *CheckCommand) setResultVariables(results []ServiceCheckResult, ctx neurotypes.Context) error {
+func (c *CheckCommand) setResultVariables(results []ServiceCheckResult, _ neurotypes.Context) error {
 	// Count failures
 	failedCount := 0
 	failedServices := make([]string, 0)
@@ -236,19 +236,19 @@ func (c *CheckCommand) setResultVariables(results []ServiceCheckResult, ctx neur
 	}
 
 	// Set system variables using the variable service
-	if err := variableService.SetSystemVariable("_check_status", status, ctx); err != nil {
+	if err := variableService.SetSystemVariable("_check_status", status); err != nil {
 		return err
 	}
-	if err := variableService.SetSystemVariable("_check_output", output, ctx); err != nil {
+	if err := variableService.SetSystemVariable("_check_output", output); err != nil {
 		return err
 	}
-	if err := variableService.SetSystemVariable("_check_failed_services", strings.Join(failedServices, ","), ctx); err != nil {
+	if err := variableService.SetSystemVariable("_check_failed_services", strings.Join(failedServices, ",")); err != nil {
 		return err
 	}
-	if err := variableService.SetSystemVariable("_check_total_services", fmt.Sprintf("%d", len(results)), ctx); err != nil {
+	if err := variableService.SetSystemVariable("_check_total_services", fmt.Sprintf("%d", len(results))); err != nil {
 		return err
 	}
-	if err := variableService.SetSystemVariable("_check_failed_count", fmt.Sprintf("%d", failedCount), ctx); err != nil {
+	if err := variableService.SetSystemVariable("_check_failed_count", fmt.Sprintf("%d", failedCount)); err != nil {
 		return err
 	}
 
