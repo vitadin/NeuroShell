@@ -5,23 +5,22 @@ import (
 	"sort"
 	"strings"
 
+	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
 // ChatSessionService provides chat session management operations for NeuroShell.
 // It handles creation, storage, and retrieval of LLM conversation sessions.
-// Session data is stored in the context rather than service instance for persistence.
+// Session data is stored in the global context singleton for persistence.
 type ChatSessionService struct {
 	initialized bool
-	context     neurotypes.Context // Reference to context for session storage
 }
 
 // NewChatSessionService creates a new ChatSessionService instance.
 func NewChatSessionService() *ChatSessionService {
 	return &ChatSessionService{
 		initialized: false,
-		context:     nil, // Will be set during initialization
 	}
 }
 
@@ -31,8 +30,7 @@ func (c *ChatSessionService) Name() string {
 }
 
 // Initialize sets up the ChatSessionService for operation.
-func (c *ChatSessionService) Initialize(ctx neurotypes.Context) error {
-	c.context = ctx
+func (c *ChatSessionService) Initialize(_ neurotypes.Context) error {
 	c.initialized = true
 	return nil
 }
@@ -102,7 +100,8 @@ func (c *ChatSessionService) IsSessionNameAvailable(name string) bool {
 		return true // Empty name is always available (auto-generated)
 	}
 
-	nameToID := c.context.GetSessionNameToID()
+	ctx := neuroshellcontext.GetGlobalContext()
+	nameToID := ctx.GetSessionNameToID()
 	_, exists := nameToID[name]
 	return !exists
 }
@@ -110,6 +109,7 @@ func (c *ChatSessionService) IsSessionNameAvailable(name string) bool {
 // CreateSession creates a new chat session with the given parameters.
 // Returns the created session and any error encountered.
 func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage string) (*neurotypes.ChatSession, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
 	if !c.initialized {
 		return nil, fmt.Errorf("chat session service not initialized")
 	}
@@ -131,7 +131,7 @@ func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage st
 	}
 
 	// Generate unique session ID (deterministic in test mode)
-	sessionID := testutils.GenerateUUID(c.context)
+	sessionID := testutils.GenerateUUID(ctx)
 
 	// Use the processed name
 	name = processedName
@@ -142,7 +142,7 @@ func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage st
 	}
 
 	// Create new session (deterministic time in test mode)
-	now := testutils.GetCurrentTime(c.context)
+	now := testutils.GetCurrentTime(ctx)
 	session := &neurotypes.ChatSession{
 		ID:           sessionID,
 		Name:         name,
@@ -156,7 +156,7 @@ func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage st
 	// Add initial user message if provided
 	if initialMessage != "" {
 		userMessage := neurotypes.Message{
-			ID:        testutils.GenerateUUID(c.context),
+			ID:        testutils.GenerateUUID(ctx),
 			Role:      "user",
 			Content:   initialMessage,
 			Timestamp: now,
@@ -165,11 +165,11 @@ func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage st
 	}
 
 	// Get current sessions and mappings from context
-	sessions := c.context.GetChatSessions()
-	nameToID := c.context.GetSessionNameToID()
+	sessions := ctx.GetChatSessions()
+	nameToID := ctx.GetSessionNameToID()
 
 	// Deactivate previous active session
-	activeID := c.context.GetActiveSessionID()
+	activeID := ctx.GetActiveSessionID()
 	if activeID != "" {
 		if prevSession, exists := sessions[activeID]; exists {
 			prevSession.IsActive = false
@@ -181,20 +181,26 @@ func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage st
 	nameToID[name] = sessionID
 
 	// Update context with new state
-	c.context.SetChatSessions(sessions)
-	c.context.SetSessionNameToID(nameToID)
-	c.context.SetActiveSessionID(sessionID)
+	ctx.SetChatSessions(sessions)
+	ctx.SetSessionNameToID(nameToID)
+	ctx.SetActiveSessionID(sessionID)
 
 	return session, nil
 }
 
 // GetSession retrieves a session by ID.
 func (c *ChatSessionService) GetSession(sessionID string) (*neurotypes.ChatSession, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.GetSessionWithContext(sessionID, ctx)
+}
+
+// GetSessionWithContext retrieves a session by ID using provided context.
+func (c *ChatSessionService) GetSessionWithContext(sessionID string, ctx neurotypes.Context) (*neurotypes.ChatSession, error) {
 	if !c.initialized {
 		return nil, fmt.Errorf("chat session service not initialized")
 	}
 
-	sessions := c.context.GetChatSessions()
+	sessions := ctx.GetChatSessions()
 	session, exists := sessions[sessionID]
 	if !exists {
 		return nil, fmt.Errorf("session with ID '%s' not found", sessionID)
@@ -205,32 +211,44 @@ func (c *ChatSessionService) GetSession(sessionID string) (*neurotypes.ChatSessi
 
 // GetSessionByName retrieves a session by name.
 func (c *ChatSessionService) GetSessionByName(name string) (*neurotypes.ChatSession, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.GetSessionByNameWithContext(name, ctx)
+}
+
+// GetSessionByNameWithContext retrieves a session by name using provided context.
+func (c *ChatSessionService) GetSessionByNameWithContext(name string, ctx neurotypes.Context) (*neurotypes.ChatSession, error) {
 	if !c.initialized {
 		return nil, fmt.Errorf("chat session service not initialized")
 	}
 
-	nameToID := c.context.GetSessionNameToID()
+	nameToID := ctx.GetSessionNameToID()
 	sessionID, exists := nameToID[name]
 	if !exists {
 		return nil, fmt.Errorf("session with name '%s' not found", name)
 	}
 
-	return c.GetSession(sessionID)
+	return c.GetSessionWithContext(sessionID, ctx)
 }
 
 // GetSessionByNameOrID retrieves a session by name or ID.
 // This is the primary method commands should use for session lookup.
 func (c *ChatSessionService) GetSessionByNameOrID(nameOrID string) (*neurotypes.ChatSession, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.GetSessionByNameOrIDWithContext(nameOrID, ctx)
+}
+
+// GetSessionByNameOrIDWithContext retrieves a session by name or ID using provided context.
+func (c *ChatSessionService) GetSessionByNameOrIDWithContext(nameOrID string, ctx neurotypes.Context) (*neurotypes.ChatSession, error) {
 	if !c.initialized {
 		return nil, fmt.Errorf("chat session service not initialized")
 	}
 
-	nameToID := c.context.GetSessionNameToID()
-	sessions := c.context.GetChatSessions()
+	nameToID := ctx.GetSessionNameToID()
+	sessions := ctx.GetChatSessions()
 
 	// First try by name
 	if sessionID, exists := nameToID[nameOrID]; exists {
-		return c.GetSession(sessionID)
+		return c.GetSessionWithContext(sessionID, ctx)
 	}
 
 	// Then try by ID
@@ -243,33 +261,45 @@ func (c *ChatSessionService) GetSessionByNameOrID(nameOrID string) (*neurotypes.
 
 // GetActiveSession returns the currently active session.
 func (c *ChatSessionService) GetActiveSession() (*neurotypes.ChatSession, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.GetActiveSessionWithContext(ctx)
+}
+
+// GetActiveSessionWithContext returns the currently active session using provided context.
+func (c *ChatSessionService) GetActiveSessionWithContext(ctx neurotypes.Context) (*neurotypes.ChatSession, error) {
 	if !c.initialized {
 		return nil, fmt.Errorf("chat session service not initialized")
 	}
 
-	activeID := c.context.GetActiveSessionID()
+	activeID := ctx.GetActiveSessionID()
 	if activeID == "" {
 		return nil, fmt.Errorf("no active session")
 	}
 
-	return c.GetSession(activeID)
+	return c.GetSessionWithContext(activeID, ctx)
 }
 
 // SetActiveSession sets the specified session as active by name or ID.
 func (c *ChatSessionService) SetActiveSession(nameOrID string) error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.SetActiveSessionWithContext(nameOrID, ctx)
+}
+
+// SetActiveSessionWithContext sets the specified session as active by name or ID using provided context.
+func (c *ChatSessionService) SetActiveSessionWithContext(nameOrID string, ctx neurotypes.Context) error {
 	if !c.initialized {
 		return fmt.Errorf("chat session service not initialized")
 	}
 
-	session, err := c.GetSessionByNameOrID(nameOrID)
+	session, err := c.GetSessionByNameOrIDWithContext(nameOrID, ctx)
 	if err != nil {
 		return err
 	}
 
-	sessions := c.context.GetChatSessions()
+	sessions := ctx.GetChatSessions()
 
 	// Deactivate previous active session
-	activeID := c.context.GetActiveSessionID()
+	activeID := ctx.GetActiveSessionID()
 	if activeID != "" {
 		if prevSession, exists := sessions[activeID]; exists {
 			prevSession.IsActive = false
@@ -278,51 +308,63 @@ func (c *ChatSessionService) SetActiveSession(nameOrID string) error {
 
 	// Set new active session
 	session.IsActive = true
-	c.context.SetActiveSessionID(session.ID)
+	ctx.SetActiveSessionID(session.ID)
 
 	// Update sessions in context
-	c.context.SetChatSessions(sessions)
+	ctx.SetChatSessions(sessions)
 
 	return nil
 }
 
 // DeleteSession removes a session by name or ID.
 func (c *ChatSessionService) DeleteSession(nameOrID string) error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.DeleteSessionWithContext(nameOrID, ctx)
+}
+
+// DeleteSessionWithContext removes a session by name or ID using provided context.
+func (c *ChatSessionService) DeleteSessionWithContext(nameOrID string, ctx neurotypes.Context) error {
 	if !c.initialized {
 		return fmt.Errorf("chat session service not initialized")
 	}
 
-	session, err := c.GetSessionByNameOrID(nameOrID)
+	session, err := c.GetSessionByNameOrIDWithContext(nameOrID, ctx)
 	if err != nil {
 		return err
 	}
 
-	sessions := c.context.GetChatSessions()
-	nameToID := c.context.GetSessionNameToID()
+	sessions := ctx.GetChatSessions()
+	nameToID := ctx.GetSessionNameToID()
 
 	// Remove from mappings
 	delete(sessions, session.ID)
 	delete(nameToID, session.Name)
 
 	// Clear active session if it was the deleted one
-	if c.context.GetActiveSessionID() == session.ID {
-		c.context.SetActiveSessionID("")
+	if ctx.GetActiveSessionID() == session.ID {
+		ctx.SetActiveSessionID("")
 	}
 
 	// Update context with modified mappings
-	c.context.SetChatSessions(sessions)
-	c.context.SetSessionNameToID(nameToID)
+	ctx.SetChatSessions(sessions)
+	ctx.SetSessionNameToID(nameToID)
 
 	return nil
 }
 
 // ListSessions returns all stored sessions.
 func (c *ChatSessionService) ListSessions() []*neurotypes.ChatSession {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.ListSessionsWithContext(ctx)
+}
+
+// ListSessionsWithContext returns all stored sessions using provided context.
+func (c *ChatSessionService) ListSessionsWithContext(ctx neurotypes.Context) []*neurotypes.ChatSession {
 	if !c.initialized {
 		return make([]*neurotypes.ChatSession, 0)
 	}
 
-	sessionMap := c.context.GetChatSessions()
+	sessionMap := ctx.GetChatSessions()
 	sessions := make([]*neurotypes.ChatSession, 0, len(sessionMap))
 
 	// Collect session IDs and sort them for deterministic order
@@ -346,12 +388,18 @@ func (c *ChatSessionService) ListSessions() []*neurotypes.ChatSession {
 
 // GetSessionsWithPrefix returns all sessions whose names start with the given prefix.
 func (c *ChatSessionService) GetSessionsWithPrefix(prefix string) []*neurotypes.ChatSession {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.GetSessionsWithPrefixWithContext(prefix, ctx)
+}
+
+// GetSessionsWithPrefixWithContext returns all sessions whose names start with the given prefix using provided context.
+func (c *ChatSessionService) GetSessionsWithPrefixWithContext(prefix string, ctx neurotypes.Context) []*neurotypes.ChatSession {
 	if !c.initialized {
 		return make([]*neurotypes.ChatSession, 0)
 	}
 
-	nameToID := c.context.GetSessionNameToID()
-	sessions := c.context.GetChatSessions()
+	nameToID := ctx.GetSessionNameToID()
+	sessions := ctx.GetChatSessions()
 
 	var matches []*neurotypes.ChatSession
 
@@ -371,6 +419,12 @@ func (c *ChatSessionService) GetSessionsWithPrefix(prefix string) []*neurotypes.
 // 2. Exact ID match
 // 3. Prefix matching (must be unique)
 func (c *ChatSessionService) FindSessionByPrefix(identifier string) (*neurotypes.ChatSession, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.FindSessionByPrefixWithContext(identifier, ctx)
+}
+
+// FindSessionByPrefixWithContext performs smart session lookup using provided context.
+func (c *ChatSessionService) FindSessionByPrefixWithContext(identifier string, ctx neurotypes.Context) (*neurotypes.ChatSession, error) {
 	if !c.initialized {
 		return nil, fmt.Errorf("chat session service not initialized")
 	}
@@ -379,8 +433,8 @@ func (c *ChatSessionService) FindSessionByPrefix(identifier string) (*neurotypes
 		return nil, fmt.Errorf("session identifier cannot be empty")
 	}
 
-	nameToID := c.context.GetSessionNameToID()
-	sessions := c.context.GetChatSessions()
+	nameToID := ctx.GetSessionNameToID()
+	sessions := ctx.GetChatSessions()
 
 	// 1. Try exact name match first
 	if sessionID, exists := nameToID[identifier]; exists {
@@ -395,7 +449,7 @@ func (c *ChatSessionService) FindSessionByPrefix(identifier string) (*neurotypes
 	}
 
 	// 3. Try prefix matching
-	matches := c.GetSessionsWithPrefix(identifier)
+	matches := c.GetSessionsWithPrefixWithContext(identifier, ctx)
 
 	if len(matches) == 0 {
 		return nil, fmt.Errorf("no session found for '%s' (tried exact name, exact ID, prefix match)", identifier)
@@ -415,40 +469,52 @@ func (c *ChatSessionService) FindSessionByPrefix(identifier string) (*neurotypes
 
 // AddMessage adds a message to the specified session.
 func (c *ChatSessionService) AddMessage(nameOrID string, role, content string) error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.AddMessageWithContext(nameOrID, role, content, ctx)
+}
+
+// AddMessageWithContext adds a message to the specified session using provided context.
+func (c *ChatSessionService) AddMessageWithContext(nameOrID string, role, content string, ctx neurotypes.Context) error {
 	if !c.initialized {
 		return fmt.Errorf("chat session service not initialized")
 	}
 
-	session, err := c.GetSessionByNameOrID(nameOrID)
+	session, err := c.GetSessionByNameOrIDWithContext(nameOrID, ctx)
 	if err != nil {
 		return err
 	}
 
 	message := neurotypes.Message{
-		ID:        testutils.GenerateUUID(c.context),
+		ID:        testutils.GenerateUUID(ctx),
 		Role:      role,
 		Content:   content,
-		Timestamp: testutils.GetCurrentTime(c.context),
+		Timestamp: testutils.GetCurrentTime(ctx),
 	}
 
 	session.Messages = append(session.Messages, message)
-	session.UpdatedAt = testutils.GetCurrentTime(c.context)
+	session.UpdatedAt = testutils.GetCurrentTime(ctx)
 
 	// Update session in context
-	sessions := c.context.GetChatSessions()
+	sessions := ctx.GetChatSessions()
 	sessions[session.ID] = session
-	c.context.SetChatSessions(sessions)
+	ctx.SetChatSessions(sessions)
 
 	return nil
 }
 
 // GetMessageCount returns the number of messages in the specified session.
 func (c *ChatSessionService) GetMessageCount(nameOrID string) (int, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.GetMessageCountWithContext(nameOrID, ctx)
+}
+
+// GetMessageCountWithContext returns the number of messages in the specified session using provided context.
+func (c *ChatSessionService) GetMessageCountWithContext(nameOrID string, ctx neurotypes.Context) (int, error) {
 	if !c.initialized {
 		return 0, fmt.Errorf("chat session service not initialized")
 	}
 
-	session, err := c.GetSessionByNameOrID(nameOrID)
+	session, err := c.GetSessionByNameOrIDWithContext(nameOrID, ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -458,11 +524,17 @@ func (c *ChatSessionService) GetMessageCount(nameOrID string) (int, error) {
 
 // GetSessionNames returns all session names for easy listing.
 func (c *ChatSessionService) GetSessionNames() []string {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.GetSessionNamesWithContext(ctx)
+}
+
+// GetSessionNamesWithContext returns all session names for easy listing using provided context.
+func (c *ChatSessionService) GetSessionNamesWithContext(ctx neurotypes.Context) []string {
 	if !c.initialized {
 		return make([]string, 0)
 	}
 
-	nameToID := c.context.GetSessionNameToID()
+	nameToID := ctx.GetSessionNameToID()
 	names := make([]string, 0, len(nameToID))
 	for name := range nameToID {
 		names = append(names, name)
@@ -473,10 +545,16 @@ func (c *ChatSessionService) GetSessionNames() []string {
 
 // HasSessions returns true if any sessions exist.
 func (c *ChatSessionService) HasSessions() bool {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.HasSessionsWithContext(ctx)
+}
+
+// HasSessionsWithContext returns true if any sessions exist using provided context.
+func (c *ChatSessionService) HasSessionsWithContext(ctx neurotypes.Context) bool {
 	if !c.initialized {
 		return false
 	}
 
-	sessions := c.context.GetChatSessions()
+	sessions := ctx.GetChatSessions()
 	return len(sessions) > 0
 }

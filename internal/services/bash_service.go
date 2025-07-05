@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -42,8 +43,8 @@ func (b *BashService) SetTimeout(timeout time.Duration) {
 }
 
 // Execute runs a bash command and returns the output, error, and exit status.
-// It also sets the _output, _error, and _status variables in the provided context.
-func (b *BashService) Execute(command string, ctx neurotypes.Context) (string, string, int, error) {
+// It also sets the _output, _error, and _status variables in the global context.
+func (b *BashService) Execute(command string) (string, string, int, error) {
 	if !b.initialized {
 		return "", "", -1, fmt.Errorf("bash service not initialized")
 	}
@@ -96,27 +97,13 @@ func (b *BashService) Execute(command string, ctx neurotypes.Context) (string, s
 	stdoutStr := strings.TrimRight(string(stdout), "\n")
 	stderrStr := strings.TrimRight(string(stderr), "\n")
 
-	// Set system variables for command results
-	if variableService, err := getVariableService(); err == nil {
-		_ = variableService.SetSystemVariable("_output", stdoutStr, ctx)
-		_ = variableService.SetSystemVariable("_error", stderrStr, ctx)
-		_ = variableService.SetSystemVariable("_status", fmt.Sprintf("%d", exitCode), ctx)
+	// Set system variables for command results using the global context singleton
+	globalCtx := neuroshellcontext.GetGlobalContext()
+	if neuroCtx, ok := globalCtx.(*neuroshellcontext.NeuroContext); ok {
+		_ = neuroCtx.SetSystemVariable("_output", stdoutStr)
+		_ = neuroCtx.SetSystemVariable("_error", stderrStr)
+		_ = neuroCtx.SetSystemVariable("_status", fmt.Sprintf("%d", exitCode))
 	}
 
 	return stdoutStr, stderrStr, exitCode, nil
-}
-
-// getVariableService is a helper function to get the variable service from the global registry
-func getVariableService() (*VariableService, error) {
-	service, err := GetGlobalRegistry().GetService("variable")
-	if err != nil {
-		return nil, err
-	}
-
-	variableService, ok := service.(*VariableService)
-	if !ok {
-		return nil, fmt.Errorf("variable service has incorrect type")
-	}
-
-	return variableService, nil
 }

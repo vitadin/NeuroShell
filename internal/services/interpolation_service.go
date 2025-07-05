@@ -33,12 +33,13 @@ func (i *InterpolationService) Initialize(_ neurotypes.Context) error {
 	return nil
 }
 
-// InterpolateString performs pure interpolation of a single string using context variables
-func (i *InterpolationService) InterpolateString(text string, ctx neurotypes.Context) (string, error) {
+// InterpolateString performs pure interpolation of a single string using the global context
+func (i *InterpolationService) InterpolateString(text string) (string, error) {
 	if !i.initialized {
 		return "", fmt.Errorf("interpolation service not initialized")
 	}
 
+	ctx := context.GetGlobalContext()
 	neuroCtx, ok := ctx.(*context.NeuroContext)
 	if !ok {
 		return "", fmt.Errorf("context is not a NeuroContext")
@@ -52,11 +53,12 @@ func (i *InterpolationService) InterpolateString(text string, ctx neurotypes.Con
 }
 
 // InterpolateCommand interpolates all parts of a command structure and returns a new interpolated command
-func (i *InterpolationService) InterpolateCommand(cmd *parser.Command, ctx neurotypes.Context) (*parser.Command, error) {
+func (i *InterpolationService) InterpolateCommand(cmd *parser.Command) (*parser.Command, error) {
 	if !i.initialized {
 		return nil, fmt.Errorf("interpolation service not initialized")
 	}
 
+	ctx := context.GetGlobalContext()
 	neuroCtx, ok := ctx.(*context.NeuroContext)
 	if !ok {
 		return nil, fmt.Errorf("context is not a NeuroContext")
@@ -77,4 +79,9 @@ func (i *InterpolationService) InterpolateCommand(cmd *parser.Command, ctx neuro
 	}
 
 	return interpolatedCmd, nil
+}
+
+// InterpolateCommandWithGlobalContext interpolates all parts of a command using the global context singleton
+func (i *InterpolationService) InterpolateCommandWithGlobalContext(cmd *parser.Command) (*parser.Command, error) {
+	return i.InterpolateCommand(cmd)
 }

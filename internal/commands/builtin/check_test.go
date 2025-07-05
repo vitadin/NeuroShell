@@ -455,7 +455,10 @@ func TestCheckCommand_setResultVariables(t *testing.T) {
 		{Name: "service2", Available: false, Initialized: false, Error: "not found"},
 	}
 
-	err := cmd.setResultVariables(results, ctx)
+	// Set global context for service access
+	context.SetGlobalContext(ctx)
+
+	err := cmd.setResultVariables(results)
 	if err != nil {
 		t.Fatalf("setResultVariables failed: %v", err)
 	}

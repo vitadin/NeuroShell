@@ -618,8 +618,14 @@ func setupModelTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	oldRegistry := services.GetGlobalRegistry()
 	services.SetGlobalRegistry(services.NewRegistry())
 
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
+
 	// Register required services
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().RegisterService(services.NewInterpolationService())
 	require.NoError(t, err)
 
 	err = services.GetGlobalRegistry().RegisterService(services.NewModelService())
@@ -632,6 +638,7 @@ func setupModelTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	// Cleanup function to restore original registry
 	t.Cleanup(func() {
 		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
 	})
 }
 

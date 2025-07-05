@@ -107,8 +107,16 @@ func TestVariableService_Get(t *testing.T) {
 			err := service.Initialize(ctx)
 			require.NoError(t, err)
 
+			// Setup global context for testing
+			context.SetGlobalContext(ctx)
+			defer context.ResetGlobalContext()
+
 			// Test Get
-			value, err := service.Get(tt.varName, ctx)
+			// Setup global context for testing
+			context.SetGlobalContext(ctx)
+			defer context.ResetGlobalContext()
+
+			value, err := service.Get(tt.varName)
 
 			if tt.wantError != "" {
 				assert.Error(t, err)
@@ -125,7 +133,15 @@ func TestVariableService_Get_NotInitialized(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
 
-	value, err := service.Get("test_var", ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	value, err := service.Get("test_var")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not initialized")
@@ -184,7 +200,11 @@ func TestVariableService_Set(t *testing.T) {
 			require.NoError(t, err)
 
 			// Test Set
-			err = service.Set(tt.varName, tt.varValue, ctx)
+			// Setup global context for testing
+			context.SetGlobalContext(ctx)
+			defer context.ResetGlobalContext()
+
+			err = service.Set(tt.varName, tt.varValue)
 
 			if tt.wantError != "" {
 				assert.Error(t, err)
@@ -205,7 +225,11 @@ func TestVariableService_Set_NotInitialized(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Set("test_var", "test_value", ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	err := service.Set("test_var", "test_value")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not initialized")
@@ -221,7 +245,11 @@ func TestVariableService_InterpolateString(t *testing.T) {
 
 	// Test interpolation - note this will fail since we're using MockContext
 	// but we need to test the error handling
-	result, err := service.InterpolateString("Hello ${name}", ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	result, err := service.InterpolateString("Hello ${name}")
 
 	// Should fail because MockContext is not a NeuroContext
 	assert.Error(t, err)
@@ -233,7 +261,11 @@ func TestVariableService_InterpolateString_NotInitialized(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
 
-	result, err := service.InterpolateString("Hello ${name}", ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	result, err := service.InterpolateString("Hello ${name}")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not initialized")
@@ -249,7 +281,11 @@ func TestVariableService_GetAllVariables(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test GetAllVariables - note this will fail since we're using MockContext
-	result, err := service.GetAllVariables(ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	result, err := service.GetAllVariables()
 
 	// Should fail because MockContext is not a NeuroContext
 	assert.Error(t, err)
@@ -261,7 +297,11 @@ func TestVariableService_GetAllVariables_NotInitialized(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
 
-	result, err := service.GetAllVariables(ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	result, err := service.GetAllVariables()
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not initialized")
@@ -280,7 +320,11 @@ func BenchmarkVariableService_Get(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = service.Get("test_var", ctx)
+		// Setup global context for testing
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
+		_, _ = service.Get("test_var")
 	}
 }
 
@@ -293,7 +337,11 @@ func BenchmarkVariableService_Set(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = service.Set("test_var", "test_value", ctx)
+		// Setup global context for testing
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
+		_ = service.Set("test_var", "test_value")
 	}
 }
 
@@ -306,7 +354,11 @@ func BenchmarkVariableService_GetSystemVariable(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _ = service.Get("@user", ctx)
+		// Setup global context for testing
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
+		_, _ = service.Get("@user")
 	}
 }
 
@@ -333,7 +385,11 @@ func TestVariableService_SystemVariables(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			value, err := service.Get(tc.variable, ctx)
+			// Setup global context for testing
+			context.SetGlobalContext(ctx)
+			defer context.ResetGlobalContext()
+
+			value, err := service.Get(tc.variable)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expected, value)
 		})
@@ -347,6 +403,10 @@ func TestVariableService_ConcurrentAccess(t *testing.T) {
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
+	// Setup shared global context to avoid race conditions
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	// Test concurrent access
 	done := make(chan bool)
 
@@ -357,11 +417,11 @@ func TestVariableService_ConcurrentAccess(t *testing.T) {
 			varName := fmt.Sprintf("var_%d", id)
 			varValue := fmt.Sprintf("value_%d", id)
 
-			err := service.Set(varName, varValue, ctx)
+			err := service.Set(varName, varValue)
 			assert.NoError(t, err)
 
 			// Get the variable
-			value, err := service.Get(varName, ctx)
+			value, err := service.Get(varName)
 			assert.NoError(t, err)
 			assert.Equal(t, varValue, value)
 
@@ -420,7 +480,11 @@ func TestVariableService_SetSystemVariable(t *testing.T) {
 			require.NoError(t, err)
 
 			// Test SetSystemVariable
-			err = service.SetSystemVariable(tt.varName, tt.varValue, ctx)
+			// Setup global context for testing
+			context.SetGlobalContext(ctx)
+			defer context.ResetGlobalContext()
+
+			err = service.SetSystemVariable(tt.varName, tt.varValue)
 
 			if tt.wantError != "" {
 				assert.Error(t, err)
@@ -429,7 +493,7 @@ func TestVariableService_SetSystemVariable(t *testing.T) {
 				assert.NoError(t, err)
 
 				// Verify the variable was set by getting it back
-				value, err := service.Get(tt.varName, ctx)
+				value, err := service.Get(tt.varName)
 				assert.NoError(t, err)
 				assert.Equal(t, tt.varValue, value)
 			}
@@ -441,7 +505,11 @@ func TestVariableService_SetSystemVariable_NotInitialized(t *testing.T) {
 	service := NewVariableService()
 	ctx := context.New()
 
-	err := service.SetSystemVariable("_test", "value", ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	err := service.SetSystemVariable("_test", "value")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not initialized")
@@ -456,7 +524,11 @@ func TestVariableService_SetSystemVariable_WrongContextType(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test SetSystemVariable with wrong context type
-	err = service.SetSystemVariable("_test", "value", ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	err = service.SetSystemVariable("_test", "value")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")

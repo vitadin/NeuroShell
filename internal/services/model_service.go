@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -90,6 +91,12 @@ func (m *ModelService) CreateModel(name, provider, baseModel string, parameters 
 	return model, nil
 }
 
+// CreateModelWithGlobalContext creates a new model configuration using the global context singleton.
+func (m *ModelService) CreateModelWithGlobalContext(name, provider, baseModel string, parameters map[string]any, description string) (*neurotypes.ModelConfig, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return m.CreateModel(name, provider, baseModel, parameters, description, ctx)
+}
+
 // GetModel retrieves a model configuration by ID.
 func (m *ModelService) GetModel(id string, ctx neurotypes.Context) (*neurotypes.ModelConfig, error) {
 	if !m.initialized {
@@ -103,6 +110,12 @@ func (m *ModelService) GetModel(id string, ctx neurotypes.Context) (*neurotypes.
 	}
 
 	return model, nil
+}
+
+// GetModelWithGlobalContext retrieves a model configuration by ID using the global context singleton.
+func (m *ModelService) GetModelWithGlobalContext(id string) (*neurotypes.ModelConfig, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return m.GetModel(id, ctx)
 }
 
 // GetModelByName retrieves a model configuration by name.
@@ -122,6 +135,12 @@ func (m *ModelService) GetModelByName(name string, ctx neurotypes.Context) (*neu
 	return m.GetModel(modelID, ctx)
 }
 
+// GetModelByNameWithGlobalContext retrieves a model configuration by name using the global context singleton.
+func (m *ModelService) GetModelByNameWithGlobalContext(name string) (*neurotypes.ModelConfig, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return m.GetModelByName(name, ctx)
+}
+
 // ListModels returns all model configurations.
 func (m *ModelService) ListModels(ctx neurotypes.Context) (map[string]*neurotypes.ModelConfig, error) {
 	if !m.initialized {
@@ -129,6 +148,12 @@ func (m *ModelService) ListModels(ctx neurotypes.Context) (map[string]*neurotype
 	}
 
 	return ctx.GetModels(), nil
+}
+
+// ListModelsWithGlobalContext returns all model configurations using the global context singleton.
+func (m *ModelService) ListModelsWithGlobalContext() (map[string]*neurotypes.ModelConfig, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return m.ListModels(ctx)
 }
 
 // DeleteModel removes a model configuration by ID.
@@ -164,6 +189,12 @@ func (m *ModelService) DeleteModel(id string, ctx neurotypes.Context) error {
 	return nil
 }
 
+// DeleteModelWithGlobalContext removes a model configuration by ID using the global context singleton.
+func (m *ModelService) DeleteModelWithGlobalContext(id string) error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return m.DeleteModel(id, ctx)
+}
+
 // DeleteModelByName removes a model configuration by name.
 func (m *ModelService) DeleteModelByName(name string, ctx neurotypes.Context) error {
 	if !m.initialized {
@@ -179,6 +210,12 @@ func (m *ModelService) DeleteModelByName(name string, ctx neurotypes.Context) er
 
 	// Delete by ID
 	return m.DeleteModel(modelID, ctx)
+}
+
+// DeleteModelByNameWithGlobalContext removes a model configuration by name using the global context singleton.
+func (m *ModelService) DeleteModelByNameWithGlobalContext(name string) error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return m.DeleteModelByName(name, ctx)
 }
 
 // validateModelName validates that a model name meets requirements:

@@ -113,9 +113,6 @@ func (c *DeleteCommand) HelpInfo() neurotypes.HelpInfo {
 // Input: session name or ID to delete (optional if provided as name option)
 // Error if both name option and input are provided.
 func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
-	// Set global context for services to use
-	context.SetGlobalContext(ctx)
-
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
 	if err != nil {
@@ -126,12 +123,6 @@ func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurot
 	variableService, err := c.getVariableService()
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
-	}
-
-	// Get interpolation service for variable interpolation
-	interpolationService, err := c.getInterpolationService()
-	if err != nil {
-		return fmt.Errorf("interpolation service not available: %w", err)
 	}
 
 	// Validate arguments - cannot specify both name option and input
@@ -152,7 +143,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurot
 	}
 
 	// Interpolate variables in session identifier
-	sessionIdentifier, err = interpolationService.InterpolateString(sessionIdentifier)
+	sessionIdentifier, err = variableService.InterpolateString(sessionIdentifier)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables in session identifier: %w", err)
 	}
@@ -191,7 +182,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurot
 }
 
 // updateSessionVariablesAfterDeletion clears session-related system variables if the deleted session was active
-func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *services.VariableService, _ neurotypes.Context) error {
+func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *services.VariableService, ctx neurotypes.Context) error {
 	// Get chat session service to check current session
 	chatService, err := c.getChatSessionService()
 	if err != nil {
@@ -271,21 +262,6 @@ func (c *DeleteCommand) getVariableService() (*services.VariableService, error) 
 	}
 
 	return variableService, nil
-}
-
-// getInterpolationService retrieves the interpolation service from the global registry.
-func (c *DeleteCommand) getInterpolationService() (*services.InterpolationService, error) {
-	service, err := services.GetGlobalRegistry().GetService("interpolation")
-	if err != nil {
-		return nil, err
-	}
-
-	interpolationService, ok := service.(*services.InterpolationService)
-	if !ok {
-		return nil, fmt.Errorf("interpolation service has incorrect type")
-	}
-
-	return interpolationService, nil
 }
 
 func init() {

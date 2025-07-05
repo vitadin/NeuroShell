@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -91,6 +92,9 @@ func (c *VarsCommand) HelpInfo() neurotypes.HelpInfo {
 // Execute lists variables with optional filtering by pattern and type.
 // It retrieves all variables from the variable service and applies filters as specified.
 func (c *VarsCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
+	// Set global context for service access
+	context.SetGlobalContext(ctx)
+
 	// Get variable service
 	variableService, err := c.getVariableService()
 	if err != nil {
@@ -98,7 +102,7 @@ func (c *VarsCommand) Execute(args map[string]string, _ string, ctx neurotypes.C
 	}
 
 	// Get all variables
-	allVars, err := variableService.GetAllVariables(ctx)
+	allVars, err := variableService.GetAllVariables()
 	if err != nil {
 		return fmt.Errorf("failed to get variables: %w", err)
 	}

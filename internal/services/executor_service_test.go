@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"neuroshell/internal/context"
 	"neuroshell/internal/testutils"
 )
 
@@ -117,8 +118,12 @@ func TestExecutorService_GetNextCommand(t *testing.T) {
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	// Test GetNextCommand - will fail since MockContext is not NeuroContext
-	cmd, err := service.GetNextCommand(ctx)
+	cmd, err := service.GetNextCommand()
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -129,7 +134,11 @@ func TestExecutorService_GetNextCommand_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
 
-	cmd, err := service.GetNextCommand(ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	cmd, err := service.GetNextCommand()
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "executor service not initialized")
@@ -144,8 +153,12 @@ func TestExecutorService_GetQueueStatus(t *testing.T) {
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	// Test GetQueueStatus - will fail since MockContext is not NeuroContext
-	status, err := service.GetQueueStatus(ctx)
+	status, err := service.GetQueueStatus()
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -156,7 +169,11 @@ func TestExecutorService_GetQueueStatus_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
 
-	status, err := service.GetQueueStatus(ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	status, err := service.GetQueueStatus()
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "executor service not initialized")
@@ -171,8 +188,12 @@ func TestExecutorService_MarkCommandExecuted(t *testing.T) {
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	// Test MarkCommandExecuted - will fail since MockContext is not NeuroContext
-	err = service.MarkCommandExecuted(ctx)
+	err = service.MarkCommandExecuted()
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -182,7 +203,11 @@ func TestExecutorService_MarkCommandExecuted_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
 
-	err := service.MarkCommandExecuted(ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	err := service.MarkCommandExecuted()
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "executor service not initialized")
@@ -199,8 +224,12 @@ func TestExecutorService_MarkExecutionError(t *testing.T) {
 	testError := errors.New("test execution error")
 	testCommand := `\set[name="value"]`
 
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	// Test MarkExecutionError - will fail since MockContext is not NeuroContext
-	err = service.MarkExecutionError(ctx, testError, testCommand)
+	err = service.MarkExecutionError(testError, testCommand)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -213,7 +242,11 @@ func TestExecutorService_MarkExecutionError_NotInitialized(t *testing.T) {
 	testError := errors.New("test execution error")
 	testCommand := `\set[name="value"]`
 
-	err := service.MarkExecutionError(ctx, testError, testCommand)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	err := service.MarkExecutionError(testError, testCommand)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "executor service not initialized")
@@ -227,8 +260,12 @@ func TestExecutorService_MarkExecutionComplete(t *testing.T) {
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	// Test MarkExecutionComplete - will fail since MockContext is not NeuroContext
-	err = service.MarkExecutionComplete(ctx)
+	err = service.MarkExecutionComplete()
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -238,7 +275,11 @@ func TestExecutorService_MarkExecutionComplete_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
 	ctx := testutils.NewMockContext()
 
-	err := service.MarkExecutionComplete(ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	err := service.MarkExecutionComplete()
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "executor service not initialized")

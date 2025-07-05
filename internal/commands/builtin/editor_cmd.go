@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -93,6 +94,9 @@ func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
 func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
 	logger.Debug("Executing editor command", "args", args)
 
+	// Set global context for service access
+	context.SetGlobalContext(ctx)
+
 	// Get the editor service
 	editorService, err := services.GetGlobalRegistry().GetService("editor")
 	if err != nil {
@@ -102,7 +106,7 @@ func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes
 	es := editorService.(*services.EditorService)
 
 	// Open the editor and get content
-	content, err := es.OpenEditor(ctx)
+	content, err := es.OpenEditor()
 	if err != nil {
 		return fmt.Errorf("editor operation failed: %w", err)
 	}
@@ -116,7 +120,7 @@ func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes
 	vs := variableService.(*services.VariableService)
 
 	// Store the content in _output system variable
-	if err := vs.SetSystemVariable("_output", content, ctx); err != nil {
+	if err := vs.SetSystemVariable("_output", content); err != nil {
 		return fmt.Errorf("failed to store editor content: %w", err)
 	}
 

@@ -788,14 +788,21 @@ func TestEchoCommand_Execute_RawOptionEdgeCases(t *testing.T) {
 	}
 }
 
-// setupEchoTestRegistry sets up a test environment with variable service
+// setupEchoTestRegistry sets up a test environment with variable and interpolation services
 func setupEchoTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	// Create a new registry for testing
 	oldRegistry := services.GetGlobalRegistry()
 	services.SetGlobalRegistry(services.NewRegistry())
 
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
+
 	// Register variable service
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+
+	// Register interpolation service
+	err = services.GetGlobalRegistry().RegisterService(services.NewInterpolationService())
 	require.NoError(t, err)
 
 	// Initialize services
@@ -805,6 +812,7 @@ func setupEchoTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	// Cleanup function to restore original registry
 	t.Cleanup(func() {
 		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
 	})
 }
 

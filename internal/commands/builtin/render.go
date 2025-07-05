@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -126,6 +127,9 @@ func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurot
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
+	// Set global context for service access
+	context.SetGlobalContext(ctx)
+
 	// Get render service
 	renderService, err := c.getRenderService()
 	if err != nil {
@@ -158,10 +162,10 @@ func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurot
 
 	if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
 		// Store in system variable
-		err = variableService.SetSystemVariable(targetVar, styledText, ctx)
+		err = variableService.SetSystemVariable(targetVar, styledText)
 	} else {
 		// Store in user variable
-		err = variableService.Set(targetVar, styledText, ctx)
+		err = variableService.Set(targetVar, styledText)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to store result in variable '%s': %w", targetVar, err)
@@ -190,7 +194,7 @@ func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurot
 }
 
 // parseRenderOptions parses command arguments into RenderOptions
-func (c *RenderCommand) parseRenderOptions(args map[string]string, ctx neurotypes.Context) (services.RenderOptions, error) {
+func (c *RenderCommand) parseRenderOptions(args map[string]string, _ neurotypes.Context) (services.RenderOptions, error) {
 	options := services.RenderOptions{
 		Theme: "default", // Default theme
 	}
@@ -203,7 +207,7 @@ func (c *RenderCommand) parseRenderOptions(args map[string]string, ctx neurotype
 		interpolationService, err := c.getInterpolationService()
 		if err == nil {
 			for i, keyword := range keywords {
-				if interpolated, err := interpolationService.InterpolateString(keyword, ctx); err == nil {
+				if interpolated, err := interpolationService.InterpolateString(keyword); err == nil {
 					keywords[i] = interpolated
 				}
 			}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -98,9 +97,6 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 // Options:
 //   - system: system prompt for LLM context (optional, default helpful assistant)
 func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
-	// Set global context for services to use
-	context.SetGlobalContext(ctx)
-
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
 	if err != nil {
@@ -113,12 +109,6 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Get interpolation service for variable interpolation
-	interpolationService, err := c.getInterpolationService()
-	if err != nil {
-		return fmt.Errorf("interpolation service not available: %w", err)
-	}
-
 	// Parse arguments - session name comes from input, not from options
 	sessionName := input
 	systemPrompt := args["system"]
@@ -129,13 +119,13 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 	}
 
 	// Interpolate variables in session name and system prompt
-	sessionName, err = interpolationService.InterpolateString(sessionName)
+	sessionName, err = variableService.InterpolateString(sessionName)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables in session name: %w", err)
 	}
 
 	if systemPrompt != "" {
-		systemPrompt, err = interpolationService.InterpolateString(systemPrompt)
+		systemPrompt, err = variableService.InterpolateString(systemPrompt)
 		if err != nil {
 			return fmt.Errorf("failed to interpolate variables in system prompt: %w", err)
 		}
@@ -167,7 +157,7 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 }
 
 // updateSessionVariables sets session-related system variables
-func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, variableService *services.VariableService, _ neurotypes.Context) error {
+func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, variableService *services.VariableService, ctx neurotypes.Context) error {
 	// Set session variables
 	variables := map[string]string{
 		"#session_id":      session.ID,
@@ -214,21 +204,6 @@ func (c *NewCommand) getVariableService() (*services.VariableService, error) {
 	}
 
 	return variableService, nil
-}
-
-// getInterpolationService retrieves the interpolation service from the global registry.
-func (c *NewCommand) getInterpolationService() (*services.InterpolationService, error) {
-	service, err := services.GetGlobalRegistry().GetService("interpolation")
-	if err != nil {
-		return nil, err
-	}
-
-	interpolationService, ok := service.(*services.InterpolationService)
-	if !ok {
-		return nil, fmt.Errorf("interpolation service has incorrect type")
-	}
-
-	return interpolationService, nil
 }
 
 func init() {

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -156,16 +157,25 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 // Required options: provider, base_model
 // Optional parameters: temperature, max_tokens, top_p, top_k, presence_penalty, frequency_penalty, description
 func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+	// Set global context for services to use
+	context.SetGlobalContext(ctx)
+
 	// Get model service
 	modelService, err := c.getModelService()
 	if err != nil {
 		return fmt.Errorf("model service not available: %w", err)
 	}
 
-	// Get variable service for interpolation and storing result variables
+	// Get variable service for storing result variables
 	variableService, err := c.getVariableService()
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
+	}
+
+	// Get interpolation service for variable interpolation
+	interpolationService, err := c.getInterpolationService()
+	if err != nil {
+		return fmt.Errorf("interpolation service not available: %w", err)
 	}
 
 	// Parse required arguments
@@ -187,17 +197,17 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 	}
 
 	// Interpolate variables in all string parameters
-	modelName, err = variableService.InterpolateString(modelName, ctx)
+	modelName, err = interpolationService.InterpolateString(modelName)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables in model name: %w", err)
 	}
 
-	provider, err = variableService.InterpolateString(provider, ctx)
+	provider, err = interpolationService.InterpolateString(provider)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables in provider: %w", err)
 	}
 
-	baseModel, err = variableService.InterpolateString(baseModel, ctx)
+	baseModel, err = interpolationService.InterpolateString(baseModel)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables in base_model: %w", err)
 	}
@@ -208,7 +218,7 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 
 	// Handle description separately
 	if desc, exists := args["description"]; exists {
-		description, err = variableService.InterpolateString(desc, ctx)
+		description, err = interpolationService.InterpolateString(desc)
 		if err != nil {
 			return fmt.Errorf("failed to interpolate variables in description: %w", err)
 		}
@@ -240,7 +250,7 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 		model.Name, model.ID[:8], model.Provider, model.BaseModel)
 
 	// Store result in _output variable
-	if err := variableService.SetSystemVariable("_output", outputMsg, ctx); err != nil {
+	if err := variableService.SetSystemVariable("_output", outputMsg); err != nil {
 		return fmt.Errorf("failed to store result: %w", err)
 	}
 
@@ -323,7 +333,7 @@ func (c *NewCommand) parseParameters(args map[string]string, parameters map[stri
 }
 
 // updateModelVariables sets model-related system variables.
-func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variableService *services.VariableService, ctx neurotypes.Context) error {
+func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variableService *services.VariableService, _ neurotypes.Context) error {
 	// Set model variables
 	variables := map[string]string{
 		"#model_id":       model.ID,
@@ -342,7 +352,7 @@ func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variabl
 	}
 
 	for name, value := range variables {
-		if err := variableService.SetSystemVariable(name, value, ctx); err != nil {
+		if err := variableService.SetSystemVariable(name, value); err != nil {
 			return fmt.Errorf("failed to set variable %s: %w", name, err)
 		}
 	}
@@ -378,6 +388,21 @@ func (c *NewCommand) getVariableService() (*services.VariableService, error) {
 	}
 
 	return variableService, nil
+}
+
+// getInterpolationService retrieves the interpolation service from the global registry.
+func (c *NewCommand) getInterpolationService() (*services.InterpolationService, error) {
+	service, err := services.GetGlobalRegistry().GetService("interpolation")
+	if err != nil {
+		return nil, err
+	}
+
+	interpolationService, ok := service.(*services.InterpolationService)
+	if !ok {
+		return nil, fmt.Errorf("interpolation service has incorrect type")
+	}
+
+	return interpolationService, nil
 }
 
 func init() {

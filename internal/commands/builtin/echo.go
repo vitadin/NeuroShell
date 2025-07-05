@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -106,14 +107,17 @@ func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotyp
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
-	// Get variable service
-	variableService, err := c.getVariableService()
+	// Set global context for service access
+	context.SetGlobalContext(ctx)
+
+	// Get interpolation service
+	interpolationService, err := c.getInterpolationService()
 	if err != nil {
-		return fmt.Errorf("variable service not available: %w", err)
+		return fmt.Errorf("interpolation service not available: %w", err)
 	}
 
 	// Interpolate variables in the input message
-	expandedMessage, err := variableService.InterpolateString(input, ctx)
+	expandedMessage, err := interpolationService.InterpolateString(input)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables: %w", err)
 	}
@@ -156,13 +160,19 @@ func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotyp
 		storeMessage = displayMessage
 	}
 
+	// Get variable service
+	variableService, err := c.getVariableService()
+	if err != nil {
+		return fmt.Errorf("variable service not available: %w", err)
+	}
+
 	// Store result in target variable
 	if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
 		// Store in system variable (only for specific system variables)
-		err = variableService.SetSystemVariable(targetVar, storeMessage, ctx)
+		err = variableService.SetSystemVariable(targetVar, storeMessage)
 	} else {
 		// Store in user variable (including custom variables with _ prefix)
-		err = variableService.Set(targetVar, storeMessage, ctx)
+		err = variableService.Set(targetVar, storeMessage)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to store result in variable '%s': %w", targetVar, err)
@@ -193,6 +203,21 @@ func (c *EchoCommand) getVariableService() (*services.VariableService, error) {
 	}
 
 	return variableService, nil
+}
+
+// getInterpolationService retrieves the interpolation service from the global registry
+func (c *EchoCommand) getInterpolationService() (*services.InterpolationService, error) {
+	service, err := services.GetGlobalRegistry().GetService("interpolation")
+	if err != nil {
+		return nil, err
+	}
+
+	interpolationService, ok := service.(*services.InterpolationService)
+	if !ok {
+		return nil, fmt.Errorf("interpolation service has incorrect type")
+	}
+
+	return interpolationService, nil
 }
 
 // interpretEscapeSequences converts escape sequences in a string to their actual characters

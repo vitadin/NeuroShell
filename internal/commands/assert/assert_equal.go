@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -87,6 +88,9 @@ func (c *EqualCommand) HelpInfo() neurotypes.HelpInfo {
 // Execute compares two values for equality with variable interpolation support.
 // It sets system variables _status, _assert_result, _assert_expected, and _assert_actual.
 func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
+	// Set global context for services to use
+	context.SetGlobalContext(ctx)
+
 	// Validate required arguments
 	expected, hasExpected := args["expect"]
 	actual, hasActual := args["actual"]
@@ -107,12 +111,12 @@ func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.
 	}
 
 	// Interpolate both expected and actual values
-	interpolatedExpected, err := interpolationService.InterpolateString(expected, ctx)
+	interpolatedExpected, err := interpolationService.InterpolateString(expected)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate expected value: %w", err)
 	}
 
-	interpolatedActual, err := interpolationService.InterpolateString(actual, ctx)
+	interpolatedActual, err := interpolationService.InterpolateString(actual)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate actual value: %w", err)
 	}
@@ -129,20 +133,20 @@ func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.
 	// Set system variables based on result
 	if isEqual {
 		// Assertion passed
-		_ = variableService.SetSystemVariable("_status", "0", ctx)
-		_ = variableService.SetSystemVariable("_assert_result", "PASS", ctx)
-		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected, ctx)
-		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual, ctx)
+		_ = variableService.SetSystemVariable("_status", "0")
+		_ = variableService.SetSystemVariable("_assert_result", "PASS")
+		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected)
+		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual)
 
 		// Output success message
 		fmt.Printf("✓ Assertion passed: values are equal\n")
 		fmt.Printf("  Value: %s\n", interpolatedExpected)
 	} else {
 		// Assertion failed
-		_ = variableService.SetSystemVariable("_status", "1", ctx)
-		_ = variableService.SetSystemVariable("_assert_result", "FAIL", ctx)
-		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected, ctx)
-		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual, ctx)
+		_ = variableService.SetSystemVariable("_status", "1")
+		_ = variableService.SetSystemVariable("_assert_result", "FAIL")
+		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected)
+		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual)
 
 		// Output failure message with diff-style information
 		fmt.Printf("✗ Assertion failed: values are not equal\n")

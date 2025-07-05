@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
@@ -53,8 +54,12 @@ func TestInterpolationService_InterpolateString(t *testing.T) {
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	// Test InterpolateString - will fail since MockContext is not NeuroContext
-	result, err := service.InterpolateString("Hello ${name}", ctx)
+	result, err := service.InterpolateString("Hello ${name}")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -65,7 +70,11 @@ func TestInterpolationService_InterpolateString_NotInitialized(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
 
-	result, err := service.InterpolateString("Hello ${name}", ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	result, err := service.InterpolateString("Hello ${name}")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "interpolation service not initialized")
@@ -92,8 +101,12 @@ func TestInterpolationService_InterpolateCommand(t *testing.T) {
 		ParseMode: neurotypes.ParseModeKeyValue,
 	}
 
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	// Test InterpolateCommand - will fail since MockContext is not NeuroContext
-	result, err := service.InterpolateCommand(testCmd, ctx)
+	result, err := service.InterpolateCommand(testCmd)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -109,7 +122,11 @@ func TestInterpolationService_InterpolateCommand_NotInitialized(t *testing.T) {
 		Message: "Hello ${name}",
 	}
 
-	result, err := service.InterpolateCommand(testCmd, ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	result, err := service.InterpolateCommand(testCmd)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "interpolation service not initialized")
@@ -168,8 +185,12 @@ func TestInterpolationService_CommandStructurePreservation(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// Setup global context for testing
+			context.SetGlobalContext(ctx)
+			defer context.ResetGlobalContext()
+
 			// This will fail due to MockContext, but we test the structure
-			result, err := service.InterpolateCommand(tc.cmd, ctx)
+			result, err := service.InterpolateCommand(tc.cmd)
 
 			// Expect error due to MockContext
 			assert.Error(t, err)
@@ -213,8 +234,12 @@ func TestInterpolationService_StringInterpolationPatterns(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// Setup global context for testing
+			context.SetGlobalContext(ctx)
+			defer context.ResetGlobalContext()
+
 			// Will fail due to MockContext, but tests service behavior
-			result, err := service.InterpolateString(tc.input, ctx)
+			result, err := service.InterpolateString(tc.input)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -233,10 +258,14 @@ func BenchmarkInterpolationService_InterpolateString_Simple(b *testing.B) {
 
 	input := "Hello ${name}"
 
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// Will error due to MockContext, but measures service overhead
-		_, _ = service.InterpolateString(input, ctx)
+		_, _ = service.InterpolateString(input)
 	}
 }
 
@@ -249,10 +278,14 @@ func BenchmarkInterpolationService_InterpolateString_Complex(b *testing.B) {
 
 	input := "Complex interpolation: ${var1} ${var2} ${@user} ${@pwd} ${#session_id} ${nested_${var3}}"
 
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// Will error due to MockContext, but measures service overhead
-		_, _ = service.InterpolateString(input, ctx)
+		_, _ = service.InterpolateString(input)
 	}
 }
 
@@ -275,10 +308,14 @@ func BenchmarkInterpolationService_InterpolateCommand(b *testing.B) {
 		ParseMode: neurotypes.ParseModeKeyValue,
 	}
 
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// Will error due to MockContext, but measures service overhead
-		_, _ = service.InterpolateCommand(cmd, ctx)
+		_, _ = service.InterpolateCommand(cmd)
 	}
 }
 
@@ -306,8 +343,12 @@ func TestInterpolationService_EdgeCases(t *testing.T) {
 
 	for _, tc := range edgeCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// Setup global context for testing
+			context.SetGlobalContext(ctx)
+			defer context.ResetGlobalContext()
+
 			// Should handle edge cases without panicking
-			result, err := service.InterpolateString(tc.input, ctx)
+			result, err := service.InterpolateString(tc.input)
 
 			// Expect error due to MockContext
 			assert.Error(t, err)
@@ -319,14 +360,18 @@ func TestInterpolationService_EdgeCases(t *testing.T) {
 // Test concurrent access
 func TestInterpolationService_ConcurrentAccess(t *testing.T) {
 	// Test concurrent initialization and interpolation with separate service instances
+	// Set up shared global context to avoid race conditions
+	sharedCtx := testutils.NewMockContext()
+	context.SetGlobalContext(sharedCtx)
+	defer context.ResetGlobalContext()
+
 	done := make(chan bool)
 
 	for i := 0; i < 10; i++ {
 		go func(_ int) {
 			// Each goroutine gets its own service instance to avoid race conditions
 			service := NewInterpolationService()
-			ctx := testutils.NewMockContext()
-			err := service.Initialize(ctx)
+			err := service.Initialize(sharedCtx)
 			assert.NoError(t, err)
 
 			// Try various interpolations concurrently
@@ -338,7 +383,7 @@ func TestInterpolationService_ConcurrentAccess(t *testing.T) {
 			}
 
 			for _, str := range testStrings {
-				_, err := service.InterpolateString(str, ctx)
+				_, err := service.InterpolateString(str)
 				// Expect error due to MockContext, but shouldn't panic
 				assert.Error(t, err)
 			}
@@ -360,23 +405,27 @@ func TestInterpolationService_InitializationState(t *testing.T) {
 	// Should not be initialized initially
 	assert.False(t, service.initialized)
 
+	// Setup global context for testing (even though service is not initialized)
+	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
 	// Test operations before initialization
-	_, err := service.InterpolateString("Hello ${name}", nil)
+	_, err := service.InterpolateString("Hello ${name}")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 
-	_, err = service.InterpolateCommand(&parser.Command{}, nil)
+	_, err = service.InterpolateCommand(&parser.Command{})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 
 	// Initialize
-	ctx := testutils.NewMockContext()
 	err = service.Initialize(ctx)
 	assert.NoError(t, err)
 	assert.True(t, service.initialized)
 
 	// Test operations after initialization (will still error due to MockContext)
-	_, err = service.InterpolateString("Hello ${name}", ctx)
+	_, err = service.InterpolateString("Hello ${name}")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
 
@@ -395,15 +444,21 @@ func TestInterpolationService_NilHandling(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test nil command
-	result, err := service.InterpolateCommand(nil, ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	result, err := service.InterpolateCommand(nil)
 	// Should handle nil gracefully but will error due to MockContext first
 	assert.Error(t, err)
 	assert.Nil(t, result)
 
-	// Test nil context
-	_, err = service.InterpolateString("test", nil)
-	// Should error due to nil context type assertion
-	assert.Error(t, err)
+	// Test with reset global context (singleton creates new context automatically)
+	context.ResetGlobalContext()
+	_, err = service.InterpolateString("test")
+	// With singleton pattern, GetGlobalContext() creates a new context automatically
+	// So the operation should succeed
+	assert.NoError(t, err)
 }
 
 // Test command option handling
@@ -413,6 +468,10 @@ func TestInterpolationService_CommandOptionHandling(t *testing.T) {
 
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
+
+	// Set the mock context as global context for the service to use
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
 
 	testCases := []struct {
 		name string
@@ -446,7 +505,7 @@ func TestInterpolationService_CommandOptionHandling(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Should handle different option scenarios
-			result, err := service.InterpolateCommand(tc.cmd, ctx)
+			result, err := service.InterpolateCommand(tc.cmd)
 
 			// Expect error due to MockContext
 			assert.Error(t, err)
