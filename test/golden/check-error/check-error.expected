@@ -1,0 +1,7 @@
+Service Status Check:
+====================
+  ✗ nonexistent_service  - not available (service nonexistent_service not found)
+Summary: 0/1 services healthy
+Some services are not available or not initialized.
+Check status: failed
+Failed services: nonexistent_service

@@ -14,7 +14,7 @@ Result: Hello
 World
 interpreted_result = Result: Hello
 World
-System info: User=sunyaojin, TestMode=true
+System info: User=, TestMode=true
 Undefined: \nDefined: World
 Setting complex = Value with Hello and escapes\n
 Complex: Value with Hello and escapes\n
