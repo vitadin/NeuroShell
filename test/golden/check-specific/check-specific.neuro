@@ -1,0 +1,4 @@
+%% Test check command with specific service
+%% This test verifies that \check can check individual services
+\check[service=variable]
+\check[service=help]

@@ -1,0 +1,5 @@
+%% Test check command error handling
+%% This test verifies that \check handles nonexistent services gracefully
+\check[service=nonexistent_service]
+\echo Check status: ${_check_status}
+\echo Failed services: ${_check_failed_services}

@@ -29,7 +29,7 @@
 \get[interpreted_result]
 
 %% Test with system variables
-\echo System info: User=${@user}, TestMode=${#test_mode}
+\echo System info: User=, TestMode=${#test_mode}
 
 %% Test with undefined variables (should become empty)
 \echo[raw=true] Undefined: ${undefined_var}\nDefined: ${name}

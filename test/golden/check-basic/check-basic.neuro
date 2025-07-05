@@ -1,0 +1,3 @@
+%% Test basic check command functionality
+%% This test verifies that \check lists all available services
+\check
