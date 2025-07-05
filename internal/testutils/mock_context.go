@@ -24,6 +24,11 @@ type MockContext struct {
 	sessionNameToID map[string]string
 	activeSessionID string
 
+	// Model storage for testing
+	models        map[string]*neurotypes.ModelConfig
+	modelNameToID map[string]string
+	modelIDToName map[string]string
+
 	// For testing error scenarios
 	getVariableError error
 	setVariableError error
@@ -48,6 +53,11 @@ func NewMockContext() *MockContext {
 		chatSessions:    make(map[string]*neurotypes.ChatSession),
 		sessionNameToID: make(map[string]string),
 		activeSessionID: "",
+
+		// Initialize model storage
+		models:        make(map[string]*neurotypes.ModelConfig),
+		modelNameToID: make(map[string]string),
+		modelIDToName: make(map[string]string),
 	}
 }
 
@@ -324,4 +334,64 @@ func (m *MockContext) SetActiveSessionID(sessionID string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.activeSessionID = sessionID
+}
+
+// Model storage methods for Context interface compliance
+
+// GetModels returns all model configurations stored in the mock context.
+func (m *MockContext) GetModels() map[string]*neurotypes.ModelConfig {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.models
+}
+
+// SetModels sets the model configurations map in the mock context.
+func (m *MockContext) SetModels(models map[string]*neurotypes.ModelConfig) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.models = models
+}
+
+// GetModelNameToID returns the model name to ID mapping.
+func (m *MockContext) GetModelNameToID() map[string]string {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.modelNameToID
+}
+
+// SetModelNameToID sets the model name to ID mapping in the mock context.
+func (m *MockContext) SetModelNameToID(nameToID map[string]string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.modelNameToID = nameToID
+}
+
+// GetModelIDToName returns the model ID to name mapping.
+func (m *MockContext) GetModelIDToName() map[string]string {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.modelIDToName
+}
+
+// SetModelIDToName sets the model ID to name mapping in the mock context.
+func (m *MockContext) SetModelIDToName(idToName map[string]string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.modelIDToName = idToName
+}
+
+// ModelNameExists checks if a model name already exists in the mock context.
+func (m *MockContext) ModelNameExists(name string) bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	_, exists := m.modelNameToID[name]
+	return exists
+}
+
+// ModelIDExists checks if a model ID already exists in the mock context.
+func (m *MockContext) ModelIDExists(id string) bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	_, exists := m.models[id]
+	return exists
 }

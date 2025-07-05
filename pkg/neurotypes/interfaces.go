@@ -34,6 +34,16 @@ type Context interface {
 	SetSessionNameToID(nameToID map[string]string)
 	GetActiveSessionID() string
 	SetActiveSessionID(sessionID string)
+
+	// Model storage methods (bidirectional mapping)
+	GetModels() map[string]*ModelConfig
+	SetModels(models map[string]*ModelConfig)
+	GetModelNameToID() map[string]string
+	SetModelNameToID(nameToID map[string]string)
+	GetModelIDToName() map[string]string
+	SetModelIDToName(idToName map[string]string)
+	ModelNameExists(name string) bool
+	ModelIDExists(id string) bool
 }
 
 // Service defines the interface for NeuroShell services that provide specific functionality.
