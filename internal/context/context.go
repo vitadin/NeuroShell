@@ -27,6 +27,11 @@ type NeuroContext struct {
 	chatSessions    map[string]*neurotypes.ChatSession // Session storage by ID
 	sessionNameToID map[string]string                  // Name to ID mapping
 	activeSessionID string                             // Currently active session ID
+
+	// Model storage (bidirectional mapping)
+	models        map[string]*neurotypes.ModelConfig // Model storage by ID
+	modelNameToID map[string]string                  // Name to ID mapping
+	modelIDToName map[string]string                  // ID to name mapping
 }
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
@@ -43,6 +48,11 @@ func New() *NeuroContext {
 		chatSessions:    make(map[string]*neurotypes.ChatSession),
 		sessionNameToID: make(map[string]string),
 		activeSessionID: "",
+
+		// Initialize model storage
+		models:        make(map[string]*neurotypes.ModelConfig),
+		modelNameToID: make(map[string]string),
+		modelIDToName: make(map[string]string),
 	}
 
 	// Generate initial session ID (will be deterministic if test mode is set later)
@@ -370,4 +380,46 @@ func (ctx *NeuroContext) GetActiveSessionID() string {
 // SetActiveSessionID sets the currently active session ID.
 func (ctx *NeuroContext) SetActiveSessionID(sessionID string) {
 	ctx.activeSessionID = sessionID
+}
+
+// GetModels returns all model configurations stored in the context.
+func (ctx *NeuroContext) GetModels() map[string]*neurotypes.ModelConfig {
+	return ctx.models
+}
+
+// SetModels sets the model configurations map in the context.
+func (ctx *NeuroContext) SetModels(models map[string]*neurotypes.ModelConfig) {
+	ctx.models = models
+}
+
+// GetModelNameToID returns the model name to ID mapping.
+func (ctx *NeuroContext) GetModelNameToID() map[string]string {
+	return ctx.modelNameToID
+}
+
+// SetModelNameToID sets the model name to ID mapping in the context.
+func (ctx *NeuroContext) SetModelNameToID(nameToID map[string]string) {
+	ctx.modelNameToID = nameToID
+}
+
+// GetModelIDToName returns the model ID to name mapping.
+func (ctx *NeuroContext) GetModelIDToName() map[string]string {
+	return ctx.modelIDToName
+}
+
+// SetModelIDToName sets the model ID to name mapping in the context.
+func (ctx *NeuroContext) SetModelIDToName(idToName map[string]string) {
+	ctx.modelIDToName = idToName
+}
+
+// ModelNameExists checks if a model name already exists in the context.
+func (ctx *NeuroContext) ModelNameExists(name string) bool {
+	_, exists := ctx.modelNameToID[name]
+	return exists
+}
+
+// ModelIDExists checks if a model ID already exists in the context.
+func (ctx *NeuroContext) ModelIDExists(id string) bool {
+	_, exists := ctx.models[id]
+	return exists
 }

@@ -1,0 +1,11 @@
+Setting model_provider = openai
+Setting model_base = gpt-3.5-turbo
+Setting model_name = test-model
+Setting temp_setting = 0.7
+Created model 'test-model' (ID: {{PLACEHOLDER:8:8}}, Provider: openai, Base: gpt-3.5-turbo)
+#model_id = {{UUID}}
+#model_name = test-model
+#model_provider = openai
+#model_base = gpt-3.5-turbo
+#model_param_count = 1
+_output = Created model 'test-model' (ID: {{PLACEHOLDER:8:8}}, Provider: openai, Base: gpt-3.5-turbo)

@@ -6,7 +6,8 @@ Service Status Check:
   ✓ executor             - available/initialized
   ✓ help                 - available/initialized
   ✓ interpolation        - available/initialized
+  ✓ model                - available/initialized
   ✓ render               - available/initialized
   ✓ script               - available/initialized
   ✓ variable             - available/initialized
-Summary: 9/9 services healthy
+Summary: 10/10 services healthy

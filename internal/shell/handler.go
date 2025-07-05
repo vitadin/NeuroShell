@@ -9,6 +9,7 @@ import (
 	"neuroshell/internal/commands"
 	_ "neuroshell/internal/commands/assert"  // Import assert commands (init functions)
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
+	_ "neuroshell/internal/commands/model"   // Import model commands (init functions)
 	_ "neuroshell/internal/commands/session" // Import session commands (init functions)
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
@@ -84,6 +85,10 @@ func InitializeServices(testMode bool) error {
 	}
 
 	if err := services.GetGlobalRegistry().RegisterService(services.NewChatSessionService()); err != nil {
+		return err
+	}
+
+	if err := services.GetGlobalRegistry().RegisterService(services.NewModelService()); err != nil {
 		return err
 	}
 
