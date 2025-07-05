@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"neuroshell/internal/commands"
@@ -84,7 +85,7 @@ func (c *HelpCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute displays help information for commands. If a specific command is requested via args,
 // it shows detailed help for that command. Otherwise, it shows all available commands.
-func (c *HelpCommand) Execute(args map[string]string, _ string, _ neurotypes.Context) error {
+func (c *HelpCommand) Execute(args map[string]string, input string, _ neurotypes.Context) error {
 	// Get help service
 	helpService, err := c.getHelpService()
 	if err != nil {
@@ -98,13 +99,24 @@ func (c *HelpCommand) Execute(args map[string]string, _ string, _ neurotypes.Con
 		delete(args, "styled") // Remove styled from args so it doesn't interfere with command detection
 	}
 
-	// Check if a specific command was requested via bracket syntax: \help[command_name]
+	// Check if a specific command was requested via bracket syntax: \help[command_name] or input: \help[styled=true] command_name
 	var requestedCommand string
+
+	// First check for command in remaining args (bracket syntax)
 	if len(args) > 0 {
 		// Get the first key from args (command name)
 		for key := range args {
 			requestedCommand = key
 			break
+		}
+	}
+
+	// If no command found in args, check input string (space syntax)
+	if requestedCommand == "" && strings.TrimSpace(input) != "" {
+		// Parse the first word from input as command name
+		fields := strings.Fields(strings.TrimSpace(input))
+		if len(fields) > 0 {
+			requestedCommand = fields[0]
 		}
 	}
 

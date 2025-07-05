@@ -243,7 +243,7 @@ func TestHelpCommand_Execute_WithArgs(t *testing.T) {
 }
 
 func TestHelpCommand_Execute_WithInput(t *testing.T) {
-	// Test that help command ignores input (current implementation doesn't use it)
+	// Test that help command uses input to show specific command help
 	testCommands := []neurotypes.Command{
 		&MockCommand{name: "test", description: "Test", usage: "\\test"},
 	}
@@ -251,8 +251,8 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 	ctx := setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
 
-	// Test with input
-	input := "some input text"
+	// Test with valid command name in input
+	input := "test"
 
 	// Capture stdout
 	originalStdout := os.Stdout
@@ -270,8 +270,9 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 	outputStr := string(output)
 
 	assert.NoError(t, err)
-	// Should still show all commands (current implementation doesn't use input)
-	assert.Contains(t, outputStr, "Neuro Shell Commands:")
+	// Should show specific command help
+	assert.Contains(t, outputStr, "Command: test")
+	assert.Contains(t, outputStr, "Description: Test")
 }
 
 func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
