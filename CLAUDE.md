@@ -230,3 +230,7 @@ type Command interface {
 - Natural language command parsing
 - Multi-modal support (images, files)
 - Distributed session state
+
+## 10.
+
+Everytime run testing, make sure you add `EDITOR=echo` before calling testing command (e.g. `go test`)
