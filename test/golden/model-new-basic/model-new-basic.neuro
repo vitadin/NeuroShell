@@ -1,0 +1,8 @@
+%% Test basic model creation
+\model-new[provider="openai", base_model="gpt-4"] my-gpt4-model
+\get[#model_id]
+\get[#model_name]
+\get[#model_provider]
+\get[#model_base]
+\get[#model_param_count]
+\get[_output]

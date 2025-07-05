@@ -1,0 +1,8 @@
+Created model 'creative-claude' (ID: {{PLACEHOLDER:8:8}}, Provider: anthropic, Base: claude-3-sonnet)
+#model_id = {{UUID}}
+#model_name = creative-claude
+#model_provider = anthropic
+#model_base = claude-3-sonnet
+#model_param_count = 2
+#model_description = Advanced model for creative tasks
+_output = Created model 'creative-claude' (ID: {{PLACEHOLDER:8:8}}, Provider: anthropic, Base: claude-3-sonnet)
