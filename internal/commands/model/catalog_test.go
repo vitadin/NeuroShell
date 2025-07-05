@@ -247,7 +247,7 @@ func TestCatalogCommand_Execute_BasicSearch(t *testing.T) {
 			_ = ctx.SetVariable("_catalog_model_id", "")
 			_ = ctx.SetVariable("_catalog_models", "")
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			if tt.expectedError && err == nil {
 				t.Error("Expected error, but got none")
@@ -345,7 +345,7 @@ func TestCatalogCommand_Execute_AutoCreation(t *testing.T) {
 			_ = ctx.SetVariable("_catalog_model_id", "")
 			_ = ctx.SetVariable("_catalog_models", "")
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			if tt.expectedError && err == nil {
 				t.Error("Expected error, but got none")
@@ -413,7 +413,7 @@ func TestCatalogCommand_Execute_VariableInterpolation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			if tt.expectedError && err == nil {
 				t.Error("Expected error, but got none")
@@ -484,7 +484,7 @@ func TestCatalogCommand_Execute_ServiceErrors(t *testing.T) {
 			services.SetGlobalRegistry(services.NewRegistry())
 			tt.setupServices()
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			if err == nil {
 				t.Error("Expected error, but got none")
@@ -643,7 +643,7 @@ func TestCatalogCommand_SetResultVariables(t *testing.T) {
 	}
 
 	// Execute
-	err = cmd.setResultVariables(result, variableService, ctx)
+	err = cmd.setResultVariables(result, variableService)
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
@@ -671,7 +671,7 @@ func TestCatalogCommand_SetResultVariables(t *testing.T) {
 		ModelID: "single-model",
 	}
 
-	err = cmd.setResultVariables(singleResult, variableService, ctx)
+	err = cmd.setResultVariables(singleResult, variableService)
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
@@ -703,14 +703,14 @@ func TestCatalogCommand_Registration(t *testing.T) {
 
 // Benchmark tests
 func BenchmarkCatalogCommand_Execute(b *testing.B) {
-	cmd, ctx := setupCatalogTest(b)
+	cmd, _ := setupCatalogTest(b)
 
 	args := map[string]string{"provider": "openai"}
 	input := ""
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		err := cmd.Execute(args, input, ctx)
+		err := cmd.Execute(args, input)
 		if err != nil {
 			b.Fatalf("Execute failed: %v", err)
 		}

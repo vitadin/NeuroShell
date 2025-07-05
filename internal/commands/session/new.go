@@ -96,7 +96,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 // The input parameter is used as the session name (required).
 // Options:
 //   - system: system prompt for LLM context (optional, default helpful assistant)
-func (c *NewCommand) Execute(args map[string]string, input string, _ neurotypes.Context) error {
+func (c *NewCommand) Execute(args map[string]string, input string) error {
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
 	if err != nil {

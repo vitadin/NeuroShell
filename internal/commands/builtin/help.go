@@ -85,7 +85,7 @@ func (c *HelpCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute displays help information for commands. If a specific command is requested via args,
 // it shows detailed help for that command. Otherwise, it shows all available commands.
-func (c *HelpCommand) Execute(args map[string]string, input string, _ neurotypes.Context) error {
+func (c *HelpCommand) Execute(args map[string]string, input string) error {
 	// Get help service
 	helpService, err := c.getHelpService()
 	if err != nil {

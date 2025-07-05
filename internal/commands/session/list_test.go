@@ -45,7 +45,7 @@ func TestListCommand_Execute_EmptySessionList(t *testing.T) {
 	setupTestServices(ctx)
 	defer cleanupTestServices()
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 	assert.NoError(t, err)
 
 	// Check output variable
@@ -62,11 +62,11 @@ func TestListCommand_Execute_SingleSession(t *testing.T) {
 
 	// Create a session first
 	newCmd := &NewCommand{}
-	err := newCmd.Execute(map[string]string{}, "test_session", ctx)
+	err := newCmd.Execute(map[string]string{}, "test_session")
 	require.NoError(t, err)
 
 	// List sessions
-	err = cmd.Execute(map[string]string{}, "", ctx)
+	err = cmd.Execute(map[string]string{}, "")
 	assert.NoError(t, err)
 
 	// Check output variable
@@ -87,19 +87,19 @@ func TestListCommand_Execute_MultipleSessions(t *testing.T) {
 	// Create multiple sessions with slight delays to ensure different timestamps
 	newCmd := &NewCommand{}
 
-	err := newCmd.Execute(map[string]string{}, "first_session", ctx)
+	err := newCmd.Execute(map[string]string{}, "first_session")
 	require.NoError(t, err)
 	time.Sleep(1 * time.Millisecond)
 
-	err = newCmd.Execute(map[string]string{}, "second_session", ctx)
+	err = newCmd.Execute(map[string]string{}, "second_session")
 	require.NoError(t, err)
 	time.Sleep(1 * time.Millisecond)
 
-	err = newCmd.Execute(map[string]string{}, "third_session", ctx)
+	err = newCmd.Execute(map[string]string{}, "third_session")
 	require.NoError(t, err)
 
 	// List sessions
-	err = cmd.Execute(map[string]string{}, "", ctx)
+	err = cmd.Execute(map[string]string{}, "")
 	assert.NoError(t, err)
 
 	// Check output variable
@@ -120,15 +120,15 @@ func TestListCommand_Execute_SortByName(t *testing.T) {
 
 	// Create sessions in reverse alphabetical order
 	newCmd := &NewCommand{}
-	err := newCmd.Execute(map[string]string{}, "zebra", ctx)
+	err := newCmd.Execute(map[string]string{}, "zebra")
 	require.NoError(t, err)
-	err = newCmd.Execute(map[string]string{}, "alpha", ctx)
+	err = newCmd.Execute(map[string]string{}, "alpha")
 	require.NoError(t, err)
-	err = newCmd.Execute(map[string]string{}, "beta", ctx)
+	err = newCmd.Execute(map[string]string{}, "beta")
 	require.NoError(t, err)
 
 	// List sessions sorted by name
-	err = cmd.Execute(map[string]string{"sort": "name"}, "", ctx)
+	err = cmd.Execute(map[string]string{"sort": "name"}, "")
 	assert.NoError(t, err)
 
 	// Check output variable
@@ -152,19 +152,19 @@ func TestListCommand_Execute_SortByCreated(t *testing.T) {
 
 	// Create sessions with time delays
 	newCmd := &NewCommand{}
-	err := newCmd.Execute(map[string]string{}, "first", ctx)
+	err := newCmd.Execute(map[string]string{}, "first")
 	require.NoError(t, err)
 	time.Sleep(2 * time.Millisecond)
 
-	err = newCmd.Execute(map[string]string{}, "second", ctx)
+	err = newCmd.Execute(map[string]string{}, "second")
 	require.NoError(t, err)
 	time.Sleep(2 * time.Millisecond)
 
-	err = newCmd.Execute(map[string]string{}, "third", ctx)
+	err = newCmd.Execute(map[string]string{}, "third")
 	require.NoError(t, err)
 
 	// List sessions sorted by created (newest first - default)
-	err = cmd.Execute(map[string]string{"sort": "created"}, "", ctx)
+	err = cmd.Execute(map[string]string{"sort": "created"}, "")
 	assert.NoError(t, err)
 
 	// Check output variable - newest should be first
@@ -188,15 +188,15 @@ func TestListCommand_Execute_FilterActive(t *testing.T) {
 
 	// Create multiple sessions
 	newCmd := &NewCommand{}
-	err := newCmd.Execute(map[string]string{}, "first_session", ctx)
+	err := newCmd.Execute(map[string]string{}, "first_session")
 	require.NoError(t, err)
-	err = newCmd.Execute(map[string]string{}, "second_session", ctx)
+	err = newCmd.Execute(map[string]string{}, "second_session")
 	require.NoError(t, err)
-	err = newCmd.Execute(map[string]string{}, "active_session", ctx)
+	err = newCmd.Execute(map[string]string{}, "active_session")
 	require.NoError(t, err)
 
 	// Filter for active session only
-	err = cmd.Execute(map[string]string{"filter": "active"}, "", ctx)
+	err = cmd.Execute(map[string]string{"filter": "active"}, "")
 	assert.NoError(t, err)
 
 	// Check output variable
@@ -216,7 +216,7 @@ func TestListCommand_Execute_FilterActiveNoActiveSession(t *testing.T) {
 	defer cleanupTestServices()
 
 	// Filter for active session when none exists
-	err := cmd.Execute(map[string]string{"filter": "active"}, "", ctx)
+	err := cmd.Execute(map[string]string{"filter": "active"}, "")
 	assert.NoError(t, err)
 
 	// Check output variable
@@ -233,13 +233,13 @@ func TestListCommand_Execute_CombinedOptions(t *testing.T) {
 
 	// Create multiple sessions
 	newCmd := &NewCommand{}
-	err := newCmd.Execute(map[string]string{}, "zebra_session", ctx)
+	err := newCmd.Execute(map[string]string{}, "zebra_session")
 	require.NoError(t, err)
-	err = newCmd.Execute(map[string]string{}, "alpha_session", ctx)
+	err = newCmd.Execute(map[string]string{}, "alpha_session")
 	require.NoError(t, err)
 
 	// Use combined options: filter active and sort by name
-	err = cmd.Execute(map[string]string{"filter": "active", "sort": "name"}, "", ctx)
+	err = cmd.Execute(map[string]string{"filter": "active", "sort": "name"}, "")
 	assert.NoError(t, err)
 
 	// Check output variable - should show only active session
@@ -256,7 +256,7 @@ func TestListCommand_Execute_InvalidSortOption(t *testing.T) {
 	setupTestServices(ctx)
 	defer cleanupTestServices()
 
-	err := cmd.Execute(map[string]string{"sort": "invalid"}, "", ctx)
+	err := cmd.Execute(map[string]string{"sort": "invalid"}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid sort option")
 }
@@ -267,7 +267,7 @@ func TestListCommand_Execute_InvalidFilterOption(t *testing.T) {
 	setupTestServices(ctx)
 	defer cleanupTestServices()
 
-	err := cmd.Execute(map[string]string{"filter": "invalid"}, "", ctx)
+	err := cmd.Execute(map[string]string{"filter": "invalid"}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid filter option")
 }
@@ -277,7 +277,7 @@ func TestListCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	ctx := context.New()
 
 	// Don't setup services - should fail
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "service not available")
 }

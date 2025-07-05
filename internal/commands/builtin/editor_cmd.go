@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"os"
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/logger"
@@ -90,7 +91,7 @@ func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
 }
 
 // Execute opens the external editor and stores the resulting content in ${_output}.
-func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
+func (e *EditorCommand) Execute(args map[string]string, _ string) error {
 	logger.Debug("Executing editor command", "args", args)
 
 	// Get the editor service
@@ -101,8 +102,23 @@ func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes
 
 	es := editorService.(*services.EditorService)
 
+	// Get variable service to get editor preference
+	variableService, err := services.GetGlobalRegistry().GetService("variable")
+	if err != nil {
+		return fmt.Errorf("variable service not available: %w", err)
+	}
+	
+	vs := variableService.(*services.VariableService)
+	
+	// Get editor preference from variable service instead of passing context
+	editorCmd, _ := vs.Get("@editor")
+	if editorCmd == "" {
+		// Fall back to environment variable
+		editorCmd = os.Getenv("EDITOR")
+	}
+
 	// Open the editor and get content
-	content, err := es.OpenEditor(ctx)
+	content, err := es.OpenEditorWithCommand(editorCmd)
 	if err != nil {
 		return fmt.Errorf("editor operation failed: %w", err)
 	}

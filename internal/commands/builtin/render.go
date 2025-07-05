@@ -121,7 +121,7 @@ func (c *RenderCommand) HelpInfo() neurotypes.HelpInfo {
 //   - underline: make text underlined (true/false)
 //   - to: variable to store result (default: ${_output})
 //   - silent: suppress console output (true/false, default: false)
-func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *RenderCommand) Execute(args map[string]string, input string) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
@@ -139,7 +139,7 @@ func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurot
 	}
 
 	// Parse render options
-	options, err := c.parseRenderOptions(args, ctx)
+	options, err := c.parseRenderOptions(args, variableService)
 	if err != nil {
 		return fmt.Errorf("failed to parse render options: %w", err)
 	}
@@ -190,7 +190,7 @@ func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurot
 }
 
 // parseRenderOptions parses command arguments into RenderOptions
-func (c *RenderCommand) parseRenderOptions(args map[string]string, ctx neurotypes.Context) (services.RenderOptions, error) {
+func (c *RenderCommand) parseRenderOptions(args map[string]string, variableService *services.VariableService) (services.RenderOptions, error) {
 	options := services.RenderOptions{
 		Theme: "default", // Default theme
 	}
@@ -199,13 +199,10 @@ func (c *RenderCommand) parseRenderOptions(args map[string]string, ctx neurotype
 	if keywordsStr, exists := args["keywords"]; exists {
 		keywords := parser.ParseArrayValue(keywordsStr)
 
-		// Interpolate variables in keywords
-		interpolationService, err := c.getInterpolationService()
-		if err == nil {
-			for i, keyword := range keywords {
-				if interpolated, err := interpolationService.InterpolateString(keyword, ctx); err == nil {
-					keywords[i] = interpolated
-				}
+		// Interpolate variables in keywords using variable service
+		for i, keyword := range keywords {
+			if interpolated, err := variableService.InterpolateString(keyword); err == nil {
+				keywords[i] = interpolated
 			}
 		}
 

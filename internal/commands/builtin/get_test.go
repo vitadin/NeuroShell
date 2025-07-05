@@ -102,7 +102,7 @@ func TestGetCommand_Execute_BracketSyntax(t *testing.T) {
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			// Restore stdout
 			_ = w.Close()
@@ -198,7 +198,7 @@ func TestGetCommand_Execute_SpaceSyntax(t *testing.T) {
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			// Restore stdout
 			_ = w.Close()
@@ -242,7 +242,7 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(args, input, ctx)
+	err := cmd.Execute(args, input)
 
 	// Restore stdout
 	_ = w.Close()
@@ -271,7 +271,7 @@ func TestGetCommand_Execute_ContextError(t *testing.T) {
 
 	args := map[string]string{"testvar": ""}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to get variable testvar")
@@ -310,7 +310,7 @@ func TestGetCommand_Execute_EmptyVariableName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "Usage:")
@@ -343,7 +343,7 @@ func TestGetCommand_Execute_VariableWithSpecialCharacters(t *testing.T) {
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(args, "", ctx)
+			err := cmd.Execute(args, "")
 
 			// Restore stdout
 			_ = w.Close()
@@ -377,7 +377,7 @@ func TestGetCommand_Execute_EmptyVariableValue(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -407,7 +407,7 @@ func BenchmarkGetCommand_Execute_BracketSyntax(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 	}
 }
 
@@ -425,7 +425,7 @@ func BenchmarkGetCommand_Execute_SpaceSyntax(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(map[string]string{}, input, ctx)
+		_ = cmd.Execute(map[string]string{}, input)
 	}
 }
 
@@ -445,6 +445,6 @@ func BenchmarkGetCommand_Execute_SystemVariable(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 	}
 }

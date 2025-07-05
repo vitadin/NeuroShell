@@ -78,7 +78,7 @@ func (c *SetCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute sets variable values using either bracket or space syntax.
 // It handles multiple variable assignments and provides confirmation output.
-func (c *SetCommand) Execute(args map[string]string, input string, _ neurotypes.Context) error {
+func (c *SetCommand) Execute(args map[string]string, input string) error {
 	if len(args) == 0 && input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}

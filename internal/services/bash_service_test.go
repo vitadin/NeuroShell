@@ -101,7 +101,7 @@ func TestBashService_Execute_Success(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stdout, stderr, exitCode, err := service.Execute(tt.command, ctx)
+			stdout, stderr, exitCode, err := service.Execute(tt.command)
 
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedOutput, stdout)
@@ -145,7 +145,7 @@ func TestBashService_Execute_WithError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stdout, stderr, exitCode, err := service.Execute(tt.command, ctx)
+			stdout, stderr, exitCode, err := service.Execute(tt.command)
 
 			assert.NoError(t, err, "Execute should not return error even for failed commands")
 			assert.Equal(t, tt.expectedCode, exitCode)
@@ -205,7 +205,7 @@ func TestBashService_Execute_WithStderr(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stdout, stderr, exitCode, err := service.Execute(tt.command, ctx)
+			stdout, stderr, exitCode, err := service.Execute(tt.command)
 
 			assert.NoError(t, err)
 			assert.Equal(t, "", stdout, "Should have no stdout")
@@ -231,7 +231,7 @@ func TestBashService_Execute_EmptyCommand(t *testing.T) {
 
 	for _, emptyCmd := range tests {
 		t.Run(fmt.Sprintf("empty_command_%q", emptyCmd), func(t *testing.T) {
-			_, _, _, err := service.Execute(emptyCmd, ctx)
+			_, _, _, err := service.Execute(emptyCmd)
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "empty command")
 		})
@@ -242,7 +242,7 @@ func TestBashService_Execute_NotInitialized(t *testing.T) {
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
 
-	_, _, _, err := service.Execute("echo test", ctx)
+	_, _, _, err := service.Execute("echo test")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 }
@@ -258,7 +258,7 @@ func TestBashService_Execute_SetsSystemVariables(t *testing.T) {
 	setupTestRegistry(t)
 
 	// Execute a simple command
-	stdout, stderr, exitCode, err := service.Execute("echo test", ctx)
+	stdout, stderr, exitCode, err := service.Execute("echo test")
 	require.NoError(t, err)
 
 	// The BashService should call SetSystemVariable, which our MockContext now supports
@@ -294,7 +294,7 @@ func TestBashService_Execute_VariableServiceError(t *testing.T) {
 	// Don't setup global registry - this will cause variable service to be unavailable
 
 	// Execute should still work even if variable service is not available
-	stdout, stderr, exitCode, err := service.Execute("echo test", ctx)
+	stdout, stderr, exitCode, err := service.Execute("echo test")
 	assert.NoError(t, err)
 	assert.Equal(t, "test", stdout)
 	assert.Equal(t, "", stderr)
@@ -310,7 +310,7 @@ func TestBashService_Execute_Timeout(t *testing.T) {
 	require.NoError(t, err)
 
 	// Command that should timeout - use a command that definitely takes longer
-	stdout, stderr, exitCode, err := service.Execute("sleep 2", ctx)
+	stdout, stderr, exitCode, err := service.Execute("sleep 2")
 
 	// Debug output
 	t.Logf("Stdout: %q", stdout)
@@ -345,7 +345,7 @@ func TestBashService_Execute_LongOutput(t *testing.T) {
 	longText := strings.Repeat("a", 1000)
 	command := fmt.Sprintf("echo '%s'", longText)
 
-	stdout, stderr, exitCode, err := service.Execute(command, ctx)
+	stdout, stderr, exitCode, err := service.Execute(command)
 
 	assert.NoError(t, err)
 	assert.Equal(t, longText, stdout)
@@ -387,7 +387,7 @@ func TestBashService_Execute_SpecialCharacters(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stdout, stderr, exitCode, err := service.Execute(tt.command, ctx)
+			stdout, stderr, exitCode, err := service.Execute(tt.command)
 
 			assert.NoError(t, err)
 			assert.Equal(t, tt.output, stdout)
@@ -408,7 +408,7 @@ func TestBashService_Execute_MultilineOutput(t *testing.T) {
 	setupTestRegistry(t)
 
 	// Command that produces multiline output
-	stdout, stderr, exitCode, err := service.Execute("printf 'line1\\nline2\\nline3'", ctx)
+	stdout, stderr, exitCode, err := service.Execute("printf 'line1\\nline2\\nline3'")
 
 	assert.NoError(t, err)
 	assert.Equal(t, "line1\nline2\nline3", stdout)
@@ -457,7 +457,7 @@ func TestBashService_Execute_EdgeCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, _, _, err := service.Execute(tt.command, ctx)
+			_, _, _, err := service.Execute(tt.command)
 			assert.NoError(t, err, "Command should execute without error: %s", tt.command)
 		})
 	}
@@ -492,7 +492,7 @@ func BenchmarkBashService_Execute_SimpleCommand(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _, _, _ = service.Execute("echo test", ctx)
+		_, _, _, _ = service.Execute("echo test")
 	}
 }
 
@@ -505,6 +505,6 @@ func BenchmarkBashService_Execute_ComplexCommand(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, _, _, _ = service.Execute(command, ctx)
+		_, _, _, _ = service.Execute(command)
 	}
 }

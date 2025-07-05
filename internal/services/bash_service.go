@@ -42,8 +42,8 @@ func (b *BashService) SetTimeout(timeout time.Duration) {
 }
 
 // Execute runs a bash command and returns the output, error, and exit status.
-// It also sets the _output, _error, and _status variables in the provided context.
-func (b *BashService) Execute(command string, _ neurotypes.Context) (string, string, int, error) {
+// It also sets the _output, _error, and _status variables using the variable service.
+func (b *BashService) Execute(command string) (string, string, int, error) {
 	if !b.initialized {
 		return "", "", -1, fmt.Errorf("bash service not initialized")
 	}

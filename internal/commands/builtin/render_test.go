@@ -72,7 +72,7 @@ func TestRenderCommand_Execute_BasicStyling(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			require.NoError(t, err)
 
 			// Check that result was stored in _output
@@ -133,7 +133,7 @@ func TestRenderCommand_Execute_KeywordHighlighting(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			require.NoError(t, err)
 
 			// Check that result was stored in _output
@@ -176,7 +176,7 @@ func TestRenderCommand_Execute_VariableInterpolation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			require.NoError(t, err)
 
 			// Check that result was stored
@@ -231,7 +231,7 @@ func TestRenderCommand_Execute_OutputVariable(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			require.NoError(t, err)
 
 			// Check that result was stored in correct variable
@@ -276,7 +276,7 @@ func TestRenderCommand_Execute_SilentMode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			require.NoError(t, err)
 
 			// Result should still be stored in variable regardless of silent mode
@@ -327,7 +327,7 @@ func TestRenderCommand_Execute_ErrorCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {

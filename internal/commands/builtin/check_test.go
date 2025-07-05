@@ -133,7 +133,7 @@ func TestCheckCommand_Execute_AllServices(t *testing.T) {
 	cmd := &CheckCommand{}
 	args := map[string]string{}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 	if err != nil {
 		t.Fatalf("Execute failed: %v", err)
 	}
@@ -202,7 +202,7 @@ func TestCheckCommand_Execute_SpecificService(t *testing.T) {
 		"service": "test1",
 	}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 	if err != nil {
 		t.Fatalf("Execute failed: %v", err)
 	}
@@ -267,7 +267,7 @@ func TestCheckCommand_Execute_NonExistentService(t *testing.T) {
 		"service": "nonexistent",
 	}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 	if err != nil {
 		t.Fatalf("Execute failed: %v", err)
 	}
@@ -332,7 +332,7 @@ func TestCheckCommand_Execute_QuietMode(t *testing.T) {
 		"quiet": "true",
 	}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 	if err != nil {
 		t.Fatalf("Execute failed: %v", err)
 	}
@@ -548,7 +548,7 @@ func TestCheckCommand_Execute_EmptyRegistry(t *testing.T) {
 	cmd := &CheckCommand{}
 	args := map[string]string{}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 	if err != nil {
 		t.Fatalf("Execute failed: %v", err)
 	}

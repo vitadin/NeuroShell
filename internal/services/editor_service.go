@@ -221,3 +221,42 @@ func (e *EditorService) Cleanup() error {
 	}
 	return nil
 }
+
+// OpenEditorWithCommand opens an editor with a specific command, bypassing context-dependent editor resolution
+func (e *EditorService) OpenEditorWithCommand(editorCmd string) (string, error) {
+	if !e.initialized {
+		return "", fmt.Errorf("editor service not initialized")
+	}
+
+	// If no editor command provided, try to auto-detect
+	if editorCmd == "" {
+		editorCmd = e.autoDetectEditor()
+		if editorCmd == "" {
+			return "", fmt.Errorf("no editor configured or found")
+		}
+	}
+
+	// Create a temporary file
+	tempFile, err := e.createTempFile()
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp file: %w", err)
+	}
+	defer func() {
+		if err := os.Remove(tempFile); err != nil {
+			logger.Error("Failed to remove temp file", "error", err, "file", tempFile)
+		}
+	}()
+
+	// Run the editor command
+	if err := e.runEditor(editorCmd, tempFile); err != nil {
+		return "", fmt.Errorf("failed to run editor: %w", err)
+	}
+
+	// Read the file content
+	content, err := e.readTempFile(tempFile)
+	if err != nil {
+		return "", fmt.Errorf("failed to read temp file: %w", err)
+	}
+
+	return content, nil
+}

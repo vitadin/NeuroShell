@@ -101,7 +101,7 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 //   - to: store result in specified variable (default: ${_output})
 //   - silent: suppress console output (default: false)
 //   - raw: output string literals without interpreting escape sequences (default: false)
-func (c *EchoCommand) Execute(args map[string]string, input string, _ neurotypes.Context) error {
+func (c *EchoCommand) Execute(args map[string]string, input string) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}

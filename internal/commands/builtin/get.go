@@ -72,7 +72,7 @@ func (c *GetCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute retrieves and displays the value of the specified variable.
 // It handles both bracket and space syntax for variable specification.
-func (c *GetCommand) Execute(args map[string]string, input string, _ neurotypes.Context) error {
+func (c *GetCommand) Execute(args map[string]string, input string) error {
 	var variable string
 
 	// Handle bracket syntax: \get[var]

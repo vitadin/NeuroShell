@@ -115,7 +115,7 @@ func (c *CatalogCommand) HelpInfo() neurotypes.HelpInfo {
 }
 
 // Execute searches the model catalog and optionally auto-creates models for single results.
-func (c *CatalogCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *CatalogCommand) Execute(args map[string]string, input string) error {
 	// Get required services
 	catalogService, err := c.getCatalogService()
 	if err != nil {
@@ -174,13 +174,13 @@ func (c *CatalogCommand) Execute(args map[string]string, input string, ctx neuro
 	}
 
 	// Set result variables
-	if err := c.setResultVariables(result, variableService, ctx); err != nil {
+	if err := c.setResultVariables(result, variableService); err != nil {
 		return fmt.Errorf("failed to set result variables: %w", err)
 	}
 
 	// Auto-create model if exactly one result
 	if result.Count == 1 {
-		autoModelID, err := c.autoCreateModel(result.Models[0], searchOptions.Pattern, catalogService, modelService, ctx)
+		autoModelID, err := c.autoCreateModel(result.Models[0], searchOptions.Pattern, catalogService, modelService)
 		if err != nil {
 			return fmt.Errorf("failed to auto-create model: %w", err)
 		}
@@ -271,7 +271,7 @@ func (c *CatalogCommand) displayResults(result *neurotypes.CatalogSearchResult, 
 }
 
 // setResultVariables sets the standard result variables for scripting integration.
-func (c *CatalogCommand) setResultVariables(result *neurotypes.CatalogSearchResult, variableService *services.VariableService, _ neurotypes.Context) error {
+func (c *CatalogCommand) setResultVariables(result *neurotypes.CatalogSearchResult, variableService *services.VariableService) error {
 	// Always set count and models list
 	if err := variableService.SetSystemVariable("_catalog_count", strconv.Itoa(result.Count)); err != nil {
 		return err
@@ -303,7 +303,7 @@ func (c *CatalogCommand) setResultVariables(result *neurotypes.CatalogSearchResu
 }
 
 // autoCreateModel creates a model configuration from a catalog entry for immediate use.
-func (c *CatalogCommand) autoCreateModel(catalogModel neurotypes.CatalogModel, searchPattern string, catalogService *services.CatalogService, modelService *services.ModelService, _ neurotypes.Context) (string, error) {
+func (c *CatalogCommand) autoCreateModel(catalogModel neurotypes.CatalogModel, searchPattern string, catalogService *services.CatalogService, modelService *services.ModelService) (string, error) {
 	// Generate model name
 	modelName := catalogService.GenerateAutoModelName(searchPattern, catalogModel)
 

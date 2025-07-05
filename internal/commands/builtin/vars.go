@@ -90,7 +90,7 @@ func (c *VarsCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute lists variables with optional filtering by pattern and type.
 // It retrieves all variables from the variable service and applies filters as specified.
-func (c *VarsCommand) Execute(args map[string]string, _ string, _ neurotypes.Context) error {
+func (c *VarsCommand) Execute(args map[string]string, _ string) error {
 	// Get variable service
 	variableService, err := c.getVariableService()
 	if err != nil {

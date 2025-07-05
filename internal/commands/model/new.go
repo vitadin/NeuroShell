@@ -173,7 +173,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 // The input parameter is used as the model name (required).
 // Creation methods: 1) provider+base_model, 2) from_id
 // Optional parameters: temperature, max_tokens, top_p, top_k, presence_penalty, frequency_penalty, description
-func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *NewCommand) Execute(args map[string]string, input string) error {
 	// Get model service
 	modelService, err := c.getModelService()
 	if err != nil {
@@ -210,13 +210,13 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 
 	// Route to appropriate creation method
 	if fromID != "" {
-		return c.executeFromExisting(args, modelName, fromID, variableService, modelService, ctx)
+		return c.executeFromExisting(args, modelName, fromID, variableService, modelService)
 	}
-	return c.executeFromProvider(args, modelName, provider, baseModel, variableService, modelService, ctx)
+	return c.executeFromProvider(args, modelName, provider, baseModel, variableService, modelService)
 }
 
 // executeFromExisting creates a model by cloning an existing model with optional parameter overrides.
-func (c *NewCommand) executeFromExisting(args map[string]string, modelName, fromID string, variableService *services.VariableService, modelService *services.ModelService, ctx neurotypes.Context) error {
+func (c *NewCommand) executeFromExisting(args map[string]string, modelName, fromID string, variableService *services.VariableService, modelService *services.ModelService) error {
 	// Interpolate from_id
 	fromID, err := variableService.InterpolateString(fromID)
 	if err != nil {
@@ -243,7 +243,7 @@ func (c *NewCommand) executeFromExisting(args map[string]string, modelName, from
 	}
 
 	// Apply parameter overrides
-	if err := c.applyParameterOverrides(&newModel, args, variableService, ctx); err != nil {
+	if err := c.applyParameterOverrides(&newModel, args, variableService); err != nil {
 		return fmt.Errorf("failed to apply parameter overrides: %w", err)
 	}
 
@@ -265,7 +265,7 @@ func (c *NewCommand) executeFromExisting(args map[string]string, modelName, from
 	}
 
 	// Update result variables
-	if err := c.updateModelVariables(createdModel, variableService, ctx); err != nil {
+	if err := c.updateModelVariables(createdModel, variableService); err != nil {
 		return fmt.Errorf("failed to update model variables: %w", err)
 	}
 
@@ -277,7 +277,7 @@ func (c *NewCommand) executeFromExisting(args map[string]string, modelName, from
 }
 
 // executeFromProvider creates a model from provider and base model specifications.
-func (c *NewCommand) executeFromProvider(args map[string]string, modelName, provider, baseModel string, variableService *services.VariableService, modelService *services.ModelService, ctx neurotypes.Context) error {
+func (c *NewCommand) executeFromProvider(args map[string]string, modelName, provider, baseModel string, variableService *services.VariableService, modelService *services.ModelService) error {
 	// Validate required parameters
 	if provider == "" {
 		return fmt.Errorf("provider is required for provider-based creation\\n\\nUsage: %s", c.Usage())
@@ -328,7 +328,7 @@ func (c *NewCommand) executeFromProvider(args map[string]string, modelName, prov
 	}
 
 	// Update model-related variables
-	if err := c.updateModelVariables(model, variableService, ctx); err != nil {
+	if err := c.updateModelVariables(model, variableService); err != nil {
 		return fmt.Errorf("failed to update model variables: %w", err)
 	}
 
@@ -353,7 +353,7 @@ func (c *NewCommand) generateModelID() string {
 }
 
 // applyParameterOverrides applies parameter overrides from args to an existing model configuration.
-func (c *NewCommand) applyParameterOverrides(model *neurotypes.ModelConfig, args map[string]string, variableService *services.VariableService, _ neurotypes.Context) error {
+func (c *NewCommand) applyParameterOverrides(model *neurotypes.ModelConfig, args map[string]string, variableService *services.VariableService) error {
 	// Handle description override
 	if desc, exists := args["description"]; exists {
 		interpolatedDesc, err := variableService.InterpolateString(desc)
@@ -454,7 +454,7 @@ func (c *NewCommand) parseParameters(args map[string]string, parameters map[stri
 }
 
 // updateModelVariables sets model-related system variables.
-func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variableService *services.VariableService, _ neurotypes.Context) error {
+func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variableService *services.VariableService) error {
 	// Set model variables
 	variables := map[string]string{
 		"#model_id":       model.ID,

@@ -58,9 +58,9 @@ func TestEqualCommand_Execute_MissingArguments(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := testutils.NewMockContext()
+			_ = testutils.NewMockContext()
 
-			err := cmd.Execute(tt.args, "", ctx)
+			err := cmd.Execute(tt.args, "")
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "Usage:")
@@ -70,7 +70,7 @@ func TestEqualCommand_Execute_MissingArguments(t *testing.T) {
 
 func TestEqualCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	cmd := &EqualCommand{}
-	ctx := testutils.NewMockContext()
+	_ = testutils.NewMockContext()
 
 	// Don't set up services to test service unavailability
 
@@ -79,7 +79,7 @@ func TestEqualCommand_Execute_ServiceNotAvailable(t *testing.T) {
 		"actual": "hello",
 	}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "interpolation service not available")
@@ -87,7 +87,7 @@ func TestEqualCommand_Execute_ServiceNotAvailable(t *testing.T) {
 
 func TestEqualCommand_Execute_InterpolationServiceError(t *testing.T) {
 	cmd := &EqualCommand{}
-	ctx := testutils.NewMockContext()
+	_ = testutils.NewMockContext()
 
 	// Set up services - but MockContext will cause interpolation to fail
 	setupTestServices(t, ctx)
@@ -97,7 +97,7 @@ func TestEqualCommand_Execute_InterpolationServiceError(t *testing.T) {
 		"actual": "hello",
 	}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to interpolate expected value")
@@ -106,7 +106,7 @@ func TestEqualCommand_Execute_InterpolationServiceError(t *testing.T) {
 
 func TestEqualCommand_Execute_WrongServiceType(t *testing.T) {
 	cmd := &EqualCommand{}
-	ctx := testutils.NewMockContext()
+	_ = testutils.NewMockContext()
 
 	// Setup registry but register wrong service type under "interpolation" name
 	oldRegistry := services.GetGlobalRegistry()
@@ -125,14 +125,14 @@ func TestEqualCommand_Execute_WrongServiceType(t *testing.T) {
 		"actual": "hello",
 	}
 
-	err = cmd.Execute(args, "", ctx)
+	err = cmd.Execute(args, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "incorrect type")
 }
 
 func TestEqualCommand_Execute_VariableServiceError(t *testing.T) {
 	cmd := &EqualCommand{}
-	ctx := testutils.NewMockContext()
+	_ = testutils.NewMockContext()
 
 	// Set up only interpolation service, missing variable service
 	oldRegistry := services.GetGlobalRegistry()
@@ -154,7 +154,7 @@ func TestEqualCommand_Execute_VariableServiceError(t *testing.T) {
 		"actual": "hello",
 	}
 
-	err = cmd.Execute(args, "", ctx)
+	err = cmd.Execute(args, "")
 	assert.Error(t, err)
 	// Should fail at interpolation stage due to MockContext incompatibility
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
@@ -202,7 +202,7 @@ func TestEqualCommand_InterfaceCompliance(_ *testing.T) {
 // Benchmark tests
 func BenchmarkEqualCommand_Execute_ServiceError(b *testing.B) {
 	cmd := &EqualCommand{}
-	ctx := testutils.NewMockContext()
+	_ = testutils.NewMockContext()
 
 	// Don't setup services to measure error handling overhead
 	args := map[string]string{
@@ -212,13 +212,13 @@ func BenchmarkEqualCommand_Execute_ServiceError(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 	}
 }
 
 func BenchmarkEqualCommand_Execute_WithServices(b *testing.B) {
 	cmd := &EqualCommand{}
-	ctx := testutils.NewMockContext()
+	_ = testutils.NewMockContext()
 
 	// Setup services (will fail at interpolation but measures setup overhead)
 	services.SetGlobalRegistry(services.NewRegistry())
@@ -237,6 +237,6 @@ func BenchmarkEqualCommand_Execute_WithServices(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 	}
 }

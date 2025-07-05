@@ -42,7 +42,7 @@ func TestExitCommand_Execute(t *testing.T) {
 		ctx := testutils.NewMockContext()
 
 		// This should call os.Exit(0) and terminate the subprocess
-		_ = cmd.Execute(map[string]string{}, "", ctx)
+		_ = cmd.Execute(map[string]string{}, "")
 
 		// If we reach here, the test failed because os.Exit wasn't called
 		t.Fatal("Expected os.Exit to be called")
@@ -77,7 +77,7 @@ func TestExitCommand_Execute_WithArgs(t *testing.T) {
 
 		// Test with args - should still exit normally
 		args := map[string]string{"force": "true", "code": "1"}
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 
 		t.Fatal("Expected os.Exit to be called")
 		return
@@ -108,7 +108,7 @@ func TestExitCommand_Execute_WithInput(t *testing.T) {
 		ctx := testutils.NewMockContext()
 
 		// Test with input - should still exit normally
-		_ = cmd.Execute(map[string]string{}, "some input text", ctx)
+		_ = cmd.Execute(map[string]string{}, "some input text")
 
 		t.Fatal("Expected os.Exit to be called")
 		return

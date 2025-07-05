@@ -86,7 +86,7 @@ func (c *EqualCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute compares two values for equality with variable interpolation support.
 // It sets system variables _status, _assert_result, _assert_expected, and _assert_actual.
-func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
+func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 	// Validate required arguments
 	expected, hasExpected := args["expect"]
 	actual, hasActual := args["actual"]
@@ -95,24 +95,24 @@ func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
-	// Get interpolation service from global registry
-	service, err := services.GetGlobalRegistry().GetService("interpolation")
+	// Get variable service from global registry
+	service, err := services.GetGlobalRegistry().GetService("variable")
 	if err != nil {
-		return fmt.Errorf("interpolation service not available: %w", err)
+		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	interpolationService, ok := service.(*services.InterpolationService)
+	variableService, ok := service.(*services.VariableService)
 	if !ok {
-		return fmt.Errorf("interpolation service has incorrect type")
+		return fmt.Errorf("variable service has incorrect type")
 	}
 
 	// Interpolate both expected and actual values
-	interpolatedExpected, err := interpolationService.InterpolateString(expected, ctx)
+	interpolatedExpected, err := variableService.InterpolateString(expected)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate expected value: %w", err)
 	}
 
-	interpolatedActual, err := interpolationService.InterpolateString(actual, ctx)
+	interpolatedActual, err := variableService.InterpolateString(actual)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate actual value: %w", err)
 	}
@@ -120,11 +120,7 @@ func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.
 	// Compare the interpolated values
 	isEqual := interpolatedExpected == interpolatedActual
 
-	// Get variable service to set system variables
-	variableService, err := getVariableService()
-	if err != nil {
-		return fmt.Errorf("variable service not available: %w", err)
-	}
+	// Use the variable service we already have
 
 	// Set system variables based on result
 	if isEqual {

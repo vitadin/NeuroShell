@@ -105,7 +105,7 @@ func (c *ListCommand) HelpInfo() neurotypes.HelpInfo {
 // Options:
 //   - sort: name|created|updated (default: created)
 //   - filter: active|all (default: all)
-func (c *ListCommand) Execute(args map[string]string, _ string, _ neurotypes.Context) error {
+func (c *ListCommand) Execute(args map[string]string, _ string) error {
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
 	if err != nil {

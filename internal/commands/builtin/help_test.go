@@ -108,7 +108,7 @@ func TestHelpCommand_Execute(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -156,7 +156,7 @@ func TestHelpCommand_Execute_AlphabeticalOrder(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -190,7 +190,7 @@ func TestHelpCommand_Execute_EmptyRegistry(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -225,7 +225,7 @@ func TestHelpCommand_Execute_WithArgs(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -259,7 +259,7 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, input, ctx)
+	err := cmd.Execute(map[string]string{}, input)
 
 	// Restore stdout
 	_ = w.Close()
@@ -304,7 +304,7 @@ func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -338,7 +338,7 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -432,7 +432,7 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(tt.args, "", ctx)
+			err := cmd.Execute(tt.args, "")
 
 			// Restore stdout
 			_ = w.Close()
@@ -461,7 +461,7 @@ func TestHelpCommand_Execute_ServiceUnavailable(t *testing.T) {
 	ctx := testutils.NewMockContext()
 
 	// Don't set up help service - this will cause service not found error
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "help service not available")
 }
@@ -637,7 +637,7 @@ func BenchmarkHelpCommand_Execute_SmallRegistry(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(map[string]string{}, "", ctx)
+		_ = cmd.Execute(map[string]string{}, "")
 	}
 }
 
@@ -671,6 +671,6 @@ func BenchmarkHelpCommand_Execute_LargeRegistry(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(map[string]string{}, "", ctx)
+		_ = cmd.Execute(map[string]string{}, "")
 	}
 }

@@ -111,7 +111,7 @@ func (c *DeleteCommand) HelpInfo() neurotypes.HelpInfo {
 //
 // Input: session name or ID to delete (optional if provided as name option)
 // Error if both name option and input are provided.
-func (c *DeleteCommand) Execute(args map[string]string, input string, _ neurotypes.Context) error {
+func (c *DeleteCommand) Execute(args map[string]string, input string) error {
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
 	if err != nil {

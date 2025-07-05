@@ -55,13 +55,14 @@ type Service interface {
 
 // Command defines the interface that all NeuroShell commands must implement.
 // Commands handle user input and perform specific actions within the shell environment.
+// Commands access services through the global service registry, not through direct context access.
 type Command interface {
 	Name() string
 	ParseMode() ParseMode
 	Description() string
 	Usage() string
 	HelpInfo() HelpInfo
-	Execute(args map[string]string, input string, ctx Context) error
+	Execute(args map[string]string, input string) error
 }
 
 // ServiceRegistry manages the registration and retrieval of services within NeuroShell.

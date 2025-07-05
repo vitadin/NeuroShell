@@ -58,7 +58,7 @@ func TestVarsCommand_Execute_NoVariables(t *testing.T) {
 
 	// Capture stdout
 	output := captureOutput(func() {
-		err := cmd.Execute(map[string]string{}, "", ctx)
+		err := cmd.Execute(map[string]string{}, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
 		}
@@ -90,7 +90,7 @@ func TestVarsCommand_Execute_WithUserVariables(t *testing.T) {
 
 	// Capture stdout
 	output := captureOutput(func() {
-		err := cmd.Execute(map[string]string{}, "", ctx)
+		err := cmd.Execute(map[string]string{}, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
 		}
@@ -124,7 +124,7 @@ func TestVarsCommand_Execute_TypeFilter_User(t *testing.T) {
 
 	// Capture stdout
 	output := captureOutput(func() {
-		err := cmd.Execute(args, "", ctx)
+		err := cmd.Execute(args, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
 		}
@@ -158,7 +158,7 @@ func TestVarsCommand_Execute_TypeFilter_System(t *testing.T) {
 
 	// Capture stdout
 	output := captureOutput(func() {
-		err := cmd.Execute(args, "", ctx)
+		err := cmd.Execute(args, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
 		}
@@ -193,7 +193,7 @@ func TestVarsCommand_Execute_PatternFilter(t *testing.T) {
 
 	// Capture stdout
 	output := captureOutput(func() {
-		err := cmd.Execute(args, "", ctx)
+		err := cmd.Execute(args, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
 		}
@@ -221,7 +221,7 @@ func TestVarsCommand_Execute_InvalidRegex(t *testing.T) {
 
 	args := map[string]string{"pattern": "[invalid"}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 	if err == nil {
 		t.Error("VarsCommand.Execute() should return error for invalid regex")
 	}
@@ -250,7 +250,7 @@ func TestVarsCommand_Execute_CombinedFilters(t *testing.T) {
 
 	// Capture stdout
 	output := captureOutput(func() {
-		err := cmd.Execute(args, "", ctx)
+		err := cmd.Execute(args, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
 		}
@@ -433,7 +433,7 @@ func BenchmarkVarsCommand_Execute(b *testing.B) {
 		// Discard output to avoid IO overhead in benchmark
 		old := os.Stdout
 		os.Stdout, _ = os.Open(os.DevNull)
-		_ = cmd.Execute(map[string]string{}, "", ctx)
+		_ = cmd.Execute(map[string]string{}, "")
 		os.Stdout = old
 	}
 }
@@ -455,7 +455,7 @@ func BenchmarkVarsCommand_PatternFilter(b *testing.B) {
 		// Discard output to avoid IO overhead in benchmark
 		old := os.Stdout
 		os.Stdout, _ = os.Open(os.DevNull)
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 		os.Stdout = old
 	}
 }

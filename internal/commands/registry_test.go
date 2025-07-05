@@ -18,7 +18,7 @@ type MockCommand struct {
 	parseMode   neurotypes.ParseMode
 	description string
 	usage       string
-	executeFunc func(args map[string]string, input string, ctx neurotypes.Context) error
+	executeFunc func(args map[string]string, input string) error
 }
 
 func NewMockCommand(name string) *MockCommand {
@@ -27,7 +27,7 @@ func NewMockCommand(name string) *MockCommand {
 		parseMode:   neurotypes.ParseModeKeyValue,
 		description: fmt.Sprintf("Mock command: %s", name),
 		usage:       fmt.Sprintf("Usage: \\%s", name),
-		executeFunc: func(_ map[string]string, _ string, _ neurotypes.Context) error {
+		executeFunc: func(_ map[string]string, _ string) error {
 			return nil
 		},
 	}
@@ -49,9 +49,9 @@ func (m *MockCommand) Usage() string {
 	return m.usage
 }
 
-func (m *MockCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (m *MockCommand) Execute(args map[string]string, input string) error {
 	if m.executeFunc != nil {
-		return m.executeFunc(args, input, ctx)
+		return m.executeFunc(args, input)
 	}
 	return nil
 }

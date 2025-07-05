@@ -103,7 +103,7 @@ type ServiceCheckResult struct {
 }
 
 // Execute checks service availability and initialization status.
-func (c *CheckCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
+func (c *CheckCommand) Execute(args map[string]string, _ string) error {
 	// Parse arguments
 	serviceName := args["service"]
 	quiet := args["quiet"] == "true"
@@ -132,7 +132,7 @@ func (c *CheckCommand) Execute(args map[string]string, _ string, ctx neurotypes.
 	}
 
 	// Set result variables
-	if err := c.setResultVariables(results, ctx); err != nil {
+	if err := c.setResultVariables(results, nil); err != nil {
 		return fmt.Errorf("failed to set result variables: %w", err)
 	}
 
@@ -208,7 +208,7 @@ func (c *CheckCommand) isServiceInitialized(_ neurotypes.Service) bool {
 }
 
 // setResultVariables sets the result variables based on the check results.
-func (c *CheckCommand) setResultVariables(results []ServiceCheckResult, _ neurotypes.Context) error {
+func (c *CheckCommand) setResultVariables(results []ServiceCheckResult, _ interface{}) error {
 	// Count failures
 	failedCount := 0
 	failedServices := make([]string, 0)
