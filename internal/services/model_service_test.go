@@ -129,9 +129,10 @@ func TestModelService_GetModelCatalogByProvider(t *testing.T) {
 		assert.Greater(t, len(models), 0, "Should have OpenAI models")
 
 		// Verify all models are OpenAI models
+		expectedOpenAIModels := map[string]bool{"o3": true, "o4-mini": true}
 		for _, model := range models {
 			assert.True(t,
-				model.Name == "o3",
+				expectedOpenAIModels[model.Name],
 				"Should be a known OpenAI model: %s", model.Name)
 			assert.NotEmpty(t, model.DisplayName)
 			assert.Greater(t, model.ContextWindow, 0)
