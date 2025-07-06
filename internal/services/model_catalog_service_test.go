@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/testutils"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestModelCatalogService_Name(t *testing.T) {
@@ -261,28 +262,25 @@ func TestModelCatalogService_GetSupportedProviders(t *testing.T) {
 	assert.Equal(t, 2, len(providers), "Should have exactly 2 supported providers")
 }
 
-func TestModelCatalogService_loadProviderCatalog(t *testing.T) {
+func TestModelCatalogService_loadModelFile(t *testing.T) {
 	service := NewModelCatalogService()
 	ctx := testutils.NewMockContext()
 	require.NoError(t, service.Initialize(ctx))
 
-	t.Run("load anthropic catalog", func(t *testing.T) {
-		// Test loading anthropic catalog with embedded data
-		models, err := service.loadProviderCatalog("anthropic", []byte(`
+	t.Run("load individual model file", func(t *testing.T) {
+		// Test loading individual model file with embedded data
+		model, err := service.loadModelFile([]byte(`
+name: claude-test
 provider: anthropic
-models:
-  - name: claude-test
-    display_name: Claude Test
-    description: Test model
-    capabilities: [text, test]
-    context_window: 1000
+display_name: Claude Test
+description: Test model
+capabilities: [text, test]
+context_window: 1000
 `))
 		require.NoError(t, err)
-		require.NotNil(t, models)
-		assert.Equal(t, 1, len(models))
 
-		model := models[0]
 		assert.Equal(t, "claude-test", model.Name)
+		assert.Equal(t, "anthropic", model.Provider)
 		assert.Equal(t, "Claude Test", model.DisplayName)
 		assert.Equal(t, "Test model", model.Description)
 		assert.Equal(t, 1000, model.ContextWindow)
@@ -291,15 +289,15 @@ models:
 	})
 
 	t.Run("invalid yaml", func(t *testing.T) {
-		models, err := service.loadProviderCatalog("test", []byte("invalid: yaml: ["))
+		model, err := service.loadModelFile([]byte("invalid: yaml: ["))
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to parse test catalog")
-		assert.Nil(t, models)
+		assert.Contains(t, err.Error(), "failed to parse model file")
+		assert.Equal(t, neurotypes.ModelCatalogEntry{}, model)
 	})
 
 	t.Run("empty yaml", func(t *testing.T) {
-		models, err := service.loadProviderCatalog("test", []byte(""))
+		model, err := service.loadModelFile([]byte(""))
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(models), "Empty YAML should return empty models slice")
+		assert.Equal(t, "", model.Name, "Empty YAML should return empty model")
 	})
 }

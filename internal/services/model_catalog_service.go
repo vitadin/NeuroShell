@@ -42,19 +42,43 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 
 	var allModels []neurotypes.ModelCatalogEntry
 
-	// Load Anthropic models
-	anthropicModels, err := m.loadProviderCatalog("anthropic", embedded.AnthropicCatalogData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load Anthropic catalog: %w", err)
-	}
-	allModels = append(allModels, anthropicModels...)
-
 	// Load OpenAI models
-	openaiModels, err := m.loadProviderCatalog("openai", embedded.OpenaiCatalogData)
+	o3Model, err := m.loadModelFile(embedded.O3ModelData)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load OpenAI catalog: %w", err)
+		return nil, fmt.Errorf("failed to load O3 model: %w", err)
 	}
-	allModels = append(allModels, openaiModels...)
+	allModels = append(allModels, o3Model)
+
+	o4MiniModel, err := m.loadModelFile(embedded.O4MiniModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load O4-mini model: %w", err)
+	}
+	allModels = append(allModels, o4MiniModel)
+
+	// Load Anthropic models
+	claude37SonnetModel, err := m.loadModelFile(embedded.Claude37SonnetModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Claude 3.7 Sonnet model: %w", err)
+	}
+	allModels = append(allModels, claude37SonnetModel)
+
+	claudeSonnet4Model, err := m.loadModelFile(embedded.ClaudeSonnet4ModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Claude Sonnet 4 model: %w", err)
+	}
+	allModels = append(allModels, claudeSonnet4Model)
+
+	claude37OpusModel, err := m.loadModelFile(embedded.Claude37OpusModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Claude 3.7 Opus model: %w", err)
+	}
+	allModels = append(allModels, claude37OpusModel)
+
+	claudeOpus4Model, err := m.loadModelFile(embedded.ClaudeOpus4ModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Claude Opus 4 model: %w", err)
+	}
+	allModels = append(allModels, claudeOpus4Model)
 
 	return allModels, nil
 }
@@ -65,14 +89,26 @@ func (m *ModelCatalogService) GetModelCatalogByProvider(provider string) ([]neur
 		return nil, fmt.Errorf("model catalog service not initialized")
 	}
 
-	switch strings.ToLower(provider) {
-	case "anthropic":
-		return m.loadProviderCatalog("anthropic", embedded.AnthropicCatalogData)
-	case "openai":
-		return m.loadProviderCatalog("openai", embedded.OpenaiCatalogData)
-	default:
+	// Get all models first
+	allModels, err := m.GetModelCatalog()
+	if err != nil {
+		return nil, err
+	}
+
+	// Filter by provider
+	var filteredModels []neurotypes.ModelCatalogEntry
+	providerLower := strings.ToLower(provider)
+	for _, model := range allModels {
+		if strings.ToLower(model.Provider) == providerLower {
+			filteredModels = append(filteredModels, model)
+		}
+	}
+
+	if len(filteredModels) == 0 {
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}
+
+	return filteredModels, nil
 }
 
 // SearchModelCatalog searches for models matching the query string across all providers.
@@ -102,13 +138,13 @@ func (m *ModelCatalogService) GetSupportedProviders() []string {
 	return []string{"anthropic", "openai"}
 }
 
-// loadProviderCatalog loads and parses a provider's model catalog from embedded YAML data.
-func (m *ModelCatalogService) loadProviderCatalog(providerName string, data []byte) ([]neurotypes.ModelCatalogEntry, error) {
-	var catalog neurotypes.ModelCatalogProvider
+// loadModelFile loads and parses an individual model file from embedded YAML data.
+func (m *ModelCatalogService) loadModelFile(data []byte) (neurotypes.ModelCatalogEntry, error) {
+	var modelFile neurotypes.ModelCatalogFile
 
-	if err := yaml.Unmarshal(data, &catalog); err != nil {
-		return nil, fmt.Errorf("failed to parse %s catalog: %w", providerName, err)
+	if err := yaml.Unmarshal(data, &modelFile); err != nil {
+		return neurotypes.ModelCatalogEntry{}, fmt.Errorf("failed to parse model file: %w", err)
 	}
 
-	return catalog.Models, nil
+	return modelFile.ModelCatalogEntry, nil
 }

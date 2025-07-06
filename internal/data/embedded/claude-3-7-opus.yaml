@@ -1,0 +1,19 @@
+name: claude-3-7-opus-20240229
+display_name: Claude 3.7 Opus
+provider: anthropic
+description: Top-level intelligence, fluency, and understanding
+capabilities: [text, reasoning, analysis, coding, writing, math, research, visual-reasoning]
+context_window: 200000
+max_output_tokens: 4096
+knowledge_cutoff: "2023-08-01"
+modalities: [text-input, text-output, image-input]
+pricing:
+  input_per_m_token: 15.00
+  output_per_m_token: 75.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  vision: true
+  multilingual: true
+version: "2024-02-29"

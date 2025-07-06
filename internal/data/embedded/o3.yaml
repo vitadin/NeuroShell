@@ -1,0 +1,23 @@
+name: o3
+display_name: O3
+provider: openai
+description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
+capabilities: [text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing]
+context_window: 200000
+max_output_tokens: 100000
+knowledge_cutoff: "2024-05-31"
+reasoning_tokens: true
+modalities: [text-input, text-output, image-input]
+pricing:
+  input_per_m_token: 2.00
+  output_per_m_token: 8.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  fine_tuning: false
+  vision: true
+  distillation: false
+  predicted_outputs: false
+tools: [web-search, file-search, image-generation, code-interpreter, mcp]
+snapshots: [o3, o3-2025-04-16]
