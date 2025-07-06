@@ -157,7 +157,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 // Optional parameters: temperature, max_tokens, top_p, top_k, presence_penalty, frequency_penalty, description
 func (c *NewCommand) Execute(args map[string]string, input string) error {
 	// Get model service
-	modelService, err := c.getModelService()
+	modelService, err := services.GetGlobalModelService()
 	if err != nil {
 		return fmt.Errorf("model service not available: %w", err)
 	}
@@ -354,21 +354,6 @@ func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variabl
 	}
 
 	return nil
-}
-
-// getModelService retrieves the model service from the global registry.
-func (c *NewCommand) getModelService() (*services.ModelService, error) {
-	service, err := services.GetGlobalRegistry().GetService("model")
-	if err != nil {
-		return nil, err
-	}
-
-	modelService, ok := service.(*services.ModelService)
-	if !ok {
-		return nil, fmt.Errorf("model service has incorrect type")
-	}
-
-	return modelService, nil
 }
 
 func init() {
