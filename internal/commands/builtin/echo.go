@@ -107,7 +107,7 @@ func (c *EchoCommand) Execute(args map[string]string, input string) error {
 	}
 
 	// Get interpolation service
-	interpolationService, err := c.getInterpolationService()
+	interpolationService, err := services.GetGlobalInterpolationService()
 	if err != nil {
 		return fmt.Errorf("interpolation service not available: %w", err)
 	}
@@ -184,21 +184,6 @@ func (c *EchoCommand) Execute(args map[string]string, input string) error {
 	}
 
 	return nil
-}
-
-// getInterpolationService retrieves the interpolation service from the global registry
-func (c *EchoCommand) getInterpolationService() (*services.InterpolationService, error) {
-	service, err := services.GetGlobalRegistry().GetService("interpolation")
-	if err != nil {
-		return nil, err
-	}
-
-	interpolationService, ok := service.(*services.InterpolationService)
-	if !ok {
-		return nil, fmt.Errorf("interpolation service has incorrect type")
-	}
-
-	return interpolationService, nil
 }
 
 // interpretEscapeSequences converts escape sequences in a string to their actual characters

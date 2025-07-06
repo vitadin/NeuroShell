@@ -111,7 +111,7 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	}
 
 	// Get interpolation service for variable interpolation
-	interpolationService, err := c.getInterpolationService()
+	interpolationService, err := services.GetGlobalInterpolationService()
 	if err != nil {
 		return fmt.Errorf("interpolation service not available: %w", err)
 	}
@@ -196,21 +196,6 @@ func (c *NewCommand) getChatSessionService() (*services.ChatSessionService, erro
 	}
 
 	return chatService, nil
-}
-
-// getInterpolationService retrieves the interpolation service from the global registry.
-func (c *NewCommand) getInterpolationService() (*services.InterpolationService, error) {
-	service, err := services.GetGlobalRegistry().GetService("interpolation")
-	if err != nil {
-		return nil, err
-	}
-
-	interpolationService, ok := service.(*services.InterpolationService)
-	if !ok {
-		return nil, fmt.Errorf("interpolation service has incorrect type")
-	}
-
-	return interpolationService, nil
 }
 
 func init() {

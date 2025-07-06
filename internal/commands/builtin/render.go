@@ -127,7 +127,7 @@ func (c *RenderCommand) Execute(args map[string]string, input string) error {
 	}
 
 	// Get render service
-	renderService, err := c.getRenderService()
+	renderService, err := services.GetGlobalRenderService()
 	if err != nil {
 		return fmt.Errorf("render service not available: %w", err)
 	}
@@ -200,7 +200,7 @@ func (c *RenderCommand) parseRenderOptions(args map[string]string) (services.Ren
 		keywords := parser.ParseArrayValue(keywordsStr)
 
 		// Interpolate variables in keywords
-		interpolationService, err := c.getInterpolationService()
+		interpolationService, err := services.GetGlobalInterpolationService()
 		if err == nil {
 			for i, keyword := range keywords {
 				if interpolated, err := interpolationService.InterpolateString(keyword); err == nil {
@@ -248,36 +248,6 @@ func (c *RenderCommand) parseRenderOptions(args map[string]string) (services.Ren
 	}
 
 	return options, nil
-}
-
-// getRenderService retrieves the render service from the global registry
-func (c *RenderCommand) getRenderService() (*services.RenderService, error) {
-	service, err := services.GetGlobalRegistry().GetService("render")
-	if err != nil {
-		return nil, err
-	}
-
-	renderService, ok := service.(*services.RenderService)
-	if !ok {
-		return nil, fmt.Errorf("render service has incorrect type")
-	}
-
-	return renderService, nil
-}
-
-// getInterpolationService retrieves the interpolation service from the global registry
-func (c *RenderCommand) getInterpolationService() (*services.InterpolationService, error) {
-	service, err := services.GetGlobalRegistry().GetService("interpolation")
-	if err != nil {
-		return nil, err
-	}
-
-	interpolationService, ok := service.(*services.InterpolationService)
-	if !ok {
-		return nil, fmt.Errorf("interpolation service has incorrect type")
-	}
-
-	return interpolationService, nil
 }
 
 func init() {
