@@ -108,7 +108,7 @@ func (c *ListCommand) HelpInfo() neurotypes.HelpInfo {
 func (c *ListCommand) Execute(args map[string]string, _ string) error {
 
 	// Get chat session service
-	chatService, err := c.getChatSessionService()
+	chatService, err := services.GetGlobalChatSessionService()
 	if err != nil {
 		return fmt.Errorf("chat session service not available: %w", err)
 	}
@@ -253,21 +253,6 @@ func (c *ListCommand) formatSessionList(sessions []*neurotypes.ChatSession) stri
 	}
 
 	return result.String()
-}
-
-// getChatSessionService retrieves the chat session service from the global registry
-func (c *ListCommand) getChatSessionService() (*services.ChatSessionService, error) {
-	service, err := services.GetGlobalRegistry().GetService("chat_session")
-	if err != nil {
-		return nil, err
-	}
-
-	chatService, ok := service.(*services.ChatSessionService)
-	if !ok {
-		return nil, fmt.Errorf("chat session service has incorrect type")
-	}
-
-	return chatService, nil
 }
 
 func init() {
