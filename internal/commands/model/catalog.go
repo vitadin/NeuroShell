@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"unicode"
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
@@ -275,7 +276,7 @@ func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntr
 	// Header
 	headerParts := []string{"Model Catalog"}
 	if provider != "all" {
-		headerParts = append(headerParts, fmt.Sprintf("(%s)", strings.Title(provider)))
+		headerParts = append(headerParts, fmt.Sprintf("(%s)", c.toTitle(provider)))
 	}
 	if searchQuery != "" {
 		headerParts = append(headerParts, fmt.Sprintf("- Search: '%s'", searchQuery))
@@ -293,7 +294,7 @@ func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntr
 				if currentProvider != "" {
 					result.WriteString("\n")
 				}
-				result.WriteString(fmt.Sprintf("%s Models:\n", strings.Title(modelProvider)))
+				result.WriteString(fmt.Sprintf("%s Models:\n", c.toTitle(modelProvider)))
 				currentProvider = modelProvider
 			}
 			result.WriteString(c.formatModelEntry(model, true))
@@ -361,6 +362,16 @@ func (c *CatalogCommand) formatNumber(num int) string {
 		return fmt.Sprintf("%d,%.3d", num/1000, num%1000)
 	}
 	return fmt.Sprintf("%d,%03d,%03d", num/1000000, (num%1000000)/1000, num%1000)
+}
+
+// toTitle converts the first character of a string to uppercase.
+func (c *CatalogCommand) toTitle(s string) string {
+	if s == "" {
+		return s
+	}
+	r := []rune(s)
+	r[0] = unicode.ToUpper(r[0])
+	return string(r)
 }
 
 func init() {

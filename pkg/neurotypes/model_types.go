@@ -123,7 +123,7 @@ type ModelCatalogEntry struct {
 	// Version indicates the model version or release date if applicable
 	Version string `yaml:"version,omitempty" json:"version,omitempty"`
 
-	// Deprecated indicates if this model is deprecated and should not be used for new projects
+	// Deprecated: indicates if this model is deprecated and should not be used for new projects
 	Deprecated bool `yaml:"deprecated,omitempty" json:"deprecated,omitempty"`
 }
 
