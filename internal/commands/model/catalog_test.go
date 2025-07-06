@@ -75,7 +75,7 @@ func TestCatalogCommand_Execute(t *testing.T) {
 	registry := services.NewRegistry()
 
 	// Register required services
-	require.NoError(t, registry.RegisterService(services.NewModelService()))
+	require.NoError(t, registry.RegisterService(services.NewModelCatalogService()))
 	require.NoError(t, registry.RegisterService(services.NewVariableService()))
 	require.NoError(t, registry.InitializeAll(ctx))
 	services.SetGlobalRegistry(registry)

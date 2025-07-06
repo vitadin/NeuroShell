@@ -227,6 +227,21 @@ func (r *Registry) GetModelService() (*ModelService, error) {
 	return modelService, nil
 }
 
+// GetModelCatalogService retrieves the model catalog service with proper type casting.
+func (r *Registry) GetModelCatalogService() (*ModelCatalogService, error) {
+	service, err := r.GetService("model_catalog")
+	if err != nil {
+		return nil, err
+	}
+
+	modelCatalogService, ok := service.(*ModelCatalogService)
+	if !ok {
+		return nil, fmt.Errorf("model catalog service has incorrect type")
+	}
+
+	return modelCatalogService, nil
+}
+
 // GetAPIService retrieves the API service with proper type casting.
 func (r *Registry) GetAPIService() (*APIService, error) {
 	service, err := r.GetService("api")
@@ -312,6 +327,11 @@ func GetGlobalChatSessionService() (*ChatSessionService, error) {
 // GetGlobalModelService returns the model service from the global registry.
 func GetGlobalModelService() (*ModelService, error) {
 	return GetGlobalRegistry().GetModelService()
+}
+
+// GetGlobalModelCatalogService returns the model catalog service from the global registry.
+func GetGlobalModelCatalogService() (*ModelCatalogService, error) {
+	return GetGlobalRegistry().GetModelCatalogService()
 }
 
 // GetGlobalAPIService returns the API service from the global registry.

@@ -7,11 +7,12 @@ Output: ✓ api - available/initialized
 ✓ help - available/initialized
 ✓ interpolation - available/initialized
 ✓ model - available/initialized
+✓ model_catalog - available/initialized
 ✓ render - available/initialized
 ✓ script - available/initialized
 ✓ variable - available/initialized
 Failed services: 
-Total services: 11
+Total services: 12
 Failed count: 0
 Bash check status: success
 Bash total services: 1
