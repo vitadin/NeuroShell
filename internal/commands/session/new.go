@@ -99,7 +99,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 func (c *NewCommand) Execute(args map[string]string, input string) error {
 
 	// Get chat session service
-	chatService, err := c.getChatSessionService()
+	chatService, err := services.GetGlobalChatSessionService()
 	if err != nil {
 		return fmt.Errorf("chat session service not available: %w", err)
 	}
@@ -181,11 +181,6 @@ func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, var
 	}
 
 	return nil
-}
-
-// getChatSessionService retrieves the chat session service from the global registry
-func (c *NewCommand) getChatSessionService() (*services.ChatSessionService, error) {
-	return services.GetGlobalChatSessionService()
 }
 
 func init() {

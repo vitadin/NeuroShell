@@ -123,7 +123,7 @@ func TestDeleteCommand_Execute_DeleteBySessionID(t *testing.T) {
 	require.NoError(t, err)
 
 	// Get the chat service to access session directly
-	chatService, err := cmd.getChatSessionService()
+	chatService, err := services.GetGlobalChatSessionService()
 	require.NoError(t, err)
 
 	// Get the session by name to get the actual ID

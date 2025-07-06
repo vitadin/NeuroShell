@@ -113,7 +113,7 @@ func (c *DeleteCommand) HelpInfo() neurotypes.HelpInfo {
 // Error if both name option and input are provided.
 func (c *DeleteCommand) Execute(args map[string]string, input string) error {
 	// Get chat session service
-	chatService, err := c.getChatSessionService()
+	chatService, err := services.GetGlobalChatSessionService()
 	if err != nil {
 		return fmt.Errorf("chat session service not available: %w", err)
 	}
@@ -189,7 +189,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string) error {
 // updateSessionVariablesAfterDeletion clears session-related system variables if the deleted session was active
 func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *services.VariableService) error {
 	// Get chat session service to check current session
-	chatService, err := c.getChatSessionService()
+	chatService, err := services.GetGlobalChatSessionService()
 	if err != nil {
 		return err
 	}
@@ -237,11 +237,6 @@ func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *ser
 	}
 
 	return nil
-}
-
-// getChatSessionService retrieves the chat session service from the global registry
-func (c *DeleteCommand) getChatSessionService() (*services.ChatSessionService, error) {
-	return services.GetGlobalChatSessionService()
 }
 
 func init() {
