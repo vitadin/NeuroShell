@@ -248,7 +248,7 @@ func (c *CatalogCommand) sortModels(models []neurotypes.ModelCatalogEntry, sortB
 // getProviderFromModel determines the provider for a model entry.
 func (c *CatalogCommand) getProviderFromModel(model neurotypes.ModelCatalogEntry) string {
 	// Determine provider based on model name patterns
-	if strings.HasPrefix(model.Name, "gpt-") || strings.HasPrefix(model.Name, "text-embedding-") {
+	if strings.HasPrefix(model.Name, "gpt-") || strings.HasPrefix(model.Name, "text-embedding-") || model.Name == "o3" {
 		return "openai"
 	}
 	if strings.HasPrefix(model.Name, "claude-") {
@@ -323,9 +323,12 @@ func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, sh
 		parts = append(parts, fmt.Sprintf("Provider: %s", provider))
 	}
 
-	// Context window
+	// Context window and max output tokens
 	if model.ContextWindow > 0 {
 		contextInfo := fmt.Sprintf("Context: %s tokens", c.formatNumber(model.ContextWindow))
+		if model.MaxOutputTokens != nil && *model.MaxOutputTokens != model.ContextWindow {
+			contextInfo += fmt.Sprintf(" (max output: %s tokens)", c.formatNumber(*model.MaxOutputTokens))
+		}
 		parts = append(parts, contextInfo)
 	}
 
@@ -333,6 +336,65 @@ func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, sh
 	if len(model.Capabilities) > 0 {
 		capabilitiesInfo := fmt.Sprintf("Capabilities: %s", strings.Join(model.Capabilities, ", "))
 		parts = append(parts, capabilitiesInfo)
+	}
+
+	// Modalities
+	if len(model.Modalities) > 0 {
+		modalitiesInfo := fmt.Sprintf("Modalities: %s", strings.Join(model.Modalities, ", "))
+		parts = append(parts, modalitiesInfo)
+	}
+
+	// Pricing information
+	if model.Pricing != nil {
+		pricingInfo := fmt.Sprintf("Pricing: $%.2f/1M input, $%.2f/1M output tokens",
+			model.Pricing.InputPerMToken, model.Pricing.OutputPerMToken)
+		parts = append(parts, pricingInfo)
+	}
+
+	// Features
+	if model.Features != nil {
+		var features []string
+		if model.Features.Streaming != nil && *model.Features.Streaming {
+			features = append(features, "streaming")
+		}
+		if model.Features.FunctionCalling != nil && *model.Features.FunctionCalling {
+			features = append(features, "function-calling")
+		}
+		if model.Features.StructuredOutputs != nil && *model.Features.StructuredOutputs {
+			features = append(features, "structured-outputs")
+		}
+		if model.Features.Vision != nil && *model.Features.Vision {
+			features = append(features, "vision")
+		}
+		if model.Features.FineTuning != nil && *model.Features.FineTuning {
+			features = append(features, "fine-tuning")
+		}
+		if len(features) > 0 {
+			featuresInfo := fmt.Sprintf("Features: %s", strings.Join(features, ", "))
+			parts = append(parts, featuresInfo)
+		}
+	}
+
+	// Tools
+	if len(model.Tools) > 0 {
+		toolsInfo := fmt.Sprintf("Tools: %s", strings.Join(model.Tools, ", "))
+		parts = append(parts, toolsInfo)
+	}
+
+	// Knowledge cutoff
+	if model.KnowledgeCutoff != nil {
+		parts = append(parts, fmt.Sprintf("Knowledge cutoff: %s", *model.KnowledgeCutoff))
+	}
+
+	// Reasoning tokens
+	if model.ReasoningTokens != nil && *model.ReasoningTokens {
+		parts = append(parts, "Reasoning tokens supported")
+	}
+
+	// Snapshots
+	if len(model.Snapshots) > 0 {
+		snapshotsInfo := fmt.Sprintf("Snapshots: %s", strings.Join(model.Snapshots, ", "))
+		parts = append(parts, snapshotsInfo)
 	}
 
 	// Deprecation status

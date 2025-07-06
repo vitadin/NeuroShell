@@ -125,6 +125,63 @@ type ModelCatalogEntry struct {
 
 	// Deprecated: indicates if this model is deprecated and should not be used for new projects
 	Deprecated bool `yaml:"deprecated,omitempty" json:"deprecated,omitempty"`
+
+	// MaxOutputTokens is the maximum number of tokens the model can generate (if different from context window)
+	MaxOutputTokens *int `yaml:"max_output_tokens,omitempty" json:"max_output_tokens,omitempty"`
+
+	// KnowledgeCutoff is the training data cutoff date for the model
+	KnowledgeCutoff *string `yaml:"knowledge_cutoff,omitempty" json:"knowledge_cutoff,omitempty"`
+
+	// ReasoningTokens indicates whether the model supports reasoning tokens
+	ReasoningTokens *bool `yaml:"reasoning_tokens,omitempty" json:"reasoning_tokens,omitempty"`
+
+	// Modalities lists the supported input/output types (e.g., "text-input", "image-input", "audio-output")
+	Modalities []string `yaml:"modalities,omitempty" json:"modalities,omitempty"`
+
+	// Pricing contains cost information for the model
+	Pricing *ModelPricing `yaml:"pricing,omitempty" json:"pricing,omitempty"`
+
+	// Features contains feature support information
+	Features *ModelFeatures `yaml:"features,omitempty" json:"features,omitempty"`
+
+	// Tools lists the tools/capabilities supported by the model
+	Tools []string `yaml:"tools,omitempty" json:"tools,omitempty"`
+
+	// Snapshots lists available model snapshots or aliases
+	Snapshots []string `yaml:"snapshots,omitempty" json:"snapshots,omitempty"`
+}
+
+// ModelPricing contains pricing information for a model.
+type ModelPricing struct {
+	// InputPerMToken is the cost per 1 million input tokens in USD
+	InputPerMToken float64 `yaml:"input_per_m_token,omitempty" json:"input_per_m_token,omitempty"`
+
+	// OutputPerMToken is the cost per 1 million output tokens in USD
+	OutputPerMToken float64 `yaml:"output_per_m_token,omitempty" json:"output_per_m_token,omitempty"`
+}
+
+// ModelFeatures contains feature support information for a model.
+type ModelFeatures struct {
+	// Streaming indicates whether the model supports streaming responses
+	Streaming *bool `yaml:"streaming,omitempty" json:"streaming,omitempty"`
+
+	// FunctionCalling indicates whether the model supports function/tool calling
+	FunctionCalling *bool `yaml:"function_calling,omitempty" json:"function_calling,omitempty"`
+
+	// StructuredOutputs indicates whether the model supports structured output formats
+	StructuredOutputs *bool `yaml:"structured_outputs,omitempty" json:"structured_outputs,omitempty"`
+
+	// FineTuning indicates whether the model supports fine-tuning
+	FineTuning *bool `yaml:"fine_tuning,omitempty" json:"fine_tuning,omitempty"`
+
+	// Vision indicates whether the model supports vision/image processing
+	Vision *bool `yaml:"vision,omitempty" json:"vision,omitempty"`
+
+	// Distillation indicates whether the model supports distillation
+	Distillation *bool `yaml:"distillation,omitempty" json:"distillation,omitempty"`
+
+	// PredictedOutputs indicates whether the model supports predicted outputs
+	PredictedOutputs *bool `yaml:"predicted_outputs,omitempty" json:"predicted_outputs,omitempty"`
 }
 
 // ModelCatalogProvider represents a provider's model catalog loaded from YAML.

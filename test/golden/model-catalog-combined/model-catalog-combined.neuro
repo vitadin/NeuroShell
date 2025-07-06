@@ -2,4 +2,4 @@
 %% Tests using multiple options together
 \model-catalog[provider=openai, sort=name]
 \model-catalog[provider=anthropic, search=claude, sort=name]
-\model-catalog[search=gpt, sort=provider]
+\model-catalog[search=reasoning, sort=provider]

@@ -107,7 +107,7 @@ func TestCatalogCommand_Execute(t *testing.T) {
 		output, err := variableService.Get("_output")
 		require.NoError(t, err)
 		assert.Contains(t, output, "Openai")
-		assert.Contains(t, output, "GPT")
+		assert.Contains(t, output, "O3")
 	})
 
 	t.Run("filter by provider - anthropic", func(t *testing.T) {
@@ -124,7 +124,7 @@ func TestCatalogCommand_Execute(t *testing.T) {
 	})
 
 	t.Run("search functionality", func(t *testing.T) {
-		args := map[string]string{"search": "gpt-4"}
+		args := map[string]string{"search": "o3"}
 		err := cmd.Execute(args, "")
 		require.NoError(t, err)
 
@@ -132,8 +132,8 @@ func TestCatalogCommand_Execute(t *testing.T) {
 		require.NoError(t, err)
 		output, err := variableService.Get("_output")
 		require.NoError(t, err)
-		assert.Contains(t, output, "Search: 'gpt-4'")
-		assert.Contains(t, output, "GPT-4")
+		assert.Contains(t, output, "Search: 'o3'")
+		assert.Contains(t, output, "O3")
 	})
 
 	t.Run("sort by name", func(t *testing.T) {
