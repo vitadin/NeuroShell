@@ -108,6 +108,9 @@ type ModelCatalogEntry struct {
 	// Name is the provider's model identifier (e.g., "gpt-4", "claude-3-sonnet-20240229")
 	Name string `yaml:"name" json:"name"`
 
+	// Provider is the LLM provider name (e.g., "openai", "anthropic")
+	Provider string `yaml:"provider" json:"provider"`
+
 	// DisplayName is a human-readable name for the model (e.g., "GPT-4", "Claude 3 Sonnet")
 	DisplayName string `yaml:"display_name" json:"display_name"`
 
@@ -184,7 +187,14 @@ type ModelFeatures struct {
 	PredictedOutputs *bool `yaml:"predicted_outputs,omitempty" json:"predicted_outputs,omitempty"`
 }
 
+// ModelCatalogFile represents an individual model file loaded from YAML.
+// Each model file contains a complete ModelCatalogEntry with provider information.
+type ModelCatalogFile struct {
+	ModelCatalogEntry `yaml:",inline" json:",inline"`
+}
+
 // ModelCatalogProvider represents a provider's model catalog loaded from YAML.
+// Deprecated: Use individual model files (ModelCatalogFile) instead of provider-based files.
 type ModelCatalogProvider struct {
 	// Provider is the provider name (e.g., "openai", "anthropic")
 	Provider string `yaml:"provider" json:"provider"`

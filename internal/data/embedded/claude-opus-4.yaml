@@ -1,0 +1,20 @@
+name: claude-opus-4-20250514
+display_name: Claude Opus 4
+provider: anthropic
+description: Highest level of intelligence and capability
+capabilities: [text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking]
+context_window: 200000
+max_output_tokens: 32000
+knowledge_cutoff: "2025-03-01"
+modalities: [text-input, text-output, image-input]
+pricing:
+  input_per_m_token: 15.00
+  output_per_m_token: 75.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  vision: true
+  extended_thinking: true
+  multilingual: true
+version: "2025-05-14"

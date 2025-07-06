@@ -3,12 +3,32 @@ package embedded
 
 import _ "embed"
 
-// AnthropicCatalogData contains the embedded Anthropic model catalog YAML data.
+// O3ModelData contains the embedded O3 model YAML data.
 //
-//go:embed anthropic.yaml
-var AnthropicCatalogData []byte
+//go:embed o3.yaml
+var O3ModelData []byte
 
-// OpenaiCatalogData contains the embedded OpenAI model catalog YAML data.
+// O4MiniModelData contains the embedded O4-mini model YAML data.
 //
-//go:embed openai.yaml
-var OpenaiCatalogData []byte
+//go:embed o4-mini.yaml
+var O4MiniModelData []byte
+
+// Claude37SonnetModelData contains the embedded Claude 3.7 Sonnet model YAML data.
+//
+//go:embed claude-3-7-sonnet.yaml
+var Claude37SonnetModelData []byte
+
+// ClaudeSonnet4ModelData contains the embedded Claude Sonnet 4 model YAML data.
+//
+//go:embed claude-sonnet-4.yaml
+var ClaudeSonnet4ModelData []byte
+
+// Claude37OpusModelData contains the embedded Claude 3.7 Opus model YAML data.
+//
+//go:embed claude-3-7-opus.yaml
+var Claude37OpusModelData []byte
+
+// ClaudeOpus4ModelData contains the embedded Claude Opus 4 model YAML data.
+//
+//go:embed claude-opus-4.yaml
+var ClaudeOpus4ModelData []byte
