@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
+	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -93,13 +93,34 @@ func (c *GetCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
-	value, err := context.GetGlobalContext().GetVariable(variable)
+	// Get variable service from global registry
+	variableService, err := c.getVariableService()
+	if err != nil {
+		return fmt.Errorf("variable service not available: %w", err)
+	}
+
+	value, err := variableService.Get(variable)
 	if err != nil {
 		return fmt.Errorf("failed to get variable %s: %w", variable, err)
 	}
 
 	fmt.Printf("%s = %s\n", variable, value)
 	return nil
+}
+
+// getVariableService retrieves the variable service from the global registry
+func (c *GetCommand) getVariableService() (*services.VariableService, error) {
+	service, err := services.GetGlobalRegistry().GetService("variable")
+	if err != nil {
+		return nil, err
+	}
+
+	variableService, ok := service.(*services.VariableService)
+	if !ok {
+		return nil, fmt.Errorf("variable service has incorrect type")
+	}
+
+	return variableService, nil
 }
 
 func init() {
