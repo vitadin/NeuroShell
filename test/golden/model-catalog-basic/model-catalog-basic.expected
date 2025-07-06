@@ -1,4 +1,4 @@
-Model Catalog (15 models):
+Model Catalog (7 models):
 Anthropic Models:
   Claude 3 Haiku (claude-3-haiku-20240307)
     Provider: anthropic
@@ -31,49 +31,15 @@ Anthropic Models:
     Capabilities: text, reasoning, analysis, coding, writing, math
     Description: Most intelligent model with improved coding, reasoning, and analysis
 Openai Models:
-  Ada v2 Embeddings (text-embedding-ada-002)
+  O3 (o3)
     Provider: openai
-    Context: 8,191 tokens
-    Capabilities: embeddings, semantic-search, similarity
-    DEPRECATED
-    Description: Previous generation embedding model, still widely used
-  GPT-3.5 Turbo (gpt-3.5-turbo)
-    Provider: openai
-    Context: 16,384 tokens
-    Capabilities: text, reasoning, analysis, coding, writing
-    Description: Fast and efficient model optimized for chat completions
-  GPT-3.5 Turbo Instruct (gpt-3.5-turbo-instruct)
-    Provider: openai
-    Context: 4,096 tokens
-    Capabilities: text, reasoning, analysis, instruction-following
-    Description: Instruction-following model based on GPT-3.5 architecture
-  GPT-4 (gpt-4)
-    Provider: openai
-    Context: 8,192 tokens
-    Capabilities: text, reasoning, analysis, coding, writing, math
-    Description: Large multimodal model with broad general knowledge and advanced reasoning
-  GPT-4 Turbo (gpt-4-turbo)
-    Provider: openai
-    Context: 128,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing, math, vision
-    Description: Enhanced GPT-4 model with improved instruction following and JSON mode
-  GPT-4o (gpt-4o)
-    Provider: openai
-    Context: 128,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing, math, vision
-    Description: Most advanced GPT-4 model with optimized performance and multimodal capabilities
-  GPT-4o Mini (gpt-4o-mini)
-    Provider: openai
-    Context: 128,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing
-    Description: Smaller, faster, and cheaper GPT-4o model for everyday tasks
-  Text Embedding 3 Large (text-embedding-3-large)
-    Provider: openai
-    Context: 8,191 tokens
-    Capabilities: embeddings, semantic-search, similarity
-    Description: Most capable embedding model for semantic search and similarity tasks
-  Text Embedding 3 Small (text-embedding-3-small)
-    Provider: openai
-    Context: 8,191 tokens
-    Capabilities: embeddings, semantic-search, similarity
-    Description: Efficient embedding model with strong performance for most use cases
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
+    Modalities: text-input, text-output, image-input
+    Pricing: $2.00/1M input, $8.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: web-search, file-search, image-generation, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Snapshots: o3, o3-2025-04-16
+    Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.

@@ -83,7 +83,7 @@ func TestModelService_GetModelCatalog(t *testing.T) {
 			if model.Name == "claude-3-opus-20240229" || model.Name == "claude-3-5-sonnet-20241022" {
 				hasAnthropic = true
 			}
-			if model.Name == "gpt-4" || model.Name == "gpt-4o" {
+			if model.Name == "o3" {
 				hasOpenAI = true
 			}
 		}
@@ -128,18 +128,10 @@ func TestModelService_GetModelCatalogByProvider(t *testing.T) {
 		require.NotNil(t, models)
 		assert.Greater(t, len(models), 0, "Should have OpenAI models")
 
-		// Verify all models are OpenAI models (GPT family or embeddings)
+		// Verify all models are OpenAI models
 		for _, model := range models {
 			assert.True(t,
-				model.Name == "gpt-4" ||
-					model.Name == "gpt-4o" ||
-					model.Name == "gpt-4-turbo" ||
-					model.Name == "gpt-4o-mini" ||
-					model.Name == "gpt-3.5-turbo" ||
-					model.Name == "gpt-3.5-turbo-instruct" ||
-					model.Name == "text-embedding-3-large" ||
-					model.Name == "text-embedding-3-small" ||
-					model.Name == "text-embedding-ada-002",
+				model.Name == "o3",
 				"Should be a known OpenAI model: %s", model.Name)
 			assert.NotEmpty(t, model.DisplayName)
 			assert.Greater(t, model.ContextWindow, 0)
@@ -183,14 +175,14 @@ func TestModelService_SearchModelCatalog(t *testing.T) {
 	require.NoError(t, service.Initialize(ctx))
 
 	t.Run("search by model name", func(t *testing.T) {
-		models, err := service.SearchModelCatalog("gpt-4")
+		models, err := service.SearchModelCatalog("o3")
 		require.NoError(t, err)
 		require.NotNil(t, models)
-		assert.Greater(t, len(models), 0, "Should find GPT-4 models")
+		assert.Greater(t, len(models), 0, "Should find O3 models")
 
 		// Verify all results contain the search term
 		for _, model := range models {
-			assert.Contains(t, model.Name, "gpt-4", "Model name should contain search term")
+			assert.Contains(t, model.Name, "o3", "Model name should contain search term")
 		}
 	})
 
@@ -212,19 +204,19 @@ func TestModelService_SearchModelCatalog(t *testing.T) {
 	})
 
 	t.Run("search by description", func(t *testing.T) {
-		models, err := service.SearchModelCatalog("embedding")
+		models, err := service.SearchModelCatalog("coding")
 		require.NoError(t, err)
 		require.NotNil(t, models)
-		assert.Greater(t, len(models), 0, "Should find embedding models")
+		assert.Greater(t, len(models), 0, "Should find models with coding capabilities")
 
-		// Verify results contain embedding models
+		// Verify results contain models with coding in description or capabilities
 		for _, model := range models {
-			searchTerm := "embedding"
+			searchTerm := "coding"
 			assert.True(t,
 				strings.Contains(strings.ToLower(model.Name), searchTerm) ||
 					strings.Contains(strings.ToLower(model.DisplayName), searchTerm) ||
 					strings.Contains(strings.ToLower(model.Description), searchTerm),
-				"Model should contain 'embedding' in name, display name, or description")
+				"Model should contain 'coding' in name, display name, or description")
 		}
 	})
 
