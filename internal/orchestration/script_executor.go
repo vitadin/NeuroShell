@@ -30,31 +30,25 @@ func ExecuteScript(scriptPath string) error {
 	logger.Debug("Starting script execution", "script", scriptPath)
 
 	// Phase 1: Get required services from global registry
-	scriptService, err := services.GetGlobalRegistry().GetService("script")
+	ss, err := services.GetGlobalScriptService()
 	if err != nil {
 		return fmt.Errorf("script service not available: %w", err)
 	}
 
-	executorService, err := services.GetGlobalRegistry().GetService("executor")
+	es, err := services.GetGlobalExecutorService()
 	if err != nil {
 		return fmt.Errorf("executor service not available: %w", err)
 	}
 
-	interpolationService, err := services.GetGlobalRegistry().GetService("interpolation")
+	is, err := services.GetGlobalInterpolationService()
 	if err != nil {
 		return fmt.Errorf("interpolation service not available: %w", err)
 	}
 
-	variableService, err := services.GetGlobalRegistry().GetService("variable")
+	vs, err := services.GetGlobalVariableService()
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
-
-	// Cast services to their concrete types for type safety
-	ss := scriptService.(*services.ScriptService)
-	es := executorService.(*services.ExecutorService)
-	is := interpolationService.(*services.InterpolationService)
-	vs := variableService.(*services.VariableService)
 
 	// Phase 2: Load script file into execution queue
 	if err := ss.LoadScript(scriptPath); err != nil {

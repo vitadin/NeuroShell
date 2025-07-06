@@ -152,6 +152,21 @@ func (r *Registry) GetExecutorService() (*ExecutorService, error) {
 	return executorService, nil
 }
 
+// GetScriptService retrieves the script service with proper type casting.
+func (r *Registry) GetScriptService() (*ScriptService, error) {
+	service, err := r.GetService("script")
+	if err != nil {
+		return nil, err
+	}
+
+	scriptService, ok := service.(*ScriptService)
+	if !ok {
+		return nil, fmt.Errorf("script service has incorrect type")
+	}
+
+	return scriptService, nil
+}
+
 // GlobalRegistry is the global service registry instance used throughout NeuroShell.
 var GlobalRegistry = NewRegistry()
 
@@ -197,4 +212,9 @@ func GetGlobalBashService() (*BashService, error) {
 // GetGlobalExecutorService returns the executor service from the global registry.
 func GetGlobalExecutorService() (*ExecutorService, error) {
 	return GetGlobalRegistry().GetExecutorService()
+}
+
+// GetGlobalScriptService returns the script service from the global registry.
+func GetGlobalScriptService() (*ScriptService, error) {
+	return GetGlobalRegistry().GetScriptService()
 }
