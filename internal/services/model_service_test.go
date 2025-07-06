@@ -80,7 +80,8 @@ func TestModelService_GetModelCatalog(t *testing.T) {
 			assert.NotEmpty(t, model.Capabilities, "Capabilities should not be empty")
 
 			// Check provider types based on model names
-			if model.Name == "claude-3-opus-20240229" || model.Name == "claude-3-5-sonnet-20241022" {
+			if model.Name == "claude-3-7-sonnet-20250219" || model.Name == "claude-sonnet-4-20250514" ||
+				model.Name == "claude-3-7-opus-20240229" || model.Name == "claude-opus-4-20250514" {
 				hasAnthropic = true
 			}
 			if model.Name == "o3" {

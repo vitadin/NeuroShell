@@ -1,34 +1,40 @@
-Model Catalog (8 models):
-  Claude 3 Haiku (claude-3-haiku-20240307)
+Model Catalog (6 models):
+  Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, summarization
-    Description: Fastest and most compact model for near-instant responsiveness
-  Claude 3 Opus (claude-3-opus-20240229)
+    Context: 200,000 tokens (max output: 4,096 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $15.00/1M input, $75.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2023-08-01
+    Description: Top-level intelligence, fluency, and understanding
+  Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
     Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing, math, research
-    Description: Most powerful model for highly complex tasks requiring top-tier performance
-  Claude 3 Sonnet (claude-3-sonnet-20240229)
+    Context: 200,000 tokens (max output: 64,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $3.00/1M input, $15.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2024-11-01
+    Description: High intelligence with toggleable extended thinking
+  Claude Opus 4 (claude-opus-4-20250514)
     Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing
-    Description: Balanced model offering strong performance for enterprise workloads
-  Claude 3.5 Haiku (claude-3-5-haiku-20241022)
+    Context: 200,000 tokens (max output: 32,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $15.00/1M input, $75.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-03-01
+    Description: Highest level of intelligence and capability
+  Claude Sonnet 4 (claude-sonnet-4-20250514)
     Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing
-    Description: Fastest model with improved instruction following and coding
-  Claude 3.5 Sonnet (claude-3-5-sonnet-20240620)
-    Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing, math
-    Description: Excellent balance of intelligence, speed, and cost for most tasks
-  Claude 3.5 Sonnet (New) (claude-3-5-sonnet-20241022)
-    Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing, math
-    Description: Most intelligent model with improved coding, reasoning, and analysis
+    Context: 200,000 tokens (max output: 64,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $3.00/1M input, $15.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-03-01
+    Description: High intelligence and balanced performance
   O3 (o3)
     Provider: openai
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -53,38 +59,44 @@ Model Catalog (8 models):
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
-Model Catalog (8 models):
+Model Catalog (6 models):
 Anthropic Models:
-  Claude 3 Haiku (claude-3-haiku-20240307)
+  Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, summarization
-    Description: Fastest and most compact model for near-instant responsiveness
-  Claude 3 Opus (claude-3-opus-20240229)
+    Context: 200,000 tokens (max output: 4,096 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $15.00/1M input, $75.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2023-08-01
+    Description: Top-level intelligence, fluency, and understanding
+  Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
     Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing, math, research
-    Description: Most powerful model for highly complex tasks requiring top-tier performance
-  Claude 3 Sonnet (claude-3-sonnet-20240229)
+    Context: 200,000 tokens (max output: 64,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $3.00/1M input, $15.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2024-11-01
+    Description: High intelligence with toggleable extended thinking
+  Claude Opus 4 (claude-opus-4-20250514)
     Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing
-    Description: Balanced model offering strong performance for enterprise workloads
-  Claude 3.5 Haiku (claude-3-5-haiku-20241022)
+    Context: 200,000 tokens (max output: 32,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $15.00/1M input, $75.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-03-01
+    Description: Highest level of intelligence and capability
+  Claude Sonnet 4 (claude-sonnet-4-20250514)
     Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing
-    Description: Fastest model with improved instruction following and coding
-  Claude 3.5 Sonnet (claude-3-5-sonnet-20240620)
-    Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing, math
-    Description: Excellent balance of intelligence, speed, and cost for most tasks
-  Claude 3.5 Sonnet (New) (claude-3-5-sonnet-20241022)
-    Provider: anthropic
-    Context: 200,000 tokens
-    Capabilities: text, reasoning, analysis, coding, writing, math
-    Description: Most intelligent model with improved coding, reasoning, and analysis
+    Context: 200,000 tokens (max output: 64,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $3.00/1M input, $15.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-03-01
+    Description: High intelligence and balanced performance
 Openai Models:
   O3 (o3)
     Provider: openai
