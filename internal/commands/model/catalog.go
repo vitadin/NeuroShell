@@ -158,6 +158,18 @@ func (c *CatalogCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("failed to get model catalog: %w", err)
 	}
 
+	// Build model-to-provider mapping
+	modelToProvider := make(map[string]string)
+	for _, supportedProvider := range []string{"anthropic", "openai"} {
+		providerModels, err := modelService.GetModelCatalogByProvider(supportedProvider)
+		if err != nil {
+			return fmt.Errorf("failed to get %s models for mapping: %w", supportedProvider, err)
+		}
+		for _, model := range providerModels {
+			modelToProvider[model.Name] = supportedProvider
+		}
+	}
+
 	// Apply search filter if provided
 	if searchQuery != "" {
 		models, err = c.filterModelsBySearch(models, searchQuery)
@@ -167,10 +179,10 @@ func (c *CatalogCommand) Execute(args map[string]string, _ string) error {
 	}
 
 	// Apply sorting
-	c.sortModels(models, sortBy, provider)
+	c.sortModels(models, sortBy, provider, modelToProvider)
 
 	// Format output
-	output := c.formatModelCatalog(models, provider, sortBy, searchQuery)
+	output := c.formatModelCatalog(models, provider, sortBy, searchQuery, modelToProvider)
 
 	// Store result in _output variable
 	if err := variableService.SetSystemVariable("_output", output); err != nil {
@@ -223,7 +235,7 @@ func (c *CatalogCommand) filterModelsBySearch(models []neurotypes.ModelCatalogEn
 }
 
 // sortModels sorts the model list according to the specified criteria.
-func (c *CatalogCommand) sortModels(models []neurotypes.ModelCatalogEntry, sortBy, provider string) {
+func (c *CatalogCommand) sortModels(models []neurotypes.ModelCatalogEntry, sortBy, provider string, modelToProvider map[string]string) {
 	switch sortBy {
 	case "name":
 		sort.Slice(models, func(i, j int) bool {
@@ -233,8 +245,8 @@ func (c *CatalogCommand) sortModels(models []neurotypes.ModelCatalogEntry, sortB
 		sort.Slice(models, func(i, j int) bool {
 			// First sort by provider (if showing all providers)
 			if provider == "all" {
-				providerI := c.getProviderFromModel(models[i])
-				providerJ := c.getProviderFromModel(models[j])
+				providerI := c.getProviderFromModel(models[i], modelToProvider)
+				providerJ := c.getProviderFromModel(models[j], modelToProvider)
 				if providerI != providerJ {
 					return providerI < providerJ
 				}
@@ -245,20 +257,16 @@ func (c *CatalogCommand) sortModels(models []neurotypes.ModelCatalogEntry, sortB
 	}
 }
 
-// getProviderFromModel determines the provider for a model entry.
-func (c *CatalogCommand) getProviderFromModel(model neurotypes.ModelCatalogEntry) string {
-	// Determine provider based on model name patterns
-	if strings.HasPrefix(model.Name, "gpt-") || strings.HasPrefix(model.Name, "text-embedding-") || model.Name == "o3" {
-		return "openai"
-	}
-	if strings.HasPrefix(model.Name, "claude-") {
-		return "anthropic"
+// getProviderFromModel determines the provider for a model entry using the model catalog data.
+func (c *CatalogCommand) getProviderFromModel(model neurotypes.ModelCatalogEntry, modelToProvider map[string]string) string {
+	if provider, exists := modelToProvider[model.Name]; exists {
+		return provider
 	}
 	return "unknown"
 }
 
 // formatModelCatalog formats the model catalog for display.
-func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntry, provider, sortBy, searchQuery string) string {
+func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntry, provider, sortBy, searchQuery string, modelToProvider map[string]string) string {
 	if len(models) == 0 {
 		searchText := ""
 		if searchQuery != "" {
@@ -289,7 +297,7 @@ func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntr
 	if provider == "all" && sortBy == "provider" {
 		currentProvider := ""
 		for _, model := range models {
-			modelProvider := c.getProviderFromModel(model)
+			modelProvider := c.getProviderFromModel(model, modelToProvider)
 			if modelProvider != currentProvider {
 				if currentProvider != "" {
 					result.WriteString("\n")
@@ -297,12 +305,12 @@ func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntr
 				result.WriteString(fmt.Sprintf("%s Models:\n", c.toTitle(modelProvider)))
 				currentProvider = modelProvider
 			}
-			result.WriteString(c.formatModelEntry(model, true))
+			result.WriteString(c.formatModelEntry(model, true, modelToProvider))
 		}
 	} else {
 		// Simple list format
 		for _, model := range models {
-			result.WriteString(c.formatModelEntry(model, provider == "all"))
+			result.WriteString(c.formatModelEntry(model, provider == "all", modelToProvider))
 		}
 	}
 
@@ -310,7 +318,7 @@ func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntr
 }
 
 // formatModelEntry formats a single model entry for display.
-func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, showProvider bool) string {
+func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, showProvider bool, modelToProvider map[string]string) string {
 	var parts []string
 
 	// Model display name and name
@@ -319,7 +327,7 @@ func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, sh
 
 	// Provider (if showing all providers)
 	if showProvider {
-		provider := c.getProviderFromModel(model)
+		provider := c.getProviderFromModel(model, modelToProvider)
 		parts = append(parts, fmt.Sprintf("Provider: %s", provider))
 	}
 

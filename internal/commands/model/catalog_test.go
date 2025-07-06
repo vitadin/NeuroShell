@@ -279,11 +279,18 @@ func TestCatalogCommand_sortModels(t *testing.T) {
 		{Name: "gpt-3.5-turbo", DisplayName: "GPT-3.5 Turbo"},
 	}
 
+	// Create model-to-provider mapping
+	modelToProvider := map[string]string{
+		"gpt-4":         "openai",
+		"claude-3-opus": "anthropic",
+		"gpt-3.5-turbo": "openai",
+	}
+
 	t.Run("sort by name", func(t *testing.T) {
 		testModels := make([]neurotypes.ModelCatalogEntry, len(models))
 		copy(testModels, models)
 
-		cmd.sortModels(testModels, "name", "all")
+		cmd.sortModels(testModels, "name", "all", modelToProvider)
 
 		// Should be sorted alphabetically by display name
 		assert.Equal(t, "Claude 3 Opus", testModels[0].DisplayName)
@@ -295,7 +302,7 @@ func TestCatalogCommand_sortModels(t *testing.T) {
 		testModels := make([]neurotypes.ModelCatalogEntry, len(models))
 		copy(testModels, models)
 
-		cmd.sortModels(testModels, "provider", "all")
+		cmd.sortModels(testModels, "provider", "all", modelToProvider)
 
 		// Should be sorted by provider then by name
 		// Anthropic models first (claude), then OpenAI models (gpt)
@@ -320,10 +327,19 @@ func TestCatalogCommand_getProviderFromModel(t *testing.T) {
 		{"unknown-model", "unknown"},
 	}
 
+	// Create model-to-provider mapping
+	modelToProvider := map[string]string{
+		"gpt-4":                  "openai",
+		"gpt-3.5-turbo":          "openai",
+		"text-embedding-ada-002": "openai",
+		"claude-3-opus":          "anthropic",
+		"claude-3-5-sonnet":      "anthropic",
+	}
+
 	for _, tc := range testCases {
 		t.Run(tc.modelName, func(t *testing.T) {
 			model := neurotypes.ModelCatalogEntry{Name: tc.modelName}
-			provider := cmd.getProviderFromModel(model)
+			provider := cmd.getProviderFromModel(model, modelToProvider)
 			assert.Equal(t, tc.expectedProvider, provider)
 		})
 	}
@@ -358,22 +374,27 @@ func TestCatalogCommand_formatNumber(t *testing.T) {
 func TestCatalogCommand_formatModelCatalog(t *testing.T) {
 	cmd := &CatalogCommand{}
 
+	// Create model-to-provider mapping for tests
+	modelToProvider := map[string]string{
+		"gpt-4": "openai",
+	}
+
 	t.Run("empty models list", func(t *testing.T) {
 		models := []neurotypes.ModelCatalogEntry{}
-		result := cmd.formatModelCatalog(models, "all", "provider", "")
+		result := cmd.formatModelCatalog(models, "all", "provider", "", modelToProvider)
 		assert.Contains(t, result, "No models found")
 	})
 
 	t.Run("with search query", func(t *testing.T) {
 		models := []neurotypes.ModelCatalogEntry{}
-		result := cmd.formatModelCatalog(models, "all", "provider", "gpt-4")
+		result := cmd.formatModelCatalog(models, "all", "provider", "gpt-4", modelToProvider)
 		assert.Contains(t, result, "No models found")
 		assert.Contains(t, result, "matching 'gpt-4'")
 	})
 
 	t.Run("with specific provider", func(t *testing.T) {
 		models := []neurotypes.ModelCatalogEntry{}
-		result := cmd.formatModelCatalog(models, "openai", "provider", "")
+		result := cmd.formatModelCatalog(models, "openai", "provider", "", modelToProvider)
 		assert.Contains(t, result, "No models found")
 		assert.Contains(t, result, "from openai")
 	})
@@ -388,7 +409,7 @@ func TestCatalogCommand_formatModelCatalog(t *testing.T) {
 				ContextWindow: 8192,
 			},
 		}
-		result := cmd.formatModelCatalog(models, "all", "provider", "")
+		result := cmd.formatModelCatalog(models, "all", "provider", "", modelToProvider)
 		assert.Contains(t, result, "Model Catalog")
 		assert.Contains(t, result, "(1 models)")
 		assert.Contains(t, result, "GPT-4 (gpt-4)")

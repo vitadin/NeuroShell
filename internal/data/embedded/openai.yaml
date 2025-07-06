@@ -22,3 +22,25 @@ models:
       predicted_outputs: false
     tools: [web-search, file-search, image-generation, code-interpreter, mcp]
     snapshots: [o3, o3-2025-04-16]
+  - name: o4-mini
+    display_name: O4-mini
+    description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
+    capabilities: [text, reasoning, analysis, coding, writing, visual-reasoning]
+    context_window: 200000
+    max_output_tokens: 100000
+    knowledge_cutoff: "2024-05-31"
+    reasoning_tokens: true
+    modalities: [text-input, text-output, image-input]
+    pricing:
+      input_per_m_token: 1.10
+      output_per_m_token: 4.40
+    features:
+      streaming: true
+      function_calling: true
+      structured_outputs: true
+      fine_tuning: true
+      vision: true
+      distillation: false
+      predicted_outputs: false
+    tools: [web-search, file-search, code-interpreter, mcp]
+    snapshots: [o4-mini, o4-mini-2025-04-16]
