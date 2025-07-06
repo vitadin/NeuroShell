@@ -185,17 +185,7 @@ func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, var
 
 // getChatSessionService retrieves the chat session service from the global registry
 func (c *NewCommand) getChatSessionService() (*services.ChatSessionService, error) {
-	service, err := services.GetGlobalRegistry().GetService("chat_session")
-	if err != nil {
-		return nil, err
-	}
-
-	chatService, ok := service.(*services.ChatSessionService)
-	if !ok {
-		return nil, fmt.Errorf("chat session service has incorrect type")
-	}
-
-	return chatService, nil
+	return services.GetGlobalChatSessionService()
 }
 
 func init() {
