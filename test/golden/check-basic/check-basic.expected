@@ -1,5 +1,6 @@
 Service Status Check:
 ====================
+  ✓ api                  - available/initialized
   ✓ bash                 - available/initialized
   ✓ chat_session         - available/initialized
   ✓ editor               - available/initialized
@@ -10,4 +11,4 @@ Service Status Check:
   ✓ render               - available/initialized
   ✓ script               - available/initialized
   ✓ variable             - available/initialized
-Summary: 10/10 services healthy
+Summary: 11/11 services healthy
