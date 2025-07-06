@@ -101,3 +101,37 @@ type ModelProviderInfo struct {
 	// Key is parameter name, value describes the constraint (e.g., "0.0-1.0", "1-4000")
 	ParameterConstraints map[string]string `json:"parameter_constraints"`
 }
+
+// ModelCatalogEntry represents a model entry in the embedded model catalog.
+// This contains basic information about available LLM models from various providers.
+type ModelCatalogEntry struct {
+	// Name is the provider's model identifier (e.g., "gpt-4", "claude-3-sonnet-20240229")
+	Name string `yaml:"name" json:"name"`
+
+	// DisplayName is a human-readable name for the model (e.g., "GPT-4", "Claude 3 Sonnet")
+	DisplayName string `yaml:"display_name" json:"display_name"`
+
+	// Description provides a brief description of the model's capabilities and use cases
+	Description string `yaml:"description" json:"description"`
+
+	// Capabilities lists the types of tasks this model is designed for
+	Capabilities []string `yaml:"capabilities" json:"capabilities"`
+
+	// ContextWindow is the maximum number of tokens the model can process
+	ContextWindow int `yaml:"context_window" json:"context_window"`
+
+	// Version indicates the model version or release date if applicable
+	Version string `yaml:"version,omitempty" json:"version,omitempty"`
+
+	// Deprecated indicates if this model is deprecated and should not be used for new projects
+	Deprecated bool `yaml:"deprecated,omitempty" json:"deprecated,omitempty"`
+}
+
+// ModelCatalogProvider represents a provider's model catalog loaded from YAML.
+type ModelCatalogProvider struct {
+	// Provider is the provider name (e.g., "openai", "anthropic")
+	Provider string `yaml:"provider" json:"provider"`
+
+	// Models is the list of models available from this provider
+	Models []ModelCatalogEntry `yaml:"models" json:"models"`
+}

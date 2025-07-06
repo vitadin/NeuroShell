@@ -1,0 +1,56 @@
+provider: openai
+models:
+  - name: gpt-4o
+    display_name: GPT-4o
+    description: Most advanced GPT-4 model with optimized performance and multimodal capabilities
+    capabilities: [text, reasoning, analysis, coding, writing, math, vision]
+    context_window: 128000
+    
+  - name: gpt-4o-mini
+    display_name: GPT-4o Mini
+    description: Smaller, faster, and cheaper GPT-4o model for everyday tasks
+    capabilities: [text, reasoning, analysis, coding, writing]
+    context_window: 128000
+    
+  - name: gpt-4-turbo
+    display_name: GPT-4 Turbo
+    description: Enhanced GPT-4 model with improved instruction following and JSON mode
+    capabilities: [text, reasoning, analysis, coding, writing, math, vision]
+    context_window: 128000
+    
+  - name: gpt-4
+    display_name: GPT-4
+    description: Large multimodal model with broad general knowledge and advanced reasoning
+    capabilities: [text, reasoning, analysis, coding, writing, math]
+    context_window: 8192
+    
+  - name: gpt-3.5-turbo
+    display_name: GPT-3.5 Turbo
+    description: Fast and efficient model optimized for chat completions
+    capabilities: [text, reasoning, analysis, coding, writing]
+    context_window: 16384
+    
+  - name: gpt-3.5-turbo-instruct
+    display_name: GPT-3.5 Turbo Instruct
+    description: Instruction-following model based on GPT-3.5 architecture
+    capabilities: [text, reasoning, analysis, instruction-following]
+    context_window: 4096
+    
+  - name: text-embedding-3-large
+    display_name: Text Embedding 3 Large
+    description: Most capable embedding model for semantic search and similarity tasks
+    capabilities: [embeddings, semantic-search, similarity]
+    context_window: 8191
+    
+  - name: text-embedding-3-small
+    display_name: Text Embedding 3 Small
+    description: Efficient embedding model with strong performance for most use cases
+    capabilities: [embeddings, semantic-search, similarity]
+    context_window: 8191
+    
+  - name: text-embedding-ada-002
+    display_name: Ada v2 Embeddings
+    description: Previous generation embedding model, still widely used
+    capabilities: [embeddings, semantic-search, similarity]
+    context_window: 8191
+    deprecated: true
