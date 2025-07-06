@@ -85,7 +85,7 @@ func (c *HelpCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute displays help information for commands. If a specific command is requested via args,
 // it shows detailed help for that command. Otherwise, it shows all available commands.
-func (c *HelpCommand) Execute(args map[string]string, input string, _ neurotypes.Context) error {
+func (c *HelpCommand) Execute(args map[string]string, input string) error {
 	// Get help service
 	helpService, err := c.getHelpService()
 	if err != nil {
@@ -149,7 +149,7 @@ func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *servic
 
 	// Get render service for styling
 	if styled {
-		renderService, err := c.getRenderService()
+		renderService, err := services.GetGlobalRenderService()
 		if err != nil {
 			return fmt.Errorf("render service not available: %w", err)
 		}
@@ -161,7 +161,7 @@ func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *servic
 
 		fmt.Print(styledOutput)
 	} else {
-		renderService, err := c.getRenderService()
+		renderService, err := services.GetGlobalRenderService()
 		if err != nil {
 			return fmt.Errorf("render service not available: %w", err)
 		}
@@ -210,7 +210,7 @@ func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, styl
 
 // showAllCommandsStyled displays all commands with professional styling
 func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, _ *services.HelpService) error {
-	renderService, err := c.getRenderService()
+	renderService, err := services.GetGlobalRenderService()
 	if err != nil {
 		return fmt.Errorf("render service not available: %w", err)
 	}
@@ -285,21 +285,6 @@ func (c *HelpCommand) getHelpService() (*services.HelpService, error) {
 	}
 
 	return helpService, nil
-}
-
-// getRenderService retrieves the render service from the global registry
-func (c *HelpCommand) getRenderService() (*services.RenderService, error) {
-	service, err := services.GetGlobalRegistry().GetService("render")
-	if err != nil {
-		return nil, err
-	}
-
-	renderService, ok := service.(*services.RenderService)
-	if !ok {
-		return nil, fmt.Errorf("render service has incorrect type")
-	}
-
-	return renderService, nil
 }
 
 func init() {

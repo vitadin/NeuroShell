@@ -121,10 +121,13 @@ func TestCheckCommand_Execute_AllServices(t *testing.T) {
 	// Set the test registry as global
 	originalRegistry := services.GetGlobalRegistry()
 	defer services.SetGlobalRegistry(originalRegistry)
+	defer context.ResetGlobalContext()
 	services.SetGlobalRegistry(registry)
 
 	// Initialize services
 	ctx := context.New() // Use real NeuroContext for system variables
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
 	if err := registry.InitializeAll(ctx); err != nil {
 		t.Fatalf("Failed to initialize services: %v", err)
 	}
@@ -133,7 +136,7 @@ func TestCheckCommand_Execute_AllServices(t *testing.T) {
 	cmd := &CheckCommand{}
 	args := map[string]string{}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 	if err != nil {
 		t.Fatalf("Execute failed: %v", err)
 	}
@@ -188,10 +191,13 @@ func TestCheckCommand_Execute_SpecificService(t *testing.T) {
 	// Set the test registry as global
 	originalRegistry := services.GetGlobalRegistry()
 	defer services.SetGlobalRegistry(originalRegistry)
+	defer context.ResetGlobalContext()
 	services.SetGlobalRegistry(registry)
 
 	// Initialize services
 	ctx := context.New() // Use real NeuroContext for system variables
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
 	if err := registry.InitializeAll(ctx); err != nil {
 		t.Fatalf("Failed to initialize services: %v", err)
 	}
@@ -202,7 +208,7 @@ func TestCheckCommand_Execute_SpecificService(t *testing.T) {
 		"service": "test1",
 	}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 	if err != nil {
 		t.Fatalf("Execute failed: %v", err)
 	}
@@ -253,10 +259,13 @@ func TestCheckCommand_Execute_NonExistentService(t *testing.T) {
 	// Set the test registry as global
 	originalRegistry := services.GetGlobalRegistry()
 	defer services.SetGlobalRegistry(originalRegistry)
+	defer context.ResetGlobalContext()
 	services.SetGlobalRegistry(registry)
 
 	// Initialize services
 	ctx := context.New() // Use real NeuroContext for system variables
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
 	if err := registry.InitializeAll(ctx); err != nil {
 		t.Fatalf("Failed to initialize services: %v", err)
 	}
@@ -267,7 +276,7 @@ func TestCheckCommand_Execute_NonExistentService(t *testing.T) {
 		"service": "nonexistent",
 	}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 	if err != nil {
 		t.Fatalf("Execute failed: %v", err)
 	}
@@ -318,10 +327,13 @@ func TestCheckCommand_Execute_QuietMode(t *testing.T) {
 	// Set the test registry as global
 	originalRegistry := services.GetGlobalRegistry()
 	defer services.SetGlobalRegistry(originalRegistry)
+	defer context.ResetGlobalContext()
 	services.SetGlobalRegistry(registry)
 
 	// Initialize services
 	ctx := context.New() // Use real NeuroContext for system variables
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
 	if err := registry.InitializeAll(ctx); err != nil {
 		t.Fatalf("Failed to initialize services: %v", err)
 	}
@@ -332,7 +344,7 @@ func TestCheckCommand_Execute_QuietMode(t *testing.T) {
 		"quiet": "true",
 	}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 	if err != nil {
 		t.Fatalf("Execute failed: %v", err)
 	}
@@ -443,9 +455,12 @@ func TestCheckCommand_setResultVariables(t *testing.T) {
 	// Set the test registry as global
 	originalRegistry := services.GetGlobalRegistry()
 	defer services.SetGlobalRegistry(originalRegistry)
+	defer context.ResetGlobalContext()
 	services.SetGlobalRegistry(registry)
 
 	// Initialize services
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
 	if err := registry.InitializeAll(ctx); err != nil {
 		t.Fatalf("Failed to initialize services: %v", err)
 	}
@@ -455,7 +470,10 @@ func TestCheckCommand_setResultVariables(t *testing.T) {
 		{Name: "service2", Available: false, Initialized: false, Error: "not found"},
 	}
 
-	err := cmd.setResultVariables(results, ctx)
+	// Set global context for service access
+	context.SetGlobalContext(ctx)
+
+	err := cmd.setResultVariables(results)
 	if err != nil {
 		t.Fatalf("setResultVariables failed: %v", err)
 	}
@@ -536,10 +554,13 @@ func TestCheckCommand_Execute_EmptyRegistry(t *testing.T) {
 	// Set the test registry as global
 	originalRegistry := services.GetGlobalRegistry()
 	defer services.SetGlobalRegistry(originalRegistry)
+	defer context.ResetGlobalContext()
 	services.SetGlobalRegistry(registry)
 
 	// Initialize services (empty registry)
 	ctx := context.New() // Use real NeuroContext for system variables
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
 	if err := registry.InitializeAll(ctx); err != nil {
 		t.Fatalf("Failed to initialize services: %v", err)
 	}
@@ -548,7 +569,7 @@ func TestCheckCommand_Execute_EmptyRegistry(t *testing.T) {
 	cmd := &CheckCommand{}
 	args := map[string]string{}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 	if err != nil {
 		t.Fatalf("Execute failed: %v", err)
 	}

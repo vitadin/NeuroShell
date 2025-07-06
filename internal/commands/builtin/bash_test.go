@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
@@ -73,7 +74,7 @@ func TestBashCommand_Execute_Success(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
 			output := captureOutput(func() {
-				err := cmd.Execute(nil, tt.input, ctx)
+				err := cmd.Execute(nil, tt.input)
 				if tt.wantErr {
 					assert.Error(t, err)
 				} else {
@@ -127,7 +128,7 @@ func TestBashCommand_Execute_WithError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
 			output := captureOutput(func() {
-				err := cmd.Execute(nil, tt.input, ctx)
+				err := cmd.Execute(nil, tt.input)
 				if tt.wantErr {
 					assert.Error(t, err)
 				} else {
@@ -145,13 +146,12 @@ func TestBashCommand_Execute_WithError(t *testing.T) {
 
 func TestBashCommand_Execute_EmptyInput(t *testing.T) {
 	cmd := &BashCommand{}
-	ctx := testutils.NewMockContext()
 
 	tests := []string{"", "   ", "\t", "\n"}
 
 	for _, emptyInput := range tests {
 		t.Run(fmt.Sprintf("empty_input_%q", emptyInput), func(t *testing.T) {
-			err := cmd.Execute(nil, emptyInput, ctx)
+			err := cmd.Execute(nil, emptyInput)
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "Usage:")
 		})
@@ -160,18 +160,16 @@ func TestBashCommand_Execute_EmptyInput(t *testing.T) {
 
 func TestBashCommand_Execute_ServiceUnavailable(t *testing.T) {
 	cmd := &BashCommand{}
-	ctx := testutils.NewMockContext()
 
 	// Don't setup bash service in registry
 
-	err := cmd.Execute(nil, "echo test", ctx)
+	err := cmd.Execute(nil, "echo test")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "bash service not available")
 }
 
 func TestBashCommand_Execute_WrongServiceType(t *testing.T) {
 	cmd := &BashCommand{}
-	ctx := testutils.NewMockContext()
 
 	// Setup registry but register wrong service type under "bash" name
 	oldRegistry := services.GetGlobalRegistry()
@@ -185,7 +183,7 @@ func TestBashCommand_Execute_WrongServiceType(t *testing.T) {
 		services.SetGlobalRegistry(oldRegistry)
 	})
 
-	err = cmd.Execute(nil, "echo test", ctx)
+	err = cmd.Execute(nil, "echo test")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "incorrect type")
 }
@@ -237,7 +235,7 @@ func TestBashCommand_Execute_OutputFormatting(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output := captureOutput(func() {
-				err := cmd.Execute(nil, tt.input, ctx)
+				err := cmd.Execute(nil, tt.input)
 				if tt.checkNoError {
 					assert.NoError(t, err)
 				}
@@ -258,7 +256,7 @@ func TestBashCommand_Execute_VariablesSet(t *testing.T) {
 
 	// Execute a command
 	_ = captureOutput(func() {
-		err := cmd.Execute(nil, "echo test", ctx)
+		err := cmd.Execute(nil, "echo test")
 		assert.NoError(t, err)
 	})
 
@@ -286,7 +284,7 @@ func TestBashCommand_Execute_FailedCommandVariables(t *testing.T) {
 
 	// Execute a failing command
 	_ = captureOutput(func() {
-		err := cmd.Execute(nil, "false", ctx)
+		err := cmd.Execute(nil, "false")
 		assert.NoError(t, err) // Command itself should not error
 	})
 
@@ -365,7 +363,7 @@ func TestBashCommand_Execute_IntegrationWithRealCommands(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			output := captureOutput(func() {
-				err := cmd.Execute(nil, tt.command, ctx)
+				err := cmd.Execute(nil, tt.command)
 				assert.NoError(t, err)
 			})
 
@@ -382,8 +380,14 @@ func setupBashTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	oldRegistry := services.GetGlobalRegistry()
 	services.SetGlobalRegistry(services.NewRegistry())
 
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
+
 	// Register services
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().RegisterService(services.NewInterpolationService())
 	require.NoError(t, err)
 
 	err = services.GetGlobalRegistry().RegisterService(services.NewBashService())
@@ -396,6 +400,7 @@ func setupBashTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	// Cleanup function to restore original registry
 	t.Cleanup(func() {
 		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
 	})
 }
 
@@ -458,6 +463,6 @@ func BenchmarkBashCommand_Execute_SimpleCommand(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(nil, "echo test", ctx)
+		_ = cmd.Execute(nil, "echo test")
 	}
 }

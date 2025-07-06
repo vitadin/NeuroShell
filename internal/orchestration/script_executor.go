@@ -10,7 +10,6 @@ import (
 	_ "neuroshell/internal/commands/assert" // Import assert commands (init functions)
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
-	"neuroshell/pkg/neurotypes"
 )
 
 // ExecuteScript orchestrates the complete script execution workflow.
@@ -27,38 +26,32 @@ import (
 //
 // Returns:
 //   - error: Any error that occurred during script execution
-func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
+func ExecuteScript(scriptPath string) error {
 	logger.Debug("Starting script execution", "script", scriptPath)
 
 	// Phase 1: Get required services from global registry
-	scriptService, err := services.GetGlobalRegistry().GetService("script")
+	ss, err := services.GetGlobalScriptService()
 	if err != nil {
 		return fmt.Errorf("script service not available: %w", err)
 	}
 
-	executorService, err := services.GetGlobalRegistry().GetService("executor")
+	es, err := services.GetGlobalExecutorService()
 	if err != nil {
 		return fmt.Errorf("executor service not available: %w", err)
 	}
 
-	interpolationService, err := services.GetGlobalRegistry().GetService("interpolation")
+	is, err := services.GetGlobalInterpolationService()
 	if err != nil {
 		return fmt.Errorf("interpolation service not available: %w", err)
 	}
 
-	variableService, err := services.GetGlobalRegistry().GetService("variable")
+	vs, err := services.GetGlobalVariableService()
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Cast services to their concrete types for type safety
-	ss := scriptService.(*services.ScriptService)
-	es := executorService.(*services.ExecutorService)
-	is := interpolationService.(*services.InterpolationService)
-	vs := variableService.(*services.VariableService)
-
 	// Phase 2: Load script file into execution queue
-	if err := ss.LoadScript(scriptPath, ctx); err != nil {
+	if err := ss.LoadScript(scriptPath); err != nil {
 		return fmt.Errorf("failed to load script: %w", err)
 	}
 
@@ -68,7 +61,7 @@ func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
 	commandCount := 0
 	for {
 		// Get next command from queue
-		cmd, err := es.GetNextCommand(ctx)
+		cmd, err := es.GetNextCommand()
 		if err != nil {
 			return fmt.Errorf("failed to get next command: %w", err)
 		}
@@ -80,10 +73,10 @@ func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
 		logger.Debug("Executing command", "number", commandCount, "command", cmd.Name, "message", cmd.Message)
 
 		// Interpolate command using interpolation service
-		interpolatedCmd, err := is.InterpolateCommand(cmd, ctx)
+		interpolatedCmd, err := is.InterpolateCommand(cmd)
 		if err != nil {
 			// Mark execution error for tracking
-			if markErr := es.MarkExecutionError(ctx, err, cmd.String()); markErr != nil {
+			if markErr := es.MarkExecutionError(err, cmd.String()); markErr != nil {
 				logger.Error("Failed to mark execution error", "error", markErr)
 			}
 			return fmt.Errorf("interpolation failed for command %d: %w", commandCount, err)
@@ -93,17 +86,17 @@ func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
 		cmdInput := interpolatedCmd.Message
 
 		// Execute command through the global command registry
-		err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput, ctx)
+		err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput)
 		if err != nil {
 			// Mark execution error and return
-			if markErr := es.MarkExecutionError(ctx, err, cmd.String()); markErr != nil {
+			if markErr := es.MarkExecutionError(err, cmd.String()); markErr != nil {
 				logger.Error("Failed to mark execution error", "error", markErr)
 			}
 			return fmt.Errorf("command execution failed for command %d (%s): %w", commandCount, interpolatedCmd.Name, err)
 		}
 
 		// Mark command as successfully executed
-		if err := es.MarkCommandExecuted(ctx); err != nil {
+		if err := es.MarkCommandExecuted(); err != nil {
 			logger.Error("Failed to mark command as executed", "error", err)
 		}
 
@@ -111,17 +104,17 @@ func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
 	}
 
 	// Phase 4: Mark successful completion
-	if err := es.MarkExecutionComplete(ctx); err != nil {
+	if err := es.MarkExecutionComplete(); err != nil {
 		logger.Error("Failed to mark execution complete", "error", err)
 	}
 
 	// Phase 5: Set success status variables for caller access
-	if err := vs.SetSystemVariable("_status", "0", ctx); err != nil {
+	if err := vs.SetSystemVariable("_status", "0"); err != nil {
 		logger.Debug("Failed to set _status variable", "error", err)
 	}
 
 	successMessage := fmt.Sprintf("Script %s executed successfully (%d commands)", scriptPath, commandCount)
-	if err := vs.SetSystemVariable("_output", successMessage, ctx); err != nil {
+	if err := vs.SetSystemVariable("_output", successMessage); err != nil {
 		logger.Debug("Failed to set _output variable", "error", err)
 	}
 

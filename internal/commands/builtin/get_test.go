@@ -7,7 +7,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
+	"neuroshell/internal/context"
+	"neuroshell/internal/services"
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
@@ -93,13 +96,14 @@ func TestGetCommand_Execute_BracketSyntax(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContextWithVars(tt.setupVars)
+			setupGetTestRegistry(t, ctx)
 
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			// Restore stdout
 			_ = w.Close()
@@ -185,13 +189,14 @@ func TestGetCommand_Execute_SpaceSyntax(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContextWithVars(tt.setupVars)
+			setupGetTestRegistry(t, ctx)
 
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			// Restore stdout
 			_ = w.Close()
@@ -221,6 +226,7 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 		"bracketvar": "bracketvalue",
 		"spacevar":   "spacevalue",
 	})
+	setupGetTestRegistry(t, ctx)
 
 	// When both args and input are provided, args (bracket syntax) should take priority
 	args := map[string]string{"bracketvar": ""}
@@ -231,7 +237,7 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(args, input, ctx)
+	err := cmd.Execute(args, input)
 
 	// Restore stdout
 	_ = w.Close()
@@ -250,13 +256,14 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 func TestGetCommand_Execute_ContextError(t *testing.T) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
+	setupGetTestRegistry(t, ctx)
 
 	// Set up context to return an error
 	ctx.SetGetVariableError(fmt.Errorf("context error"))
 
 	args := map[string]string{"testvar": ""}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to get variable testvar")
@@ -266,6 +273,7 @@ func TestGetCommand_Execute_ContextError(t *testing.T) {
 func TestGetCommand_Execute_EmptyVariableName(t *testing.T) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
+	setupGetTestRegistry(t, ctx)
 
 	tests := []struct {
 		name  string
@@ -291,7 +299,7 @@ func TestGetCommand_Execute_EmptyVariableName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "Usage:")
@@ -310,6 +318,7 @@ func TestGetCommand_Execute_VariableWithSpecialCharacters(t *testing.T) {
 	}
 
 	ctx := testutils.NewMockContextWithVars(specialVars)
+	setupGetTestRegistry(t, ctx)
 
 	for varName, expectedValue := range specialVars {
 		t.Run(fmt.Sprintf("get_%s", varName), func(t *testing.T) {
@@ -320,7 +329,7 @@ func TestGetCommand_Execute_VariableWithSpecialCharacters(t *testing.T) {
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(args, "", ctx)
+			err := cmd.Execute(args, "")
 
 			// Restore stdout
 			_ = w.Close()
@@ -342,6 +351,7 @@ func TestGetCommand_Execute_EmptyVariableValue(t *testing.T) {
 	ctx := testutils.NewMockContextWithVars(map[string]string{
 		"empty_var": "",
 	})
+	setupGetTestRegistry(t, ctx)
 
 	args := map[string]string{"empty_var": ""}
 
@@ -350,7 +360,7 @@ func TestGetCommand_Execute_EmptyVariableValue(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -371,6 +381,17 @@ func BenchmarkGetCommand_Execute_BracketSyntax(b *testing.B) {
 	ctx := testutils.NewMockContextWithVars(map[string]string{
 		"benchvar": "benchvalue",
 	})
+
+	// Setup for benchmark (simplified)
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
+	context.SetGlobalContext(ctx)
+	_ = services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	_ = services.GetGlobalRegistry().InitializeAll(ctx)
+	defer func() {
+		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
+	}()
 	args := map[string]string{"benchvar": ""}
 
 	// Redirect stdout to avoid benchmark noise
@@ -380,7 +401,7 @@ func BenchmarkGetCommand_Execute_BracketSyntax(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 	}
 }
 
@@ -389,6 +410,17 @@ func BenchmarkGetCommand_Execute_SpaceSyntax(b *testing.B) {
 	ctx := testutils.NewMockContextWithVars(map[string]string{
 		"benchvar": "benchvalue",
 	})
+
+	// Setup for benchmark (simplified)
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
+	context.SetGlobalContext(ctx)
+	_ = services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	_ = services.GetGlobalRegistry().InitializeAll(ctx)
+	defer func() {
+		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
+	}()
 	input := "benchvar"
 
 	// Redirect stdout to avoid benchmark noise
@@ -398,13 +430,24 @@ func BenchmarkGetCommand_Execute_SpaceSyntax(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(map[string]string{}, input, ctx)
+		_ = cmd.Execute(map[string]string{}, input)
 	}
 }
 
 func BenchmarkGetCommand_Execute_SystemVariable(b *testing.B) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
+
+	// Setup for benchmark (simplified)
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
+	context.SetGlobalContext(ctx)
+	_ = services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	_ = services.GetGlobalRegistry().InitializeAll(ctx)
+	defer func() {
+		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
+	}()
 	args := map[string]string{"@user": ""}
 
 	// Redirect stdout to avoid benchmark noise
@@ -414,6 +457,30 @@ func BenchmarkGetCommand_Execute_SystemVariable(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 	}
+}
+
+// setupGetTestRegistry sets up a test environment with variable service
+func setupGetTestRegistry(t *testing.T, ctx neurotypes.Context) {
+	// Create a new registry for testing
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
+
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
+
+	// Register variable service
+	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+
+	// Initialize services
+	err = services.GetGlobalRegistry().InitializeAll(ctx)
+	require.NoError(t, err)
+
+	// Cleanup function to restore original registry
+	t.Cleanup(func() {
+		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
+	})
 }

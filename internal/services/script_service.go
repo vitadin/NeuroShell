@@ -33,8 +33,8 @@ func (s *ScriptService) Initialize(_ neurotypes.Context) error {
 	return nil
 }
 
-// LoadScript reads a script file and queues commands in the context
-func (s *ScriptService) LoadScript(filepath string, ctx neurotypes.Context) error {
+// LoadScript reads a script file and queues commands in the global context
+func (s *ScriptService) LoadScript(filepath string) error {
 	if !s.initialized {
 		return fmt.Errorf("script service not initialized")
 	}
@@ -45,7 +45,8 @@ func (s *ScriptService) LoadScript(filepath string, ctx neurotypes.Context) erro
 	}
 	defer func() { _ = file.Close() }()
 
-	// Cast to NeuroContext to access queue methods
+	// Get global context and cast to NeuroContext to access queue methods
+	ctx := context.GetGlobalContext()
 	neuroCtx, ok := ctx.(*context.NeuroContext)
 	if !ok {
 		return fmt.Errorf("context is not a NeuroContext")
@@ -122,6 +123,11 @@ func (s *ScriptService) LoadScript(filepath string, ctx neurotypes.Context) erro
 	return nil
 }
 
+// LoadScriptWithGlobalContext reads a script file and queues commands using the global context singleton
+func (s *ScriptService) LoadScriptWithGlobalContext(filepath string) error {
+	return s.LoadScript(filepath)
+}
+
 // GetScriptMetadata returns script execution information from context
 func (s *ScriptService) GetScriptMetadata(ctx neurotypes.Context) (map[string]interface{}, error) {
 	if !s.initialized {
@@ -148,4 +154,10 @@ func (s *ScriptService) GetScriptMetadata(ctx neurotypes.Context) (map[string]in
 	metadata["queue_size"] = neuroCtx.GetQueueSize()
 
 	return metadata, nil
+}
+
+// GetScriptMetadataWithGlobalContext returns script execution information using the global context singleton
+func (s *ScriptService) GetScriptMetadataWithGlobalContext() (map[string]interface{}, error) {
+	ctx := context.GetGlobalContext()
+	return s.GetScriptMetadata(ctx)
 }

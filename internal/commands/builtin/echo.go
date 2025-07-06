@@ -101,19 +101,19 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 //   - to: store result in specified variable (default: ${_output})
 //   - silent: suppress console output (default: false)
 //   - raw: output string literals without interpreting escape sequences (default: false)
-func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *EchoCommand) Execute(args map[string]string, input string) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
-	// Get variable service
-	variableService, err := c.getVariableService()
+	// Get interpolation service
+	interpolationService, err := services.GetGlobalInterpolationService()
 	if err != nil {
-		return fmt.Errorf("variable service not available: %w", err)
+		return fmt.Errorf("interpolation service not available: %w", err)
 	}
 
 	// Interpolate variables in the input message
-	expandedMessage, err := variableService.InterpolateString(input, ctx)
+	expandedMessage, err := interpolationService.InterpolateString(input)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate variables: %w", err)
 	}
@@ -156,13 +156,19 @@ func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotyp
 		storeMessage = displayMessage
 	}
 
+	// Get variable service
+	variableService, err := services.GetGlobalVariableService()
+	if err != nil {
+		return fmt.Errorf("variable service not available: %w", err)
+	}
+
 	// Store result in target variable
 	if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
 		// Store in system variable (only for specific system variables)
-		err = variableService.SetSystemVariable(targetVar, storeMessage, ctx)
+		err = variableService.SetSystemVariable(targetVar, storeMessage)
 	} else {
 		// Store in user variable (including custom variables with _ prefix)
-		err = variableService.Set(targetVar, storeMessage, ctx)
+		err = variableService.Set(targetVar, storeMessage)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to store result in variable '%s': %w", targetVar, err)
@@ -178,21 +184,6 @@ func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotyp
 	}
 
 	return nil
-}
-
-// getVariableService retrieves the variable service from the global registry
-func (c *EchoCommand) getVariableService() (*services.VariableService, error) {
-	service, err := services.GetGlobalRegistry().GetService("variable")
-	if err != nil {
-		return nil, err
-	}
-
-	variableService, ok := service.(*services.VariableService)
-	if !ok {
-		return nil, fmt.Errorf("variable service has incorrect type")
-	}
-
-	return variableService, nil
 }
 
 // interpretEscapeSequences converts escape sequences in a string to their actual characters

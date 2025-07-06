@@ -105,8 +105,7 @@ func (c *ListCommand) HelpInfo() neurotypes.HelpInfo {
 // Options:
 //   - sort: name|created|updated (default: created)
 //   - filter: active|all (default: all)
-func (c *ListCommand) Execute(args map[string]string, _ string) error {
-
+func (c *ListCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
 	if err != nil {
@@ -114,7 +113,7 @@ func (c *ListCommand) Execute(args map[string]string, _ string) error {
 	}
 
 	// Get variable service for storing result variables
-	variableService, err := services.GetGlobalVariableService()
+	variableService, err := c.getVariableService()
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
@@ -268,6 +267,21 @@ func (c *ListCommand) getChatSessionService() (*services.ChatSessionService, err
 	}
 
 	return chatService, nil
+}
+
+// getVariableService retrieves the variable service from the global registry
+func (c *ListCommand) getVariableService() (*services.VariableService, error) {
+	service, err := services.GetGlobalRegistry().GetService("variable")
+	if err != nil {
+		return nil, err
+	}
+
+	variableService, ok := service.(*services.VariableService)
+	if !ok {
+		return nil, fmt.Errorf("variable service has incorrect type")
+	}
+
+	return variableService, nil
 }
 
 func init() {

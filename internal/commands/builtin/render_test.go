@@ -25,7 +25,7 @@ func TestRenderCommand_Execute_BasicStyling(t *testing.T) {
 	defer cleanupTestServices()
 
 	cmd := &RenderCommand{}
-	ctx := context.New()
+	ctx := context.GetGlobalContext()
 
 	tests := []struct {
 		name  string
@@ -72,7 +72,7 @@ func TestRenderCommand_Execute_BasicStyling(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			require.NoError(t, err)
 
 			// Check that result was stored in _output
@@ -89,7 +89,7 @@ func TestRenderCommand_Execute_KeywordHighlighting(t *testing.T) {
 	defer cleanupTestServices()
 
 	cmd := &RenderCommand{}
-	ctx := context.New()
+	ctx := context.GetGlobalContext()
 
 	tests := []struct {
 		name     string
@@ -133,7 +133,7 @@ func TestRenderCommand_Execute_KeywordHighlighting(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			require.NoError(t, err)
 
 			// Check that result was stored in _output
@@ -154,7 +154,7 @@ func TestRenderCommand_Execute_VariableInterpolation(t *testing.T) {
 	defer cleanupTestServices()
 
 	cmd := &RenderCommand{}
-	ctx := context.New()
+	ctx := context.GetGlobalContext()
 
 	// Set up test variables
 	err := ctx.SetVariable("test_cmd", "\\session-new")
@@ -176,7 +176,7 @@ func TestRenderCommand_Execute_VariableInterpolation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			require.NoError(t, err)
 
 			// Check that result was stored
@@ -193,7 +193,7 @@ func TestRenderCommand_Execute_OutputVariable(t *testing.T) {
 	defer cleanupTestServices()
 
 	cmd := &RenderCommand{}
-	ctx := context.New()
+	ctx := context.GetGlobalContext()
 
 	tests := []struct {
 		name      string
@@ -231,7 +231,7 @@ func TestRenderCommand_Execute_OutputVariable(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			require.NoError(t, err)
 
 			// Check that result was stored in correct variable
@@ -248,7 +248,7 @@ func TestRenderCommand_Execute_SilentMode(t *testing.T) {
 	defer cleanupTestServices()
 
 	cmd := &RenderCommand{}
-	ctx := context.New()
+	ctx := context.GetGlobalContext()
 
 	tests := []struct {
 		name   string
@@ -276,7 +276,7 @@ func TestRenderCommand_Execute_SilentMode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			require.NoError(t, err)
 
 			// Result should still be stored in variable regardless of silent mode
@@ -293,7 +293,7 @@ func TestRenderCommand_Execute_ErrorCases(t *testing.T) {
 	defer cleanupTestServices()
 
 	cmd := &RenderCommand{}
-	ctx := context.New()
+	context.GetGlobalContext()
 
 	tests := []struct {
 		name    string
@@ -327,7 +327,7 @@ func TestRenderCommand_Execute_ErrorCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -340,6 +340,7 @@ func TestRenderCommand_Execute_ErrorCases(t *testing.T) {
 func TestRenderCommand_ParseRenderOptions(t *testing.T) {
 	cmd := &RenderCommand{}
 	ctx := context.New()
+	context.SetGlobalContext(ctx)
 
 	// Set up test variable
 	err := ctx.SetVariable("test_style", "bold")
@@ -403,7 +404,7 @@ func TestRenderCommand_ParseRenderOptions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			options, err := cmd.parseRenderOptions(tt.args, ctx)
+			options, err := cmd.parseRenderOptions(tt.args)
 			require.NoError(t, err)
 			assert.True(t, tt.expected(options), "Options should match expected values")
 		})
@@ -428,10 +429,13 @@ func setupTestServices(t *testing.T) {
 
 	// Initialize services
 	ctx := context.New()
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
 	err = services.GlobalRegistry.InitializeAll(ctx)
 	require.NoError(t, err)
 }
 
 func cleanupTestServices() {
-	// Could reset registry here if needed
+	// Reset global context
+	context.ResetGlobalContext()
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"neuroshell/internal/context"
 	"neuroshell/internal/testutils"
 )
 
@@ -108,7 +109,11 @@ func TestScriptService_LoadScript(t *testing.T) {
 			scriptPath := fileHelper.CreateTempFile(t, tt.scriptName, tt.scriptContent)
 
 			// Test LoadScript - note this will fail since MockContext is not NeuroContext
-			err = service.LoadScript(scriptPath, ctx)
+			// Setup global context for testing
+			context.SetGlobalContext(ctx)
+			defer context.ResetGlobalContext()
+
+			err = service.LoadScript(scriptPath)
 
 			if tt.wantError != "" {
 				assert.Error(t, err)
@@ -131,7 +136,11 @@ func TestScriptService_LoadScript_FileNotFound(t *testing.T) {
 	require.NoError(t, err)
 
 	// Try to load non-existent file
-	err = service.LoadScript("/nonexistent/path/script.neuro", ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	err = service.LoadScript("/nonexistent/path/script.neuro")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to open script file")
@@ -146,7 +155,11 @@ func TestScriptService_LoadScript_NotInitialized(t *testing.T) {
 	scriptPath := fileHelper.CreateTempFile(t, "test.neuro", `\set[var="value"]`)
 
 	// Try to load without initialization
-	err := service.LoadScript(scriptPath, ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	err := service.LoadScript(scriptPath)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "script service not initialized")
@@ -276,7 +289,11 @@ func BenchmarkScriptService_LoadScript_Small(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// This will error due to MockContext, but we're measuring file I/O performance
-		_ = service.LoadScript(scriptPath, ctx)
+		// Setup global context for testing
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
+		_ = service.LoadScript(scriptPath)
 	}
 }
 
@@ -301,7 +318,11 @@ func BenchmarkScriptService_LoadScript_Large(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// This will error due to MockContext, but we're measuring file I/O performance
-		_ = service.LoadScript(scriptPath, ctx)
+		// Setup global context for testing
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
+		_ = service.LoadScript(scriptPath)
 	}
 }
 
@@ -341,7 +362,11 @@ func TestScriptService_EdgeCases(t *testing.T) {
 			scriptPath := fileHelper.CreateTempFile(t, "edge.neuro", tc.content)
 
 			// Should handle edge cases gracefully (even if it errors due to MockContext)
-			err := service.LoadScript(scriptPath, ctx)
+			// Setup global context for testing
+			context.SetGlobalContext(ctx)
+			defer context.ResetGlobalContext()
+
+			err := service.LoadScript(scriptPath)
 			// We expect error due to MockContext, but it shouldn't panic
 			assert.Error(t, err)
 		})
@@ -360,6 +385,11 @@ func TestScriptService_ConcurrentAccess(t *testing.T) {
 
 	tmpDir := fileHelper.CreateTempDir(t, scripts)
 
+	// Set up shared global context to avoid race conditions
+	sharedCtx := testutils.NewMockContext()
+	context.SetGlobalContext(sharedCtx)
+	defer context.ResetGlobalContext()
+
 	// Test concurrent usage with separate service instances
 	done := make(chan bool)
 
@@ -367,12 +397,12 @@ func TestScriptService_ConcurrentAccess(t *testing.T) {
 		go func(id int) {
 			// Each goroutine gets its own service instance to avoid race conditions
 			service := NewScriptService()
-			ctx := testutils.NewMockContext()
-			err := service.Initialize(ctx)
+			err := service.Initialize(sharedCtx)
 			assert.NoError(t, err)
 
 			scriptPath := filepath.Join(tmpDir, fmt.Sprintf("script%d.neuro", id+1))
-			err = service.LoadScript(scriptPath, ctx)
+
+			err = service.LoadScript(scriptPath)
 			// Expect error due to MockContext, but shouldn't panic
 			assert.Error(t, err)
 

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -71,7 +72,7 @@ func (c *GetCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute retrieves and displays the value of the specified variable.
 // It handles both bracket and space syntax for variable specification.
-func (c *GetCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *GetCommand) Execute(args map[string]string, input string) error {
 	var variable string
 
 	// Handle bracket syntax: \get[var]
@@ -92,7 +93,13 @@ func (c *GetCommand) Execute(args map[string]string, input string, ctx neurotype
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
-	value, err := ctx.GetVariable(variable)
+	// Get variable service from global registry
+	variableService, err := services.GetGlobalVariableService()
+	if err != nil {
+		return fmt.Errorf("variable service not available: %w", err)
+	}
+
+	value, err := variableService.Get(variable)
 	if err != nil {
 		return fmt.Errorf("failed to get variable %s: %w", variable, err)
 	}

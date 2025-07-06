@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/testutils"
 )
@@ -97,26 +98,38 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 	require.NoError(b, err)
 
 	b.Run("Get_Existing", func(b *testing.B) {
+		// Setup global context for testing
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			varName := fmt.Sprintf("var_%d", i%10000)
-			_, _ = service.Get(varName, ctx)
+			_, _ = service.Get(varName)
 		}
 	})
 
 	b.Run("Get_NonExisting", func(b *testing.B) {
+		// Setup global context for testing
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_, _ = service.Get("nonexistent_var", ctx)
+			_, _ = service.Get("nonexistent_var")
 		}
 	})
 
 	b.Run("Set_NewVariables", func(b *testing.B) {
+		// Setup global context for testing
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			varName := fmt.Sprintf("new_var_%d", i)
 			varValue := fmt.Sprintf("new_value_%d", i)
-			_ = service.Set(varName, varValue, ctx)
+			_ = service.Set(varName, varValue)
 		}
 	})
 }
@@ -173,7 +186,11 @@ func BenchmarkInterpolationService_ComplexStrings(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		str := testStrings[i%len(testStrings)]
-		_, _ = service.InterpolateString(str, ctx)
+		// Setup global context for each test iteration
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
+		_, _ = service.InterpolateString(str)
 	}
 }
 
@@ -217,7 +234,11 @@ func BenchmarkInterpolationService_CommandStructures(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		cmd := commands[i%len(commands)]
-		_, _ = service.InterpolateCommand(cmd, ctx)
+		// Setup global context for each test iteration
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
+		_, _ = service.InterpolateCommand(cmd)
 	}
 }
 
@@ -229,13 +250,17 @@ func BenchmarkConcurrentServiceUsage(b *testing.B) {
 		err := service.Initialize(ctx)
 		require.NoError(b, err)
 
+		// Setup global context for testing
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
 		b.RunParallel(func(pb *testing.PB) {
 			i := 0
 			for pb.Next() {
 				varName := fmt.Sprintf("concurrent_var_%d", i)
 				varValue := fmt.Sprintf("concurrent_value_%d", i)
-				_ = service.Set(varName, varValue, ctx)
-				_, _ = service.Get(varName, ctx)
+				_ = service.Set(varName, varValue)
+				_, _ = service.Get(varName)
 				i++
 			}
 		})

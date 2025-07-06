@@ -5,7 +5,7 @@ package services
 import (
 	"fmt"
 
-	"neuroshell/internal/context"
+	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/internal/parser"
 	"neuroshell/pkg/neurotypes"
 )
@@ -44,12 +44,13 @@ func (e *ExecutorService) ParseCommand(text string) (*parser.Command, error) {
 }
 
 // GetNextCommand returns the next command from the queue without executing it
-func (e *ExecutorService) GetNextCommand(ctx neurotypes.Context) (*parser.Command, error) {
+func (e *ExecutorService) GetNextCommand() (*parser.Command, error) {
 	if !e.initialized {
 		return nil, fmt.Errorf("executor service not initialized")
 	}
 
-	neuroCtx, ok := ctx.(*context.NeuroContext)
+	ctx := neuroshellcontext.GetGlobalContext()
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
 	if !ok {
 		return nil, fmt.Errorf("context is not a NeuroContext")
 	}
@@ -63,12 +64,13 @@ func (e *ExecutorService) GetNextCommand(ctx neurotypes.Context) (*parser.Comman
 }
 
 // GetQueueStatus returns information about the execution queue
-func (e *ExecutorService) GetQueueStatus(ctx neurotypes.Context) (map[string]interface{}, error) {
+func (e *ExecutorService) GetQueueStatus() (map[string]interface{}, error) {
 	if !e.initialized {
 		return nil, fmt.Errorf("executor service not initialized")
 	}
 
-	neuroCtx, ok := ctx.(*context.NeuroContext)
+	ctx := neuroshellcontext.GetGlobalContext()
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
 	if !ok {
 		return nil, fmt.Errorf("context is not a NeuroContext")
 	}
@@ -90,13 +92,14 @@ func (e *ExecutorService) GetQueueStatus(ctx neurotypes.Context) (map[string]int
 	return status, nil
 }
 
-// MarkCommandExecuted updates execution progress in context
-func (e *ExecutorService) MarkCommandExecuted(ctx neurotypes.Context) error {
+// MarkCommandExecuted updates execution progress in the global context
+func (e *ExecutorService) MarkCommandExecuted() error {
 	if !e.initialized {
 		return fmt.Errorf("executor service not initialized")
 	}
 
-	neuroCtx, ok := ctx.(*context.NeuroContext)
+	ctx := neuroshellcontext.GetGlobalContext()
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
 	if !ok {
 		return fmt.Errorf("context is not a NeuroContext")
 	}
@@ -113,13 +116,14 @@ func (e *ExecutorService) MarkCommandExecuted(ctx neurotypes.Context) error {
 	return nil
 }
 
-// MarkExecutionError records an execution error in context
-func (e *ExecutorService) MarkExecutionError(ctx neurotypes.Context, err error, command string) error {
+// MarkExecutionError records an execution error in the global context
+func (e *ExecutorService) MarkExecutionError(err error, command string) error {
 	if !e.initialized {
 		return fmt.Errorf("executor service not initialized")
 	}
 
-	neuroCtx, ok := ctx.(*context.NeuroContext)
+	ctx := neuroshellcontext.GetGlobalContext()
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
 	if !ok {
 		return fmt.Errorf("context is not a NeuroContext")
 	}
@@ -131,13 +135,14 @@ func (e *ExecutorService) MarkExecutionError(ctx neurotypes.Context, err error, 
 	return nil
 }
 
-// MarkExecutionComplete marks successful completion of all commands
-func (e *ExecutorService) MarkExecutionComplete(ctx neurotypes.Context) error {
+// MarkExecutionComplete marks successful completion of all commands in the global context
+func (e *ExecutorService) MarkExecutionComplete() error {
 	if !e.initialized {
 		return fmt.Errorf("executor service not initialized")
 	}
 
-	neuroCtx, ok := ctx.(*context.NeuroContext)
+	ctx := neuroshellcontext.GetGlobalContext()
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
 	if !ok {
 		return fmt.Errorf("context is not a NeuroContext")
 	}

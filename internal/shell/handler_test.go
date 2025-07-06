@@ -85,12 +85,12 @@ func (m *MockIShellContext) Stop()                                         {}
 
 // Test setup and teardown helpers
 func setupTestEnvironment(t *testing.T) func() {
-	// Save original global context
-	originalCtx := globalCtx
-
 	// Create a fresh test context
-	globalCtx = context.New()
-	globalCtx.SetTestMode(true)
+	testCtx := context.New()
+	testCtx.SetTestMode(true)
+
+	// Set as global context
+	context.SetGlobalContext(testCtx)
 
 	// Clear and reinitialize registries using thread-safe functions
 	services.SetGlobalRegistry(services.NewRegistry())
@@ -110,8 +110,8 @@ func setupTestEnvironment(t *testing.T) func() {
 	require.NoError(t, err, "Failed to initialize test services")
 
 	return func() {
-		// Restore original context
-		globalCtx = originalCtx
+		// Reset global context
+		context.ResetGlobalContext()
 	}
 }
 
@@ -147,8 +147,8 @@ func testExecuteCommand(mockCtx *MockIShellContext, cmd *parser.Command) {
 
 	is := interpolationService.(*services.InterpolationService)
 
-	// Interpolate command components
-	interpolatedCmd, err := is.InterpolateCommand(cmd, globalCtx)
+	// Interpolate command components (new API without context)
+	interpolatedCmd, err := is.InterpolateCommand(cmd)
 	if err != nil {
 		mockCtx.Printf("Error: interpolation failed: %s\n", err.Error())
 		return
@@ -158,7 +158,7 @@ func testExecuteCommand(mockCtx *MockIShellContext, cmd *parser.Command) {
 	input := interpolatedCmd.Message
 
 	// Execute command with interpolated values
-	err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, input, globalCtx)
+	err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, input)
 	if err != nil {
 		mockCtx.Printf("Error: %s\n", err.Error())
 		if cmd.Name != "help" {
@@ -223,7 +223,7 @@ func TestProcessInput_ValidCommands(t *testing.T) {
 			expectError: false,
 			setup: func(t *testing.T) {
 				// Pre-set a variable
-				err := globalCtx.SetVariable("var", "test_value")
+				err := GetGlobalContext().SetVariable("var", "test_value")
 				require.NoError(t, err)
 			},
 		},
@@ -322,9 +322,9 @@ func TestProcessInput_WithVariableInterpolation(t *testing.T) {
 	defer cleanup()
 
 	// Set up test variables
-	err := globalCtx.SetVariable("name", "Alice")
+	err := GetGlobalContext().SetVariable("name", "Alice")
 	require.NoError(t, err)
-	err = globalCtx.SetVariable("greeting", "Hello")
+	err = GetGlobalContext().SetVariable("greeting", "Hello")
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -387,7 +387,7 @@ func TestExecuteCommand_BasicFlow(t *testing.T) {
 			},
 			expectError: false,
 			setup: func(t *testing.T) {
-				err := globalCtx.SetVariable("var", "test_value")
+				err := GetGlobalContext().SetVariable("var", "test_value")
 				require.NoError(t, err)
 			},
 		},
@@ -438,7 +438,7 @@ func TestExecuteCommand_InterpolationFlow(t *testing.T) {
 	defer cleanup()
 
 	// Set up test variables
-	err := globalCtx.SetVariable("name", "Alice")
+	err := GetGlobalContext().SetVariable("name", "Alice")
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -553,16 +553,16 @@ func TestInitializeServices_Success(t *testing.T) {
 			// Clear registry for each test
 			services.GlobalRegistry = services.NewRegistry()
 
-			// Save original global context
-			originalCtx := globalCtx
-			globalCtx = context.New()
-			defer func() { globalCtx = originalCtx }()
+			// Reset global context for each test
+			defer context.ResetGlobalContext()
+			testCtx := context.New()
+			context.SetGlobalContext(testCtx)
 
 			err := InitializeServices(tt.testMode)
 			assert.NoError(t, err)
 
 			// Verify test mode was set correctly
-			assert.Equal(t, tt.testMode, globalCtx.IsTestMode())
+			assert.Equal(t, tt.testMode, GetGlobalContext().IsTestMode())
 
 			// Verify all services were registered
 			expectedServices := []string{
@@ -613,13 +613,13 @@ func TestInitializeServices_InitializationFailure(t *testing.T) {
 	err := services.GlobalRegistry.RegisterService(failingService)
 	require.NoError(t, err)
 
-	// Save original global context
-	originalCtx := globalCtx
-	globalCtx = context.New()
-	defer func() { globalCtx = originalCtx }()
+	// Reset global context for this test
+	defer context.ResetGlobalContext()
+	testCtx := context.New()
+	context.SetGlobalContext(testCtx)
 
 	// This should fail during InitializeAll
-	err = services.GlobalRegistry.InitializeAll(globalCtx)
+	err = services.GlobalRegistry.InitializeAll(testCtx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "initialization failed")
 }
@@ -640,7 +640,7 @@ func TestProcessInput_Integration(t *testing.T) {
 				{"\\get[name]"},
 			},
 			verify: func(t *testing.T) {
-				value, err := globalCtx.GetVariable("name")
+				value, err := GetGlobalContext().GetVariable("name")
 				assert.NoError(t, err)
 				assert.Equal(t, "Alice", value)
 			},
@@ -654,7 +654,7 @@ func TestProcessInput_Integration(t *testing.T) {
 				{"\\get[message]"},
 			},
 			verify: func(t *testing.T) {
-				value, err := globalCtx.GetVariable("message")
+				value, err := GetGlobalContext().GetVariable("message")
 				assert.NoError(t, err)
 				assert.Equal(t, "Hello World!", value)
 			},
@@ -896,7 +896,7 @@ func TestProcessInput_CommentVsCommand(t *testing.T) {
 
 			// Verify expected variables were set
 			for varName, expectedValue := range tt.expected {
-				actualValue, err := globalCtx.GetVariable(varName)
+				actualValue, err := GetGlobalContext().GetVariable(varName)
 				assert.NoError(t, err, "Variable %s should exist", varName)
 				assert.Equal(t, expectedValue, actualValue, "Variable %s should have correct value", varName)
 			}
@@ -941,10 +941,10 @@ func BenchmarkProcessInput_CommandWithInterpolation(b *testing.B) {
 	defer cleanup()
 
 	// Set up variables
-	if err := globalCtx.SetVariable("name", "test"); err != nil {
+	if err := GetGlobalContext().SetVariable("name", "test"); err != nil {
 		b.Fatal(err)
 	}
-	if err := globalCtx.SetVariable("value", "benchmark"); err != nil {
+	if err := GetGlobalContext().SetVariable("value", "benchmark"); err != nil {
 		b.Fatal(err)
 	}
 
@@ -977,8 +977,8 @@ func BenchmarkInitializeServices(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 		services.GlobalRegistry = services.NewRegistry()
-		originalCtx := globalCtx
-		globalCtx = context.New()
+		testCtx := context.New()
+		context.SetGlobalContext(testCtx)
 		b.StartTimer()
 
 		if err := InitializeServices(true); err != nil {
@@ -986,7 +986,7 @@ func BenchmarkInitializeServices(b *testing.B) {
 		}
 
 		b.StopTimer()
-		globalCtx = originalCtx
+		context.ResetGlobalContext()
 		b.StartTimer()
 	}
 }

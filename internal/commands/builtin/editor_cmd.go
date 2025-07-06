@@ -90,7 +90,7 @@ func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
 }
 
 // Execute opens the external editor and stores the resulting content in ${_output}.
-func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
+func (e *EditorCommand) Execute(args map[string]string, _ string) error {
 	logger.Debug("Executing editor command", "args", args)
 
 	// Get the editor service
@@ -102,7 +102,7 @@ func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes
 	es := editorService.(*services.EditorService)
 
 	// Open the editor and get content
-	content, err := es.OpenEditor(ctx)
+	content, err := es.OpenEditor()
 	if err != nil {
 		return fmt.Errorf("editor operation failed: %w", err)
 	}
@@ -116,7 +116,7 @@ func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes
 	vs := variableService.(*services.VariableService)
 
 	// Store the content in _output system variable
-	if err := vs.SetSystemVariable("_output", content, ctx); err != nil {
+	if err := vs.SetSystemVariable("_output", content); err != nil {
 		return fmt.Errorf("failed to store editor content: %w", err)
 	}
 

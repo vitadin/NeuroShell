@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 
-	"neuroshell/internal/context"
+	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -30,32 +30,35 @@ func (v *VariableService) Initialize(_ neurotypes.Context) error {
 	return nil
 }
 
-// Get retrieves a variable value from context
-func (v *VariableService) Get(name string, ctx neurotypes.Context) (string, error) {
+// Get retrieves a variable value from the global context
+func (v *VariableService) Get(name string) (string, error) {
 	if !v.initialized {
 		return "", fmt.Errorf("variable service not initialized")
 	}
 
+	ctx := neuroshellcontext.GetGlobalContext()
 	return ctx.GetVariable(name)
 }
 
-// Set stores a variable value in context
-func (v *VariableService) Set(name, value string, ctx neurotypes.Context) error {
+// Set stores a variable value in the global context
+func (v *VariableService) Set(name, value string) error {
 	if !v.initialized {
 		return fmt.Errorf("variable service not initialized")
 	}
 
+	ctx := neuroshellcontext.GetGlobalContext()
 	return ctx.SetVariable(name, value)
 }
 
-// SetSystemVariable sets a system variable in context (for internal app use only)
-func (v *VariableService) SetSystemVariable(name, value string, ctx neurotypes.Context) error {
+// SetSystemVariable sets a system variable in the global context (for internal app use only)
+func (v *VariableService) SetSystemVariable(name, value string) error {
 	if !v.initialized {
 		return fmt.Errorf("variable service not initialized")
 	}
 
+	ctx := neuroshellcontext.GetGlobalContext()
 	// Cast to NeuroContext to access SetSystemVariable method
-	neuroCtx, ok := ctx.(*context.NeuroContext)
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
 	if !ok {
 		return fmt.Errorf("context is not a NeuroContext")
 	}
@@ -63,14 +66,15 @@ func (v *VariableService) SetSystemVariable(name, value string, ctx neurotypes.C
 	return neuroCtx.SetSystemVariable(name, value)
 }
 
-// InterpolateString processes ${var} replacements in a string
-func (v *VariableService) InterpolateString(text string, ctx neurotypes.Context) (string, error) {
+// InterpolateString processes ${var} replacements in a string using the global context
+func (v *VariableService) InterpolateString(text string) (string, error) {
 	if !v.initialized {
 		return "", fmt.Errorf("variable service not initialized")
 	}
 
+	ctx := neuroshellcontext.GetGlobalContext()
 	// Cast to NeuroContext to access InterpolateVariables method
-	neuroCtx, ok := ctx.(*context.NeuroContext)
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
 	if !ok {
 		return "", fmt.Errorf("context is not a NeuroContext")
 	}
@@ -78,13 +82,14 @@ func (v *VariableService) InterpolateString(text string, ctx neurotypes.Context)
 	return neuroCtx.InterpolateVariables(text), nil
 }
 
-// GetAllVariables returns all variables from context (useful for debugging and listing)
-func (v *VariableService) GetAllVariables(ctx neurotypes.Context) (map[string]string, error) {
+// GetAllVariables returns all variables from the global context (useful for debugging and listing)
+func (v *VariableService) GetAllVariables() (map[string]string, error) {
 	if !v.initialized {
 		return nil, fmt.Errorf("variable service not initialized")
 	}
 
-	neuroCtx, ok := ctx.(*context.NeuroContext)
+	ctx := neuroshellcontext.GetGlobalContext()
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
 	if !ok {
 		return nil, fmt.Errorf("context is not a NeuroContext")
 	}

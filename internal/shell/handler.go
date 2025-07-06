@@ -42,16 +42,16 @@ func ProcessInput(c *ishell.Context) {
 	executeCommand(c, cmd)
 }
 
-// Global context instance to persist across commands
-var globalCtx = context.New()
-
 // GetGlobalContext returns the global context instance for external access.
 func GetGlobalContext() *context.NeuroContext {
-	return globalCtx
+	return context.GetGlobalContext().(*context.NeuroContext)
 }
 
 // InitializeServices sets up all required services for the NeuroShell environment.
 func InitializeServices(testMode bool) error {
+	// Get the global context singleton
+	globalCtx := context.GetGlobalContext().(*context.NeuroContext)
+
 	// Set test mode on global context
 	globalCtx.SetTestMode(testMode)
 
@@ -104,6 +104,12 @@ func InitializeServices(testMode bool) error {
 func executeCommand(c *ishell.Context, cmd *parser.Command) {
 	logger.CommandExecution(cmd.Name, cmd.Options)
 
+	// Get the global context singleton
+	globalCtx := context.GetGlobalContext().(*context.NeuroContext)
+
+	// Set global context for service access
+	context.SetGlobalContext(globalCtx)
+
 	// Get interpolation service
 	interpolationService, err := services.GetGlobalRegistry().GetService("interpolation")
 	if err != nil {
@@ -115,7 +121,7 @@ func executeCommand(c *ishell.Context, cmd *parser.Command) {
 	is := interpolationService.(*services.InterpolationService)
 
 	// Interpolate command components using service
-	interpolatedCmd, err := is.InterpolateCommand(cmd, globalCtx)
+	interpolatedCmd, err := is.InterpolateCommand(cmd)
 	if err != nil {
 		logger.Error("Command interpolation failed", "command", cmd.Name, "error", err)
 		c.Printf("Error: interpolation failed: %s\n", err.Error())
@@ -128,7 +134,7 @@ func executeCommand(c *ishell.Context, cmd *parser.Command) {
 	input := interpolatedCmd.Message
 
 	// Execute command with interpolated values
-	err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, input, globalCtx)
+	err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, input)
 	if err != nil {
 		logger.Error("Command execution failed", "command", interpolatedCmd.Name, "error", err)
 		c.Printf("Error: %s\n", err.Error())

@@ -158,8 +158,11 @@ func openEditorAndGetContent(initialContent string) (string, error) {
 	// Create context for the editor operation
 	ctx := shell.GetGlobalContext()
 
+	// Set global context for service access
+	context.SetGlobalContext(ctx)
+
 	// Open editor with initial content
-	content, err := es.OpenEditorWithContent(ctx, initialContent)
+	content, err := es.OpenEditorWithContent(initialContent)
 	if err != nil {
 		return "", fmt.Errorf("editor operation failed: %w", err)
 	}
@@ -210,8 +213,8 @@ func runBatch(_ *cobra.Command, args []string) {
 
 	logger.Info("Services initialized successfully")
 
-	// Create a context for batch execution
-	ctx := context.New()
+	// Get the global context singleton for batch execution
+	ctx := shell.GetGlobalContext()
 	ctx.SetTestMode(testMode)
 
 	// Execute the script
@@ -237,6 +240,9 @@ func validateScriptFile(scriptPath string) error {
 }
 
 func executeBatchScript(scriptPath string, ctx *context.NeuroContext) error {
+	// Set global context for services to use
+	context.SetGlobalContext(ctx)
+
 	// Execute the script using centralized execution logic
-	return orchestration.ExecuteScript(scriptPath, ctx)
+	return orchestration.ExecuteScript(scriptPath)
 }

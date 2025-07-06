@@ -51,10 +51,8 @@ func NewRenderService() *RenderService {
 		initialized: false,
 		themes:      make(map[string]*RenderTheme),
 	}
-
 	// Initialize default themes
 	service.initializeDefaultThemes()
-
 	return service
 }
 

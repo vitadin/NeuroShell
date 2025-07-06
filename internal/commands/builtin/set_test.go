@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"neuroshell/internal/context"
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
@@ -90,13 +91,14 @@ func TestSetCommand_Execute_BracketSyntax(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContext()
+			context.SetGlobalContext(ctx)
 
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			// Restore stdout
 			_ = w.Close()
@@ -201,13 +203,14 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContext()
+			context.SetGlobalContext(ctx)
 
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			// Restore stdout
 			_ = w.Close()
@@ -240,6 +243,7 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 func TestSetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 
 	// When both args and input are provided, args (bracket syntax) should take priority
 	args := map[string]string{"bracketvar": "bracketvalue"}
@@ -250,7 +254,7 @@ func TestSetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(args, input, ctx)
+	err := cmd.Execute(args, input)
 
 	// Restore stdout
 	_ = w.Close()
@@ -279,6 +283,7 @@ func TestSetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 func TestSetCommand_Execute_ContextError(t *testing.T) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 
 	// Set up context to return an error
 	ctx.SetSetVariableError(fmt.Errorf("context error"))
@@ -302,7 +307,7 @@ func TestSetCommand_Execute_ContextError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "failed to set variable")
@@ -314,8 +319,9 @@ func TestSetCommand_Execute_ContextError(t *testing.T) {
 func TestSetCommand_Execute_EmptyInputAndArgs(t *testing.T) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Usage:")
@@ -326,6 +332,7 @@ func TestSetCommand_Execute_VariableOverwrite(t *testing.T) {
 	ctx := testutils.NewMockContextWithVars(map[string]string{
 		"existing": "oldvalue",
 	})
+	context.SetGlobalContext(ctx)
 
 	args := map[string]string{"existing": "newvalue"}
 
@@ -334,7 +341,7 @@ func TestSetCommand_Execute_VariableOverwrite(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -359,6 +366,7 @@ func TestSetCommand_Execute_VariableOverwrite(t *testing.T) {
 func TestSetCommand_Execute_SpecialVariableNames(t *testing.T) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 
 	specialNames := []struct {
 		name  string
@@ -381,7 +389,7 @@ func TestSetCommand_Execute_SpecialVariableNames(t *testing.T) {
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(args, "", ctx)
+			err := cmd.Execute(args, "")
 
 			// Restore stdout
 			_ = w.Close()
@@ -408,6 +416,7 @@ func TestSetCommand_Execute_SpecialVariableNames(t *testing.T) {
 func TestSetCommand_Execute_LargeValues(t *testing.T) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 
 	// Test with large value
 	largeValue := make([]byte, 1000)
@@ -423,7 +432,7 @@ func TestSetCommand_Execute_LargeValues(t *testing.T) {
 	_, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -441,6 +450,7 @@ func TestSetCommand_Execute_LargeValues(t *testing.T) {
 func BenchmarkSetCommand_Execute_BracketSyntax(b *testing.B) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 	args := map[string]string{"benchvar": "benchvalue"}
 
 	// Redirect stdout to avoid benchmark noise
@@ -450,13 +460,14 @@ func BenchmarkSetCommand_Execute_BracketSyntax(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 	}
 }
 
 func BenchmarkSetCommand_Execute_SpaceSyntax(b *testing.B) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 	input := "benchvar benchvalue"
 
 	// Redirect stdout to avoid benchmark noise
@@ -466,13 +477,14 @@ func BenchmarkSetCommand_Execute_SpaceSyntax(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(map[string]string{}, input, ctx)
+		_ = cmd.Execute(map[string]string{}, input)
 	}
 }
 
 func BenchmarkSetCommand_Execute_MultipleVariables(b *testing.B) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 	args := map[string]string{
 		"var1": "value1",
 		"var2": "value2",
@@ -488,13 +500,14 @@ func BenchmarkSetCommand_Execute_MultipleVariables(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 	}
 }
 
 func BenchmarkSetCommand_Execute_LargeValue(b *testing.B) {
 	cmd := &SetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 
 	// Create large value
 	largeValue := make([]byte, 10000)
@@ -514,6 +527,6 @@ func BenchmarkSetCommand_Execute_LargeValue(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 	}
 }

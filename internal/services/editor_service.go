@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
 )
@@ -45,12 +46,13 @@ func (e *EditorService) Initialize(_ neurotypes.Context) error {
 }
 
 // OpenEditor opens the configured editor with a temporary file and returns the content.
-func (e *EditorService) OpenEditor(ctx neurotypes.Context) (string, error) {
+func (e *EditorService) OpenEditor() (string, error) {
 	if !e.initialized {
 		return "", fmt.Errorf("editor service not initialized")
 	}
 
-	// Get the editor command
+	// Get the editor command using global context
+	ctx := neuroshellcontext.GetGlobalContext()
 	editorCmd := e.getEditorCommand(ctx)
 	if editorCmd == "" {
 		return "", fmt.Errorf("no editor configured or found")
@@ -84,6 +86,11 @@ func (e *EditorService) OpenEditor(ctx neurotypes.Context) (string, error) {
 	logger.Debug("Editor content retrieved", "length", len(contentStr))
 
 	return contentStr, nil
+}
+
+// OpenEditorWithGlobalContext opens the configured editor using the global context singleton.
+func (e *EditorService) OpenEditorWithGlobalContext() (string, error) {
+	return e.OpenEditor()
 }
 
 // getEditorCommand determines which editor to use based on configuration and environment.
@@ -146,12 +153,13 @@ func (e *EditorService) createTempFileWithContent(content string) (string, error
 }
 
 // OpenEditorWithContent opens the editor with initial content and returns the edited content.
-func (e *EditorService) OpenEditorWithContent(ctx neurotypes.Context, initialContent string) (string, error) {
+func (e *EditorService) OpenEditorWithContent(initialContent string) (string, error) {
 	if !e.initialized {
 		return "", fmt.Errorf("editor service not initialized")
 	}
 
-	// Get the editor command
+	// Get the editor command using global context
+	ctx := neuroshellcontext.GetGlobalContext()
 	editorCmd := e.getEditorCommand(ctx)
 	if editorCmd == "" {
 		return "", fmt.Errorf("no editor configured or found")
@@ -185,6 +193,11 @@ func (e *EditorService) OpenEditorWithContent(ctx neurotypes.Context, initialCon
 	logger.Debug("Editor content retrieved", "length", len(contentStr))
 
 	return contentStr, nil
+}
+
+// OpenEditorWithContentWithGlobalContext opens the editor with initial content using the global context singleton.
+func (e *EditorService) OpenEditorWithContentWithGlobalContext(initialContent string) (string, error) {
+	return e.OpenEditorWithContent(initialContent)
 }
 
 // executeEditor runs the editor command and waits for it to complete.

@@ -74,7 +74,7 @@ func TestEchoCommand_Execute_BasicFunctionality(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.input == "" {
 				// Test empty input should return error
-				err := cmd.Execute(map[string]string{}, tt.input, ctx)
+				err := cmd.Execute(map[string]string{}, tt.input)
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), "Usage:")
 				return
@@ -82,7 +82,7 @@ func TestEchoCommand_Execute_BasicFunctionality(t *testing.T) {
 
 			// Capture stdout
 			output := captureOutput(func() {
-				err := cmd.Execute(map[string]string{}, tt.input, ctx)
+				err := cmd.Execute(map[string]string{}, tt.input)
 				assert.NoError(t, err)
 			})
 
@@ -157,7 +157,7 @@ func TestEchoCommand_Execute_VariableInterpolation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
 			output := captureOutput(func() {
-				err := cmd.Execute(map[string]string{}, tt.input, ctx)
+				err := cmd.Execute(map[string]string{}, tt.input)
 				assert.NoError(t, err)
 			})
 
@@ -217,7 +217,7 @@ func TestEchoCommand_Execute_ToOption(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
 			output := captureOutput(func() {
-				err := cmd.Execute(tt.args, tt.input, ctx)
+				err := cmd.Execute(tt.args, tt.input)
 				assert.NoError(t, err)
 			})
 
@@ -281,7 +281,7 @@ func TestEchoCommand_Execute_SilentOption(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
 			output := captureOutput(func() {
-				err := cmd.Execute(tt.args, tt.input, ctx)
+				err := cmd.Execute(tt.args, tt.input)
 				assert.NoError(t, err)
 			})
 
@@ -315,7 +315,7 @@ func TestEchoCommand_Execute_InvalidSilentOption(t *testing.T) {
 	args := map[string]string{"silent": "invalid"}
 	input := "Test message"
 
-	err := cmd.Execute(args, input, ctx)
+	err := cmd.Execute(args, input)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid value for silent option")
 	assert.Contains(t, err.Error(), "must be true or false")
@@ -341,7 +341,7 @@ func TestEchoCommand_Execute_CombinedOptions(t *testing.T) {
 
 	// Capture stdout
 	output := captureOutput(func() {
-		err := cmd.Execute(args, input, ctx)
+		err := cmd.Execute(args, input)
 		assert.NoError(t, err)
 	})
 
@@ -414,7 +414,7 @@ func TestEchoCommand_Execute_NewlineHandling(t *testing.T) {
 
 			// Capture stdout
 			output := captureOutput(func() {
-				err := cmd.Execute(map[string]string{}, tt.input, ctx)
+				err := cmd.Execute(map[string]string{}, tt.input)
 				assert.NoError(t, err)
 			})
 
@@ -525,7 +525,7 @@ func TestEchoCommand_Execute_RawOption(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
 			output := captureOutput(func() {
-				err := cmd.Execute(tt.args, tt.input, ctx)
+				err := cmd.Execute(tt.args, tt.input)
 				assert.NoError(t, err)
 			})
 
@@ -591,7 +591,7 @@ func TestEchoCommand_Execute_RawOptionWithVariableInterpolation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
 			output := captureOutput(func() {
-				err := cmd.Execute(tt.args, tt.input, ctx)
+				err := cmd.Execute(tt.args, tt.input)
 				assert.NoError(t, err)
 			})
 
@@ -663,7 +663,7 @@ func TestEchoCommand_Execute_RawOptionCombinations(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
 			output := captureOutput(func() {
-				err := cmd.Execute(tt.args, tt.input, ctx)
+				err := cmd.Execute(tt.args, tt.input)
 				assert.NoError(t, err)
 			})
 
@@ -691,7 +691,7 @@ func TestEchoCommand_Execute_InvalidRawOption(t *testing.T) {
 	args := map[string]string{"raw": "invalid"}
 	input := "Test message"
 
-	err := cmd.Execute(args, input, ctx)
+	err := cmd.Execute(args, input)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid value for raw option")
 	assert.Contains(t, err.Error(), "must be true or false")
@@ -766,7 +766,7 @@ func TestEchoCommand_Execute_RawOptionEdgeCases(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.input == "" {
 				// Test empty input should return error
-				err := cmd.Execute(tt.args, tt.input, ctx)
+				err := cmd.Execute(tt.args, tt.input)
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), "Usage:")
 				return
@@ -774,7 +774,7 @@ func TestEchoCommand_Execute_RawOptionEdgeCases(t *testing.T) {
 
 			// Capture stdout
 			output := captureOutput(func() {
-				err := cmd.Execute(tt.args, tt.input, ctx)
+				err := cmd.Execute(tt.args, tt.input)
 				assert.NoError(t, err)
 			})
 
@@ -788,14 +788,21 @@ func TestEchoCommand_Execute_RawOptionEdgeCases(t *testing.T) {
 	}
 }
 
-// setupEchoTestRegistry sets up a test environment with variable service
+// setupEchoTestRegistry sets up a test environment with variable and interpolation services
 func setupEchoTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	// Create a new registry for testing
 	oldRegistry := services.GetGlobalRegistry()
 	services.SetGlobalRegistry(services.NewRegistry())
 
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
+
 	// Register variable service
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+
+	// Register interpolation service
+	err = services.GetGlobalRegistry().RegisterService(services.NewInterpolationService())
 	require.NoError(t, err)
 
 	// Initialize services
@@ -805,6 +812,7 @@ func setupEchoTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	// Cleanup function to restore original registry
 	t.Cleanup(func() {
 		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
 	})
 }
 

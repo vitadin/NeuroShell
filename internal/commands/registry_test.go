@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -18,7 +17,7 @@ type MockCommand struct {
 	parseMode   neurotypes.ParseMode
 	description string
 	usage       string
-	executeFunc func(args map[string]string, input string, ctx neurotypes.Context) error
+	executeFunc func(args map[string]string, input string) error
 }
 
 func NewMockCommand(name string) *MockCommand {
@@ -27,7 +26,7 @@ func NewMockCommand(name string) *MockCommand {
 		parseMode:   neurotypes.ParseModeKeyValue,
 		description: fmt.Sprintf("Mock command: %s", name),
 		usage:       fmt.Sprintf("Usage: \\%s", name),
-		executeFunc: func(_ map[string]string, _ string, _ neurotypes.Context) error {
+		executeFunc: func(_ map[string]string, _ string) error {
 			return nil
 		},
 	}
@@ -49,9 +48,9 @@ func (m *MockCommand) Usage() string {
 	return m.usage
 }
 
-func (m *MockCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (m *MockCommand) Execute(args map[string]string, input string) error {
 	if m.executeFunc != nil {
-		return m.executeFunc(args, input, ctx)
+		return m.executeFunc(args, input)
 	}
 	return nil
 }
@@ -70,7 +69,7 @@ func (m *MockCommand) SetParseMode(mode neurotypes.ParseMode) {
 	m.parseMode = mode
 }
 
-func (m *MockCommand) SetExecuteFunc(fn func(args map[string]string, input string, ctx neurotypes.Context) error) {
+func (m *MockCommand) SetExecuteFunc(fn func(args map[string]string, input string) error) {
 	m.executeFunc = fn
 }
 
@@ -253,20 +252,17 @@ func TestRegistry_GetAll(t *testing.T) {
 
 func TestRegistry_Execute(t *testing.T) {
 	registry := NewRegistry()
-	ctx := testutils.NewMockContext()
 
 	// Create a command with custom execute function
 	executed := false
 	var capturedArgs map[string]string
 	var capturedInput string
-	var capturedContext neurotypes.Context
 
 	cmd := NewMockCommand("test")
-	cmd.SetExecuteFunc(func(args map[string]string, input string, ctx neurotypes.Context) error {
+	cmd.SetExecuteFunc(func(args map[string]string, input string) error {
 		executed = true
 		capturedArgs = args
 		capturedInput = input
-		capturedContext = ctx
 		return nil
 	})
 
@@ -277,27 +273,25 @@ func TestRegistry_Execute(t *testing.T) {
 	args := map[string]string{"key": "value"}
 	input := "test input"
 
-	err = registry.Execute("test", args, input, ctx)
+	err = registry.Execute("test", args, input)
 	assert.NoError(t, err)
 	assert.True(t, executed)
 	assert.Equal(t, args, capturedArgs)
 	assert.Equal(t, input, capturedInput)
-	assert.Equal(t, ctx, capturedContext)
 
 	// Test execution of non-existent command
-	err = registry.Execute("nonexistent", args, input, ctx)
+	err = registry.Execute("nonexistent", args, input)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "unknown command: nonexistent")
 }
 
 func TestRegistry_Execute_CommandError(t *testing.T) {
 	registry := NewRegistry()
-	ctx := testutils.NewMockContext()
 
 	// Create a command that returns an error
 	expectedError := fmt.Errorf("command execution failed")
 	cmd := NewMockCommand("failing")
-	cmd.SetExecuteFunc(func(_ map[string]string, _ string, _ neurotypes.Context) error {
+	cmd.SetExecuteFunc(func(_ map[string]string, _ string) error {
 		return expectedError
 	})
 
@@ -305,7 +299,7 @@ func TestRegistry_Execute_CommandError(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test that command error is propagated
-	err = registry.Execute("failing", nil, "", ctx)
+	err = registry.Execute("failing", nil, "")
 	assert.Error(t, err)
 	assert.Equal(t, expectedError, err)
 }
@@ -541,7 +535,6 @@ func BenchmarkRegistry_Get(b *testing.B) {
 
 func BenchmarkRegistry_Execute(b *testing.B) {
 	registry := NewRegistry()
-	ctx := testutils.NewMockContext()
 
 	cmd := NewMockCommand("bench")
 	_ = registry.Register(cmd)
@@ -551,7 +544,7 @@ func BenchmarkRegistry_Execute(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = registry.Execute("bench", args, input, ctx)
+		_ = registry.Execute("bench", args, input)
 	}
 }
 

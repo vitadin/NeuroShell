@@ -121,25 +121,25 @@ func (c *RenderCommand) HelpInfo() neurotypes.HelpInfo {
 //   - underline: make text underlined (true/false)
 //   - to: variable to store result (default: ${_output})
 //   - silent: suppress console output (true/false, default: false)
-func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *RenderCommand) Execute(args map[string]string, input string) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
 	// Get render service
-	renderService, err := c.getRenderService()
+	renderService, err := services.GetGlobalRenderService()
 	if err != nil {
 		return fmt.Errorf("render service not available: %w", err)
 	}
 
 	// Get variable service for storing result
-	variableService, err := c.getVariableService()
+	variableService, err := services.GetGlobalVariableService()
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
 	// Parse render options
-	options, err := c.parseRenderOptions(args, ctx)
+	options, err := c.parseRenderOptions(args)
 	if err != nil {
 		return fmt.Errorf("failed to parse render options: %w", err)
 	}
@@ -158,10 +158,10 @@ func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurot
 
 	if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
 		// Store in system variable
-		err = variableService.SetSystemVariable(targetVar, styledText, ctx)
+		err = variableService.SetSystemVariable(targetVar, styledText)
 	} else {
 		// Store in user variable
-		err = variableService.Set(targetVar, styledText, ctx)
+		err = variableService.Set(targetVar, styledText)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to store result in variable '%s': %w", targetVar, err)
@@ -190,7 +190,7 @@ func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurot
 }
 
 // parseRenderOptions parses command arguments into RenderOptions
-func (c *RenderCommand) parseRenderOptions(args map[string]string, ctx neurotypes.Context) (services.RenderOptions, error) {
+func (c *RenderCommand) parseRenderOptions(args map[string]string) (services.RenderOptions, error) {
 	options := services.RenderOptions{
 		Theme: "default", // Default theme
 	}
@@ -200,10 +200,10 @@ func (c *RenderCommand) parseRenderOptions(args map[string]string, ctx neurotype
 		keywords := parser.ParseArrayValue(keywordsStr)
 
 		// Interpolate variables in keywords
-		interpolationService, err := c.getInterpolationService()
+		interpolationService, err := services.GetGlobalInterpolationService()
 		if err == nil {
 			for i, keyword := range keywords {
-				if interpolated, err := interpolationService.InterpolateString(keyword, ctx); err == nil {
+				if interpolated, err := interpolationService.InterpolateString(keyword); err == nil {
 					keywords[i] = interpolated
 				}
 			}
@@ -248,51 +248,6 @@ func (c *RenderCommand) parseRenderOptions(args map[string]string, ctx neurotype
 	}
 
 	return options, nil
-}
-
-// getRenderService retrieves the render service from the global registry
-func (c *RenderCommand) getRenderService() (*services.RenderService, error) {
-	service, err := services.GetGlobalRegistry().GetService("render")
-	if err != nil {
-		return nil, err
-	}
-
-	renderService, ok := service.(*services.RenderService)
-	if !ok {
-		return nil, fmt.Errorf("render service has incorrect type")
-	}
-
-	return renderService, nil
-}
-
-// getVariableService retrieves the variable service from the global registry
-func (c *RenderCommand) getVariableService() (*services.VariableService, error) {
-	service, err := services.GetGlobalRegistry().GetService("variable")
-	if err != nil {
-		return nil, err
-	}
-
-	variableService, ok := service.(*services.VariableService)
-	if !ok {
-		return nil, fmt.Errorf("variable service has incorrect type")
-	}
-
-	return variableService, nil
-}
-
-// getInterpolationService retrieves the interpolation service from the global registry
-func (c *RenderCommand) getInterpolationService() (*services.InterpolationService, error) {
-	service, err := services.GetGlobalRegistry().GetService("interpolation")
-	if err != nil {
-		return nil, err
-	}
-
-	interpolationService, ok := service.(*services.InterpolationService)
-	if !ok {
-		return nil, fmt.Errorf("interpolation service has incorrect type")
-	}
-
-	return interpolationService, nil
 }
 
 func init() {

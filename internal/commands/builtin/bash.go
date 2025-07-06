@@ -74,7 +74,7 @@ func (c *BashCommand) HelpInfo() neurotypes.HelpInfo {
 }
 
 // Execute runs system commands using bash and sets _output, _error, and _status variables.
-func (c *BashCommand) Execute(_ map[string]string, input string, ctx neurotypes.Context) error {
+func (c *BashCommand) Execute(_ map[string]string, input string) error {
 	// Get the command to execute
 	command := strings.TrimSpace(input)
 	if command == "" {
@@ -82,18 +82,13 @@ func (c *BashCommand) Execute(_ map[string]string, input string, ctx neurotypes.
 	}
 
 	// Get bash service from global registry
-	service, err := services.GetGlobalRegistry().GetService("bash")
+	bashService, err := services.GetGlobalBashService()
 	if err != nil {
 		return fmt.Errorf("bash service not available: %w", err)
 	}
 
-	bashService, ok := service.(*services.BashService)
-	if !ok {
-		return fmt.Errorf("bash service has incorrect type")
-	}
-
 	// Execute the command
-	stdout, stderr, exitCode, err := bashService.Execute(command, ctx)
+	stdout, stderr, exitCode, err := bashService.Execute(command)
 	if err != nil {
 		return fmt.Errorf("failed to execute command: %w", err)
 	}

@@ -86,7 +86,8 @@ func (c *EqualCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute compares two values for equality with variable interpolation support.
 // It sets system variables _status, _assert_result, _assert_expected, and _assert_actual.
-func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
+func (c *EqualCommand) Execute(args map[string]string, _ string) error {
+
 	// Validate required arguments
 	expected, hasExpected := args["expect"]
 	actual, hasActual := args["actual"]
@@ -107,12 +108,12 @@ func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.
 	}
 
 	// Interpolate both expected and actual values
-	interpolatedExpected, err := interpolationService.InterpolateString(expected, ctx)
+	interpolatedExpected, err := interpolationService.InterpolateString(expected)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate expected value: %w", err)
 	}
 
-	interpolatedActual, err := interpolationService.InterpolateString(actual, ctx)
+	interpolatedActual, err := interpolationService.InterpolateString(actual)
 	if err != nil {
 		return fmt.Errorf("failed to interpolate actual value: %w", err)
 	}
@@ -121,7 +122,7 @@ func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.
 	isEqual := interpolatedExpected == interpolatedActual
 
 	// Get variable service to set system variables
-	variableService, err := getVariableService()
+	variableService, err := services.GetGlobalVariableService()
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
@@ -129,20 +130,20 @@ func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.
 	// Set system variables based on result
 	if isEqual {
 		// Assertion passed
-		_ = variableService.SetSystemVariable("_status", "0", ctx)
-		_ = variableService.SetSystemVariable("_assert_result", "PASS", ctx)
-		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected, ctx)
-		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual, ctx)
+		_ = variableService.SetSystemVariable("_status", "0")
+		_ = variableService.SetSystemVariable("_assert_result", "PASS")
+		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected)
+		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual)
 
 		// Output success message
 		fmt.Printf("✓ Assertion passed: values are equal\n")
 		fmt.Printf("  Value: %s\n", interpolatedExpected)
 	} else {
 		// Assertion failed
-		_ = variableService.SetSystemVariable("_status", "1", ctx)
-		_ = variableService.SetSystemVariable("_assert_result", "FAIL", ctx)
-		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected, ctx)
-		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual, ctx)
+		_ = variableService.SetSystemVariable("_status", "1")
+		_ = variableService.SetSystemVariable("_assert_result", "FAIL")
+		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected)
+		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual)
 
 		// Output failure message with diff-style information
 		fmt.Printf("✗ Assertion failed: values are not equal\n")
@@ -151,21 +152,6 @@ func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.
 	}
 
 	return nil
-}
-
-// getVariableService is a helper function to get the variable service from the global registry
-func getVariableService() (*services.VariableService, error) {
-	service, err := services.GetGlobalRegistry().GetService("variable")
-	if err != nil {
-		return nil, err
-	}
-
-	variableService, ok := service.(*services.VariableService)
-	if !ok {
-		return nil, fmt.Errorf("variable service has incorrect type")
-	}
-
-	return variableService, nil
 }
 
 func init() {

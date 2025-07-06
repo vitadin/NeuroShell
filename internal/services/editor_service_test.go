@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"neuroshell/internal/context"
 	"neuroshell/internal/testutils"
 )
 
@@ -211,7 +212,11 @@ func TestEditorService_OpenEditor_NotInitialized(t *testing.T) {
 	service := NewEditorService()
 	ctx := testutils.NewMockContext()
 
-	content, err := service.OpenEditor(ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	content, err := service.OpenEditor()
 	assert.Error(t, err)
 	assert.Empty(t, content)
 	assert.Contains(t, err.Error(), "editor service not initialized")
@@ -221,7 +226,11 @@ func TestEditorService_OpenEditorWithContent_NotInitialized(t *testing.T) {
 	service := NewEditorService()
 	ctx := testutils.NewMockContext()
 
-	content, err := service.OpenEditorWithContent(ctx, "test content")
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	content, err := service.OpenEditorWithContent("test content")
 	assert.Error(t, err)
 	assert.Empty(t, content)
 	assert.Contains(t, err.Error(), "editor service not initialized")
@@ -239,7 +248,11 @@ func TestEditorService_OpenEditor_NoEditorFound(t *testing.T) {
 	helper := testutils.SetupNoEditor()
 	defer helper.Cleanup()
 
-	content, err := service.OpenEditor(ctx)
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	content, err := service.OpenEditor()
 	assert.Error(t, err)
 	assert.Empty(t, content)
 	assert.Contains(t, err.Error(), "no editor configured or found")
