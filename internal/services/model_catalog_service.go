@@ -80,6 +80,11 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, claudeOpus4Model)
 
+	// Validate that all model IDs are unique (case-insensitive)
+	if err := m.validateUniqueIDs(allModels); err != nil {
+		return nil, fmt.Errorf("model catalog validation failed: %w", err)
+	}
+
 	return allModels, nil
 }
 
@@ -136,6 +141,51 @@ func (m *ModelCatalogService) SearchModelCatalog(query string) ([]neurotypes.Mod
 // GetSupportedProviders returns a list of supported providers.
 func (m *ModelCatalogService) GetSupportedProviders() []string {
 	return []string{"anthropic", "openai"}
+}
+
+// GetModelByID returns a model by its ID (case-insensitive lookup).
+func (m *ModelCatalogService) GetModelByID(id string) (neurotypes.ModelCatalogEntry, error) {
+	if !m.initialized {
+		return neurotypes.ModelCatalogEntry{}, fmt.Errorf("model catalog service not initialized")
+	}
+
+	allModels, err := m.GetModelCatalog()
+	if err != nil {
+		return neurotypes.ModelCatalogEntry{}, err
+	}
+
+	normalizedID := m.normalizeID(id)
+	for _, model := range allModels {
+		if m.normalizeID(model.ID) == normalizedID {
+			return model, nil
+		}
+	}
+
+	return neurotypes.ModelCatalogEntry{}, fmt.Errorf("model with ID '%s' not found in catalog", id)
+}
+
+// validateUniqueIDs checks for duplicate model IDs (case-insensitive).
+func (m *ModelCatalogService) validateUniqueIDs(models []neurotypes.ModelCatalogEntry) error {
+	seenIDs := make(map[string]string) // normalized_id -> original_id
+
+	for _, model := range models {
+		if model.ID == "" {
+			return fmt.Errorf("model '%s' has empty ID field", model.Name)
+		}
+
+		normalizedID := m.normalizeID(model.ID)
+		if existingID, exists := seenIDs[normalizedID]; exists {
+			return fmt.Errorf("duplicate model ID found: '%s' and '%s' (case insensitive)", existingID, model.ID)
+		}
+		seenIDs[normalizedID] = model.ID
+	}
+
+	return nil
+}
+
+// normalizeID converts an ID to uppercase for case-insensitive comparison.
+func (m *ModelCatalogService) normalizeID(id string) string {
+	return strings.ToUpper(id)
 }
 
 // loadModelFile loads and parses an individual model file from embedded YAML data.

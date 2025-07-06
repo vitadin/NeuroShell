@@ -1,4 +1,5 @@
 name: claude-sonnet-4-20250514
+id: CS4
 display_name: Claude Sonnet 4
 provider: anthropic
 description: High intelligence and balanced performance

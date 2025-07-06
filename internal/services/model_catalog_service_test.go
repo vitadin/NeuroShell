@@ -301,3 +301,179 @@ context_window: 1000
 		assert.Equal(t, "", model.Name, "Empty YAML should return empty model")
 	})
 }
+
+func TestModelCatalogService_GetModelByID(t *testing.T) {
+	service := NewModelCatalogService()
+	ctx := testutils.NewMockContext()
+	require.NoError(t, service.Initialize(ctx))
+
+	t.Run("get model by exact ID", func(t *testing.T) {
+		model, err := service.GetModelByID("O3")
+		require.NoError(t, err)
+		assert.Equal(t, "O3", model.ID)
+		assert.Equal(t, "o3", model.Name)
+		assert.Equal(t, "openai", model.Provider)
+	})
+
+	t.Run("get model by case-insensitive ID", func(t *testing.T) {
+		testCases := []string{"cs4", "CS4", "Cs4", "cS4"}
+		for _, testID := range testCases {
+			model, err := service.GetModelByID(testID)
+			require.NoError(t, err, "Should find model with ID: %s", testID)
+			assert.Equal(t, "CS4", model.ID)
+			assert.Equal(t, "claude-sonnet-4-20250514", model.Name)
+			assert.Equal(t, "anthropic", model.Provider)
+		}
+	})
+
+	t.Run("model not found", func(t *testing.T) {
+		model, err := service.GetModelByID("NONEXISTENT")
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "not found in catalog")
+		assert.Equal(t, neurotypes.ModelCatalogEntry{}, model)
+	})
+
+	t.Run("empty ID", func(t *testing.T) {
+		model, err := service.GetModelByID("")
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "not found in catalog")
+		assert.Equal(t, neurotypes.ModelCatalogEntry{}, model)
+	})
+
+	t.Run("service not initialized", func(t *testing.T) {
+		uninitializedService := NewModelCatalogService()
+		model, err := uninitializedService.GetModelByID("O3")
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "not initialized")
+		assert.Equal(t, neurotypes.ModelCatalogEntry{}, model)
+	})
+}
+
+func TestModelCatalogService_validateUniqueIDs(t *testing.T) {
+	service := NewModelCatalogService()
+	ctx := testutils.NewMockContext()
+	require.NoError(t, service.Initialize(ctx))
+
+	t.Run("unique IDs pass validation", func(t *testing.T) {
+		models := []neurotypes.ModelCatalogEntry{
+			{ID: "O3", Name: "o3", Provider: "openai"},
+			{ID: "CS4", Name: "claude-sonnet-4", Provider: "anthropic"},
+			{ID: "CO37", Name: "claude-opus-37", Provider: "anthropic"},
+		}
+		err := service.validateUniqueIDs(models)
+		assert.NoError(t, err)
+	})
+
+	t.Run("duplicate IDs fail validation", func(t *testing.T) {
+		models := []neurotypes.ModelCatalogEntry{
+			{ID: "O3", Name: "o3", Provider: "openai"},
+			{ID: "O3", Name: "another-o3", Provider: "openai"},
+		}
+		err := service.validateUniqueIDs(models)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "duplicate model ID found")
+		assert.Contains(t, err.Error(), "O3")
+	})
+
+	t.Run("case-insensitive duplicate IDs fail validation", func(t *testing.T) {
+		models := []neurotypes.ModelCatalogEntry{
+			{ID: "O3", Name: "o3", Provider: "openai"},
+			{ID: "o3", Name: "another-o3", Provider: "openai"},
+		}
+		err := service.validateUniqueIDs(models)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "duplicate model ID found")
+		assert.Contains(t, err.Error(), "case insensitive")
+	})
+
+	t.Run("empty ID fails validation", func(t *testing.T) {
+		models := []neurotypes.ModelCatalogEntry{
+			{ID: "", Name: "empty-id-model", Provider: "test"},
+		}
+		err := service.validateUniqueIDs(models)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "empty ID field")
+		assert.Contains(t, err.Error(), "empty-id-model")
+	})
+
+	t.Run("empty models list passes validation", func(t *testing.T) {
+		models := []neurotypes.ModelCatalogEntry{}
+		err := service.validateUniqueIDs(models)
+		assert.NoError(t, err)
+	})
+}
+
+func TestModelCatalogService_normalizeID(t *testing.T) {
+	service := NewModelCatalogService()
+
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{"O3", "O3"},
+		{"o3", "O3"},
+		{"Cs4", "CS4"},
+		{"cs4", "CS4"},
+		{"CS4", "CS4"},
+		{"cS4", "CS4"},
+		{"CO37", "CO37"},
+		{"co37", "CO37"},
+		{"", ""},
+	}
+
+	for _, tc := range testCases {
+		result := service.normalizeID(tc.input)
+		assert.Equal(t, tc.expected, result, "normalizeID(%s) should return %s", tc.input, tc.expected)
+	}
+}
+
+func TestModelCatalogService_IDValidationIntegration(t *testing.T) {
+	// This test ensures that the actual embedded YAML files have unique IDs
+	service := NewModelCatalogService()
+	ctx := testutils.NewMockContext()
+	require.NoError(t, service.Initialize(ctx))
+
+	t.Run("real catalog has unique IDs", func(t *testing.T) {
+		models, err := service.GetModelCatalog()
+		require.NoError(t, err)
+		assert.Greater(t, len(models), 0, "Should have models in catalog")
+
+		// Verify all models have IDs
+		for _, model := range models {
+			assert.NotEmpty(t, model.ID, "Model %s should have non-empty ID", model.Name)
+		}
+
+		// Verify IDs are unique (this is tested by GetModelCatalog calling validateUniqueIDs)
+		seenIDs := make(map[string]bool)
+		for _, model := range models {
+			normalizedID := strings.ToUpper(model.ID)
+			assert.False(t, seenIDs[normalizedID], "ID %s should be unique (case-insensitive)", model.ID)
+			seenIDs[normalizedID] = true
+		}
+	})
+
+	t.Run("expected model IDs exist", func(t *testing.T) {
+		expectedIDs := []string{"O3", "O4M", "CS37", "CS4", "CO37", "CO4"}
+
+		for _, expectedID := range expectedIDs {
+			model, err := service.GetModelByID(expectedID)
+			require.NoError(t, err, "Should find model with ID: %s", expectedID)
+			assert.Equal(t, expectedID, model.ID)
+			assert.NotEmpty(t, model.Name, "Model should have name")
+			assert.NotEmpty(t, model.Provider, "Model should have provider")
+		}
+	})
+
+	t.Run("case-insensitive lookup works for all models", func(t *testing.T) {
+		models, err := service.GetModelCatalog()
+		require.NoError(t, err)
+
+		for _, model := range models {
+			// Test lowercase version
+			lowerModel, err := service.GetModelByID(strings.ToLower(model.ID))
+			require.NoError(t, err, "Should find model with lowercase ID: %s", strings.ToLower(model.ID))
+			assert.Equal(t, model.ID, lowerModel.ID)
+			assert.Equal(t, model.Name, lowerModel.Name)
+		}
+	})
+}

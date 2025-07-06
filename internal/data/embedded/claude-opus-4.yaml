@@ -1,4 +1,5 @@
 name: claude-opus-4-20250514
+id: CO4
 display_name: Claude Opus 4
 provider: anthropic
 description: Highest level of intelligence and capability
