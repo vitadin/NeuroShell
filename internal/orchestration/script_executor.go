@@ -8,10 +8,8 @@ import (
 
 	"neuroshell/internal/commands"
 	_ "neuroshell/internal/commands/assert" // Import assert commands (init functions)
-	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
-	"neuroshell/pkg/neurotypes"
 )
 
 // ExecuteScript orchestrates the complete script execution workflow.
@@ -28,11 +26,8 @@ import (
 //
 // Returns:
 //   - error: Any error that occurred during script execution
-func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
+func ExecuteScript(scriptPath string) error {
 	logger.Debug("Starting script execution", "script", scriptPath)
-
-	// Set global context for service access
-	context.SetGlobalContext(ctx)
 
 	// Phase 1: Get required services from global registry
 	scriptService, err := services.GetGlobalRegistry().GetService("script")
@@ -97,7 +92,7 @@ func ExecuteScript(scriptPath string, ctx neurotypes.Context) error {
 		cmdInput := interpolatedCmd.Message
 
 		// Execute command through the global command registry
-		err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput, ctx)
+		err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput)
 		if err != nil {
 			// Mark execution error and return
 			if markErr := es.MarkExecutionError(err, cmd.String()); markErr != nil {

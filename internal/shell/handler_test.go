@@ -138,9 +138,6 @@ func testProcessInput(mockCtx *MockIShellContext) {
 
 // testExecuteCommand is a wrapper for executeCommand that accepts our mock
 func testExecuteCommand(mockCtx *MockIShellContext, cmd *parser.Command) {
-	// Get the global context singleton
-	globalCtx := GetGlobalContext()
-
 	// Get interpolation service
 	interpolationService, err := services.GlobalRegistry.GetService("interpolation")
 	if err != nil {
@@ -161,7 +158,7 @@ func testExecuteCommand(mockCtx *MockIShellContext, cmd *parser.Command) {
 	input := interpolatedCmd.Message
 
 	// Execute command with interpolated values
-	err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, input, globalCtx)
+	err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, input)
 	if err != nil {
 		mockCtx.Printf("Error: %s\n", err.Error())
 		if cmd.Name != "help" {

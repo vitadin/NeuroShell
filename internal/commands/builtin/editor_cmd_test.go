@@ -37,7 +37,6 @@ func TestEditorCommand_Usage(t *testing.T) {
 
 func TestEditorCommand_Execute_EditorServiceNotAvailable(t *testing.T) {
 	cmd := &EditorCommand{}
-	ctx := testutils.NewMockContext()
 
 	// Use empty service registry to simulate missing editor service
 	registry := services.NewRegistry()
@@ -47,7 +46,7 @@ func TestEditorCommand_Execute_EditorServiceNotAvailable(t *testing.T) {
 		services.SetGlobalRegistry(services.NewRegistry())
 	}()
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "editor service not available")
 }
@@ -55,7 +54,6 @@ func TestEditorCommand_Execute_EditorServiceNotAvailable(t *testing.T) {
 func TestEditorCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 	cmd := &EditorCommand{}
 	ctx := testutils.NewMockContext()
-
 	// Set up registry with editor service but no variable service
 	registry := services.NewRegistry()
 	editorService := services.NewEditorService()
@@ -70,7 +68,7 @@ func TestEditorCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 		services.SetGlobalRegistry(services.NewRegistry())
 	}()
 
-	err = cmd.Execute(map[string]string{}, "", ctx)
+	err = cmd.Execute(map[string]string{}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not available")
 }
@@ -78,7 +76,6 @@ func TestEditorCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 func TestEditorCommand_Execute_MockSuccess(t *testing.T) {
 	cmd := &EditorCommand{}
 	ctx := testutils.NewMockContext()
-
 	// Set up mock editor environment for fast testing
 	helper := testutils.SetupMockEditor()
 	defer helper.Cleanup()
@@ -107,7 +104,7 @@ func TestEditorCommand_Execute_MockSuccess(t *testing.T) {
 	}()
 
 	// Execute the command
-	err = cmd.Execute(map[string]string{}, "", ctx)
+	err = cmd.Execute(map[string]string{}, "")
 
 	// This should succeed with echo as the editor
 	if err != nil {
@@ -126,7 +123,6 @@ func TestEditorCommand_Execute_WithEchoEditor(t *testing.T) {
 	// This test specifically uses echo as EDITOR for fast, predictable testing
 	cmd := &EditorCommand{}
 	ctx := testutils.NewMockContext()
-
 	// Set up mock editor environment for fast testing
 	helper := testutils.SetupMockEditor()
 	defer helper.Cleanup()
@@ -153,7 +149,7 @@ func TestEditorCommand_Execute_WithEchoEditor(t *testing.T) {
 	}()
 
 	// Execute command - should complete quickly
-	err = cmd.Execute(map[string]string{}, "", ctx)
+	err = cmd.Execute(map[string]string{}, "")
 
 	// Verify execution completed (successfully or with expected error)
 	assert.NotEqual(t, "test timed out", fmt.Sprintf("%v", err))
@@ -162,7 +158,6 @@ func TestEditorCommand_Execute_WithEchoEditor(t *testing.T) {
 func TestEditorCommand_Execute_EmptyArgs(t *testing.T) {
 	cmd := &EditorCommand{}
 	ctx := testutils.NewMockContext()
-
 	// Set up complete service registry
 	registry := services.NewRegistry()
 
@@ -185,7 +180,7 @@ func TestEditorCommand_Execute_EmptyArgs(t *testing.T) {
 	}()
 
 	// Test with empty args map
-	err = cmd.Execute(map[string]string{}, "", ctx)
+	err = cmd.Execute(map[string]string{}, "")
 
 	// Should handle empty args gracefully
 	// Error is expected if no editor is found, but shouldn't panic
@@ -197,7 +192,6 @@ func TestEditorCommand_Execute_EmptyArgs(t *testing.T) {
 func TestEditorCommand_Execute_ArgsHandling(t *testing.T) {
 	cmd := &EditorCommand{}
 	ctx := testutils.NewMockContext()
-
 	// Set up service registry
 	registry := services.NewRegistry()
 
@@ -230,7 +224,7 @@ func TestEditorCommand_Execute_ArgsHandling(t *testing.T) {
 
 	for i, args := range testArgs {
 		t.Run(fmt.Sprintf("args_test_%d", i), func(t *testing.T) {
-			err := cmd.Execute(args, "", ctx)
+			err := cmd.Execute(args, "")
 			// Should handle all args gracefully without panicking
 			if err != nil {
 				t.Logf("Expected error in test environment: %v", err)
@@ -271,7 +265,7 @@ func TestEditorCommand_Integration_WithMockContext(t *testing.T) {
 	}()
 
 	// Test command execution
-	err = cmd.Execute(map[string]string{}, "", ctx)
+	err = cmd.Execute(map[string]string{}, "")
 
 	// The result depends on whether echo can be executed successfully
 	// and whether the file operations work in the test environment
@@ -288,7 +282,6 @@ func TestEditorCommand_ServiceInteraction(t *testing.T) {
 
 	cmd := &EditorCommand{}
 	ctx := testutils.NewMockContext()
-
 	// Test 1: Missing editor service
 	registry1 := services.NewRegistry()
 	variableService := services.NewVariableService()
@@ -297,7 +290,7 @@ func TestEditorCommand_ServiceInteraction(t *testing.T) {
 
 	services.SetGlobalRegistry(registry1)
 
-	err = cmd.Execute(map[string]string{}, "", ctx)
+	err = cmd.Execute(map[string]string{}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "editor service not available")
 
@@ -312,7 +305,7 @@ func TestEditorCommand_ServiceInteraction(t *testing.T) {
 
 	services.SetGlobalRegistry(registry2)
 
-	err = cmd.Execute(map[string]string{}, "", ctx)
+	err = cmd.Execute(map[string]string{}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not available")
 
@@ -341,7 +334,7 @@ func TestEditorCommand_ServiceInteraction(t *testing.T) {
 	helper := testutils.SetupNoEditor()
 	defer helper.Cleanup()
 
-	err = cmd.Execute(map[string]string{}, "", ctx)
+	err = cmd.Execute(map[string]string{}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "editor operation failed")
 }
@@ -349,8 +342,6 @@ func TestEditorCommand_ServiceInteraction(t *testing.T) {
 func TestEditorCommand_InputParameterHandling(t *testing.T) {
 	// Test that the input parameter is correctly ignored (as per the function signature)
 	cmd := &EditorCommand{}
-	ctx := testutils.NewMockContext()
-
 	// Set up minimal service registry for this test
 	registry := services.NewRegistry()
 	services.SetGlobalRegistry(registry)
@@ -369,7 +360,7 @@ func TestEditorCommand_InputParameterHandling(t *testing.T) {
 
 	for i, input := range testInputs {
 		t.Run(fmt.Sprintf("input_test_%d", i), func(t *testing.T) {
-			err := cmd.Execute(map[string]string{}, input, ctx)
+			err := cmd.Execute(map[string]string{}, input)
 			assert.Error(t, err) // Expected due to missing services
 			assert.Contains(t, err.Error(), "editor service not available")
 		})
@@ -379,8 +370,6 @@ func TestEditorCommand_InputParameterHandling(t *testing.T) {
 func TestEditorCommand_ConcurrentExecution(t *testing.T) {
 	// Test that multiple concurrent executions don't cause race conditions
 	cmd := &EditorCommand{}
-	ctx := testutils.NewMockContext()
-
 	// Set up service registry
 	registry := services.NewRegistry()
 	services.SetGlobalRegistry(registry)
@@ -393,7 +382,7 @@ func TestEditorCommand_ConcurrentExecution(t *testing.T) {
 
 	for i := 0; i < 5; i++ {
 		go func() {
-			err := cmd.Execute(map[string]string{}, "", ctx)
+			err := cmd.Execute(map[string]string{}, "")
 			done <- err
 		}()
 	}

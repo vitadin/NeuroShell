@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"neuroshell/internal/context"
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
@@ -93,13 +94,14 @@ func TestGetCommand_Execute_BracketSyntax(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContextWithVars(tt.setupVars)
+			context.SetGlobalContext(ctx)
 
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			// Restore stdout
 			_ = w.Close()
@@ -185,13 +187,14 @@ func TestGetCommand_Execute_SpaceSyntax(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := testutils.NewMockContextWithVars(tt.setupVars)
+			context.SetGlobalContext(ctx)
 
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			// Restore stdout
 			_ = w.Close()
@@ -221,6 +224,7 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 		"bracketvar": "bracketvalue",
 		"spacevar":   "spacevalue",
 	})
+	context.SetGlobalContext(ctx)
 
 	// When both args and input are provided, args (bracket syntax) should take priority
 	args := map[string]string{"bracketvar": ""}
@@ -231,7 +235,7 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(args, input, ctx)
+	err := cmd.Execute(args, input)
 
 	// Restore stdout
 	_ = w.Close()
@@ -250,13 +254,14 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 func TestGetCommand_Execute_ContextError(t *testing.T) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 
 	// Set up context to return an error
 	ctx.SetGetVariableError(fmt.Errorf("context error"))
 
 	args := map[string]string{"testvar": ""}
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to get variable testvar")
@@ -266,6 +271,7 @@ func TestGetCommand_Execute_ContextError(t *testing.T) {
 func TestGetCommand_Execute_EmptyVariableName(t *testing.T) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 
 	tests := []struct {
 		name  string
@@ -291,7 +297,7 @@ func TestGetCommand_Execute_EmptyVariableName(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "Usage:")
@@ -310,6 +316,7 @@ func TestGetCommand_Execute_VariableWithSpecialCharacters(t *testing.T) {
 	}
 
 	ctx := testutils.NewMockContextWithVars(specialVars)
+	context.SetGlobalContext(ctx)
 
 	for varName, expectedValue := range specialVars {
 		t.Run(fmt.Sprintf("get_%s", varName), func(t *testing.T) {
@@ -320,7 +327,7 @@ func TestGetCommand_Execute_VariableWithSpecialCharacters(t *testing.T) {
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(args, "", ctx)
+			err := cmd.Execute(args, "")
 
 			// Restore stdout
 			_ = w.Close()
@@ -342,6 +349,7 @@ func TestGetCommand_Execute_EmptyVariableValue(t *testing.T) {
 	ctx := testutils.NewMockContextWithVars(map[string]string{
 		"empty_var": "",
 	})
+	context.SetGlobalContext(ctx)
 
 	args := map[string]string{"empty_var": ""}
 
@@ -350,7 +358,7 @@ func TestGetCommand_Execute_EmptyVariableValue(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -371,6 +379,7 @@ func BenchmarkGetCommand_Execute_BracketSyntax(b *testing.B) {
 	ctx := testutils.NewMockContextWithVars(map[string]string{
 		"benchvar": "benchvalue",
 	})
+	context.SetGlobalContext(ctx)
 	args := map[string]string{"benchvar": ""}
 
 	// Redirect stdout to avoid benchmark noise
@@ -380,7 +389,7 @@ func BenchmarkGetCommand_Execute_BracketSyntax(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 	}
 }
 
@@ -389,6 +398,7 @@ func BenchmarkGetCommand_Execute_SpaceSyntax(b *testing.B) {
 	ctx := testutils.NewMockContextWithVars(map[string]string{
 		"benchvar": "benchvalue",
 	})
+	context.SetGlobalContext(ctx)
 	input := "benchvar"
 
 	// Redirect stdout to avoid benchmark noise
@@ -398,13 +408,14 @@ func BenchmarkGetCommand_Execute_SpaceSyntax(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(map[string]string{}, input, ctx)
+		_ = cmd.Execute(map[string]string{}, input)
 	}
 }
 
 func BenchmarkGetCommand_Execute_SystemVariable(b *testing.B) {
 	cmd := &GetCommand{}
 	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
 	args := map[string]string{"@user": ""}
 
 	// Redirect stdout to avoid benchmark noise
@@ -414,6 +425,6 @@ func BenchmarkGetCommand_Execute_SystemVariable(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "", ctx)
+		_ = cmd.Execute(args, "")
 	}
 }

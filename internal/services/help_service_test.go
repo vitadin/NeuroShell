@@ -285,7 +285,7 @@ func (m *MockHelpCommand) ParseMode() neurotypes.ParseMode {
 	return m.parseMode
 }
 
-func (m *MockHelpCommand) Execute(_ map[string]string, _ string, _ neurotypes.Context) error {
+func (m *MockHelpCommand) Execute(_ map[string]string, _ string) error {
 	return nil
 }
 

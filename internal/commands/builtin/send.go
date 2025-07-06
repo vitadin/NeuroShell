@@ -68,7 +68,7 @@ func (c *SendCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute sends the provided message to an LLM agent.
 // Currently returns a placeholder message as actual LLM integration is not yet implemented.
-func (c *SendCommand) Execute(_ map[string]string, input string, _ neurotypes.Context) error {
+func (c *SendCommand) Execute(_ map[string]string, input string) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}

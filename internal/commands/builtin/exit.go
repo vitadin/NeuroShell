@@ -55,7 +55,7 @@ func (c *ExitCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute terminates the NeuroShell session by calling os.Exit(0).
 // This provides an immediate exit from the shell environment.
-func (c *ExitCommand) Execute(_ map[string]string, _ string, _ neurotypes.Context) error {
+func (c *ExitCommand) Execute(_ map[string]string, _ string) error {
 	fmt.Println("Goodbye!")
 	// For now, we'll use os.Exit. In the future, we might want to use a more graceful shutdown
 	// that could be coordinated through the context or a shutdown signal

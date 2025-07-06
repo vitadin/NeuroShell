@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -104,9 +103,7 @@ type ServiceCheckResult struct {
 }
 
 // Execute checks service availability and initialization status.
-func (c *CheckCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
-	// Set global context for service access
-	context.SetGlobalContext(ctx)
+func (c *CheckCommand) Execute(args map[string]string, _ string) error {
 
 	// Parse arguments
 	serviceName := args["service"]

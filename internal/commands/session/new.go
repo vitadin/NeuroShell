@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -97,9 +96,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 // The input parameter is used as the session name (required).
 // Options:
 //   - system: system prompt for LLM context (optional, default helpful assistant)
-func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
-	// Set global context for services to use
-	context.SetGlobalContext(ctx)
+func (c *NewCommand) Execute(args map[string]string, input string) error {
 
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
@@ -148,7 +145,7 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 	}
 
 	// Update session-related variables
-	if err := c.updateSessionVariables(session, variableService, ctx); err != nil {
+	if err := c.updateSessionVariables(session, variableService); err != nil {
 		return fmt.Errorf("failed to update session variables: %w", err)
 	}
 
@@ -167,7 +164,7 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 }
 
 // updateSessionVariables sets session-related system variables
-func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, variableService *services.VariableService, _ neurotypes.Context) error {
+func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, variableService *services.VariableService) error {
 	// Set session variables
 	variables := map[string]string{
 		"#session_id":      session.ID,

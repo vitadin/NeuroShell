@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -91,11 +90,8 @@ func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
 }
 
 // Execute opens the external editor and stores the resulting content in ${_output}.
-func (e *EditorCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
+func (e *EditorCommand) Execute(args map[string]string, _ string) error {
 	logger.Debug("Executing editor command", "args", args)
-
-	// Set global context for service access
-	context.SetGlobalContext(ctx)
 
 	// Get the editor service
 	editorService, err := services.GetGlobalRegistry().GetService("editor")

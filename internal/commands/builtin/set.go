@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -77,7 +78,7 @@ func (c *SetCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute sets variable values using either bracket or space syntax.
 // It handles multiple variable assignments and provides confirmation output.
-func (c *SetCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *SetCommand) Execute(args map[string]string, input string) error {
 	if len(args) == 0 && input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
@@ -85,7 +86,7 @@ func (c *SetCommand) Execute(args map[string]string, input string, ctx neurotype
 	// Handle bracket syntax: \set[var=value]
 	if len(args) > 0 {
 		for key, value := range args {
-			if err := ctx.SetVariable(key, value); err != nil {
+			if err := context.GetGlobalContext().SetVariable(key, value); err != nil {
 				return fmt.Errorf("failed to set variable %s: %w", key, err)
 			}
 			fmt.Printf("Setting %s = %s\n", key, value)
@@ -106,7 +107,7 @@ func (c *SetCommand) Execute(args map[string]string, input string, ctx neurotype
 				key, value = parts[0], ""
 			}
 
-			if err := ctx.SetVariable(key, value); err != nil {
+			if err := context.GetGlobalContext().SetVariable(key, value); err != nil {
 				return fmt.Errorf("failed to set variable %s: %w", key, err)
 			}
 			fmt.Printf("Setting %s = %s\n", key, value)

@@ -48,7 +48,7 @@ func TestDeleteCommand_Execute_BasicFunctionality(t *testing.T) {
 
 	// Create a session first to delete
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{}, "test_session", ctx)
+	err := createCmd.Execute(map[string]string{}, "test_session")
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -70,10 +70,10 @@ func TestDeleteCommand_Execute_BasicFunctionality(t *testing.T) {
 			// Create session before each test
 			ctx = context.New()
 			setupSessionTestRegistry(t, ctx)
-			err := createCmd.Execute(map[string]string{}, "test_session", ctx)
+			err := createCmd.Execute(map[string]string{}, "test_session")
 			require.NoError(t, err)
 
-			err = cmd.Execute(tt.args, tt.input, ctx)
+			err = cmd.Execute(tt.args, tt.input)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -98,11 +98,11 @@ func TestDeleteCommand_Execute_DeleteByInput(t *testing.T) {
 
 	// Create a session first
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{}, "input_test", ctx)
+	err := createCmd.Execute(map[string]string{}, "input_test")
 	require.NoError(t, err)
 
 	// Delete by input parameter
-	err = cmd.Execute(map[string]string{}, "input_test", ctx)
+	err = cmd.Execute(map[string]string{}, "input_test")
 	assert.NoError(t, err)
 
 	// Verify deletion
@@ -119,7 +119,7 @@ func TestDeleteCommand_Execute_DeleteBySessionID(t *testing.T) {
 
 	// Create a session first
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{}, "id_test", ctx)
+	err := createCmd.Execute(map[string]string{}, "id_test")
 	require.NoError(t, err)
 
 	// Get the chat service to access session directly
@@ -132,7 +132,7 @@ func TestDeleteCommand_Execute_DeleteBySessionID(t *testing.T) {
 	actualSessionID := session.ID
 
 	// Delete by actual session ID
-	err = cmd.Execute(map[string]string{}, actualSessionID, ctx)
+	err = cmd.Execute(map[string]string{}, actualSessionID)
 	assert.NoError(t, err)
 
 	// Verify deletion
@@ -148,7 +148,7 @@ func TestDeleteCommand_Execute_MissingSessionIdentifier(t *testing.T) {
 	setupSessionTestRegistry(t, ctx)
 
 	// Try to delete without providing session name or ID
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "session name or ID is required")
 	assert.Contains(t, err.Error(), "Usage:")
@@ -160,7 +160,7 @@ func TestDeleteCommand_Execute_SessionNotFound(t *testing.T) {
 	setupSessionTestRegistry(t, ctx)
 
 	// Try to delete non-existent session
-	err := cmd.Execute(map[string]string{"name": "nonexistent"}, "", ctx)
+	err := cmd.Execute(map[string]string{"name": "nonexistent"}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "no session found")
 }
@@ -172,14 +172,14 @@ func TestDeleteCommand_Execute_VariableInterpolation(t *testing.T) {
 
 	// Create a session
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{}, "var_test", ctx)
+	err := createCmd.Execute(map[string]string{}, "var_test")
 	require.NoError(t, err)
 
 	// Set up test variable
 	require.NoError(t, ctx.SetVariable("session_to_delete", "var_test"))
 
 	// Delete using variable interpolation
-	err = cmd.Execute(map[string]string{"name": "${session_to_delete}"}, "", ctx)
+	err = cmd.Execute(map[string]string{"name": "${session_to_delete}"}, "")
 	assert.NoError(t, err)
 
 	// Verify deletion
@@ -191,10 +191,9 @@ func TestDeleteCommand_Execute_VariableInterpolation(t *testing.T) {
 
 func TestDeleteCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	cmd := &DeleteCommand{}
-	ctx := context.New()
 
 	// Don't setup services - should fail
-	err := cmd.Execute(map[string]string{"name": "test"}, "", ctx)
+	err := cmd.Execute(map[string]string{"name": "test"}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "service not available")
 }
@@ -207,6 +206,9 @@ func TestDeleteCommand_Execute_ChatServiceNotAvailable(t *testing.T) {
 	oldRegistry := services.GetGlobalRegistry()
 	services.SetGlobalRegistry(services.NewRegistry())
 
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
+
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
 	require.NoError(t, err)
 
@@ -215,10 +217,11 @@ func TestDeleteCommand_Execute_ChatServiceNotAvailable(t *testing.T) {
 
 	t.Cleanup(func() {
 		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
 	})
 
 	// Should fail due to missing chat service
-	err = cmd.Execute(map[string]string{"name": "test"}, "", ctx)
+	err = cmd.Execute(map[string]string{"name": "test"}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "chat session service not available")
 }
@@ -231,6 +234,9 @@ func TestDeleteCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 	oldRegistry := services.GetGlobalRegistry()
 	services.SetGlobalRegistry(services.NewRegistry())
 
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
+
 	err := services.GetGlobalRegistry().RegisterService(services.NewChatSessionService())
 	require.NoError(t, err)
 
@@ -239,10 +245,11 @@ func TestDeleteCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 
 	t.Cleanup(func() {
 		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
 	})
 
 	// Should fail due to missing variable service
-	err = cmd.Execute(map[string]string{"name": "test"}, "", ctx)
+	err = cmd.Execute(map[string]string{"name": "test"}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not available")
 }
@@ -254,10 +261,10 @@ func TestDeleteCommand_Execute_SessionVariableManagement(t *testing.T) {
 
 	// Create two sessions
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{}, "session1", ctx)
+	err := createCmd.Execute(map[string]string{}, "session1")
 	require.NoError(t, err)
 
-	err = createCmd.Execute(map[string]string{}, "session2", ctx)
+	err = createCmd.Execute(map[string]string{}, "session2")
 	require.NoError(t, err)
 
 	// Verify session variables are set for session2 (current)
@@ -266,7 +273,7 @@ func TestDeleteCommand_Execute_SessionVariableManagement(t *testing.T) {
 	assert.Equal(t, "session2", sessionName)
 
 	// Delete session1 (not current)
-	err = cmd.Execute(map[string]string{"name": "session1"}, "", ctx)
+	err = cmd.Execute(map[string]string{"name": "session1"}, "")
 	assert.NoError(t, err)
 
 	// Session variables should still be set for session2
@@ -275,7 +282,7 @@ func TestDeleteCommand_Execute_SessionVariableManagement(t *testing.T) {
 	assert.Equal(t, "session2", sessionName)
 
 	// Delete session2 (current)
-	err = cmd.Execute(map[string]string{"name": "session2"}, "", ctx)
+	err = cmd.Execute(map[string]string{"name": "session2"}, "")
 	assert.NoError(t, err)
 
 	// Session variables should be cleared or updated
@@ -292,22 +299,22 @@ func TestDeleteCommand_Execute_PriorityOfArguments(t *testing.T) {
 
 	// Create two sessions
 	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{}, "priority_test1", ctx)
+	err := createCmd.Execute(map[string]string{}, "priority_test1")
 	require.NoError(t, err)
 
-	err = createCmd.Execute(map[string]string{}, "priority_test2", ctx)
+	err = createCmd.Execute(map[string]string{}, "priority_test2")
 	require.NoError(t, err)
 
 	// Test that providing both name option and input parameter is now an error
-	err = cmd.Execute(map[string]string{"name": "priority_test1"}, "priority_test2", ctx)
+	err = cmd.Execute(map[string]string{"name": "priority_test1"}, "priority_test2")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "cannot specify both name option and input parameter")
 
 	// Verify both sessions still exist (no deletion occurred)
-	err = cmd.Execute(map[string]string{"name": "priority_test1"}, "", ctx)
+	err = cmd.Execute(map[string]string{"name": "priority_test1"}, "")
 	assert.NoError(t, err)
 
-	err = cmd.Execute(map[string]string{"name": "priority_test2"}, "", ctx)
+	err = cmd.Execute(map[string]string{"name": "priority_test2"}, "")
 	assert.NoError(t, err)
 }
 

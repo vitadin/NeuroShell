@@ -78,7 +78,7 @@ func (c *RunCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute loads and runs a .neuro script file using the centralized script execution logic.
 // It validates arguments and delegates to orchestration.ExecuteScript for the actual execution.
-func (c *RunCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *RunCommand) Execute(args map[string]string, input string) error {
 	// Get filename from args or input
 	filename := ""
 	if fileArg, exists := args["file"]; exists && fileArg != "" {
@@ -90,7 +90,7 @@ func (c *RunCommand) Execute(args map[string]string, input string, ctx neurotype
 	}
 
 	// Execute the script using centralized execution logic
-	return orchestration.ExecuteScript(filename, ctx)
+	return orchestration.ExecuteScript(filename)
 }
 
 func init() {

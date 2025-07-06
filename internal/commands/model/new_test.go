@@ -163,7 +163,7 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 			ctx = context.New()
 			setupModelTestRegistry(t, ctx)
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -317,7 +317,7 @@ func TestNewCommand_Execute_ParameterValidation(t *testing.T) {
 			ctx = context.New()
 			setupModelTestRegistry(t, ctx)
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -410,7 +410,7 @@ func TestNewCommand_Execute_ModelNameValidation(t *testing.T) {
 			ctx = context.New()
 			setupModelTestRegistry(t, ctx)
 
-			err := cmd.Execute(baseArgs, tt.modelName, ctx)
+			err := cmd.Execute(baseArgs, tt.modelName)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -435,11 +435,11 @@ func TestNewCommand_Execute_DuplicateModelNames(t *testing.T) {
 	}
 
 	// Create first model
-	err := cmd.Execute(baseArgs, "duplicate-test", ctx)
+	err := cmd.Execute(baseArgs, "duplicate-test")
 	assert.NoError(t, err)
 
 	// Try to create second model with same name
-	err = cmd.Execute(baseArgs, "duplicate-test", ctx)
+	err = cmd.Execute(baseArgs, "duplicate-test")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "model name 'duplicate-test' already exists")
 }
@@ -462,7 +462,7 @@ func TestNewCommand_Execute_VariableInterpolation(t *testing.T) {
 	}
 	input := "${model_prefix}-model"
 
-	err := cmd.Execute(args, input, ctx)
+	err := cmd.Execute(args, input)
 	assert.NoError(t, err)
 
 	// Check that variables were interpolated
@@ -495,7 +495,7 @@ func TestNewCommand_Execute_CustomParameters(t *testing.T) {
 		"presence_penalty": "0.5",
 	}
 
-	err := cmd.Execute(args, "custom-model", ctx)
+	err := cmd.Execute(args, "custom-model")
 	assert.NoError(t, err)
 
 	// Verify model was created
@@ -511,7 +511,6 @@ func TestNewCommand_Execute_CustomParameters(t *testing.T) {
 
 func TestNewCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	cmd := &NewCommand{}
-	ctx := context.New()
 
 	// Don't setup services - should fail
 	args := map[string]string{
@@ -519,7 +518,7 @@ func TestNewCommand_Execute_ServiceNotAvailable(t *testing.T) {
 		"base_model": "gpt-4",
 	}
 
-	err := cmd.Execute(args, "test-model", ctx)
+	err := cmd.Execute(args, "test-model")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "service not available")
 }
@@ -598,7 +597,7 @@ func TestNewCommand_Execute_EdgeCases(t *testing.T) {
 			ctx = context.New()
 			setupModelTestRegistry(t, ctx)
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			if tt.expectError {
 				assert.Error(t, err)

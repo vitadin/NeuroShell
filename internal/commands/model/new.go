@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -156,10 +155,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 // The input parameter is used as the model name (required).
 // Required options: provider, base_model
 // Optional parameters: temperature, max_tokens, top_p, top_k, presence_penalty, frequency_penalty, description
-func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
-	// Set global context for services to use
-	context.SetGlobalContext(ctx)
-
+func (c *NewCommand) Execute(args map[string]string, input string) error {
 	// Get model service
 	modelService, err := c.getModelService()
 	if err != nil {
@@ -235,13 +231,13 @@ func (c *NewCommand) Execute(args map[string]string, input string, ctx neurotype
 	}
 
 	// Create model configuration
-	model, err := modelService.CreateModel(modelName, provider, baseModel, parameters, description, ctx)
+	model, err := modelService.CreateModelWithGlobalContext(modelName, provider, baseModel, parameters, description)
 	if err != nil {
 		return fmt.Errorf("failed to create model: %w", err)
 	}
 
 	// Update model-related variables
-	if err := c.updateModelVariables(model, variableService, ctx); err != nil {
+	if err := c.updateModelVariables(model, variableService); err != nil {
 		return fmt.Errorf("failed to update model variables: %w", err)
 	}
 
@@ -333,7 +329,7 @@ func (c *NewCommand) parseParameters(args map[string]string, parameters map[stri
 }
 
 // updateModelVariables sets model-related system variables.
-func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variableService *services.VariableService, _ neurotypes.Context) error {
+func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variableService *services.VariableService) error {
 	// Set model variables
 	variables := map[string]string{
 		"#model_id":       model.ID,

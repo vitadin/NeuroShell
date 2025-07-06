@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -106,9 +105,7 @@ func (c *ListCommand) HelpInfo() neurotypes.HelpInfo {
 // Options:
 //   - sort: name|created|updated (default: created)
 //   - filter: active|all (default: all)
-func (c *ListCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
-	// Set global context for services to use
-	context.SetGlobalContext(ctx)
+func (c *ListCommand) Execute(args map[string]string, _ string) error {
 
 	// Get chat session service
 	chatService, err := c.getChatSessionService()

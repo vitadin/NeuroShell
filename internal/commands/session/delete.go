@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -112,10 +111,7 @@ func (c *DeleteCommand) HelpInfo() neurotypes.HelpInfo {
 //
 // Input: session name or ID to delete (optional if provided as name option)
 // Error if both name option and input are provided.
-func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
-	// Set global context for services to use
-	context.SetGlobalContext(ctx)
-
+func (c *DeleteCommand) Execute(args map[string]string, input string) error {
 	// Get chat session service
 	chatService, err := c.getChatSessionService()
 	if err != nil {
@@ -172,7 +168,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurot
 	}
 
 	// Update session-related variables after deletion
-	if err := c.updateSessionVariablesAfterDeletion(variableService, ctx); err != nil {
+	if err := c.updateSessionVariablesAfterDeletion(variableService); err != nil {
 		return fmt.Errorf("failed to update session variables: %w", err)
 	}
 
@@ -191,7 +187,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string, ctx neurot
 }
 
 // updateSessionVariablesAfterDeletion clears session-related system variables if the deleted session was active
-func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *services.VariableService, _ neurotypes.Context) error {
+func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *services.VariableService) error {
 	// Get chat session service to check current session
 	chatService, err := c.getChatSessionService()
 	if err != nil {

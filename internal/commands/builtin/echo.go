@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -102,13 +101,10 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 //   - to: store result in specified variable (default: ${_output})
 //   - silent: suppress console output (default: false)
 //   - raw: output string literals without interpreting escape sequences (default: false)
-func (c *EchoCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *EchoCommand) Execute(args map[string]string, input string) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
-
-	// Set global context for service access
-	context.SetGlobalContext(ctx)
 
 	// Get interpolation service
 	interpolationService, err := c.getInterpolationService()

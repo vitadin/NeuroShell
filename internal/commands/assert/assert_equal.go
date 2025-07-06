@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -87,9 +86,7 @@ func (c *EqualCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute compares two values for equality with variable interpolation support.
 // It sets system variables _status, _assert_result, _assert_expected, and _assert_actual.
-func (c *EqualCommand) Execute(args map[string]string, _ string, ctx neurotypes.Context) error {
-	// Set global context for services to use
-	context.SetGlobalContext(ctx)
+func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 
 	// Validate required arguments
 	expected, hasExpected := args["expect"]

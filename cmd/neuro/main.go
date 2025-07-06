@@ -240,6 +240,9 @@ func validateScriptFile(scriptPath string) error {
 }
 
 func executeBatchScript(scriptPath string, ctx *context.NeuroContext) error {
+	// Set global context for services to use
+	context.SetGlobalContext(ctx)
+
 	// Execute the script using centralized execution logic
-	return orchestration.ExecuteScript(scriptPath, ctx)
+	return orchestration.ExecuteScript(scriptPath)
 }

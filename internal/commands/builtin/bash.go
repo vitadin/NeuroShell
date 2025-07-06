@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -75,15 +74,12 @@ func (c *BashCommand) HelpInfo() neurotypes.HelpInfo {
 }
 
 // Execute runs system commands using bash and sets _output, _error, and _status variables.
-func (c *BashCommand) Execute(_ map[string]string, input string, ctx neurotypes.Context) error {
+func (c *BashCommand) Execute(_ map[string]string, input string) error {
 	// Get the command to execute
 	command := strings.TrimSpace(input)
 	if command == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
-
-	// Set global context for service access
-	context.SetGlobalContext(ctx)
 
 	// Get bash service from global registry
 	service, err := services.GetGlobalRegistry().GetService("bash")

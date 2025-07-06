@@ -134,7 +134,7 @@ func executeCommand(c *ishell.Context, cmd *parser.Command) {
 	input := interpolatedCmd.Message
 
 	// Execute command with interpolated values
-	err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, input, globalCtx)
+	err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, input)
 	if err != nil {
 		logger.Error("Command execution failed", "command", interpolatedCmd.Name, "error", err)
 		c.Printf("Error: %s\n", err.Error())

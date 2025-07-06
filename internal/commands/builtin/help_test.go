@@ -100,7 +100,7 @@ func TestHelpCommand_Execute(t *testing.T) {
 		},
 	}
 
-	ctx := setupHelpTestEnvironment(t, testCommands)
+	setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
 
 	// Capture stdout
@@ -108,7 +108,7 @@ func TestHelpCommand_Execute(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -148,7 +148,7 @@ func TestHelpCommand_Execute_AlphabeticalOrder(t *testing.T) {
 		&MockCommand{name: "banana", description: "Middle", usage: "\\banana"},
 	}
 
-	ctx := setupHelpTestEnvironment(t, testCommands)
+	setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
 
 	// Capture stdout
@@ -156,7 +156,7 @@ func TestHelpCommand_Execute_AlphabeticalOrder(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -182,7 +182,7 @@ func TestHelpCommand_Execute_EmptyRegistry(t *testing.T) {
 	// Use empty command list
 	testCommands := []neurotypes.Command{}
 
-	ctx := setupHelpTestEnvironment(t, testCommands)
+	setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
 
 	// Capture stdout
@@ -190,7 +190,7 @@ func TestHelpCommand_Execute_EmptyRegistry(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -214,7 +214,7 @@ func TestHelpCommand_Execute_WithArgs(t *testing.T) {
 		&MockCommand{name: "test", description: "Test", usage: "\\test"},
 	}
 
-	ctx := setupHelpTestEnvironment(t, testCommands)
+	setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
 
 	// Test with args - request help for specific command
@@ -225,7 +225,7 @@ func TestHelpCommand_Execute_WithArgs(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(args, "", ctx)
+	err := cmd.Execute(args, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -248,7 +248,7 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 		&MockCommand{name: "test", description: "Test", usage: "\\test"},
 	}
 
-	ctx := setupHelpTestEnvironment(t, testCommands)
+	setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
 
 	// Test with valid command name in input
@@ -259,7 +259,7 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, input, ctx)
+	err := cmd.Execute(map[string]string{}, input)
 
 	// Restore stdout
 	_ = w.Close()
@@ -296,7 +296,7 @@ func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 		},
 	}
 
-	ctx := setupHelpTestEnvironment(t, testCommands)
+	setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
 
 	// Capture stdout
@@ -304,7 +304,7 @@ func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -330,7 +330,7 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 	// Use empty registry
 	testCommands := []neurotypes.Command{}
 
-	ctx := setupHelpTestEnvironment(t, testCommands)
+	setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
 
 	// Capture stdout
@@ -338,7 +338,7 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 
 	// Restore stdout
 	_ = w.Close()
@@ -383,7 +383,7 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 		},
 	}
 
-	ctx := setupHelpTestEnvironment(t, testCommands)
+	setupHelpTestEnvironment(t, testCommands)
 	cmd := &HelpCommand{}
 
 	tests := []struct {
@@ -432,7 +432,7 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			err := cmd.Execute(tt.args, "", ctx)
+			err := cmd.Execute(tt.args, "")
 
 			// Restore stdout
 			_ = w.Close()
@@ -458,10 +458,10 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 func TestHelpCommand_Execute_ServiceUnavailable(t *testing.T) {
 	// Test when help service is not available
 	cmd := &HelpCommand{}
-	ctx := testutils.NewMockContext()
+	testutils.NewMockContext()
 
 	// Don't set up help service - this will cause service not found error
-	err := cmd.Execute(map[string]string{}, "", ctx)
+	err := cmd.Execute(map[string]string{}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "help service not available")
 }
@@ -584,9 +584,9 @@ func (m *MockCommand) Usage() string {
 	return m.usage
 }
 
-func (m *MockCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (m *MockCommand) Execute(args map[string]string, input string) error {
 	if m.executeFunc != nil {
-		return m.executeFunc(args, input, ctx)
+		return m.executeFunc(args, input, nil)
 	}
 	return nil
 }
@@ -621,14 +621,14 @@ func BenchmarkHelpCommand_Execute_SmallRegistry(b *testing.B) {
 		}
 	}
 
-	originalRegistry := commands.GlobalRegistry
-	commands.GlobalRegistry = testRegistry
+	originalRegistry := commands.GetGlobalRegistry()
+	commands.SetGlobalRegistry(testRegistry)
 	defer func() {
-		commands.GlobalRegistry = originalRegistry
+		commands.SetGlobalRegistry(originalRegistry)
 	}()
 
 	cmd := &HelpCommand{}
-	ctx := testutils.NewMockContext()
+	testutils.NewMockContext()
 
 	// Redirect stdout to avoid benchmark noise
 	originalStdout := os.Stdout
@@ -637,7 +637,7 @@ func BenchmarkHelpCommand_Execute_SmallRegistry(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(map[string]string{}, "", ctx)
+		_ = cmd.Execute(map[string]string{}, "")
 	}
 }
 
@@ -655,14 +655,14 @@ func BenchmarkHelpCommand_Execute_LargeRegistry(b *testing.B) {
 		}
 	}
 
-	originalRegistry := commands.GlobalRegistry
-	commands.GlobalRegistry = testRegistry
+	originalRegistry := commands.GetGlobalRegistry()
+	commands.SetGlobalRegistry(testRegistry)
 	defer func() {
-		commands.GlobalRegistry = originalRegistry
+		commands.SetGlobalRegistry(originalRegistry)
 	}()
 
 	cmd := &HelpCommand{}
-	ctx := testutils.NewMockContext()
+	testutils.NewMockContext()
 
 	// Redirect stdout to avoid benchmark noise
 	originalStdout := os.Stdout
@@ -671,6 +671,6 @@ func BenchmarkHelpCommand_Execute_LargeRegistry(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(map[string]string{}, "", ctx)
+		_ = cmd.Execute(map[string]string{}, "")
 	}
 }

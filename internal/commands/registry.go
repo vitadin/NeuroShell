@@ -71,14 +71,14 @@ func (r *Registry) GetAll() []neurotypes.Command {
 	return commands
 }
 
-// Execute runs a command by name with the provided arguments, input, and context.
+// Execute runs a command by name with the provided arguments and input.
 // Returns an error if the command is not found or if the command execution fails.
-func (r *Registry) Execute(name string, args map[string]string, input string, ctx neurotypes.Context) error {
+func (r *Registry) Execute(name string, args map[string]string, input string) error {
 	cmd, exists := r.Get(name)
 	if !exists {
 		return fmt.Errorf("unknown command: %s", name)
 	}
-	return cmd.Execute(args, input, ctx)
+	return cmd.Execute(args, input)
 }
 
 // GetParseMode returns the parse mode for a command by name.

@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -122,13 +121,10 @@ func (c *RenderCommand) HelpInfo() neurotypes.HelpInfo {
 //   - underline: make text underlined (true/false)
 //   - to: variable to store result (default: ${_output})
 //   - silent: suppress console output (true/false, default: false)
-func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurotypes.Context) error {
+func (c *RenderCommand) Execute(args map[string]string, input string) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
-
-	// Set global context for service access
-	context.SetGlobalContext(ctx)
 
 	// Get render service
 	renderService, err := c.getRenderService()
@@ -143,7 +139,7 @@ func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurot
 	}
 
 	// Parse render options
-	options, err := c.parseRenderOptions(args, ctx)
+	options, err := c.parseRenderOptions(args)
 	if err != nil {
 		return fmt.Errorf("failed to parse render options: %w", err)
 	}
@@ -194,7 +190,7 @@ func (c *RenderCommand) Execute(args map[string]string, input string, ctx neurot
 }
 
 // parseRenderOptions parses command arguments into RenderOptions
-func (c *RenderCommand) parseRenderOptions(args map[string]string, _ neurotypes.Context) (services.RenderOptions, error) {
+func (c *RenderCommand) parseRenderOptions(args map[string]string) (services.RenderOptions, error) {
 	options := services.RenderOptions{
 		Theme: "default", // Default theme
 	}

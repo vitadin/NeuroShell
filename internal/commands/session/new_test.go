@@ -89,7 +89,7 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 			ctx = context.New()
 			setupSessionTestRegistry(t, ctx)
 
-			err := cmd.Execute(tt.args, tt.input, ctx)
+			err := cmd.Execute(tt.args, tt.input)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -202,7 +202,7 @@ func TestNewCommand_Execute_InvalidSessionNames(t *testing.T) {
 			ctx = context.New()
 			setupSessionTestRegistry(t, ctx)
 
-			err := cmd.Execute(map[string]string{}, tt.sessionName, ctx)
+			err := cmd.Execute(map[string]string{}, tt.sessionName)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -222,11 +222,11 @@ func TestNewCommand_Execute_DuplicateSessionNames(t *testing.T) {
 	setupSessionTestRegistry(t, ctx)
 
 	// Create first session
-	err := cmd.Execute(map[string]string{}, "duplicate_test", ctx)
+	err := cmd.Execute(map[string]string{}, "duplicate_test")
 	assert.NoError(t, err)
 
 	// Try to create second session with same name
-	err = cmd.Execute(map[string]string{}, "duplicate_test", ctx)
+	err = cmd.Execute(map[string]string{}, "duplicate_test")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "already in use")
 }
@@ -246,7 +246,7 @@ func TestNewCommand_Execute_VariableInterpolation(t *testing.T) {
 	}
 	input := "${session_prefix}_session"
 
-	err := cmd.Execute(args, input, ctx)
+	err := cmd.Execute(args, input)
 	assert.NoError(t, err)
 
 	// Check that variables were interpolated
@@ -263,10 +263,9 @@ func TestNewCommand_Execute_VariableInterpolation(t *testing.T) {
 
 func TestNewCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	cmd := &NewCommand{}
-	ctx := context.New()
 
 	// Don't setup services - should fail
-	err := cmd.Execute(map[string]string{}, "test_session", ctx)
+	err := cmd.Execute(map[string]string{}, "test_session")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "service not available")
 }
@@ -276,6 +275,9 @@ func setupSessionTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	// Create a new registry for testing
 	oldRegistry := services.GetGlobalRegistry()
 	services.SetGlobalRegistry(services.NewRegistry())
+
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
 
 	// Register required services
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
@@ -294,6 +296,7 @@ func setupSessionTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	// Cleanup function to restore original registry
 	t.Cleanup(func() {
 		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
 	})
 }
 
