@@ -75,6 +75,83 @@ func (r *Registry) GetAllServices() map[string]neurotypes.Service {
 	return result
 }
 
+// Typed service access methods provide type-safe access to common services
+
+// GetVariableService retrieves the variable service with proper type casting.
+func (r *Registry) GetVariableService() (*VariableService, error) {
+	service, err := r.GetService("variable")
+	if err != nil {
+		return nil, err
+	}
+
+	variableService, ok := service.(*VariableService)
+	if !ok {
+		return nil, fmt.Errorf("variable service has incorrect type")
+	}
+
+	return variableService, nil
+}
+
+// GetInterpolationService retrieves the interpolation service with proper type casting.
+func (r *Registry) GetInterpolationService() (*InterpolationService, error) {
+	service, err := r.GetService("interpolation")
+	if err != nil {
+		return nil, err
+	}
+
+	interpolationService, ok := service.(*InterpolationService)
+	if !ok {
+		return nil, fmt.Errorf("interpolation service has incorrect type")
+	}
+
+	return interpolationService, nil
+}
+
+// GetRenderService retrieves the render service with proper type casting.
+func (r *Registry) GetRenderService() (*RenderService, error) {
+	service, err := r.GetService("render")
+	if err != nil {
+		return nil, err
+	}
+
+	renderService, ok := service.(*RenderService)
+	if !ok {
+		return nil, fmt.Errorf("render service has incorrect type")
+	}
+
+	return renderService, nil
+}
+
+// GetBashService retrieves the bash service with proper type casting.
+func (r *Registry) GetBashService() (*BashService, error) {
+	service, err := r.GetService("bash")
+	if err != nil {
+		return nil, err
+	}
+
+	bashService, ok := service.(*BashService)
+	if !ok {
+		return nil, fmt.Errorf("bash service has incorrect type")
+	}
+
+	return bashService, nil
+}
+
+// GetExecutorService retrieves the executor service with proper type casting.
+func (r *Registry) GetExecutorService() (*ExecutorService, error) {
+	service, err := r.GetService("executor")
+	if err != nil {
+		return nil, err
+	}
+
+	executorService, ok := service.(*ExecutorService)
+	if !ok {
+		return nil, fmt.Errorf("executor service has incorrect type")
+	}
+
+	return executorService, nil
+}
+
 // GlobalRegistry is the global service registry instance used throughout NeuroShell.
 var GlobalRegistry = NewRegistry()
 
@@ -93,4 +170,31 @@ func SetGlobalRegistry(registry *Registry) {
 	globalRegistryMu.Lock()
 	defer globalRegistryMu.Unlock()
 	GlobalRegistry = registry
+}
+
+// Global service access convenience functions
+
+// GetGlobalVariableService returns the variable service from the global registry.
+func GetGlobalVariableService() (*VariableService, error) {
+	return GetGlobalRegistry().GetVariableService()
+}
+
+// GetGlobalInterpolationService returns the interpolation service from the global registry.
+func GetGlobalInterpolationService() (*InterpolationService, error) {
+	return GetGlobalRegistry().GetInterpolationService()
+}
+
+// GetGlobalRenderService returns the render service from the global registry.
+func GetGlobalRenderService() (*RenderService, error) {
+	return GetGlobalRegistry().GetRenderService()
+}
+
+// GetGlobalBashService returns the bash service from the global registry.
+func GetGlobalBashService() (*BashService, error) {
+	return GetGlobalRegistry().GetBashService()
+}
+
+// GetGlobalExecutorService returns the executor service from the global registry.
+func GetGlobalExecutorService() (*ExecutorService, error) {
+	return GetGlobalRegistry().GetExecutorService()
 }

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/context"
+	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -83,10 +83,16 @@ func (c *SetCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
+	// Get variable service
+	variableService, err := services.GetGlobalVariableService()
+	if err != nil {
+		return fmt.Errorf("variable service not available: %w", err)
+	}
+
 	// Handle bracket syntax: \set[var=value]
 	if len(args) > 0 {
 		for key, value := range args {
-			if err := context.GetGlobalContext().SetVariable(key, value); err != nil {
+			if err := variableService.Set(key, value); err != nil {
 				return fmt.Errorf("failed to set variable %s: %w", key, err)
 			}
 			fmt.Printf("Setting %s = %s\n", key, value)
@@ -107,7 +113,7 @@ func (c *SetCommand) Execute(args map[string]string, input string) error {
 				key, value = parts[0], ""
 			}
 
-			if err := context.GetGlobalContext().SetVariable(key, value); err != nil {
+			if err := variableService.Set(key, value); err != nil {
 				return fmt.Errorf("failed to set variable %s: %w", key, err)
 			}
 			fmt.Printf("Setting %s = %s\n", key, value)

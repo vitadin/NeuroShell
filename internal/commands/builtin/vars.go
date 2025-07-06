@@ -93,7 +93,7 @@ func (c *VarsCommand) HelpInfo() neurotypes.HelpInfo {
 func (c *VarsCommand) Execute(args map[string]string, _ string) error {
 
 	// Get variable service
-	variableService, err := c.getVariableService()
+	variableService, err := services.GetGlobalVariableService()
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
@@ -121,21 +121,6 @@ func (c *VarsCommand) Execute(args map[string]string, _ string) error {
 	c.displayVariables(filteredVars)
 
 	return nil
-}
-
-// getVariableService retrieves the variable service from the global registry
-func (c *VarsCommand) getVariableService() (*services.VariableService, error) {
-	service, err := services.GetGlobalRegistry().GetService("variable")
-	if err != nil {
-		return nil, err
-	}
-
-	variableService, ok := service.(*services.VariableService)
-	if !ok {
-		return nil, fmt.Errorf("variable service has incorrect type")
-	}
-
-	return variableService, nil
 }
 
 // applyFilters applies pattern and type filters to the variable map

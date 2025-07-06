@@ -122,7 +122,7 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 	isEqual := interpolatedExpected == interpolatedActual
 
 	// Get variable service to set system variables
-	variableService, err := getVariableService()
+	variableService, err := services.GetGlobalVariableService()
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
@@ -152,21 +152,6 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 	}
 
 	return nil
-}
-
-// getVariableService is a helper function to get the variable service from the global registry
-func getVariableService() (*services.VariableService, error) {
-	service, err := services.GetGlobalRegistry().GetService("variable")
-	if err != nil {
-		return nil, err
-	}
-
-	variableService, ok := service.(*services.VariableService)
-	if !ok {
-		return nil, fmt.Errorf("variable service has incorrect type")
-	}
-
-	return variableService, nil
 }
 
 func init() {

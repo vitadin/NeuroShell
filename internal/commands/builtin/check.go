@@ -231,7 +231,7 @@ func (c *CheckCommand) setResultVariables(results []ServiceCheckResult) error {
 	output := c.generateOutput(results)
 
 	// Get variable service to set system variables
-	variableService, err := c.getVariableService()
+	variableService, err := services.GetGlobalVariableService()
 	if err != nil {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
@@ -322,21 +322,6 @@ func (c *CheckCommand) displayResults(results []ServiceCheckResult) {
 	if successCount < len(results) {
 		fmt.Println("Some services are not available or not initialized.")
 	}
-}
-
-// getVariableService retrieves the variable service from the global registry
-func (c *CheckCommand) getVariableService() (*services.VariableService, error) {
-	service, err := services.GetGlobalRegistry().GetService("variable")
-	if err != nil {
-		return nil, err
-	}
-
-	variableService, ok := service.(*services.VariableService)
-	if !ok {
-		return nil, fmt.Errorf("variable service has incorrect type")
-	}
-
-	return variableService, nil
 }
 
 func init() {
