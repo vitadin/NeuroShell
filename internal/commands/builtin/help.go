@@ -274,17 +274,7 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, 
 
 // getHelpService retrieves the help service from the global registry
 func (c *HelpCommand) getHelpService() (*services.HelpService, error) {
-	service, err := services.GetGlobalRegistry().GetService("help")
-	if err != nil {
-		return nil, err
-	}
-
-	helpService, ok := service.(*services.HelpService)
-	if !ok {
-		return nil, fmt.Errorf("help service has incorrect type")
-	}
-
-	return helpService, nil
+	return services.GetGlobalHelpService()
 }
 
 func init() {
