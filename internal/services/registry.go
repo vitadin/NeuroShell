@@ -212,6 +212,21 @@ func (r *Registry) GetChatSessionService() (*ChatSessionService, error) {
 	return chatSessionService, nil
 }
 
+// GetModelService retrieves the model service with proper type casting.
+func (r *Registry) GetModelService() (*ModelService, error) {
+	service, err := r.GetService("model")
+	if err != nil {
+		return nil, err
+	}
+
+	modelService, ok := service.(*ModelService)
+	if !ok {
+		return nil, fmt.Errorf("model service has incorrect type")
+	}
+
+	return modelService, nil
+}
+
 // GlobalRegistry is the global service registry instance used throughout NeuroShell.
 var GlobalRegistry = NewRegistry()
 
@@ -277,4 +292,9 @@ func GetGlobalEditorService() (*EditorService, error) {
 // GetGlobalChatSessionService returns the chat session service from the global registry.
 func GetGlobalChatSessionService() (*ChatSessionService, error) {
 	return GetGlobalRegistry().GetChatSessionService()
+}
+
+// GetGlobalModelService returns the model service from the global registry.
+func GetGlobalModelService() (*ModelService, error) {
+	return GetGlobalRegistry().GetModelService()
 }
