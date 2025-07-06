@@ -108,6 +108,11 @@ type ModelCatalogEntry struct {
 	// Name is the provider's model identifier (e.g., "gpt-4", "claude-3-sonnet-20240229")
 	Name string `yaml:"name" json:"name"`
 
+	// ID is a short, meaningful identifier for easy reference (e.g., "O3", "CS4", "CO37")
+	// Used for quick model selection in commands like \model-new[catalog_id=CS4]
+	// Must be unique across all models (case-insensitive)
+	ID string `yaml:"id" json:"id"`
+
 	// Provider is the LLM provider name (e.g., "openai", "anthropic")
 	Provider string `yaml:"provider" json:"provider"`
 

@@ -33,17 +33,20 @@ func (c *NewCommand) Description() string {
 // Usage returns the syntax and usage examples for the model-new command.
 func (c *NewCommand) Usage() string {
 	return `\model-new[provider=provider_name, base_model=model_name, temperature=0.7, max_tokens=1000, ...] model_name
+\model-new[catalog_id=<ID>, temperature=0.7, max_tokens=1000, ...] model_name
 
 Examples:
-  \model-new[provider=openai, base_model=gpt-4] my-gpt4                    %% Create OpenAI GPT-4 model
-  \model-new[provider=anthropic, base_model=claude-3-sonnet] claude-work   %% Create Anthropic Claude model
-  \model-new[provider=openai, base_model=gpt-3.5-turbo, temperature=0.9] creative-gpt  %% Custom temperature
-  \model-new[provider=local, base_model=llama-2, max_tokens=2048] local-llama  %% Local model with custom max tokens
-  \model-new[provider=openai, base_model=gpt-4, description="Production model for analysis"] prod-model  %% With description
+  \model-new[catalog_id=CS4] my-claude                                   %% Create from catalog (Claude Sonnet 4)
+  \model-new[catalog_id=O3, temperature=0.8] creative-model              %% Create from catalog with custom parameters
+  \model-new[provider=openai, base_model=gpt-4] my-gpt4                  %% Create OpenAI GPT-4 model (manual)
+  \model-new[provider=anthropic, base_model=claude-3-sonnet] claude-work %% Create Anthropic Claude model (manual)
+  \model-new[catalog_id=CO4, max_tokens=4000] analysis-opus              %% Create Claude Opus 4 with custom max tokens
   
-Required Options:
-  provider - LLM provider name (e.g., openai, anthropic, local)
-  base_model - Provider's model identifier (e.g., gpt-4, claude-3-sonnet, llama-2)
+Required Options (choose one):
+  Option A: catalog_id - Short model ID from catalog (e.g., CS4, O3, CO37) - auto-populates provider and base_model
+  Option B: provider + base_model - Manual specification
+    provider - LLM provider name (e.g., openai, anthropic, local)
+    base_model - Provider's model identifier (e.g., gpt-4, claude-3-sonnet, llama-2)
   
 Optional Parameters:
   temperature - Controls randomness (0.0-1.0, default varies by provider)
@@ -56,6 +59,8 @@ Optional Parameters:
   
 Note: Model name is required and taken from the input parameter.
       Model names must be unique and cannot contain spaces.
+      Use \model-catalog to see available catalog IDs.
+      When using catalog_id, provider and base_model are auto-populated from catalog.
       Additional provider-specific parameters can be passed and will be stored.`
 }
 
@@ -64,19 +69,25 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\model-new[provider=provider_name, base_model=model_name, ...] model_name",
+		Usage:       "\\model-new[catalog_id=<ID>] model_name OR \\model-new[provider=provider_name, base_model=model_name, ...] model_name",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
+				Name:        "catalog_id",
+				Description: "Short model ID from catalog (e.g., CS4, O3, CO37) - auto-populates provider and base_model",
+				Required:    false,
+				Type:        "string",
+			},
+			{
 				Name:        "provider",
-				Description: "LLM provider name (e.g., openai, anthropic, local)",
-				Required:    true,
+				Description: "LLM provider name (e.g., openai, anthropic, local) - required if catalog_id not used",
+				Required:    false,
 				Type:        "string",
 			},
 			{
 				Name:        "base_model",
-				Description: "Provider's model identifier (e.g., gpt-4, claude-3-sonnet)",
-				Required:    true,
+				Description: "Provider's model identifier (e.g., gpt-4, claude-3-sonnet) - required if catalog_id not used",
+				Required:    false,
 				Type:        "string",
 			},
 			{
@@ -124,16 +135,24 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 		},
 		Examples: []neurotypes.HelpExample{
 			{
+				Command:     "\\model-new[catalog_id=CS4] my-claude",
+				Description: "Create model from catalog (Claude Sonnet 4)",
+			},
+			{
+				Command:     "\\model-new[catalog_id=O3, temperature=0.8] creative-model",
+				Description: "Create from catalog with custom parameters",
+			},
+			{
 				Command:     "\\model-new[provider=openai, base_model=gpt-4] my-gpt4",
-				Description: "Create OpenAI GPT-4 model configuration",
+				Description: "Create OpenAI GPT-4 model configuration (manual)",
 			},
 			{
 				Command:     "\\model-new[provider=anthropic, base_model=claude-3-sonnet] claude-work",
-				Description: "Create Anthropic Claude model configuration",
+				Description: "Create Anthropic Claude model configuration (manual)",
 			},
 			{
-				Command:     "\\model-new[provider=openai, base_model=gpt-3.5-turbo, temperature=0.9] creative-gpt",
-				Description: "Create model with custom temperature setting",
+				Command:     "\\model-new[catalog_id=CO4, max_tokens=4000] analysis-opus",
+				Description: "Create Claude Opus 4 with custom max tokens",
 			},
 			{
 				Command:     "\\model-new[provider=local, base_model=llama-2, max_tokens=2048] local-llama",
@@ -143,7 +162,9 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 		Notes: []string{
 			"Model name is required and taken from the input parameter",
 			"Model names must be unique and cannot contain spaces",
-			"Provider and base_model are required parameters",
+			"Either catalog_id OR both provider and base_model are required",
+			"Use \\model-catalog to see available catalog IDs",
+			"When using catalog_id, provider and base_model are auto-populated from catalog",
 			"Variables in model name and parameters are interpolated",
 			"Additional provider-specific parameters can be included",
 			"Created model ID and metadata are stored in system variables",
@@ -174,22 +195,46 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("interpolation service not available: %w", err)
 	}
 
+	// Get model catalog service for catalog_id support
+	modelCatalogService, err := services.GetGlobalModelCatalogService()
+	if err != nil {
+		return fmt.Errorf("model catalog service not available: %w", err)
+	}
+
 	// Parse required arguments
 	modelName := input
 	provider := args["provider"]
 	baseModel := args["base_model"]
+	catalogID := args["catalog_id"]
+
+	// Handle catalog_id parameter - auto-populate provider and base_model from catalog
+	if catalogID != "" {
+		catalogModel, err := modelCatalogService.GetModelByID(catalogID)
+		if err != nil {
+			return fmt.Errorf("failed to find model with catalog_id '%s': %w", catalogID, err)
+		}
+
+		// Auto-populate provider and base_model from catalog (catalog_id overrides manual values)
+		provider = catalogModel.Provider
+		baseModel = catalogModel.Name
+	}
 
 	// Validate required parameters
 	if modelName == "" {
 		return fmt.Errorf("model name is required\\n\\nUsage: %s", c.Usage())
 	}
 
-	if provider == "" {
-		return fmt.Errorf("provider is required\\n\\nUsage: %s", c.Usage())
-	}
-
-	if baseModel == "" {
-		return fmt.Errorf("base_model is required\\n\\nUsage: %s", c.Usage())
+	// Either catalog_id OR both provider and base_model are required
+	if catalogID == "" {
+		if provider == "" {
+			return fmt.Errorf("provider is required (or use catalog_id)\\n\\nUsage: %s", c.Usage())
+		}
+		if baseModel == "" {
+			return fmt.Errorf("base_model is required (or use catalog_id)\\n\\nUsage: %s", c.Usage())
+		}
+	} else if provider == "" || baseModel == "" {
+		// If catalog_id is provided, ensure provider and base_model are populated
+		return fmt.Errorf("failed to auto-populate provider/base_model from catalog_id '%s'", catalogID)
 	}
 
 	// Interpolate variables in all string parameters
@@ -314,7 +359,7 @@ func (c *NewCommand) parseParameters(args map[string]string, parameters map[stri
 
 	// Add any other string parameters that aren't specially handled
 	excludedParams := map[string]bool{
-		"provider": true, "base_model": true, "description": true,
+		"provider": true, "base_model": true, "description": true, "catalog_id": true,
 		"temperature": true, "max_tokens": true, "top_p": true, "top_k": true,
 		"presence_penalty": true, "frequency_penalty": true,
 	}

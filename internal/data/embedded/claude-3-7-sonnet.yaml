@@ -1,4 +1,5 @@
 name: claude-3-7-sonnet-20250219
+id: CS37
 display_name: Claude 3.7 Sonnet
 provider: anthropic
 description: High intelligence with toggleable extended thinking

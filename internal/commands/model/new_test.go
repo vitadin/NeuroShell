@@ -49,17 +49,17 @@ func TestNewCommand_HelpInfo(t *testing.T) {
 	assert.NotEmpty(t, helpInfo.Usage)
 	assert.Equal(t, neurotypes.ParseModeKeyValue, helpInfo.ParseMode)
 
-	// Check that required options are present
-	requiredOptions := []string{"provider", "base_model"}
-	for _, reqOpt := range requiredOptions {
+	// Check that key options are present (none are marked as required since catalog_id can replace provider+base_model)
+	keyOptions := []string{"catalog_id", "provider", "base_model"}
+	for _, keyOpt := range keyOptions {
 		found := false
 		for _, opt := range helpInfo.Options {
-			if opt.Name == reqOpt && opt.Required {
+			if opt.Name == keyOpt {
 				found = true
 				break
 			}
 		}
-		assert.True(t, found, "Required option %s should be in help info", reqOpt)
+		assert.True(t, found, "Key option %s should be in help info", keyOpt)
 	}
 
 	// Check that examples are provided
@@ -630,6 +630,9 @@ func setupModelTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	err = services.GetGlobalRegistry().RegisterService(services.NewModelService())
 	require.NoError(t, err)
 
+	err = services.GetGlobalRegistry().RegisterService(services.NewModelCatalogService())
+	require.NoError(t, err)
+
 	// Initialize services
 	err = services.GetGlobalRegistry().InitializeAll(ctx)
 	require.NoError(t, err)
@@ -639,6 +642,269 @@ func setupModelTestRegistry(t *testing.T, ctx neurotypes.Context) {
 		services.SetGlobalRegistry(oldRegistry)
 		context.ResetGlobalContext()
 	})
+}
+
+func TestNewCommand_Execute_CatalogID(t *testing.T) {
+	cmd := &NewCommand{}
+	ctx := context.New()
+	setupModelTestRegistry(t, ctx)
+
+	tests := []struct {
+		name        string
+		args        map[string]string
+		input       string
+		expectError bool
+		errorMsg    string
+		checkFunc   func(t *testing.T, ctx neurotypes.Context)
+	}{
+		{
+			name: "create model from catalog ID - CS4",
+			args: map[string]string{
+				"catalog_id": "CS4",
+			},
+			input:       "my-claude",
+			expectError: false,
+			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
+				provider, err := ctx.GetVariable("#model_provider")
+				assert.NoError(t, err)
+				assert.Equal(t, "anthropic", provider)
+
+				baseModel, err := ctx.GetVariable("#model_base")
+				assert.NoError(t, err)
+				assert.Equal(t, "claude-sonnet-4-20250514", baseModel)
+			},
+		},
+		{
+			name: "create model from catalog ID - O3",
+			args: map[string]string{
+				"catalog_id": "O3",
+			},
+			input:       "my-openai",
+			expectError: false,
+			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
+				provider, err := ctx.GetVariable("#model_provider")
+				assert.NoError(t, err)
+				assert.Equal(t, "openai", provider)
+
+				baseModel, err := ctx.GetVariable("#model_base")
+				assert.NoError(t, err)
+				assert.Equal(t, "o3", baseModel)
+			},
+		},
+		{
+			name: "create model from catalog ID with case insensitive - cs4",
+			args: map[string]string{
+				"catalog_id": "cs4",
+			},
+			input:       "my-claude-lower",
+			expectError: false,
+			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
+				provider, err := ctx.GetVariable("#model_provider")
+				assert.NoError(t, err)
+				assert.Equal(t, "anthropic", provider)
+
+				baseModel, err := ctx.GetVariable("#model_base")
+				assert.NoError(t, err)
+				assert.Equal(t, "claude-sonnet-4-20250514", baseModel)
+			},
+		},
+		{
+			name: "create model from catalog ID with additional parameters",
+			args: map[string]string{
+				"catalog_id":  "O3",
+				"temperature": "0.8",
+				"max_tokens":  "2000",
+			},
+			input:       "enhanced-o3",
+			expectError: false,
+			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
+				provider, err := ctx.GetVariable("#model_provider")
+				assert.NoError(t, err)
+				assert.Equal(t, "openai", provider)
+
+				baseModel, err := ctx.GetVariable("#model_base")
+				assert.NoError(t, err)
+				assert.Equal(t, "o3", baseModel)
+
+				paramCount, err := ctx.GetVariable("#model_param_count")
+				assert.NoError(t, err)
+				assert.Equal(t, "2", paramCount) // temperature and max_tokens
+			},
+		},
+		{
+			name: "catalog_id overrides manual provider/base_model",
+			args: map[string]string{
+				"catalog_id": "CS4",
+				"provider":   "openai", // Should be ignored
+				"base_model": "gpt-4",  // Should be ignored
+			},
+			input:       "override-test",
+			expectError: false,
+			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
+				provider, err := ctx.GetVariable("#model_provider")
+				assert.NoError(t, err)
+				assert.Equal(t, "anthropic", provider) // From catalog, not "openai"
+
+				baseModel, err := ctx.GetVariable("#model_base")
+				assert.NoError(t, err)
+				assert.Equal(t, "claude-sonnet-4-20250514", baseModel) // From catalog, not "gpt-4"
+			},
+		},
+		{
+			name: "invalid catalog ID",
+			args: map[string]string{
+				"catalog_id": "INVALID123",
+			},
+			input:       "invalid-model",
+			expectError: true,
+			errorMsg:    "not found in catalog",
+		},
+		{
+			name: "empty catalog ID",
+			args: map[string]string{
+				"catalog_id": "",
+				"provider":   "openai",
+				"base_model": "gpt-4",
+			},
+			input:       "empty-catalog-id",
+			expectError: false, // Should work with manual provider/base_model
+		},
+		{
+			name: "missing provider when no catalog_id",
+			args: map[string]string{
+				"base_model": "gpt-4",
+			},
+			input:       "missing-provider",
+			expectError: true,
+			errorMsg:    "provider is required (or use catalog_id)",
+		},
+		{
+			name: "missing base_model when no catalog_id",
+			args: map[string]string{
+				"provider": "openai",
+			},
+			input:       "missing-base-model",
+			expectError: true,
+			errorMsg:    "base_model is required (or use catalog_id)",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Reset context for each test
+			ctx = context.New()
+			setupModelTestRegistry(t, ctx)
+
+			err := cmd.Execute(tt.args, tt.input)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorMsg != "" {
+					assert.Contains(t, err.Error(), tt.errorMsg)
+				}
+				return
+			}
+
+			assert.NoError(t, err)
+
+			// Verify model was created
+			modelID, err := ctx.GetVariable("#model_id")
+			assert.NoError(t, err)
+			assert.NotEmpty(t, modelID)
+
+			modelName, err := ctx.GetVariable("#model_name")
+			assert.NoError(t, err)
+			assert.Equal(t, tt.input, modelName)
+
+			// Check output variable
+			output, err := ctx.GetVariable("_output")
+			assert.NoError(t, err)
+			assert.Contains(t, output, "Created model")
+			assert.Contains(t, output, tt.input)
+
+			// Run custom checks if provided
+			if tt.checkFunc != nil {
+				tt.checkFunc(t, ctx)
+			}
+		})
+	}
+}
+
+func TestNewCommand_Execute_CatalogIDEdgeCases(t *testing.T) {
+	cmd := &NewCommand{}
+	ctx := context.New()
+	setupModelTestRegistry(t, ctx)
+
+	tests := []struct {
+		name        string
+		args        map[string]string
+		input       string
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name: "case insensitive catalog IDs - all variations",
+			args: map[string]string{
+				"catalog_id": "co37", // Claude Opus 3.7 in lowercase
+			},
+			input:       "opus-lowercase",
+			expectError: false,
+		},
+		{
+			name: "mixed case catalog IDs",
+			args: map[string]string{
+				"catalog_id": "Cs4", // Mixed case
+			},
+			input:       "claude-mixed-case",
+			expectError: false,
+		},
+		{
+			name: "catalog_id with variable interpolation",
+			args: map[string]string{
+				"catalog_id": "${model_id_var}",
+			},
+			input:       "interpolated-model",
+			expectError: true, // Will fail because variable doesn't exist
+			errorMsg:    "not found in catalog",
+		},
+		{
+			name: "all catalog IDs work",
+			args: map[string]string{
+				"catalog_id": "O4M", // O4-mini
+			},
+			input:       "o4-mini-test",
+			expectError: false,
+		},
+	}
+
+	// Set up variable for interpolation test
+	require.NoError(t, ctx.SetVariable("model_id_var", "CS4"))
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Don't reset context for interpolation test
+			if !strings.Contains(tt.name, "interpolation") {
+				ctx = context.New()
+				setupModelTestRegistry(t, ctx)
+			}
+
+			err := cmd.Execute(tt.args, tt.input)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				if tt.errorMsg != "" {
+					assert.Contains(t, err.Error(), tt.errorMsg)
+				}
+			} else {
+				assert.NoError(t, err)
+
+				// Verify model was created
+				modelID, err := ctx.GetVariable("#model_id")
+				assert.NoError(t, err)
+				assert.NotEmpty(t, modelID)
+			}
+		})
+	}
 }
 
 // Interface compliance check

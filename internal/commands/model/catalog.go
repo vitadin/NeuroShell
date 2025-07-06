@@ -42,17 +42,19 @@ Examples:
   \model-catalog[provider=anthropic]          %% List Anthropic models only
   \model-catalog[sort=name]                   %% Sort models alphabetically by name
   \model-catalog[search=gpt-4]                %% Search for models containing "gpt-4"
+  \model-catalog[search=CS4]                  %% Search by model ID (case-insensitive)
   \model-catalog[provider=openai,sort=name]   %% OpenAI models sorted by name
   \model-catalog[search=claude,sort=name]     %% Search for Claude models, sorted by name
   
 Options:
   provider - Filter by provider: openai, anthropic, all (default: all)
   sort     - Sort order: name (alphabetical), provider (by provider then name)
-  search   - Search query to filter models by name, display name, or description
+  search   - Search query to filter models by ID, name, display name, or description
   
 Note: Options can be combined. Default sort is by provider.
       Model catalog is stored in ${_output} variable.
-      Shows model name, display name, provider, capabilities, and context window.`
+      Shows model ID, display name, provider, capabilities, and context window.
+      Model IDs are shown in format: [ID] Display Name (model_name)`
 }
 
 // HelpInfo returns structured help information for the model-catalog command.
@@ -79,7 +81,7 @@ func (c *CatalogCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 			{
 				Name:        "search",
-				Description: "Search query to filter models by name, display name, or description",
+				Description: "Search query to filter models by ID, name, display name, or description",
 				Required:    false,
 				Type:        "string",
 			},
@@ -98,6 +100,10 @@ func (c *CatalogCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Search for models containing 'gpt-4'",
 			},
 			{
+				Command:     "\\model-catalog[search=CS4]",
+				Description: "Search by model ID (case-insensitive)",
+			},
+			{
 				Command:     "\\model-catalog[provider=anthropic,sort=name]",
 				Description: "List Anthropic models sorted alphabetically",
 			},
@@ -106,9 +112,11 @@ func (c *CatalogCommand) HelpInfo() neurotypes.HelpInfo {
 			"Options can be combined (e.g., provider=openai,sort=name)",
 			"Default sort is by provider, then by name within each provider",
 			"Model catalog output is stored in ${_output} variable",
-			"Shows model name, display name, provider, capabilities, context window, and deprecation status",
+			"Shows model ID, display name, provider, capabilities, context window, and deprecation status",
+			"Model IDs are displayed in format: [ID] Display Name (model_name)",
 			"Embedded catalog includes popular models from OpenAI and Anthropic",
-			"Search is case-insensitive and matches name, display name, or description",
+			"Search is case-insensitive and matches ID, name, display name, or description",
+			"Model IDs can be used with \\model-new[catalog_id=<ID>] for easy model creation",
 		},
 	}
 }
@@ -223,8 +231,9 @@ func (c *CatalogCommand) filterModelsBySearch(models []neurotypes.ModelCatalogEn
 	queryLower := strings.ToLower(query)
 
 	for _, model := range models {
-		// Search in model name, display name, and description
-		if strings.Contains(strings.ToLower(model.Name), queryLower) ||
+		// Search in model ID, name, display name, and description
+		if strings.Contains(strings.ToLower(model.ID), queryLower) ||
+			strings.Contains(strings.ToLower(model.Name), queryLower) ||
 			strings.Contains(strings.ToLower(model.DisplayName), queryLower) ||
 			strings.Contains(strings.ToLower(model.Description), queryLower) {
 			matches = append(matches, model)
@@ -321,8 +330,8 @@ func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntr
 func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, showProvider bool, modelToProvider map[string]string) string {
 	var parts []string
 
-	// Model display name and name
-	modelInfo := fmt.Sprintf("%s (%s)", model.DisplayName, model.Name)
+	// Model ID, display name and name
+	modelInfo := fmt.Sprintf("[%s] %s (%s)", model.ID, model.DisplayName, model.Name)
 	parts = append(parts, modelInfo)
 
 	// Provider (if showing all providers)

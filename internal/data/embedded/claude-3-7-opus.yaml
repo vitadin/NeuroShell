@@ -1,4 +1,5 @@
 name: claude-3-7-opus-20240229
+id: CO37
 display_name: Claude 3.7 Opus
 provider: anthropic
 description: Top-level intelligence, fluency, and understanding
