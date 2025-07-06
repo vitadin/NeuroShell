@@ -94,12 +94,10 @@ func (e *EditorCommand) Execute(args map[string]string, _ string) error {
 	logger.Debug("Executing editor command", "args", args)
 
 	// Get the editor service
-	editorService, err := services.GetGlobalRegistry().GetService("editor")
+	es, err := services.GetGlobalEditorService()
 	if err != nil {
 		return fmt.Errorf("editor service not available: %w", err)
 	}
-
-	es := editorService.(*services.EditorService)
 
 	// Open the editor and get content
 	content, err := es.OpenEditor()

@@ -182,6 +182,21 @@ func (r *Registry) GetHelpService() (*HelpService, error) {
 	return helpService, nil
 }
 
+// GetEditorService retrieves the editor service with proper type casting.
+func (r *Registry) GetEditorService() (*EditorService, error) {
+	service, err := r.GetService("editor")
+	if err != nil {
+		return nil, err
+	}
+
+	editorService, ok := service.(*EditorService)
+	if !ok {
+		return nil, fmt.Errorf("editor service has incorrect type")
+	}
+
+	return editorService, nil
+}
+
 // GlobalRegistry is the global service registry instance used throughout NeuroShell.
 var GlobalRegistry = NewRegistry()
 
@@ -237,4 +252,9 @@ func GetGlobalScriptService() (*ScriptService, error) {
 // GetGlobalHelpService returns the help service from the global registry.
 func GetGlobalHelpService() (*HelpService, error) {
 	return GetGlobalRegistry().GetHelpService()
+}
+
+// GetGlobalEditorService returns the editor service from the global registry.
+func GetGlobalEditorService() (*EditorService, error) {
+	return GetGlobalRegistry().GetEditorService()
 }
