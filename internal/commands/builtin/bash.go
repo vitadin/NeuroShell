@@ -82,14 +82,9 @@ func (c *BashCommand) Execute(_ map[string]string, input string) error {
 	}
 
 	// Get bash service from global registry
-	service, err := services.GetGlobalRegistry().GetService("bash")
+	bashService, err := services.GetGlobalBashService()
 	if err != nil {
 		return fmt.Errorf("bash service not available: %w", err)
-	}
-
-	bashService, ok := service.(*services.BashService)
-	if !ok {
-		return fmt.Errorf("bash service has incorrect type")
 	}
 
 	// Execute the command
