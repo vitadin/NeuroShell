@@ -119,10 +119,10 @@ func (c *CatalogCommand) HelpInfo() neurotypes.HelpInfo {
 //   - sort: name|provider (default: provider)
 //   - search: query string for filtering (optional)
 func (c *CatalogCommand) Execute(args map[string]string, _ string) error {
-	// Get model service
-	modelService, err := services.GetGlobalModelService()
+	// Get model catalog service
+	modelCatalogService, err := services.GetGlobalModelCatalogService()
 	if err != nil {
-		return fmt.Errorf("model service not available: %w", err)
+		return fmt.Errorf("model catalog service not available: %w", err)
 	}
 
 	// Get variable service for storing result variables
@@ -150,9 +150,9 @@ func (c *CatalogCommand) Execute(args map[string]string, _ string) error {
 	// Get models based on provider filter
 	var models []neurotypes.ModelCatalogEntry
 	if provider == "all" {
-		models, err = modelService.GetModelCatalog()
+		models, err = modelCatalogService.GetModelCatalog()
 	} else {
-		models, err = modelService.GetModelCatalogByProvider(provider)
+		models, err = modelCatalogService.GetModelCatalogByProvider(provider)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to get model catalog: %w", err)
@@ -161,7 +161,7 @@ func (c *CatalogCommand) Execute(args map[string]string, _ string) error {
 	// Build model-to-provider mapping
 	modelToProvider := make(map[string]string)
 	for _, supportedProvider := range []string{"anthropic", "openai"} {
-		providerModels, err := modelService.GetModelCatalogByProvider(supportedProvider)
+		providerModels, err := modelCatalogService.GetModelCatalogByProvider(supportedProvider)
 		if err != nil {
 			return fmt.Errorf("failed to get %s models for mapping: %w", supportedProvider, err)
 		}

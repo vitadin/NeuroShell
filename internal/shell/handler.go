@@ -92,6 +92,10 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
+	if err := services.GetGlobalRegistry().RegisterService(services.NewModelCatalogService()); err != nil {
+		return err
+	}
+
 	if err := services.GetGlobalRegistry().RegisterService(services.NewAPIService()); err != nil {
 		return err
 	}
