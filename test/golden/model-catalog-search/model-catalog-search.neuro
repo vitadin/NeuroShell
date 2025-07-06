@@ -1,0 +1,5 @@
+%% Search functionality test
+%% Tests searching models by name, display name, and description
+\model-catalog[search=gpt-4]
+\model-catalog[search=claude]
+\model-catalog[search=embedding]

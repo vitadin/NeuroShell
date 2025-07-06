@@ -1,0 +1,4 @@
+%% Sort options test
+%% Tests sorting models by name and provider
+\model-catalog[sort=name]
+\model-catalog[sort=provider]
