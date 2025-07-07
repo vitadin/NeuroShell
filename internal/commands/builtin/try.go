@@ -76,7 +76,14 @@ func (c *TryCommand) Execute(_ map[string]string, input string) error {
 	// Parse the command to execute
 	commandToExecute := strings.TrimSpace(input)
 	if commandToExecute == "" {
-		return fmt.Errorf("Usage: %s", c.Usage())
+		// If no command provided, set success status and return
+		// This aligns with the principle that \try never causes errors
+		globalCtx := neuroshellcontext.GetGlobalContext()
+		if neuroCtx, ok := globalCtx.(*neuroshellcontext.NeuroContext); ok {
+			_ = neuroCtx.SetSystemVariable("_status", "0")
+			_ = neuroCtx.SetSystemVariable("_error", "")
+		}
+		return nil
 	}
 
 	// Initialize system variables for try command results

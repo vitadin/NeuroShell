@@ -1,0 +1,15 @@
+success test
+_status = 0
+_error = 
+_output = success test
+Error: ls: /nonexistent_directory_xyz: No such file or directory
+Exit status: 1
+_status = 1
+_error = ls: /nonexistent_directory_xyz: No such file or directory
+Setting testvar = hello
+_status = 1
+testvar = hello
+_status = 1
+_error = failed to set variable _invalid_global: cannot set system variable: _invalid_global
+_status = 1
+_error = unknown command: unknown_command_xyz

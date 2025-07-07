@@ -1,0 +1,27 @@
+Setting test_file = /tmp/nonexistent_test_file
+Setting test_var = hello
+Testing hello
+_status = 0
+_output = Testing hello
+Error: cat: /tmp/nonexistent_test_file: No such file or directory
+Exit status: 1
+_status = 1
+_error = cat: /tmp/nonexistent_test_file: No such file or directory
+Setting base_value = world
+Setting combined = hello_world
+_status = 1
+combined = hello_world
+test
+_status = 0
+_output = test
+       0
+_status = 0
+Setting before_try = preserved
+before_try = preserved
+_status = 1
+Setting seq1 = first
+Setting seq2 = second
+sequence test
+seq1 = first
+seq2 = second
+_status = 0

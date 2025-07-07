@@ -1,0 +1,26 @@
+_status = 0
+_status = 0
+Sending: %% this is just a comment
+_status = 0
+_status = 0
+Setting complex_var = value with spaces and special chars !@#$%
+_status = 0
+complex_var = value with spaces and special chars !@#$%
+_status = 1
+_error = failed to set variable _system_var: cannot set system variable: _system_var
+special chars: !@#$%^&*()
+_status = 0
+_output = special chars: !@#$%^&*()
+_status = 0
+stdout
+Error: stderr
+Exit status: 1
+_status = 1
+_error = stderr
+_output = stdout
+regular command
+_status = 0
+Error: ls: /nonexistent: No such file or directory
+Exit status: 1
+after try
+_status = 0

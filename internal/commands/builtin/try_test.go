@@ -112,8 +112,8 @@ func TestTryCommand_ExecuteEmptyInput(t *testing.T) {
 	cmd := &TryCommand{}
 	err := cmd.Execute(map[string]string{}, "")
 
-	if err == nil {
-		t.Error("Expected error for empty input")
+	if err != nil {
+		t.Errorf("Expected no error for empty input (try should never fail), got: %v", err)
 	}
 }
 
