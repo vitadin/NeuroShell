@@ -139,6 +139,9 @@ func (c *CatalogCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
+	// Get theme object for styling
+	themeObj := c.getThemeObject()
+
 	// Parse arguments
 	provider := args["provider"]
 	if provider == "" {
@@ -189,8 +192,8 @@ func (c *CatalogCommand) Execute(args map[string]string, _ string) error {
 	// Apply sorting
 	c.sortModels(models, sortBy, provider, modelToProvider)
 
-	// Format output
-	output := c.formatModelCatalog(models, provider, sortBy, searchQuery, modelToProvider)
+	// Format output with theme styling
+	output := c.formatModelCatalog(models, provider, sortBy, searchQuery, modelToProvider, themeObj)
 
 	// Store result in _output variable
 	if err := variableService.SetSystemVariable("_output", output); err != nil {
@@ -274,31 +277,35 @@ func (c *CatalogCommand) getProviderFromModel(model neurotypes.ModelCatalogEntry
 	return "unknown"
 }
 
-// formatModelCatalog formats the model catalog for display.
-func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntry, provider, sortBy, searchQuery string, modelToProvider map[string]string) string {
+// formatModelCatalog formats the model catalog for display with theme styling.
+func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntry, provider, sortBy, searchQuery string, modelToProvider map[string]string, themeObj *services.Theme) string {
 	if len(models) == 0 {
 		searchText := ""
 		if searchQuery != "" {
-			searchText = fmt.Sprintf(" matching '%s'", searchQuery)
+			searchText = fmt.Sprintf(" matching %s", themeObj.Variable.Render("'"+searchQuery+"'"))
 		}
 		providerText := ""
 		if provider != "all" {
-			providerText = fmt.Sprintf(" from %s", provider)
+			providerText = fmt.Sprintf(" from %s", themeObj.Keyword.Render(provider))
 		}
-		return fmt.Sprintf("No models found%s%s.\n", providerText, searchText)
+		noModelsMsg := fmt.Sprintf("No models found%s%s.", providerText, searchText)
+		return themeObj.Warning.Render(noModelsMsg) + "\n"
 	}
 
 	var result strings.Builder
 
-	// Header
-	headerParts := []string{"Model Catalog"}
+	// Header with professional styling
+	headerParts := []string{themeObj.Success.Render("Model Catalog")}
 	if provider != "all" {
-		headerParts = append(headerParts, fmt.Sprintf("(%s)", c.toTitle(provider)))
+		providerPart := fmt.Sprintf("(%s)", themeObj.Keyword.Render(c.toTitle(provider)))
+		headerParts = append(headerParts, providerPart)
 	}
 	if searchQuery != "" {
-		headerParts = append(headerParts, fmt.Sprintf("- Search: '%s'", searchQuery))
+		searchPart := fmt.Sprintf("- Search: %s", themeObj.Variable.Render("'"+searchQuery+"'"))
+		headerParts = append(headerParts, searchPart)
 	}
-	headerParts = append(headerParts, fmt.Sprintf("(%d models)", len(models)))
+	countPart := fmt.Sprintf("(%s)", themeObj.Info.Render(fmt.Sprintf("%d models", len(models))))
+	headerParts = append(headerParts, countPart)
 
 	result.WriteString(fmt.Sprintf("%s:\n", strings.Join(headerParts, " ")))
 
@@ -311,125 +318,170 @@ func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntr
 				if currentProvider != "" {
 					result.WriteString("\n")
 				}
-				result.WriteString(fmt.Sprintf("%s Models:\n", c.toTitle(modelProvider)))
+				providerHeader := fmt.Sprintf("%s Models:", c.toTitle(modelProvider))
+				result.WriteString(themeObj.Success.Render(providerHeader) + "\n")
 				currentProvider = modelProvider
 			}
-			result.WriteString(c.formatModelEntry(model, true, modelToProvider))
+			result.WriteString(c.formatModelEntry(model, true, modelToProvider, themeObj))
 		}
 	} else {
 		// Simple list format
 		for _, model := range models {
-			result.WriteString(c.formatModelEntry(model, provider == "all", modelToProvider))
+			result.WriteString(c.formatModelEntry(model, provider == "all", modelToProvider, themeObj))
 		}
 	}
 
 	return result.String()
 }
 
-// formatModelEntry formats a single model entry for display.
-func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, showProvider bool, modelToProvider map[string]string) string {
-	var parts []string
+// formatModelEntry formats a single model entry for display with professional theme styling.
+func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, showProvider bool, modelToProvider map[string]string, themeObj *services.Theme) string {
+	var result strings.Builder
 
-	// Model ID, display name and name
-	modelInfo := fmt.Sprintf("[%s] %s (%s)", model.ID, model.DisplayName, model.Name)
-	parts = append(parts, modelInfo)
+	// Model header: [ID] Display Name (technical_name) with prominent catalog ID
+	catalogID := themeObj.Highlight.Render(fmt.Sprintf("[%s]", model.ID))
+	displayName := themeObj.Command.Render(model.DisplayName)
+	technicalName := themeObj.Variable.Render(fmt.Sprintf("(%s)", model.Name))
+	modelHeader := fmt.Sprintf("  %s %s %s\n", catalogID, displayName, technicalName)
+	result.WriteString(modelHeader)
 
 	// Provider (if showing all providers)
 	if showProvider {
 		provider := c.getProviderFromModel(model, modelToProvider)
-		parts = append(parts, fmt.Sprintf("Provider: %s", provider))
+		providerLine := fmt.Sprintf("    %s %s\n",
+			themeObj.Info.Render("Provider:"),
+			themeObj.Keyword.Render(provider))
+		result.WriteString(providerLine)
 	}
 
 	// Context window and max output tokens
 	if model.ContextWindow > 0 {
-		contextInfo := fmt.Sprintf("Context: %s tokens", c.formatNumber(model.ContextWindow))
+		contextValue := c.formatNumber(model.ContextWindow)
+		contextInfo := fmt.Sprintf("    %s %s tokens",
+			themeObj.Info.Render("Context:"),
+			themeObj.Variable.Render(contextValue))
 		if model.MaxOutputTokens != nil && *model.MaxOutputTokens != model.ContextWindow {
-			contextInfo += fmt.Sprintf(" (max output: %s tokens)", c.formatNumber(*model.MaxOutputTokens))
+			maxOutputValue := c.formatNumber(*model.MaxOutputTokens)
+			contextInfo += fmt.Sprintf(" (max output: %s tokens)",
+				themeObj.Variable.Render(maxOutputValue))
 		}
-		parts = append(parts, contextInfo)
+		result.WriteString(contextInfo + "\n")
 	}
 
 	// Capabilities
 	if len(model.Capabilities) > 0 {
-		capabilitiesInfo := fmt.Sprintf("Capabilities: %s", strings.Join(model.Capabilities, ", "))
-		parts = append(parts, capabilitiesInfo)
+		capabilitiesList := make([]string, len(model.Capabilities))
+		for i, cap := range model.Capabilities {
+			capabilitiesList[i] = themeObj.Keyword.Render(cap)
+		}
+		capabilitiesLine := fmt.Sprintf("    %s %s\n",
+			themeObj.Info.Render("Capabilities:"),
+			strings.Join(capabilitiesList, ", "))
+		result.WriteString(capabilitiesLine)
 	}
 
 	// Modalities
 	if len(model.Modalities) > 0 {
-		modalitiesInfo := fmt.Sprintf("Modalities: %s", strings.Join(model.Modalities, ", "))
-		parts = append(parts, modalitiesInfo)
+		modalitiesList := make([]string, len(model.Modalities))
+		for i, mod := range model.Modalities {
+			modalitiesList[i] = themeObj.Variable.Render(mod)
+		}
+		modalitiesLine := fmt.Sprintf("    %s %s\n",
+			themeObj.Info.Render("Modalities:"),
+			strings.Join(modalitiesList, ", "))
+		result.WriteString(modalitiesLine)
 	}
 
 	// Pricing information
 	if model.Pricing != nil {
-		pricingInfo := fmt.Sprintf("Pricing: $%.2f/1M input, $%.2f/1M output tokens",
-			model.Pricing.InputPerMToken, model.Pricing.OutputPerMToken)
-		parts = append(parts, pricingInfo)
+		inputPrice := themeObj.Variable.Render(fmt.Sprintf("$%.2f/1M", model.Pricing.InputPerMToken))
+		outputPrice := themeObj.Variable.Render(fmt.Sprintf("$%.2f/1M", model.Pricing.OutputPerMToken))
+		pricingLine := fmt.Sprintf("    %s %s input, %s output tokens\n",
+			themeObj.Info.Render("Pricing:"), inputPrice, outputPrice)
+		result.WriteString(pricingLine)
 	}
 
 	// Features
 	if model.Features != nil {
 		var features []string
 		if model.Features.Streaming != nil && *model.Features.Streaming {
-			features = append(features, "streaming")
+			features = append(features, themeObj.Keyword.Render("streaming"))
 		}
 		if model.Features.FunctionCalling != nil && *model.Features.FunctionCalling {
-			features = append(features, "function-calling")
+			features = append(features, themeObj.Keyword.Render("function-calling"))
 		}
 		if model.Features.StructuredOutputs != nil && *model.Features.StructuredOutputs {
-			features = append(features, "structured-outputs")
+			features = append(features, themeObj.Keyword.Render("structured-outputs"))
 		}
 		if model.Features.Vision != nil && *model.Features.Vision {
-			features = append(features, "vision")
+			features = append(features, themeObj.Keyword.Render("vision"))
 		}
 		if model.Features.FineTuning != nil && *model.Features.FineTuning {
-			features = append(features, "fine-tuning")
+			features = append(features, themeObj.Keyword.Render("fine-tuning"))
 		}
 		if len(features) > 0 {
-			featuresInfo := fmt.Sprintf("Features: %s", strings.Join(features, ", "))
-			parts = append(parts, featuresInfo)
+			featuresLine := fmt.Sprintf("    %s %s\n",
+				themeObj.Info.Render("Features:"),
+				strings.Join(features, ", "))
+			result.WriteString(featuresLine)
 		}
 	}
 
 	// Tools
 	if len(model.Tools) > 0 {
-		toolsInfo := fmt.Sprintf("Tools: %s", strings.Join(model.Tools, ", "))
-		parts = append(parts, toolsInfo)
+		toolsList := make([]string, len(model.Tools))
+		for i, tool := range model.Tools {
+			toolsList[i] = themeObj.Variable.Render(tool)
+		}
+		toolsLine := fmt.Sprintf("    %s %s\n",
+			themeObj.Info.Render("Tools:"),
+			strings.Join(toolsList, ", "))
+		result.WriteString(toolsLine)
 	}
 
 	// Knowledge cutoff
 	if model.KnowledgeCutoff != nil {
-		parts = append(parts, fmt.Sprintf("Knowledge cutoff: %s", *model.KnowledgeCutoff))
+		cutoffLine := fmt.Sprintf("    %s %s\n",
+			themeObj.Info.Render("Knowledge cutoff:"),
+			themeObj.Variable.Render(*model.KnowledgeCutoff))
+		result.WriteString(cutoffLine)
 	}
 
 	// Reasoning tokens
 	if model.ReasoningTokens != nil && *model.ReasoningTokens {
-		parts = append(parts, "Reasoning tokens supported")
+		reasoningLine := fmt.Sprintf("    %s\n",
+			themeObj.Success.Render("Reasoning tokens supported"))
+		result.WriteString(reasoningLine)
 	}
 
 	// Snapshots
 	if len(model.Snapshots) > 0 {
-		snapshotsInfo := fmt.Sprintf("Snapshots: %s", strings.Join(model.Snapshots, ", "))
-		parts = append(parts, snapshotsInfo)
+		snapshotsList := make([]string, len(model.Snapshots))
+		for i, snapshot := range model.Snapshots {
+			snapshotsList[i] = themeObj.Variable.Render(snapshot)
+		}
+		snapshotsLine := fmt.Sprintf("    %s %s\n",
+			themeObj.Info.Render("Snapshots:"),
+			strings.Join(snapshotsList, ", "))
+		result.WriteString(snapshotsLine)
 	}
 
 	// Deprecation status
 	if model.Deprecated {
-		parts = append(parts, "DEPRECATED")
+		deprecatedLine := fmt.Sprintf("    %s\n",
+			themeObj.Warning.Render("DEPRECATED"))
+		result.WriteString(deprecatedLine)
 	}
 
-	// Format as indented entry
-	firstLine := fmt.Sprintf("  %s\n", parts[0])
-	result := firstLine
-	for _, part := range parts[1:] {
-		result += fmt.Sprintf("    %s\n", part)
-	}
+	// Description
 	if len(model.Description) > 0 {
-		result += fmt.Sprintf("    Description: %s\n", model.Description)
+		descriptionLine := fmt.Sprintf("    %s %s\n",
+			themeObj.Info.Render("Description:"),
+			themeObj.Info.Render(model.Description))
+		result.WriteString(descriptionLine)
 	}
 
-	return result
+	return result.String()
 }
 
 // formatNumber formats large numbers with commas for readability.
@@ -451,6 +503,26 @@ func (c *CatalogCommand) toTitle(s string) string {
 	r := []rune(s)
 	r[0] = unicode.ToUpper(r[0])
 	return string(r)
+}
+
+// getThemeObject retrieves the theme object based on the _style variable
+func (c *CatalogCommand) getThemeObject() *services.Theme {
+	// Get _style variable for theme selection
+	styleValue := ""
+	if variableService, err := services.GetGlobalVariableService(); err == nil {
+		if value, err := variableService.Get("_style"); err == nil {
+			styleValue = value
+		}
+	}
+
+	// Get theme service and theme object (always returns valid theme)
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// This should rarely happen, but we need to return something
+		panic(fmt.Sprintf("theme service not available: %v", err))
+	}
+
+	return themeService.GetThemeByName(styleValue)
 }
 
 func init() {
