@@ -47,6 +47,15 @@ func (r *Registry) GetService(name string) (neurotypes.Service, error) {
 	return service, nil
 }
 
+// HasService checks if a service is registered without returning an error.
+func (r *Registry) HasService(name string) bool {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	_, exists := r.services[name]
+	return exists
+}
+
 // InitializeAll initializes all registered services with the provided context.
 func (r *Registry) InitializeAll(ctx neurotypes.Context) error {
 	r.mu.RLock()
