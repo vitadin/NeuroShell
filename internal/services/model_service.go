@@ -3,10 +3,9 @@ package services
 import (
 	"fmt"
 	"strings"
-	"time"
 
-	"github.com/google/uuid"
 	neuroshellcontext "neuroshell/internal/context"
+	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -61,16 +60,16 @@ func (m *ModelService) CreateModel(name, provider, baseModel string, parameters 
 		return nil, fmt.Errorf("base_model is required")
 	}
 
-	// Generate unique model ID
-	modelID := uuid.New().String()
+	// Generate unique model ID (deterministic in test mode)
+	modelID := testutils.GenerateUUID(ctx)
 
 	// Ensure parameters map is not nil
 	if parameters == nil {
 		parameters = make(map[string]any)
 	}
 
-	// Create model configuration
-	now := time.Now()
+	// Create model configuration (deterministic time in test mode)
+	now := testutils.GetCurrentTime(ctx)
 	model := &neurotypes.ModelConfig{
 		ID:          modelID,
 		Name:        name,

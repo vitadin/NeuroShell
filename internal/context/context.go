@@ -8,8 +8,8 @@ import (
 	"os/user"
 	"regexp"
 	"strings"
-	"time"
 
+	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -71,10 +71,7 @@ func New() *NeuroContext {
 
 // generateSessionID creates a session ID, deterministic in test mode
 func (ctx *NeuroContext) generateSessionID() string {
-	if ctx.testMode {
-		return "session_1609459200" // Fixed timestamp for test mode
-	}
-	return fmt.Sprintf("session_%d", time.Now().Unix())
+	return testutils.GenerateSessionID(ctx)
 }
 
 // GetVariable retrieves a variable value by name, supporting both user and system variables.
@@ -141,12 +138,13 @@ func (ctx *NeuroContext) GetMessageHistory(n int) []neurotypes.Message {
 
 // GetSessionState returns the complete session state including variables and history.
 func (ctx *NeuroContext) GetSessionState() neurotypes.SessionState {
+	now := testutils.GetCurrentTime(ctx)
 	return neurotypes.SessionState{
 		ID:        ctx.sessionID,
 		Variables: ctx.variables,
 		History:   ctx.history,
-		CreatedAt: time.Now(), // Simplified for now
-		UpdatedAt: time.Now(),
+		CreatedAt: now, // Deterministic time in test mode
+		UpdatedAt: now,
 	}
 }
 
@@ -165,9 +163,9 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 			return home, true
 		}
 	case "@date":
-		return time.Now().Format("2006-01-02"), true
+		return testutils.GetCurrentTime(ctx).Format("2006-01-02"), true
 	case "@time":
-		return time.Now().Format("15:04:05"), true
+		return testutils.GetCurrentTime(ctx).Format("15:04:05"), true
 	case "@os":
 		return fmt.Sprintf("%s/%s", os.Getenv("GOOS"), os.Getenv("GOARCH")), true
 	case "#session_id":
