@@ -7,8 +7,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/context"
+	"neuroshell/internal/services"
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
@@ -529,4 +531,146 @@ func BenchmarkSetCommand_Execute_LargeValue(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = cmd.Execute(args, "")
 	}
+}
+
+func TestSetCommand_Execute_WhitelistedGlobalVariables(t *testing.T) {
+	cmd := &SetCommand{}
+
+	tests := []struct {
+		name           string
+		args           map[string]string
+		input          string
+		wantErr        bool
+		errMsg         string
+		expectedVars   map[string]string
+		expectedOutput string
+	}{
+		{
+			name:           "set whitelisted _style variable",
+			args:           map[string]string{"_style": "dark"},
+			input:          "",
+			expectedVars:   map[string]string{"_style": "dark"},
+			expectedOutput: "Setting _style = dark\n",
+		},
+		{
+			name:           "set _style to empty string",
+			args:           map[string]string{"_style": ""},
+			input:          "",
+			expectedVars:   map[string]string{"_style": ""},
+			expectedOutput: "Setting _style = \n",
+		},
+		{
+			name:           "set _style with space syntax",
+			args:           map[string]string{},
+			input:          "_style light",
+			expectedVars:   map[string]string{"_style": "light"},
+			expectedOutput: "Setting _style = light\n",
+		},
+		{
+			name:    "try to set non-whitelisted _secret variable",
+			args:    map[string]string{"_secret": "value"},
+			input:   "",
+			wantErr: true,
+			errMsg:  "cannot set system variable: _secret",
+		},
+		{
+			name:    "try to set non-whitelisted _config variable",
+			args:    map[string]string{"_config": "value"},
+			input:   "",
+			wantErr: true,
+			errMsg:  "cannot set system variable: _config",
+		},
+		{
+			name:    "try to set @pwd system variable",
+			args:    map[string]string{"@pwd": "/tmp"},
+			input:   "",
+			wantErr: true,
+			errMsg:  "cannot set system variable: @pwd",
+		},
+		{
+			name:    "try to set #session_id system variable",
+			args:    map[string]string{"#session_id": "fake"},
+			input:   "",
+			wantErr: true,
+			errMsg:  "cannot set system variable: #session_id",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Use real context for whitelist testing, not mock context
+			ctx := context.New()
+			setupSetTestRegistry(t, ctx)
+
+			// Capture stdout
+			originalStdout := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			err := cmd.Execute(tt.args, tt.input)
+
+			// Restore stdout
+			_ = w.Close()
+			os.Stdout = originalStdout
+
+			// Read captured output
+			output, _ := io.ReadAll(r)
+			outputStr := string(output)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				if tt.errMsg != "" {
+					assert.Contains(t, err.Error(), tt.errMsg)
+				}
+			} else {
+				assert.NoError(t, err)
+
+				// Verify variables were set
+				for expectedVar, expectedValue := range tt.expectedVars {
+					actualValue, err := ctx.GetVariable(expectedVar)
+					assert.NoError(t, err)
+					assert.Equal(t, expectedValue, actualValue)
+				}
+
+				// Check output
+				if tt.expectedOutput != "" {
+					assert.Equal(t, tt.expectedOutput, outputStr)
+				}
+			}
+		})
+	}
+}
+
+func TestSetCommand_Execute_StyleVariableDefaultInitialization(t *testing.T) {
+	// Test that _style is initialized to empty string by default
+	ctx := testutils.NewMockContext()
+	context.SetGlobalContext(ctx)
+
+	// _style should exist and be empty by default
+	value, err := ctx.GetVariable("_style")
+	assert.NoError(t, err)
+	assert.Equal(t, "", value)
+}
+
+func setupSetTestRegistry(t *testing.T, ctx neurotypes.Context) {
+	// Create a new registry for testing
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
+
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
+
+	// Register variable service
+	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+
+	// Initialize services
+	err = services.GetGlobalRegistry().InitializeAll(ctx)
+	require.NoError(t, err)
+
+	// Cleanup function to restore original registry
+	t.Cleanup(func() {
+		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
+	})
 }

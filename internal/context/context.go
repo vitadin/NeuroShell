@@ -13,6 +13,11 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
+// allowedGlobalVariables defines which global variables (starting with _) can be set by users
+var allowedGlobalVariables = []string{
+	"_style",
+}
+
 // NeuroContext implements the neurotypes.Context interface providing session state management.
 // It maintains variables, message history, execution queues, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
@@ -57,6 +62,10 @@ func New() *NeuroContext {
 
 	// Generate initial session ID (will be deterministic if test mode is set later)
 	ctx.sessionID = ctx.generateSessionID()
+
+	// Initialize whitelisted global variables with default values
+	_ = ctx.SetSystemVariable("_style", "")
+
 	return ctx
 }
 
@@ -85,9 +94,23 @@ func (ctx *NeuroContext) GetVariable(name string) (string, error) {
 
 // SetVariable sets a user variable, preventing modification of system variables.
 func (ctx *NeuroContext) SetVariable(name string, value string) error {
-	// Don't allow setting system variables
-	if strings.HasPrefix(name, "@") || strings.HasPrefix(name, "#") || strings.HasPrefix(name, "_") {
+	// Don't allow setting system variables with @ or # prefixes
+	if strings.HasPrefix(name, "@") || strings.HasPrefix(name, "#") {
 		return fmt.Errorf("cannot set system variable: %s", name)
+	}
+
+	// For variables with _ prefix, check whitelist
+	if strings.HasPrefix(name, "_") {
+		allowed := false
+		for _, allowedVar := range allowedGlobalVariables {
+			if name == allowedVar {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return fmt.Errorf("cannot set system variable: %s", name)
+		}
 	}
 
 	ctx.variables[name] = value

@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -25,7 +26,12 @@ func TestNew(t *testing.T) {
 	assert.NotEmpty(t, ctx.sessionID)
 	assert.Contains(t, ctx.sessionID, "session_")
 	assert.False(t, ctx.testMode)
-	assert.Equal(t, 0, len(ctx.variables))
+	assert.Equal(t, 1, len(ctx.variables)) // _style is initialized by default
+
+	// Verify that _style is initialized to empty string
+	styleValue, err := ctx.GetVariable("_style")
+	assert.NoError(t, err)
+	assert.Equal(t, "", styleValue)
 	assert.Equal(t, 0, len(ctx.history))
 	assert.Equal(t, 0, len(ctx.executionQueue))
 	assert.Equal(t, 0, len(ctx.scriptMetadata))
@@ -143,6 +149,43 @@ func TestSetVariable_SystemVariables_Forbidden(t *testing.T) {
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), "cannot set system variable")
 			assert.Contains(t, err.Error(), tt.varName)
+		})
+	}
+}
+
+func TestSetVariable_WhitelistedGlobalVariables(t *testing.T) {
+	ctx := New()
+
+	tests := []struct {
+		name     string
+		varName  string
+		varValue string
+		wantErr  bool
+	}{
+		{"whitelisted_style_variable", "_style", "dark", false},
+		{"whitelisted_style_empty", "_style", "", false},
+		{"whitelisted_style_overwrite", "_style", "light", false},
+		{"non_whitelisted_underscore", "_config", "value", true},
+		{"non_whitelisted_underscore_2", "_secret", "value", true},
+		{"non_whitelisted_underscore_3", "_custom", "value", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ctx.SetVariable(tt.varName, tt.varValue)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "cannot set system variable")
+				assert.Contains(t, err.Error(), tt.varName)
+			} else {
+				assert.NoError(t, err)
+
+				// Verify the value was actually set
+				actualValue, err := ctx.GetVariable(tt.varName)
+				assert.NoError(t, err)
+				assert.Equal(t, tt.varValue, actualValue)
+			}
 		})
 	}
 }
@@ -828,6 +871,44 @@ func TestSystemVariables_OSEnvironment(t *testing.T) {
 	}
 	if origGOARCH != "" {
 		require.NoError(t, os.Setenv("GOARCH", origGOARCH))
+	}
+}
+
+func TestMockContext_SetVariableWithValidation(t *testing.T) {
+	// Test that the mock context validation method works the same as real context
+	ctx := testutils.NewMockContext()
+
+	tests := []struct {
+		name     string
+		varName  string
+		varValue string
+		wantErr  bool
+	}{
+		{"whitelisted_style_variable", "_style", "dark", false},
+		{"whitelisted_style_empty", "_style", "", false},
+		{"non_whitelisted_underscore", "_config", "value", true},
+		{"system_at_variable", "@pwd", "value", true},
+		{"system_hash_variable", "#session", "value", true},
+		{"regular_variable", "normal", "value", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ctx.SetVariableWithValidation(tt.varName, tt.varValue)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "cannot set system variable")
+				assert.Contains(t, err.Error(), tt.varName)
+			} else {
+				assert.NoError(t, err)
+
+				// Verify the value was actually set
+				actualValue, err := ctx.GetVariable(tt.varName)
+				assert.NoError(t, err)
+				assert.Equal(t, tt.varValue, actualValue)
+			}
+		})
 	}
 }
 
