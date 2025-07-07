@@ -1,0 +1,27 @@
+name: dark
+description: Dark theme optimized for dark terminals
+styles:
+  keyword:
+    foreground: "#58a6ff"
+  variable:
+    foreground: "#a5a5ff"
+  command:
+    foreground: "#f85149"
+  success:
+    foreground: "#3fb950"
+  error:
+    foreground: "#f85149"
+  warning:
+    foreground: "#d29922"
+  info:
+    foreground: "#58a6ff"
+  highlight:
+    foreground: "#000000"
+    background: "#58a6ff"
+  bold:
+    bold: true
+  italic:
+    italic: true
+  underline:
+    underline: true
+  background: {}

@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"gopkg.in/yaml.v3"
+	"neuroshell/internal/data/embedded"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
 )
@@ -33,14 +35,14 @@ type RenderTheme struct {
 	Background lipgloss.Style
 }
 
-// NewRenderService creates a new RenderService instance with default themes.
+// NewRenderService creates a new RenderService instance with themes loaded from YAML.
 func NewRenderService() *RenderService {
 	service := &RenderService{
 		initialized: false,
 		themes:      make(map[string]*RenderTheme),
 	}
-	// Initialize default themes
-	service.initializeDefaultThemes()
+	// Load themes from embedded YAML files
+	service.loadThemesFromYAML()
 	return service
 }
 
@@ -55,62 +57,122 @@ func (r *RenderService) Initialize(_ neurotypes.Context) error {
 	return nil
 }
 
-// initializeDefaultThemes sets up built-in color themes
-func (r *RenderService) initializeDefaultThemes() {
-	// Default theme - works well with both light and dark terminals
-	r.themes["default"] = &RenderTheme{
-		Name:       "default",
-		Keyword:    lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#0969da", Dark: "#58a6ff"}),
-		Variable:   lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#6f42c1", Dark: "#a5a5ff"}),
-		Command:    lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#cf222e", Dark: "#f85149"}),
-		Success:    lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#1f883d", Dark: "#3fb950"}),
-		Error:      lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#d1242f", Dark: "#f85149"}),
-		Warning:    lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#bf8700", Dark: "#d29922"}),
-		Info:       lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#0969da", Dark: "#58a6ff"}),
-		Highlight:  lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#ffffff", Dark: "#000000"}).Background(lipgloss.AdaptiveColor{Light: "#0969da", Dark: "#58a6ff"}),
-		Bold:       lipgloss.NewStyle().Bold(true),
-		Italic:     lipgloss.NewStyle().Italic(true),
-		Underline:  lipgloss.NewStyle().Underline(true),
-		Background: lipgloss.NewStyle(),
+// loadThemesFromYAML loads themes from embedded YAML files
+func (r *RenderService) loadThemesFromYAML() {
+	// Load individual theme files
+	themeFiles := map[string][]byte{
+		"default": embedded.DefaultThemeData,
+		"dark":    embedded.DarkThemeData,
+		"light":   embedded.LightThemeData,
+		"plain":   embedded.PlainThemeData,
 	}
 
-	// Dark theme - optimized for dark terminals
-	r.themes["dark"] = &RenderTheme{
-		Name:       "dark",
-		Keyword:    lipgloss.NewStyle().Foreground(lipgloss.Color("#58a6ff")),
-		Variable:   lipgloss.NewStyle().Foreground(lipgloss.Color("#a5a5ff")),
-		Command:    lipgloss.NewStyle().Foreground(lipgloss.Color("#f85149")),
-		Success:    lipgloss.NewStyle().Foreground(lipgloss.Color("#3fb950")),
-		Error:      lipgloss.NewStyle().Foreground(lipgloss.Color("#f85149")),
-		Warning:    lipgloss.NewStyle().Foreground(lipgloss.Color("#d29922")),
-		Info:       lipgloss.NewStyle().Foreground(lipgloss.Color("#58a6ff")),
-		Highlight:  lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#58a6ff")),
-		Bold:       lipgloss.NewStyle().Bold(true),
-		Italic:     lipgloss.NewStyle().Italic(true),
-		Underline:  lipgloss.NewStyle().Underline(true),
-		Background: lipgloss.NewStyle(),
+	for themeName, themeData := range themeFiles {
+		theme, err := r.loadThemeFile(themeData)
+		if err != nil {
+			logger.Error("Failed to load theme", "theme", themeName, "error", err)
+			// Fall back to creating a basic plain theme
+			r.themes[themeName] = r.createFallbackTheme(themeName)
+			continue
+		}
+		r.themes[themeName] = theme
 	}
 
-	// Light theme - optimized for light terminals
-	r.themes["light"] = &RenderTheme{
-		Name:       "light",
-		Keyword:    lipgloss.NewStyle().Foreground(lipgloss.Color("#0969da")),
-		Variable:   lipgloss.NewStyle().Foreground(lipgloss.Color("#6f42c1")),
-		Command:    lipgloss.NewStyle().Foreground(lipgloss.Color("#cf222e")),
-		Success:    lipgloss.NewStyle().Foreground(lipgloss.Color("#1f883d")),
-		Error:      lipgloss.NewStyle().Foreground(lipgloss.Color("#d1242f")),
-		Warning:    lipgloss.NewStyle().Foreground(lipgloss.Color("#bf8700")),
-		Info:       lipgloss.NewStyle().Foreground(lipgloss.Color("#0969da")),
-		Highlight:  lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff")).Background(lipgloss.Color("#0969da")),
-		Bold:       lipgloss.NewStyle().Bold(true),
-		Italic:     lipgloss.NewStyle().Italic(true),
-		Underline:  lipgloss.NewStyle().Underline(true),
-		Background: lipgloss.NewStyle(),
+	// Ensure we always have a plain theme as fallback
+	if _, exists := r.themes["plain"]; !exists {
+		r.themes["plain"] = r.createFallbackTheme("plain")
+	}
+}
+
+// loadThemeFile loads and parses an individual theme file from embedded YAML data.
+func (r *RenderService) loadThemeFile(data []byte) (*RenderTheme, error) {
+	var themeFile neurotypes.ThemeFile
+
+	if err := yaml.Unmarshal(data, &themeFile); err != nil {
+		return nil, fmt.Errorf("failed to parse theme file: %w", err)
 	}
 
-	// Plain theme - no styling (returns text as-is)
-	r.themes["plain"] = &RenderTheme{
-		Name:       "plain",
+	// Convert ThemeConfig to RenderTheme
+	return r.convertThemeConfig(&themeFile.ThemeConfig), nil
+}
+
+// convertThemeConfig converts a ThemeConfig from YAML to a RenderTheme with lipgloss styles.
+func (r *RenderService) convertThemeConfig(config *neurotypes.ThemeConfig) *RenderTheme {
+	return &RenderTheme{
+		Name:       config.Name,
+		Keyword:    r.createStyle(config.Styles.Keyword),
+		Variable:   r.createStyle(config.Styles.Variable),
+		Command:    r.createStyle(config.Styles.Command),
+		Success:    r.createStyle(config.Styles.Success),
+		Error:      r.createStyle(config.Styles.Error),
+		Warning:    r.createStyle(config.Styles.Warning),
+		Info:       r.createStyle(config.Styles.Info),
+		Highlight:  r.createStyle(config.Styles.Highlight),
+		Bold:       r.createStyle(config.Styles.Bold),
+		Italic:     r.createStyle(config.Styles.Italic),
+		Underline:  r.createStyle(config.Styles.Underline),
+		Background: r.createStyle(config.Styles.Background),
+	}
+}
+
+// createStyle converts a StyleConfig to a lipgloss.Style.
+func (r *RenderService) createStyle(config neurotypes.StyleConfig) lipgloss.Style {
+	style := lipgloss.NewStyle()
+
+	// Handle foreground color
+	if config.Foreground != nil {
+		if color := r.parseColor(config.Foreground); color != nil {
+			style = style.Foreground(color)
+		}
+	}
+
+	// Handle background color
+	if config.Background != nil {
+		if color := r.parseColor(config.Background); color != nil {
+			style = style.Background(color)
+		}
+	}
+
+	// Handle text decorations
+	if config.Bold != nil && *config.Bold {
+		style = style.Bold(true)
+	}
+	if config.Italic != nil && *config.Italic {
+		style = style.Italic(true)
+	}
+	if config.Underline != nil && *config.Underline {
+		style = style.Underline(true)
+	}
+	if config.Strikethrough != nil && *config.Strikethrough {
+		style = style.Strikethrough(true)
+	}
+
+	return style
+}
+
+// parseColor parses a color value that can be a string, AdaptiveColor, or map.
+func (r *RenderService) parseColor(colorValue interface{}) lipgloss.TerminalColor {
+	switch v := colorValue.(type) {
+	case string:
+		// Simple color string
+		return lipgloss.Color(v)
+	case map[string]interface{}:
+		// Check if it's an adaptive color with light/dark keys
+		if light, hasLight := v["light"].(string); hasLight {
+			if dark, hasDark := v["dark"].(string); hasDark {
+				return lipgloss.AdaptiveColor{Light: light, Dark: dark}
+			}
+		}
+		return nil
+	default:
+		return nil
+	}
+}
+
+// createFallbackTheme creates a basic plain theme for fallback scenarios.
+func (r *RenderService) createFallbackTheme(name string) *RenderTheme {
+	return &RenderTheme{
+		Name:       name,
 		Keyword:    lipgloss.NewStyle(),
 		Variable:   lipgloss.NewStyle(),
 		Command:    lipgloss.NewStyle(),
