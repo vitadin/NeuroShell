@@ -1,0 +1,22 @@
+%% Test _style variable default initialization
+%% This test verifies _style is initialized to empty string by default
+
+%% Check initial value of _style (should be empty)
+\get[_style]
+
+%% Set it to a value
+\set[_style="initialized"]
+\get[_style]
+
+%% Reset to empty
+\set[_style=""]
+\get[_style]
+
+%% Set again to verify persistence
+\set[_style="persistent"]
+\get[_style]
+
+%% Test with other variables to ensure _style doesn't interfere
+\set[regular_var="normal"]
+\get[regular_var]
+\get[_style]

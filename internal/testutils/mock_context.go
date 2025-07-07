@@ -5,11 +5,17 @@ package testutils
 import (
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
 	"neuroshell/pkg/neurotypes"
 )
+
+// allowedGlobalVariables defines which global variables (starting with _) can be set by users (same as real context)
+var allowedGlobalVariables = []string{
+	"_style",
+}
 
 // MockContext implements the Context interface for testing
 type MockContext struct {
@@ -36,7 +42,7 @@ type MockContext struct {
 
 // NewMockContext creates a new mock context with default values
 func NewMockContext() *MockContext {
-	return &MockContext{
+	ctx := &MockContext{
 		variables: make(map[string]string),
 		history:   []neurotypes.Message{},
 		sessionState: neurotypes.SessionState{
@@ -59,6 +65,11 @@ func NewMockContext() *MockContext {
 		modelNameToID: make(map[string]string),
 		modelIDToName: make(map[string]string),
 	}
+
+	// Initialize whitelisted global variables with default values (same as real context)
+	_ = ctx.SetSystemVariable("_style", "")
+
+	return ctx
 }
 
 // NewMockContextWithVars creates a mock context with predefined variables
@@ -110,13 +121,51 @@ func (m *MockContext) GetVariable(name string) (string, error) {
 	return "", fmt.Errorf("variable '%s' not found", name)
 }
 
-// SetVariable implements Context.SetVariable
+// SetVariable implements Context.SetVariable with same validation logic as real context
+// Note: MockContext allows setting ALL variables for testing purposes, including system variables
 func (m *MockContext) SetVariable(name string, value string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if m.setVariableError != nil {
 		return m.setVariableError
+	}
+
+	// Mock context allows setting any variable for testing purposes
+	// This enables testing of API service configuration, session variables, etc.
+	m.variables[name] = value
+	m.sessionState.Variables[name] = value
+	return nil
+}
+
+// SetVariableWithValidation implements the same validation logic as the real context
+// This method is used specifically for testing the whitelist functionality
+func (m *MockContext) SetVariableWithValidation(name string, value string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.setVariableError != nil {
+		return m.setVariableError
+	}
+
+	// Apply the same validation logic as real context
+	// Don't allow setting system variables with @ or # prefixes
+	if strings.HasPrefix(name, "@") || strings.HasPrefix(name, "#") {
+		return fmt.Errorf("cannot set system variable: %s", name)
+	}
+
+	// For variables with _ prefix, check whitelist
+	if strings.HasPrefix(name, "_") {
+		allowed := false
+		for _, allowedVar := range allowedGlobalVariables {
+			if name == allowedVar {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return fmt.Errorf("cannot set system variable: %s", name)
+		}
 	}
 
 	m.variables[name] = value

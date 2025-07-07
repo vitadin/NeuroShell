@@ -1,0 +1,31 @@
+%% Test _style variable with interpolation and regular variables
+%% This test verifies _style works with variable interpolation
+
+%% Set up some regular variables
+\set[theme_base="dark"]
+\set[variant="compact"]
+\set[suffix="v2"]
+
+%% Test interpolating into _style
+\set[_style="${theme_base}-${variant}-${suffix}"]
+\get[_style]
+
+%% Test using _style in other variables
+\set[description="Current theme is ${_style}"]
+\get[description]
+
+%% Test complex interpolation
+\set[user_pref="advanced"]
+\set[_style="${theme_base}-${user_pref}-theme"]
+\get[_style]
+
+%% Test nested interpolation (if supported)
+\set[theme_name="modern"]
+\set[style_template="${theme_name}-style"]
+\set[_style="${style_template}"]
+\get[_style]
+
+%% Verify all variables are accessible
+\get[theme_base]
+\get[variant]
+\get[_style]

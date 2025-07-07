@@ -1,0 +1,17 @@
+Setting theme_base = dark
+Setting variant = compact
+Setting suffix = v2
+Setting _style = dark-compact-v2
+_style = dark-compact-v2
+Setting description = Current theme is dark-compact-v2
+description = Current theme is dark-compact-v2
+Setting user_pref = advanced
+Setting _style = dark-advanced-theme
+_style = dark-advanced-theme
+Setting theme_name = modern
+Setting style_template = modern-style
+Setting _style = modern-style
+_style = modern-style
+theme_base = dark
+variant = compact
+_style = modern-style
