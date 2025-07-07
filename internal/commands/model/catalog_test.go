@@ -77,6 +77,7 @@ func TestCatalogCommand_Execute(t *testing.T) {
 	// Register required services
 	require.NoError(t, registry.RegisterService(services.NewModelCatalogService()))
 	require.NoError(t, registry.RegisterService(services.NewVariableService()))
+	require.NoError(t, registry.RegisterService(services.NewThemeService()))
 	require.NoError(t, registry.InitializeAll(ctx))
 	services.SetGlobalRegistry(registry)
 
@@ -374,6 +375,10 @@ func TestCatalogCommand_formatNumber(t *testing.T) {
 func TestCatalogCommand_formatModelCatalog(t *testing.T) {
 	cmd := &CatalogCommand{}
 
+	// Create a theme service for testing
+	themeService := services.NewThemeService()
+	themeObj := themeService.GetThemeByName("plain") // Use plain theme for predictable test output
+
 	// Create model-to-provider mapping for tests
 	modelToProvider := map[string]string{
 		"gpt-4": "openai",
@@ -381,20 +386,20 @@ func TestCatalogCommand_formatModelCatalog(t *testing.T) {
 
 	t.Run("empty models list", func(t *testing.T) {
 		models := []neurotypes.ModelCatalogEntry{}
-		result := cmd.formatModelCatalog(models, "all", "provider", "", modelToProvider)
+		result := cmd.formatModelCatalog(models, "all", "provider", "", modelToProvider, themeObj)
 		assert.Contains(t, result, "No models found")
 	})
 
 	t.Run("with search query", func(t *testing.T) {
 		models := []neurotypes.ModelCatalogEntry{}
-		result := cmd.formatModelCatalog(models, "all", "provider", "gpt-4", modelToProvider)
+		result := cmd.formatModelCatalog(models, "all", "provider", "gpt-4", modelToProvider, themeObj)
 		assert.Contains(t, result, "No models found")
 		assert.Contains(t, result, "matching 'gpt-4'")
 	})
 
 	t.Run("with specific provider", func(t *testing.T) {
 		models := []neurotypes.ModelCatalogEntry{}
-		result := cmd.formatModelCatalog(models, "openai", "provider", "", modelToProvider)
+		result := cmd.formatModelCatalog(models, "openai", "provider", "", modelToProvider, themeObj)
 		assert.Contains(t, result, "No models found")
 		assert.Contains(t, result, "from openai")
 	})
@@ -409,7 +414,7 @@ func TestCatalogCommand_formatModelCatalog(t *testing.T) {
 				ContextWindow: 8192,
 			},
 		}
-		result := cmd.formatModelCatalog(models, "all", "provider", "", modelToProvider)
+		result := cmd.formatModelCatalog(models, "all", "provider", "", modelToProvider, themeObj)
 		assert.Contains(t, result, "Model Catalog")
 		assert.Contains(t, result, "(1 models)")
 		assert.Contains(t, result, "GPT-4 (gpt-4)")
