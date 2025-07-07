@@ -25,12 +25,13 @@ func TestRenderService_ThemeManagement(t *testing.T) {
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
-	// Test available themes
+	// Test available themes (should include plain theme now)
 	themes := service.GetAvailableThemes()
 	assert.Contains(t, themes, "default")
 	assert.Contains(t, themes, "dark")
 	assert.Contains(t, themes, "light")
-	assert.Len(t, themes, 3)
+	assert.Contains(t, themes, "plain")
+	assert.Len(t, themes, 4)
 
 	// Test getting specific themes
 	defaultTheme, exists := service.GetTheme("default")
@@ -38,308 +39,219 @@ func TestRenderService_ThemeManagement(t *testing.T) {
 	assert.NotNil(t, defaultTheme)
 	assert.Equal(t, "default", defaultTheme.Name)
 
+	// Test plain theme
+	plainTheme, exists := service.GetTheme("plain")
+	assert.True(t, exists)
+	assert.NotNil(t, plainTheme)
+	assert.Equal(t, "plain", plainTheme.Name)
+
 	// Test non-existent theme
 	_, exists = service.GetTheme("nonexistent")
 	assert.False(t, exists)
 }
 
-func TestRenderService_KeywordHighlighting(t *testing.T) {
+func TestRenderService_GetThemeByName(t *testing.T) {
 	service := NewRenderService()
 	ctx := testutils.NewMockContext()
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
 	tests := []struct {
-		name     string
-		text     string
-		keywords []string
+		name         string
+		input        string
+		expectedName string
+		description  string
 	}{
 		{
-			name:     "highlight commands",
-			text:     "Use \\get and \\set commands",
-			keywords: []string{"\\get", "\\set"},
+			name:         "empty string returns plain theme",
+			input:        "",
+			expectedName: "plain",
+			description:  "Empty theme name should return plain theme",
 		},
 		{
-			name:     "highlight variables",
-			text:     "The value is ${name} and ${count}",
-			keywords: []string{"${name}", "${count}"},
+			name:         "plain returns plain theme",
+			input:        "plain",
+			expectedName: "plain",
+			description:  "Explicit plain theme should return plain theme",
 		},
 		{
-			name:     "mixed keywords",
-			text:     "Run \\bash with ${script} parameter",
-			keywords: []string{"\\bash", "${script}"},
+			name:         "dark1 returns dark theme (alias)",
+			input:        "dark1",
+			expectedName: "dark",
+			description:  "dark1 alias should return dark theme",
 		},
 		{
-			name:     "no keywords",
-			text:     "Plain text without highlights",
-			keywords: []string{},
+			name:         "DARK1 returns dark theme (case insensitive)",
+			input:        "DARK1",
+			expectedName: "dark",
+			description:  "DARK1 should be case insensitive",
+		},
+		{
+			name:         "dark returns dark theme",
+			input:        "dark",
+			expectedName: "dark",
+			description:  "dark theme should return dark theme",
+		},
+		{
+			name:         "default returns default theme",
+			input:        "default",
+			expectedName: "default",
+			description:  "default theme should return default theme",
+		},
+		{
+			name:         "light returns light theme",
+			input:        "light",
+			expectedName: "light",
+			description:  "light theme should return light theme",
+		},
+		{
+			name:         "invalid theme returns plain theme",
+			input:        "invalid_theme",
+			expectedName: "plain",
+			description:  "Invalid theme should return plain theme as fallback",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			options := RenderOptions{
-				Keywords: tt.keywords,
-				Theme:    "default",
-			}
-
-			result, err := service.RenderText(tt.text, options)
-			require.NoError(t, err)
-
-			// In test environments, lipgloss may not output ANSI codes
-			// Instead, check that the function ran without error and content is preserved
-			if len(tt.keywords) > 0 {
-				// The result should be different from input when keywords are present
-				// (either styled or at minimum, processed)
-				assert.NotEmpty(t, result, "Expected non-empty result")
-			}
-
-			// Original text content should still be present (minus styling)
-			for _, keyword := range tt.keywords {
-				assert.Contains(t, result, keyword, "Keyword should still be present in output")
-			}
+			theme := service.GetThemeByName(tt.input)
+			assert.NotNil(t, theme, "GetThemeByName should never return nil")
+			assert.Equal(t, tt.expectedName, theme.Name, tt.description)
 		})
 	}
 }
 
-func TestRenderService_NeuroShellSyntaxHighlighting(t *testing.T) {
+func TestRenderService_GetDefaultTheme(t *testing.T) {
+	service := NewRenderService()
+
+	// Test without initialization
+	theme := service.GetDefaultTheme()
+	assert.NotNil(t, theme)
+	assert.Equal(t, "plain", theme.Name)
+
+	// Test with initialization
+	ctx := testutils.NewMockContext()
+	err := service.Initialize(ctx)
+	require.NoError(t, err)
+
+	theme = service.GetDefaultTheme()
+	assert.NotNil(t, theme)
+	assert.Equal(t, "plain", theme.Name)
+}
+
+func TestRenderService_ThemeStyles(t *testing.T) {
 	service := NewRenderService()
 	ctx := testutils.NewMockContext()
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
-	tests := []struct {
-		name     string
-		text     string
-		contains []string // Strings that should still be present
-	}{
-		{
-			name:     "commands and variables",
-			text:     "Use \\set[var=${name}] to set variable",
-			contains: []string{"\\set", "${name}"},
-		},
-		{
-			name:     "multiple variables",
-			text:     "Values: ${var1}, ${var2}, ${@user}",
-			contains: []string{"${var1}", "${var2}", "${@user}"},
-		},
-		{
-			name:     "complex command",
-			text:     "\\session-new[name=test] creates a session",
-			contains: []string{"\\session-new"},
-		},
-	}
+	// Test that all themes have the required style fields
+	themes := []string{"default", "dark", "light", "plain"}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			options := RenderOptions{
-				Theme: "default",
-			}
+	for _, themeName := range themes {
+		t.Run(themeName, func(t *testing.T) {
+			theme := service.GetThemeByName(themeName)
+			assert.NotNil(t, theme)
+			assert.Equal(t, themeName, theme.Name)
 
-			result, err := service.RenderText(tt.text, options)
-			require.NoError(t, err)
+			// Verify all required style fields exist (should not be nil)
+			assert.NotNil(t, theme.Keyword, "Keyword style should not be nil")
+			assert.NotNil(t, theme.Variable, "Variable style should not be nil")
+			assert.NotNil(t, theme.Command, "Command style should not be nil")
+			assert.NotNil(t, theme.Success, "Success style should not be nil")
+			assert.NotNil(t, theme.Error, "Error style should not be nil")
+			assert.NotNil(t, theme.Warning, "Warning style should not be nil")
+			assert.NotNil(t, theme.Info, "Info style should not be nil")
+			assert.NotNil(t, theme.Highlight, "Highlight style should not be nil")
+			assert.NotNil(t, theme.Bold, "Bold style should not be nil")
+			assert.NotNil(t, theme.Italic, "Italic style should not be nil")
+			assert.NotNil(t, theme.Underline, "Underline style should not be nil")
+			assert.NotNil(t, theme.Background, "Background style should not be nil")
 
-			// Should process the text (in test env, may not show ANSI codes)
-			assert.NotEmpty(t, result, "Expected non-empty result")
-
-			// All expected content should still be present
-			for _, content := range tt.contains {
-				assert.Contains(t, result, content, "Expected content should be present")
-			}
+			// Test that styles can render text without crashing
+			testText := "test"
+			assert.NotPanics(t, func() {
+				theme.Keyword.Render(testText)
+				theme.Variable.Render(testText)
+				theme.Command.Render(testText)
+				theme.Success.Render(testText)
+				theme.Error.Render(testText)
+				theme.Warning.Render(testText)
+				theme.Info.Render(testText)
+				theme.Highlight.Render(testText)
+				theme.Bold.Render(testText)
+				theme.Italic.Render(testText)
+				theme.Underline.Render(testText)
+				theme.Background.Render(testText)
+			}, "Theme styles should render text without panicking")
 		})
 	}
-}
-
-func TestRenderService_GlobalStyling(t *testing.T) {
-	service := NewRenderService()
-	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
-	require.NoError(t, err)
-
-	tests := []struct {
-		name    string
-		text    string
-		options RenderOptions
-	}{
-		{
-			name: "bold styling",
-			text: "Bold text",
-			options: RenderOptions{
-				Bold:  true,
-				Theme: "default",
-			},
-		},
-		{
-			name: "color styling",
-			text: "Colored text",
-			options: RenderOptions{
-				Color: "#ff0000",
-				Theme: "default",
-			},
-		},
-		{
-			name: "named style",
-			text: "Success message",
-			options: RenderOptions{
-				Style: "success",
-				Theme: "default",
-			},
-		},
-		{
-			name: "combined styling",
-			text: "Complex styling",
-			options: RenderOptions{
-				Bold:       true,
-				Italic:     true,
-				Color:      "#0000ff",
-				Background: "#ffff00",
-				Theme:      "default",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := service.RenderText(tt.text, tt.options)
-			require.NoError(t, err)
-
-			// Should process the text (in test env, may not show ANSI codes)
-			assert.NotEmpty(t, result, "Expected non-empty result")
-
-			// Original text should be present
-			assert.Contains(t, result, tt.text, "Original text should be present")
-		})
-	}
-}
-
-func TestRenderService_ConvenienceMethods(t *testing.T) {
-	service := NewRenderService()
-	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
-	require.NoError(t, err)
-
-	text := "Test \\get and \\set commands"
-	keywords := []string{"\\get", "\\set"}
-
-	// Test RenderWithTheme
-	result1, err := service.RenderWithTheme(text, keywords, "dark")
-	require.NoError(t, err)
-	assert.NotEmpty(t, result1)
-	assert.Contains(t, result1, "\\get")
-	assert.Contains(t, result1, "\\set")
-
-	// Test HighlightKeywords (uses default theme)
-	result2, err := service.HighlightKeywords(text, keywords)
-	require.NoError(t, err)
-	assert.NotEmpty(t, result2)
-	assert.Contains(t, result2, "\\get")
-	assert.Contains(t, result2, "\\set")
 }
 
 func TestRenderService_ErrorHandling(t *testing.T) {
 	service := NewRenderService()
 	// Don't initialize the service
 
-	// Test operations on uninitialized service
-	_, err := service.RenderText("test", RenderOptions{})
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "not initialized")
+	// Test operations on uninitialized service - should still work gracefully
+	theme := service.GetThemeByName("dark1")
+	assert.NotNil(t, theme, "Should return default theme even when not initialized")
+	assert.Equal(t, "plain", theme.Name, "Should return plain theme when not initialized")
 
 	themes := service.GetAvailableThemes()
-	assert.Empty(t, themes)
+	assert.Empty(t, themes, "Should return empty themes when not initialized")
 
 	_, exists := service.GetTheme("default")
-	assert.False(t, exists)
+	assert.False(t, exists, "Should return false for themes when not initialized")
 }
 
-func TestRenderService_ThemeFallback(t *testing.T) {
+func TestRenderService_PlainThemeRendering(t *testing.T) {
 	service := NewRenderService()
 	ctx := testutils.NewMockContext()
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
-	// Test with non-existent theme - should fallback to default
-	options := RenderOptions{
-		Keywords: []string{"test"},
-		Theme:    "nonexistent",
-	}
+	plainTheme := service.GetThemeByName("plain")
+	assert.NotNil(t, plainTheme)
 
-	result, err := service.RenderText("test keyword", options)
-	require.NoError(t, err)
+	// Test that plain theme returns text unchanged
+	testText := "Hello World"
+	styledText := plainTheme.Keyword.Render(testText)
+	assert.Equal(t, testText, styledText, "Plain theme should return text unchanged")
 
-	// Should still work and process the text
-	assert.NotEmpty(t, result)
-	assert.Contains(t, result, "test")
+	styledText = plainTheme.Error.Render(testText)
+	assert.Equal(t, testText, styledText, "Plain theme should return text unchanged")
+
+	styledText = plainTheme.Success.Render(testText)
+	assert.Equal(t, testText, styledText, "Plain theme should return text unchanged")
 }
 
-func TestRenderService_EdgeCases(t *testing.T) {
+func TestRenderService_ConcurrentAccess(t *testing.T) {
 	service := NewRenderService()
 	ctx := testutils.NewMockContext()
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
-	tests := []struct {
-		name    string
-		text    string
-		options RenderOptions
-	}{
-		{
-			name:    "empty text",
-			text:    "",
-			options: RenderOptions{Keywords: []string{"test"}},
-		},
-		{
-			name:    "empty keywords",
-			text:    "some text",
-			options: RenderOptions{Keywords: []string{}},
-		},
-		{
-			name:    "nil keywords",
-			text:    "some text",
-			options: RenderOptions{},
-		},
-		{
-			name:    "keywords with empty strings",
-			text:    "some text",
-			options: RenderOptions{Keywords: []string{"", "test", ""}},
-		},
-	}
+	// Test concurrent access to themes
+	done := make(chan bool, 10)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := service.RenderText(tt.text, tt.options)
-			require.NoError(t, err)
+	for i := 0; i < 10; i++ {
+		go func() {
+			defer func() { done <- true }()
 
-			// Should not crash and should return something reasonable
-			if tt.text == "" {
-				assert.Equal(t, "", result)
-			} else {
-				assert.Contains(t, result, tt.text)
+			// Access various themes concurrently
+			themes := []string{"default", "dark", "light", "plain", "dark1", "invalid"}
+			for _, themeName := range themes {
+				theme := service.GetThemeByName(themeName)
+				assert.NotNil(t, theme)
+
+				// Use the theme
+				theme.Command.Render("test")
 			}
-		})
-	}
-}
-
-func TestRenderService_SpecialCharacters(t *testing.T) {
-	service := NewRenderService()
-	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
-	require.NoError(t, err)
-
-	// Test with special regex characters in keywords
-	text := "Use \\get[var] and \\set commands"
-	keywords := []string{"\\get[var]", "\\set"}
-
-	options := RenderOptions{
-		Keywords: keywords,
-		Theme:    "default",
+		}()
 	}
 
-	result, err := service.RenderText(text, options)
-	require.NoError(t, err)
-
-	// Should handle regex special characters correctly
-	assert.Contains(t, result, "\\get[var]")
-	assert.Contains(t, result, "\\set")
-	assert.NotEmpty(t, result) // Should process the text
+	// Wait for all goroutines to complete
+	for i := 0; i < 10; i++ {
+		<-done
+	}
 }

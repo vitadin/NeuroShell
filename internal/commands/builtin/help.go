@@ -2,9 +2,9 @@ package builtin
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -31,7 +31,7 @@ func (c *HelpCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the help command.
 func (c *HelpCommand) Usage() string {
-	return "\\help[styled=true, command_name] or \\help[styled=true] command_name"
+	return "\\help[command_name] or \\help command_name"
 }
 
 // HelpInfo returns structured help information for the help command.
@@ -39,16 +39,9 @@ func (c *HelpCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\help[styled=true, command_name] or \\help[styled=true] command_name",
+		Usage:       "\\help[command_name] or \\help command_name",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
-			{
-				Name:        "styled",
-				Description: "Enable styled output with colors and formatting",
-				Required:    false,
-				Type:        "bool",
-				Default:     "false",
-			},
 			{
 				Name:        "command",
 				Description: "Specific command to show help for",
@@ -59,25 +52,21 @@ func (c *HelpCommand) HelpInfo() neurotypes.HelpInfo {
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\help",
-				Description: "Show all available commands in plain text",
-			},
-			{
-				Command:     "\\help[styled=true]",
-				Description: "Show all available commands with styling",
+				Description: "Show all available commands",
 			},
 			{
 				Command:     "\\help[echo]",
 				Description: "Show detailed help for the echo command",
 			},
 			{
-				Command:     "\\help[styled=true, echo]",
-				Description: "Show styled detailed help for the echo command",
+				Command:     "\\help bash",
+				Description: "Show detailed help for the bash command",
 			},
 		},
 		Notes: []string{
 			"Without arguments, shows all available commands",
 			"With command name, shows detailed help for that specific command",
-			"Use styled=true for professional formatting with colors and borders",
+			"Set _style variable to 'dark1' for professional formatting with colors and borders",
 			"Styled output leverages the built-in rendering service themes",
 		},
 	}
@@ -92,14 +81,10 @@ func (c *HelpCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("help service not available: %w", err)
 	}
 
-	// Check for styled option
-	styled := false
-	if styledValue, exists := args["styled"]; exists {
-		styled = styledValue == "true"
-		delete(args, "styled") // Remove styled from args so it doesn't interfere with command detection
-	}
+	// Get theme object once
+	themeObj := c.getThemeObject()
 
-	// Check if a specific command was requested via bracket syntax: \help[command_name] or input: \help[styled=true] command_name
+	// Check if a specific command was requested via bracket syntax: \help[command_name] or input: \help command_name
 	var requestedCommand string
 
 	// First check for command in remaining args (bracket syntax)
@@ -122,15 +107,15 @@ func (c *HelpCommand) Execute(args map[string]string, input string) error {
 
 	// If specific command requested, show detailed help for that command
 	if requestedCommand != "" {
-		return c.showCommandHelpNew(requestedCommand, helpService, styled)
+		return c.showCommandHelpNew(requestedCommand, helpService, themeObj)
 	}
 
-	// Otherwise, show all commands (original behavior)
-	return c.showAllCommandsNew(helpService, styled)
+	// Otherwise, show all commands
+	return c.showAllCommandsNew(helpService, themeObj)
 }
 
 // showCommandHelpNew displays detailed help information for a specific command using HelpInfo
-func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *services.HelpService, styled bool) error {
+func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *services.HelpService, themeObj *services.RenderTheme) error {
 	// Get the command directly from the help service
 	_, err := helpService.GetCommand(commandName)
 	if err != nil {
@@ -147,109 +132,44 @@ func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *servic
 	// Get structured help info
 	helpInfo := command.HelpInfo()
 
-	// Get render service for styling
-	if styled {
-		renderService, err := services.GetGlobalRenderService()
-		if err != nil {
-			return fmt.Errorf("render service not available: %w", err)
-		}
-
-		styledOutput, err := renderService.RenderHelp(helpInfo, true)
-		if err != nil {
-			return fmt.Errorf("failed to render styled help: %w", err)
-		}
-
-		fmt.Print(styledOutput)
-	} else {
-		renderService, err := services.GetGlobalRenderService()
-		if err != nil {
-			return fmt.Errorf("render service not available: %w", err)
-		}
-
-		plainOutput, err := renderService.RenderHelp(helpInfo, false)
-		if err != nil {
-			return fmt.Errorf("failed to render plain help: %w", err)
-		}
-
-		fmt.Print(plainOutput)
-	}
+	// Render help info using theme object
+	output := c.renderHelpInfo(helpInfo, themeObj)
+	fmt.Print(output)
 
 	return nil
 }
 
-// showAllCommandsNew displays a list of all available commands using HelpInfo
-func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, styled bool) error {
+// showAllCommandsNew displays a list of all available commands using theme object
+func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, themeObj *services.RenderTheme) error {
 	// Get all commands from the help service
 	allCommands, err := helpService.GetAllCommands()
 	if err != nil {
 		return fmt.Errorf("failed to get command list: %w", err)
 	}
 
-	if styled {
-		return c.showAllCommandsStyled(allCommands, helpService)
-	}
-
-	// Plain text output (existing behavior)
-	fmt.Println("Neuro Shell Commands:")
-	for _, cmdInfo := range allCommands {
-		fmt.Printf("  %-20s - %s\n", cmdInfo.Usage, cmdInfo.Description)
-	}
-
-	fmt.Println()
-	fmt.Println("Examples:")
-	fmt.Println("  \\send Hello world")
-	fmt.Println("  \\set[name=\"John\"]")
-	fmt.Println("  \\get[name]")
-	fmt.Println("  \\bash[ls -la]")
-	fmt.Println()
-	fmt.Println("Note: Text without \\ prefix is sent to LLM automatically")
-	fmt.Println("Use \\help[command] for detailed help on a specific command")
-
-	return nil
+	// Always use styled rendering - theme object handles whether to apply styling or not
+	return c.showAllCommandsStyled(allCommands, themeObj)
 }
 
-// showAllCommandsStyled displays all commands with professional styling
-func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, _ *services.HelpService) error {
-	renderService, err := services.GetGlobalRenderService()
-	if err != nil {
-		return fmt.Errorf("render service not available: %w", err)
-	}
+// showAllCommandsStyled displays all commands using only theme object semantic styles
+func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, themeObj *services.RenderTheme) error {
 
-	theme, exists := renderService.GetTheme("default")
-	if !exists {
-		return fmt.Errorf("default theme not found")
-	}
-
-	// Title with border
-	titleStyle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(theme.Success.GetForeground()).
-		Padding(1, 2).
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(theme.Info.GetForeground()).
-		Width(60).
-		Align(lipgloss.Center)
-
-	fmt.Println(titleStyle.Render("Neuro Shell Commands"))
+	// Title
+	fmt.Println(themeObj.Success.Render("Neuro Shell Commands"))
 	fmt.Println()
 
-	// Commands in styled format
+	// Commands using semantic styling
 	for _, cmdInfo := range allCommands {
-		cmdStyle := theme.Command.Bold(true)
-		descStyle := theme.Info.Bold(false)
-
 		fmt.Printf("  %s - %s\n",
-			cmdStyle.Render(fmt.Sprintf("%-20s", cmdInfo.Usage)),
-			descStyle.Render(cmdInfo.Description))
+			themeObj.Command.Render(fmt.Sprintf("%-20s", cmdInfo.Usage)),
+			themeObj.Info.Render(cmdInfo.Description))
 	}
 
 	fmt.Println()
 
-	// Styled examples section
-	exampleHeaderStyle := theme.Bold.Foreground(theme.Warning.GetForeground())
-	fmt.Println(exampleHeaderStyle.Render("Examples:"))
+	// Examples section
+	fmt.Println(themeObj.Warning.Render("Examples:"))
 
-	exampleStyle := theme.Variable
 	examples := []string{
 		"\\send Hello world",
 		"\\set[name=\"John\"]",
@@ -258,18 +178,158 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, 
 	}
 
 	for _, example := range examples {
-		styledExample, _ := renderService.HighlightKeywords(example, []string{})
-		fmt.Printf("  %s\n", exampleStyle.Render(styledExample))
+		// Apply NeuroShell syntax highlighting to examples
+		styledExample := c.highlightNeuroShellSyntax(example, themeObj)
+		fmt.Printf("  %s\n", themeObj.Variable.Render(styledExample))
 	}
 
 	fmt.Println()
 
-	// Styled notes
-	noteStyle := theme.Info.Italic(true)
-	fmt.Println(noteStyle.Render("Note: Text without \\ prefix is sent to LLM automatically"))
-	fmt.Println(noteStyle.Render("Use \\help[command] for detailed help on a specific command"))
+	// Notes
+	fmt.Println(themeObj.Info.Render("Note: Text without \\ prefix is sent to LLM automatically"))
+	fmt.Println(themeObj.Info.Render("Use \\help[command] for detailed help on a specific command"))
 
 	return nil
+}
+
+// renderHelpInfo renders help information using only theme object semantic styles
+func (c *HelpCommand) renderHelpInfo(helpInfo neurotypes.HelpInfo, theme *services.RenderTheme) string {
+	var result strings.Builder
+
+	// Title
+	title := fmt.Sprintf("Command: %s", helpInfo.Command)
+	result.WriteString(theme.Command.Render(title))
+	result.WriteString("\n\n")
+
+	// Description
+	result.WriteString(theme.Info.Render("Description: "))
+	result.WriteString(helpInfo.Description)
+	result.WriteString("\n\n")
+
+	// Usage with syntax highlighting
+	result.WriteString(theme.Success.Render("Usage: "))
+	styledUsage := c.highlightNeuroShellSyntax(helpInfo.Usage, theme)
+	result.WriteString(styledUsage)
+	result.WriteString("\n\n")
+
+	// Parse Mode
+	result.WriteString(theme.Info.Render("Parse Mode: "))
+	result.WriteString(c.parseModeToString(helpInfo.ParseMode))
+	result.WriteString("\n")
+
+	// Options section
+	if len(helpInfo.Options) > 0 {
+		result.WriteString("\n")
+		result.WriteString(theme.Warning.Render("Options:"))
+		result.WriteString("\n")
+
+		for _, option := range helpInfo.Options {
+			result.WriteString("  ")
+			result.WriteString(theme.Variable.Render(option.Name))
+			result.WriteString(" - ")
+			result.WriteString(option.Description)
+
+			if option.Default != "" {
+				result.WriteString(theme.Info.Render(fmt.Sprintf(" (default: %s)", option.Default)))
+			}
+			if option.Required {
+				result.WriteString(theme.Error.Render(" (required)"))
+			}
+			result.WriteString("\n")
+		}
+	}
+
+	// Examples section
+	if len(helpInfo.Examples) > 0 {
+		result.WriteString("\n")
+		result.WriteString(theme.Success.Render("Examples:"))
+		result.WriteString("\n")
+
+		for _, example := range helpInfo.Examples {
+			result.WriteString("  ")
+			styledExample := c.highlightNeuroShellSyntax(example.Command, theme)
+			result.WriteString(styledExample)
+			result.WriteString("\n")
+			if example.Description != "" {
+				result.WriteString("    ")
+				result.WriteString(theme.Info.Render("%% " + example.Description))
+				result.WriteString("\n")
+			}
+		}
+	}
+
+	// Notes section
+	if len(helpInfo.Notes) > 0 {
+		result.WriteString("\n")
+		result.WriteString(theme.Warning.Render("Notes:"))
+		result.WriteString("\n")
+
+		for _, note := range helpInfo.Notes {
+			result.WriteString("  ")
+			result.WriteString(theme.Info.Render(note))
+			result.WriteString("\n")
+		}
+	}
+
+	return result.String()
+}
+
+// parseModeToString converts parse mode enum to readable string
+func (c *HelpCommand) parseModeToString(mode neurotypes.ParseMode) string {
+	switch mode {
+	case neurotypes.ParseModeKeyValue:
+		return "Key-Value (supports [key=value] syntax)"
+	case neurotypes.ParseModeRaw:
+		return "Raw (passes input directly without parsing)"
+	case neurotypes.ParseModeWithOptions:
+		return "With Options (supports additional options)"
+	default:
+		return "Unknown"
+	}
+}
+
+// highlightNeuroShellSyntax applies syntax highlighting for NeuroShell-specific patterns
+// This method handles command-specific syntax highlighting using semantic theme styles.
+func (c *HelpCommand) highlightNeuroShellSyntax(text string, theme *services.RenderTheme) string {
+	result := text
+
+	// Highlight variables: ${variable_name}
+	variablePattern := regexp.MustCompile(`\$\{[^}]+\}`)
+	result = variablePattern.ReplaceAllStringFunc(result, func(match string) string {
+		return theme.Variable.Render(match)
+	})
+
+	// Highlight commands: \command (but only if not already styled)
+	commandPattern := regexp.MustCompile(`\\[a-zA-Z_][a-zA-Z0-9_-]*`)
+	result = commandPattern.ReplaceAllStringFunc(result, func(match string) string {
+		// Check if this text is already styled (contains ANSI sequences)
+		if strings.Contains(match, "\x1b[") {
+			return match // Already styled, don't re-style
+		}
+		return theme.Command.Render(match)
+	})
+
+	return result
+}
+
+// getThemeObject retrieves the theme object based on the _style variable
+func (c *HelpCommand) getThemeObject() *services.RenderTheme {
+	// Get _style variable for theme selection
+	styleValue := ""
+	if variableService, err := services.GetGlobalVariableService(); err == nil {
+		if value, err := variableService.Get("_style"); err == nil {
+			styleValue = value
+		}
+	}
+
+	// Get render service and theme object (always returns valid theme)
+	renderService, err := services.GetGlobalRenderService()
+	if err != nil {
+		// This should rarely happen, but we need to return something
+		panic(fmt.Sprintf("render service not available: %v", err))
+	}
+
+	return renderService.GetThemeByName(styleValue)
 }
 
 // getHelpService retrieves the help service from the global registry

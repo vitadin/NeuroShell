@@ -1,0 +1,27 @@
+name: light
+description: Light theme optimized for light terminals
+styles:
+  keyword:
+    foreground: "#0969da"
+  variable:
+    foreground: "#6f42c1"
+  command:
+    foreground: "#cf222e"
+  success:
+    foreground: "#1f883d"
+  error:
+    foreground: "#d1242f"
+  warning:
+    foreground: "#bf8700"
+  info:
+    foreground: "#0969da"
+  highlight:
+    foreground: "#ffffff"
+    background: "#0969da"
+  bold:
+    bold: true
+  italic:
+    italic: true
+  underline:
+    underline: true
+  background: {}

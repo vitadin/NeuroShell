@@ -2,15 +2,17 @@ package services
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"gopkg.in/yaml.v3"
+	"neuroshell/internal/data/embedded"
+	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
 )
 
-// RenderService provides text rendering and styling operations for NeuroShell.
-// It uses lipgloss for terminal styling and supports keyword highlighting with themes.
+// RenderService provides theme management for NeuroShell styling.
+// It maintains theme objects that commands can use for semantic styling.
 type RenderService struct {
 	initialized bool
 	themes      map[string]*RenderTheme
@@ -33,26 +35,14 @@ type RenderTheme struct {
 	Background lipgloss.Style
 }
 
-// RenderOptions contains configuration for rendering text
-type RenderOptions struct {
-	Keywords   []string
-	Theme      string
-	Style      string
-	Color      string
-	Background string
-	Bold       bool
-	Italic     bool
-	Underline  bool
-}
-
-// NewRenderService creates a new RenderService instance with default themes.
+// NewRenderService creates a new RenderService instance with themes loaded from YAML.
 func NewRenderService() *RenderService {
 	service := &RenderService{
 		initialized: false,
 		themes:      make(map[string]*RenderTheme),
 	}
-	// Initialize default themes
-	service.initializeDefaultThemes()
+	// Load themes from embedded YAML files
+	service.loadThemesFromYAML()
 	return service
 }
 
@@ -67,184 +57,135 @@ func (r *RenderService) Initialize(_ neurotypes.Context) error {
 	return nil
 }
 
-// initializeDefaultThemes sets up built-in color themes
-func (r *RenderService) initializeDefaultThemes() {
-	// Default theme - works well with both light and dark terminals
-	r.themes["default"] = &RenderTheme{
-		Name:       "default",
-		Keyword:    lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#0969da", Dark: "#58a6ff"}),
-		Variable:   lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#6f42c1", Dark: "#a5a5ff"}),
-		Command:    lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#cf222e", Dark: "#f85149"}),
-		Success:    lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#1f883d", Dark: "#3fb950"}),
-		Error:      lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#d1242f", Dark: "#f85149"}),
-		Warning:    lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#bf8700", Dark: "#d29922"}),
-		Info:       lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#0969da", Dark: "#58a6ff"}),
-		Highlight:  lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#ffffff", Dark: "#000000"}).Background(lipgloss.AdaptiveColor{Light: "#0969da", Dark: "#58a6ff"}),
-		Bold:       lipgloss.NewStyle().Bold(true),
-		Italic:     lipgloss.NewStyle().Italic(true),
-		Underline:  lipgloss.NewStyle().Underline(true),
-		Background: lipgloss.NewStyle(),
+// loadThemesFromYAML loads themes from embedded YAML files
+func (r *RenderService) loadThemesFromYAML() {
+	// Load individual theme files
+	themeFiles := map[string][]byte{
+		"default": embedded.DefaultThemeData,
+		"dark":    embedded.DarkThemeData,
+		"light":   embedded.LightThemeData,
+		"plain":   embedded.PlainThemeData,
 	}
 
-	// Dark theme - optimized for dark terminals
-	r.themes["dark"] = &RenderTheme{
-		Name:       "dark",
-		Keyword:    lipgloss.NewStyle().Foreground(lipgloss.Color("#58a6ff")),
-		Variable:   lipgloss.NewStyle().Foreground(lipgloss.Color("#a5a5ff")),
-		Command:    lipgloss.NewStyle().Foreground(lipgloss.Color("#f85149")),
-		Success:    lipgloss.NewStyle().Foreground(lipgloss.Color("#3fb950")),
-		Error:      lipgloss.NewStyle().Foreground(lipgloss.Color("#f85149")),
-		Warning:    lipgloss.NewStyle().Foreground(lipgloss.Color("#d29922")),
-		Info:       lipgloss.NewStyle().Foreground(lipgloss.Color("#58a6ff")),
-		Highlight:  lipgloss.NewStyle().Foreground(lipgloss.Color("#000000")).Background(lipgloss.Color("#58a6ff")),
-		Bold:       lipgloss.NewStyle().Bold(true),
-		Italic:     lipgloss.NewStyle().Italic(true),
-		Underline:  lipgloss.NewStyle().Underline(true),
-		Background: lipgloss.NewStyle(),
-	}
-
-	// Light theme - optimized for light terminals
-	r.themes["light"] = &RenderTheme{
-		Name:       "light",
-		Keyword:    lipgloss.NewStyle().Foreground(lipgloss.Color("#0969da")),
-		Variable:   lipgloss.NewStyle().Foreground(lipgloss.Color("#6f42c1")),
-		Command:    lipgloss.NewStyle().Foreground(lipgloss.Color("#cf222e")),
-		Success:    lipgloss.NewStyle().Foreground(lipgloss.Color("#1f883d")),
-		Error:      lipgloss.NewStyle().Foreground(lipgloss.Color("#d1242f")),
-		Warning:    lipgloss.NewStyle().Foreground(lipgloss.Color("#bf8700")),
-		Info:       lipgloss.NewStyle().Foreground(lipgloss.Color("#0969da")),
-		Highlight:  lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff")).Background(lipgloss.Color("#0969da")),
-		Bold:       lipgloss.NewStyle().Bold(true),
-		Italic:     lipgloss.NewStyle().Italic(true),
-		Underline:  lipgloss.NewStyle().Underline(true),
-		Background: lipgloss.NewStyle(),
-	}
-}
-
-// RenderText applies styling to text based on the provided options
-func (r *RenderService) RenderText(text string, options RenderOptions) (string, error) {
-	if !r.initialized {
-		return "", fmt.Errorf("render service not initialized")
-	}
-
-	// Get theme
-	theme, exists := r.themes[options.Theme]
-	if !exists {
-		theme = r.themes["default"] // Fallback to default theme
-	}
-
-	// Start with the input text
-	result := text
-
-	// Apply keyword highlighting first (so it takes precedence)
-	if len(options.Keywords) > 0 {
-		result = r.highlightKeywords(result, options.Keywords, theme)
-	}
-
-	// Apply NeuroShell-specific highlighting
-	result = r.highlightNeuroShellSyntax(result, theme)
-
-	// Apply global styling if specified
-	if options.Style != "" || options.Color != "" || options.Background != "" ||
-		options.Bold || options.Italic || options.Underline {
-		result = r.applyGlobalStyling(result, options, theme)
-	}
-
-	return result, nil
-}
-
-// highlightKeywords highlights specific keywords in the text
-func (r *RenderService) highlightKeywords(text string, keywords []string, theme *RenderTheme) string {
-	result := text
-
-	for _, keyword := range keywords {
-		if keyword == "" {
+	for themeName, themeData := range themeFiles {
+		theme, err := r.loadThemeFile(themeData)
+		if err != nil {
+			logger.Error("Failed to load theme", "theme", themeName, "error", err)
+			// Fall back to creating a basic plain theme
+			r.themes[themeName] = r.createFallbackTheme(themeName)
 			continue
 		}
-
-		// Escape special regex characters in the keyword
-		escaped := regexp.QuoteMeta(keyword)
-
-		// Create regex pattern for whole words (but allow backslash prefix for commands)
-		pattern := fmt.Sprintf(`(\b%s\b|\\%s\b)`, escaped, escaped)
-		re := regexp.MustCompile(pattern)
-
-		// Replace matches with styled versions
-		result = re.ReplaceAllStringFunc(result, func(match string) string {
-			return theme.Keyword.Render(match)
-		})
+		r.themes[themeName] = theme
 	}
 
-	return result
+	// Ensure we always have a plain theme as fallback
+	if _, exists := r.themes["plain"]; !exists {
+		r.themes["plain"] = r.createFallbackTheme("plain")
+	}
 }
 
-// highlightNeuroShellSyntax applies syntax highlighting for NeuroShell-specific patterns
-func (r *RenderService) highlightNeuroShellSyntax(text string, theme *RenderTheme) string {
-	result := text
+// loadThemeFile loads and parses an individual theme file from embedded YAML data.
+func (r *RenderService) loadThemeFile(data []byte) (*RenderTheme, error) {
+	var themeFile neurotypes.ThemeFile
 
-	// Highlight variables: ${variable_name}
-	variablePattern := regexp.MustCompile(`\$\{[^}]+\}`)
-	result = variablePattern.ReplaceAllStringFunc(result, func(match string) string {
-		return theme.Variable.Render(match)
-	})
+	if err := yaml.Unmarshal(data, &themeFile); err != nil {
+		return nil, fmt.Errorf("failed to parse theme file: %w", err)
+	}
 
-	// Highlight commands: \command (but only if not already styled)
-	commandPattern := regexp.MustCompile(`\\[a-zA-Z_][a-zA-Z0-9_-]*`)
-	result = commandPattern.ReplaceAllStringFunc(result, func(match string) string {
-		// Check if this text is already styled (contains ANSI sequences)
-		if strings.Contains(match, "\x1b[") {
-			return match // Already styled, don't re-style
-		}
-		return theme.Command.Render(match)
-	})
-
-	return result
+	// Convert ThemeConfig to RenderTheme
+	return r.convertThemeConfig(&themeFile.ThemeConfig), nil
 }
 
-// applyGlobalStyling applies global style options to the entire text
-func (r *RenderService) applyGlobalStyling(text string, options RenderOptions, theme *RenderTheme) string {
+// convertThemeConfig converts a ThemeConfig from YAML to a RenderTheme with lipgloss styles.
+func (r *RenderService) convertThemeConfig(config *neurotypes.ThemeConfig) *RenderTheme {
+	return &RenderTheme{
+		Name:       config.Name,
+		Keyword:    r.createStyle(config.Styles.Keyword),
+		Variable:   r.createStyle(config.Styles.Variable),
+		Command:    r.createStyle(config.Styles.Command),
+		Success:    r.createStyle(config.Styles.Success),
+		Error:      r.createStyle(config.Styles.Error),
+		Warning:    r.createStyle(config.Styles.Warning),
+		Info:       r.createStyle(config.Styles.Info),
+		Highlight:  r.createStyle(config.Styles.Highlight),
+		Bold:       r.createStyle(config.Styles.Bold),
+		Italic:     r.createStyle(config.Styles.Italic),
+		Underline:  r.createStyle(config.Styles.Underline),
+		Background: r.createStyle(config.Styles.Background),
+	}
+}
+
+// createStyle converts a StyleConfig to a lipgloss.Style.
+func (r *RenderService) createStyle(config neurotypes.StyleConfig) lipgloss.Style {
 	style := lipgloss.NewStyle()
 
-	// Apply basic styling
-	if options.Bold {
+	// Handle foreground color
+	if config.Foreground != nil {
+		if color := r.parseColor(config.Foreground); color != nil {
+			style = style.Foreground(color)
+		}
+	}
+
+	// Handle background color
+	if config.Background != nil {
+		if color := r.parseColor(config.Background); color != nil {
+			style = style.Background(color)
+		}
+	}
+
+	// Handle text decorations
+	if config.Bold != nil && *config.Bold {
 		style = style.Bold(true)
 	}
-	if options.Italic {
+	if config.Italic != nil && *config.Italic {
 		style = style.Italic(true)
 	}
-	if options.Underline {
+	if config.Underline != nil && *config.Underline {
 		style = style.Underline(true)
 	}
-
-	// Apply colors
-	if options.Color != "" {
-		style = style.Foreground(lipgloss.Color(options.Color))
-	}
-	if options.Background != "" {
-		style = style.Background(lipgloss.Color(options.Background))
+	if config.Strikethrough != nil && *config.Strikethrough {
+		style = style.Strikethrough(true)
 	}
 
-	// Apply named styles
-	switch options.Style {
-	case "bold":
-		style = theme.Bold
-	case "italic":
-		style = theme.Italic
-	case "underline":
-		style = theme.Underline
-	case "success":
-		style = theme.Success
-	case "error":
-		style = theme.Error
-	case "warning":
-		style = theme.Warning
-	case "info":
-		style = theme.Info
-	case "highlight":
-		style = theme.Highlight
-	}
+	return style
+}
 
-	return style.Render(text)
+// parseColor parses a color value that can be a string, AdaptiveColor, or map.
+func (r *RenderService) parseColor(colorValue interface{}) lipgloss.TerminalColor {
+	switch v := colorValue.(type) {
+	case string:
+		// Simple color string
+		return lipgloss.Color(v)
+	case map[string]interface{}:
+		// Check if it's an adaptive color with light/dark keys
+		if light, hasLight := v["light"].(string); hasLight {
+			if dark, hasDark := v["dark"].(string); hasDark {
+				return lipgloss.AdaptiveColor{Light: light, Dark: dark}
+			}
+		}
+		return nil
+	default:
+		return nil
+	}
+}
+
+// createFallbackTheme creates a basic plain theme for fallback scenarios.
+func (r *RenderService) createFallbackTheme(name string) *RenderTheme {
+	return &RenderTheme{
+		Name:       name,
+		Keyword:    lipgloss.NewStyle(),
+		Variable:   lipgloss.NewStyle(),
+		Command:    lipgloss.NewStyle(),
+		Success:    lipgloss.NewStyle(),
+		Error:      lipgloss.NewStyle(),
+		Warning:    lipgloss.NewStyle(),
+		Info:       lipgloss.NewStyle(),
+		Highlight:  lipgloss.NewStyle(),
+		Bold:       lipgloss.NewStyle(),
+		Italic:     lipgloss.NewStyle(),
+		Underline:  lipgloss.NewStyle(),
+		Background: lipgloss.NewStyle(),
+	}
 }
 
 // GetAvailableThemes returns a list of available theme names
@@ -270,196 +211,62 @@ func (r *RenderService) GetTheme(name string) (*RenderTheme, bool) {
 	return theme, exists
 }
 
-// RenderWithTheme is a convenience method to render text with a specific theme
-func (r *RenderService) RenderWithTheme(text string, keywords []string, themeName string) (string, error) {
-	options := RenderOptions{
-		Keywords: keywords,
-		Theme:    themeName,
-	}
-	return r.RenderText(text, options)
-}
-
-// HighlightKeywords is a convenience method for simple keyword highlighting
-func (r *RenderService) HighlightKeywords(text string, keywords []string) (string, error) {
-	return r.RenderWithTheme(text, keywords, "default")
-}
-
-// RenderHelp renders structured help information with professional styling
-func (r *RenderService) RenderHelp(helpInfo neurotypes.HelpInfo, styled bool) (string, error) {
+// GetThemeByName retrieves a theme by name with support for aliases and case-insensitive matching.
+// Supports aliases like "dark1" -> "dark". Always returns a valid theme object, never fails.
+// For invalid themes, logs a warning and returns the plain theme.
+func (r *RenderService) GetThemeByName(theme string) *RenderTheme {
 	if !r.initialized {
-		return "", fmt.Errorf("render service not initialized")
+		return r.GetDefaultTheme()
 	}
 
-	// If not styled, render as plain text
-	if !styled {
-		return r.renderHelpPlainText(helpInfo), nil
-	}
+	normalizedTheme := strings.ToLower(strings.TrimSpace(theme))
 
-	// Render with styling
-	return r.renderHelpStyled(helpInfo)
-}
-
-// renderHelpPlainText renders help information as plain text (backward compatibility)
-func (r *RenderService) renderHelpPlainText(helpInfo neurotypes.HelpInfo) string {
-	var result strings.Builder
-
-	result.WriteString(fmt.Sprintf("Command: %s\n", helpInfo.Command))
-	result.WriteString(fmt.Sprintf("Description: %s\n", helpInfo.Description))
-	result.WriteString(fmt.Sprintf("Usage: %s\n", helpInfo.Usage))
-	result.WriteString(fmt.Sprintf("Parse Mode: %s\n", r.parseModeToString(helpInfo.ParseMode)))
-
-	if len(helpInfo.Options) > 0 {
-		result.WriteString("\nOptions:\n")
-		for _, option := range helpInfo.Options {
-			defaultStr := ""
-			if option.Default != "" {
-				defaultStr = fmt.Sprintf(" (default: %s)", option.Default)
-			}
-			requiredStr := ""
-			if option.Required {
-				requiredStr = " (required)"
-			}
-			result.WriteString(fmt.Sprintf("  %s - %s%s%s\n", option.Name, option.Description, defaultStr, requiredStr))
+	switch normalizedTheme {
+	case "", "plain":
+		return r.themes["plain"]
+	case "dark1", "dark":
+		if themeObj, exists := r.themes["dark"]; exists {
+			return themeObj
 		}
-	}
-
-	if len(helpInfo.Examples) > 0 {
-		result.WriteString("\nExamples:\n")
-		for _, example := range helpInfo.Examples {
-			result.WriteString(fmt.Sprintf("  %s\n", example.Command))
-			if example.Description != "" {
-				result.WriteString("    %% " + example.Description + "\n")
-			}
+		return r.themes["plain"]
+	case "default":
+		if themeObj, exists := r.themes["default"]; exists {
+			return themeObj
 		}
-	}
-
-	if len(helpInfo.Notes) > 0 {
-		result.WriteString("\nNotes:\n")
-		for _, note := range helpInfo.Notes {
-			result.WriteString(fmt.Sprintf("  %s\n", note))
+		return r.themes["plain"]
+	case "light":
+		if themeObj, exists := r.themes["light"]; exists {
+			return themeObj
 		}
-	}
-
-	return result.String()
-}
-
-// renderHelpStyled renders help information with professional styling
-func (r *RenderService) renderHelpStyled(helpInfo neurotypes.HelpInfo) (string, error) {
-	theme, exists := r.GetTheme("default")
-	if !exists {
-		return "", fmt.Errorf("default theme not found")
-	}
-
-	var result strings.Builder
-
-	// Title with border
-	titleStyle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(theme.Command.GetForeground()).
-		Padding(0, 1).
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(theme.Info.GetForeground())
-
-	title := fmt.Sprintf("Command: %s", helpInfo.Command)
-	result.WriteString(titleStyle.Render(title))
-	result.WriteString("\n\n")
-
-	// Description
-	descStyle := theme.Info.Bold(false)
-	result.WriteString(descStyle.Render("Description: "))
-	result.WriteString(helpInfo.Description)
-	result.WriteString("\n\n")
-
-	// Usage with syntax highlighting
-	usageStyle := theme.Bold.Foreground(theme.Success.GetForeground())
-	result.WriteString(usageStyle.Render("Usage: "))
-	styledUsage := r.highlightNeuroShellSyntax(helpInfo.Usage, theme)
-	result.WriteString(styledUsage)
-	result.WriteString("\n\n")
-
-	// Parse Mode
-	parseModeStyle := theme.Info.Bold(false)
-	result.WriteString(parseModeStyle.Render("Parse Mode: "))
-	result.WriteString(r.parseModeToString(helpInfo.ParseMode))
-	result.WriteString("\n")
-
-	// Options section
-	if len(helpInfo.Options) > 0 {
-		result.WriteString("\n")
-		optionHeaderStyle := theme.Bold.Foreground(theme.Warning.GetForeground())
-		result.WriteString(optionHeaderStyle.Render("Options:"))
-		result.WriteString("\n")
-
-		for _, option := range helpInfo.Options {
-			optionNameStyle := theme.Variable.Bold(true)
-			result.WriteString("  ")
-			result.WriteString(optionNameStyle.Render(option.Name))
-			result.WriteString(" - ")
-			result.WriteString(option.Description)
-
-			if option.Default != "" {
-				defaultStyle := theme.Info.Italic(true)
-				result.WriteString(defaultStyle.Render(fmt.Sprintf(" (default: %s)", option.Default)))
-			}
-			if option.Required {
-				requiredStyle := theme.Error.Bold(true)
-				result.WriteString(requiredStyle.Render(" (required)"))
-			}
-			result.WriteString("\n")
-		}
-	}
-
-	// Examples section
-	if len(helpInfo.Examples) > 0 {
-		result.WriteString("\n")
-		exampleHeaderStyle := theme.Bold.Foreground(theme.Success.GetForeground())
-		result.WriteString(exampleHeaderStyle.Render("Examples:"))
-		result.WriteString("\n")
-
-		for _, example := range helpInfo.Examples {
-			result.WriteString("  ")
-			styledExample := r.highlightNeuroShellSyntax(example.Command, theme)
-			result.WriteString(styledExample)
-			result.WriteString("\n")
-			if example.Description != "" {
-				commentStyle := theme.Info.Italic(true)
-				result.WriteString("    ")
-				result.WriteString(commentStyle.Render("%% " + example.Description))
-				result.WriteString("\n")
-			}
-		}
-	}
-
-	// Notes section
-	if len(helpInfo.Notes) > 0 {
-		result.WriteString("\n")
-		noteHeaderStyle := theme.Bold.Foreground(theme.Warning.GetForeground())
-		result.WriteString(noteHeaderStyle.Render("Notes:"))
-		result.WriteString("\n")
-
-		for _, note := range helpInfo.Notes {
-			noteStyle := theme.Info.Italic(true)
-			result.WriteString("  ")
-			result.WriteString(noteStyle.Render(note))
-			result.WriteString("\n")
-		}
-	}
-
-	return result.String(), nil
-}
-
-// parseModeToString converts parse mode enum to readable string
-func (r *RenderService) parseModeToString(mode neurotypes.ParseMode) string {
-	switch mode {
-	case neurotypes.ParseModeKeyValue:
-		return "Key-Value (supports [key=value] syntax)"
-	case neurotypes.ParseModeRaw:
-		return "Raw (passes input directly without parsing)"
-	case neurotypes.ParseModeWithOptions:
-		return "With Options (supports additional options)"
+		return r.themes["plain"]
 	default:
-		return "Unknown"
+		// Invalid theme - log warning and return plain theme
+		logger.Debug("Invalid theme requested, using plain theme", "theme", theme, "available", r.GetAvailableThemes())
+		return r.themes["plain"]
 	}
+}
+
+// GetDefaultTheme returns the plain theme (no styling) for fallback scenarios.
+func (r *RenderService) GetDefaultTheme() *RenderTheme {
+	if !r.initialized {
+		// Return a basic plain theme if service not initialized
+		return &RenderTheme{
+			Name:       "plain",
+			Keyword:    lipgloss.NewStyle(),
+			Variable:   lipgloss.NewStyle(),
+			Command:    lipgloss.NewStyle(),
+			Success:    lipgloss.NewStyle(),
+			Error:      lipgloss.NewStyle(),
+			Warning:    lipgloss.NewStyle(),
+			Info:       lipgloss.NewStyle(),
+			Highlight:  lipgloss.NewStyle(),
+			Bold:       lipgloss.NewStyle(),
+			Italic:     lipgloss.NewStyle(),
+			Underline:  lipgloss.NewStyle(),
+			Background: lipgloss.NewStyle(),
+		}
+	}
+	return r.themes["plain"]
 }
 
 func init() {

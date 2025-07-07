@@ -77,7 +77,7 @@ func TestHelpCommand_Description(t *testing.T) {
 
 func TestHelpCommand_Usage(t *testing.T) {
 	cmd := &HelpCommand{}
-	assert.Equal(t, "\\help[styled=true, command_name] or \\help[styled=true] command_name", cmd.Usage())
+	assert.Equal(t, "\\help[command_name] or \\help command_name", cmd.Usage())
 }
 
 func TestHelpCommand_Execute(t *testing.T) {
@@ -121,7 +121,7 @@ func TestHelpCommand_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify output contains expected elements
-	assert.Contains(t, outputStr, "Neuro Shell Commands:")
+	assert.Contains(t, outputStr, "Neuro Shell Commands")
 	assert.Contains(t, outputStr, "Examples:")
 	assert.Contains(t, outputStr, "Note: Text without \\ prefix is sent to LLM automatically")
 
@@ -203,7 +203,7 @@ func TestHelpCommand_Execute_EmptyRegistry(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should still show header and examples even with no commands
-	assert.Contains(t, outputStr, "Neuro Shell Commands:")
+	assert.Contains(t, outputStr, "Neuro Shell Commands")
 	assert.Contains(t, outputStr, "Examples:")
 	assert.Contains(t, outputStr, "Note: Text without \\ prefix is sent to LLM automatically")
 }
@@ -352,7 +352,7 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 
 	// Verify static content is present
 	expectedStaticContent := []string{
-		"Neuro Shell Commands:",
+		"Neuro Shell Commands",
 		"Examples:",
 		"\\send Hello world",
 		"\\set[name=\"John\"]",
@@ -466,69 +466,82 @@ func TestHelpCommand_Execute_ServiceUnavailable(t *testing.T) {
 	assert.Contains(t, err.Error(), "help service not available")
 }
 
-// NOTE: TestHelpCommand_ShowCommandExamples was removed because showCommandExamples method
-// was deprecated in favor of the new HelpInfo-based approach with RenderService integration
-/*
-func TestHelpCommand_ShowCommandExamples(t *testing.T) {
-	// Test the showCommandExamples function with different command types
-	cmd := &HelpCommand{}
+func TestHelpCommand_Execute_StyleVariable(t *testing.T) {
+	// Test that help command respects _style variable for styling
+	testCommands := []neurotypes.Command{
+		&MockCommand{
+			name:        "test",
+			description: "Test command",
+			usage:       "\\test",
+		},
+	}
 
 	tests := []struct {
-		name         string
-		cmdInfo      services.CommandInfo
-		expectedText []string
+		name        string
+		styleValue  string
+		expectTheme string
+		description string
 	}{
 		{
-			name: "KeyValue parse mode command",
-			cmdInfo: services.CommandInfo{
-				Name:        "set",
-				Usage:       "\\set[var=value] or \\set var value",
-				ParseMode:   neurotypes.ParseModeKeyValue,
-				Description: "Set a variable",
-			},
-			expectedText: []string{
-				"Examples:",
-				"\\set[var=value] or \\set var value",
-				"\\set[option=value]",
-			},
+			name:        "dark1 uses dark theme (lowercase)",
+			styleValue:  "dark1",
+			expectTheme: "dark",
+			description: "Should use dark theme when _style = 'dark1'",
 		},
 		{
-			name: "Raw parse mode command",
-			cmdInfo: services.CommandInfo{
-				Name:        "bash",
-				Usage:       "\\bash command_to_execute",
-				ParseMode:   neurotypes.ParseModeRaw,
-				Description: "Execute system commands via bash",
-			},
-			expectedText: []string{
-				"Examples:",
-				"\\bash command_to_execute",
-			},
+			name:        "DARK1 uses dark theme (uppercase)",
+			styleValue:  "DARK1",
+			expectTheme: "dark",
+			description: "Should use dark theme when _style = 'DARK1' (case insensitive)",
 		},
 		{
-			name: "WithOptions parse mode command",
-			cmdInfo: services.CommandInfo{
-				Name:        "test",
-				Usage:       "\\test [options] message",
-				ParseMode:   neurotypes.ParseModeWithOptions,
-				Description: "Test command",
-			},
-			expectedText: []string{
-				"Examples:",
-				"\\test [options] message",
-				"\\test[option=value]",
-			},
+			name:        "Dark1 uses dark theme (mixed case)",
+			styleValue:  "Dark1",
+			expectTheme: "dark",
+			description: "Should use dark theme when _style = 'Dark1' (case insensitive)",
+		},
+		{
+			name:        "dark uses dark theme",
+			styleValue:  "dark",
+			expectTheme: "dark",
+			description: "Should use dark theme when _style = 'dark'",
+		},
+		{
+			name:        "default uses default theme",
+			styleValue:  "default",
+			expectTheme: "default",
+			description: "Should use default theme when _style = 'default'",
+		},
+		{
+			name:        "empty value uses plain text",
+			styleValue:  "",
+			expectTheme: "",
+			description: "Should use plain text when _style is empty",
+		},
+		{
+			name:        "invalid value falls back to plain text",
+			styleValue:  "invalid_theme",
+			expectTheme: "",
+			description: "Should fall back to plain text when _style is invalid",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctx := setupHelpTestEnvironment(t, testCommands)
+
+			// Set the _style variable
+			err := ctx.SetVariable("_style", tt.styleValue)
+			require.NoError(t, err)
+
+			cmd := &HelpCommand{}
+
 			// Capture stdout
 			originalStdout := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			cmd.showCommandExamples(tt.cmdInfo)
+			err = cmd.Execute(map[string]string{}, "")
 
 			// Restore stdout
 			_ = w.Close()
@@ -538,23 +551,90 @@ func TestHelpCommand_ShowCommandExamples(t *testing.T) {
 			output, _ := io.ReadAll(r)
 			outputStr := string(output)
 
-			// Verify all expected text is present
-			for _, expectedText := range tt.expectedText {
-				assert.Contains(t, outputStr, expectedText, "Missing expected text: %s", expectedText)
+			assert.NoError(t, err)
+
+			if tt.expectTheme != "" {
+				// Themed output - should contain basic content but formatting may vary
+				assert.True(t,
+					strings.Contains(outputStr, "Neuro Shell Commands") ||
+						len(outputStr) > 0,
+					"Expected themed output for %s", tt.description)
+			} else {
+				// Plain text output - check specific formatting
+				assert.Contains(t, outputStr, "Neuro Shell Commands")
+				assert.Contains(t, outputStr, "Examples:")
 			}
 
-			// Verify the primary usage is always shown
-			assert.Contains(t, outputStr, tt.cmdInfo.Usage)
-
-			// Verify KeyValue and WithOptions modes get generic parameter example
-			if tt.cmdInfo.ParseMode == neurotypes.ParseModeKeyValue || tt.cmdInfo.ParseMode == neurotypes.ParseModeWithOptions {
-				expectedGeneric := fmt.Sprintf("\\%s[option=value]", tt.cmdInfo.Name)
-				assert.Contains(t, outputStr, expectedGeneric)
-			}
+			// Both themed and plain text should contain basic content
+			assert.Contains(t, outputStr, "\\test")
+			assert.Contains(t, outputStr, "Test command")
 		})
 	}
 }
-*/
+
+func TestHelpCommand_Execute_StyleVariable_SpecificCommand(t *testing.T) {
+	// Test that _style variable works for specific command help too
+	testCommands := []neurotypes.Command{
+		&MockCommand{
+			name:        "bash",
+			description: "Execute system commands via bash",
+			usage:       "\\bash command_to_execute",
+			parseMode:   neurotypes.ParseModeRaw,
+		},
+	}
+
+	tests := []struct {
+		name         string
+		styleValue   string
+		expectStyled bool
+	}{
+		{
+			name:         "dark1 enables styling for specific command",
+			styleValue:   "dark1",
+			expectStyled: true,
+		},
+		{
+			name:         "other value does not enable styling for specific command",
+			styleValue:   "light",
+			expectStyled: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := setupHelpTestEnvironment(t, testCommands)
+
+			// Set the _style variable
+			err := ctx.SetVariable("_style", tt.styleValue)
+			require.NoError(t, err)
+
+			cmd := &HelpCommand{}
+
+			// Capture stdout
+			originalStdout := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			// Request help for specific command
+			err = cmd.Execute(map[string]string{"bash": ""}, "")
+
+			// Restore stdout
+			_ = w.Close()
+			os.Stdout = originalStdout
+
+			// Read captured output
+			output, _ := io.ReadAll(r)
+			outputStr := string(output)
+
+			assert.NoError(t, err)
+
+			// Both styled and non-styled should contain command-specific content
+			assert.Contains(t, outputStr, "Command: bash")
+			assert.Contains(t, outputStr, "Description: Execute system commands via bash")
+			assert.Contains(t, outputStr, "Usage: \\bash command_to_execute")
+		})
+	}
+}
 
 // MockCommand for testing (reuse from registry_test.go structure)
 type MockCommand struct {

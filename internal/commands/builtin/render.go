@@ -2,8 +2,11 @@ package builtin
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
+	"strings"
 
+	"github.com/charmbracelet/lipgloss"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
@@ -138,17 +141,15 @@ func (c *RenderCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Parse render options
-	options, err := c.parseRenderOptions(args)
-	if err != nil {
-		return fmt.Errorf("failed to parse render options: %w", err)
+	// Get theme object
+	themeName := args["theme"]
+	if themeName == "" {
+		themeName = "default"
 	}
+	theme := renderService.GetThemeByName(themeName)
 
 	// Apply styling to the input text
-	styledText, err := renderService.RenderText(input, options)
-	if err != nil {
-		return fmt.Errorf("failed to render text: %w", err)
-	}
+	styledText := c.renderText(input, args, theme)
 
 	// Store result in target variable
 	targetVar := args["to"]
@@ -189,13 +190,11 @@ func (c *RenderCommand) Execute(args map[string]string, input string) error {
 	return nil
 }
 
-// parseRenderOptions parses command arguments into RenderOptions
-func (c *RenderCommand) parseRenderOptions(args map[string]string) (services.RenderOptions, error) {
-	options := services.RenderOptions{
-		Theme: "default", // Default theme
-	}
+// renderText applies styling to text using theme objects and command arguments
+func (c *RenderCommand) renderText(text string, args map[string]string, theme *services.RenderTheme) string {
+	result := text
 
-	// Parse keywords array
+	// Apply keyword highlighting first if specified
 	if keywordsStr, exists := args["keywords"]; exists {
 		keywords := parser.ParseArrayValue(keywordsStr)
 
@@ -209,45 +208,132 @@ func (c *RenderCommand) parseRenderOptions(args map[string]string) (services.Ren
 			}
 		}
 
-		options.Keywords = keywords
+		result = c.highlightKeywords(result, keywords, theme)
 	}
 
-	// Parse theme
-	if theme, exists := args["theme"]; exists {
-		options.Theme = theme
+	// Apply NeuroShell-specific highlighting
+	result = c.highlightNeuroShellSyntax(result, theme)
+
+	// Apply global styling if specified
+	if c.hasGlobalStyling(args) {
+		result = c.applyGlobalStyling(result, args, theme)
 	}
 
-	// Parse style
-	if style, exists := args["style"]; exists {
-		options.Style = style
+	return result
+}
+
+// hasGlobalStyling checks if any global styling options are specified
+func (c *RenderCommand) hasGlobalStyling(args map[string]string) bool {
+	_, hasStyle := args["style"]
+	_, hasColor := args["color"]
+	_, hasBackground := args["background"]
+	_, hasBold := args["bold"]
+	_, hasItalic := args["italic"]
+	_, hasUnderline := args["underline"]
+
+	return hasStyle || hasColor || hasBackground || hasBold || hasItalic || hasUnderline
+}
+
+// highlightKeywords highlights specific keywords in the text using theme styles
+func (c *RenderCommand) highlightKeywords(text string, keywords []string, theme *services.RenderTheme) string {
+	result := text
+
+	for _, keyword := range keywords {
+		if keyword == "" {
+			continue
+		}
+
+		// Escape special regex characters in the keyword
+		escaped := regexp.QuoteMeta(keyword)
+
+		// Create regex pattern for whole words (but allow backslash prefix for commands)
+		pattern := fmt.Sprintf(`(\b%s\b|\\%s\b)`, escaped, escaped)
+		re := regexp.MustCompile(pattern)
+
+		// Replace matches with styled versions using theme's keyword style
+		result = re.ReplaceAllStringFunc(result, func(match string) string {
+			return theme.Keyword.Render(match)
+		})
 	}
 
-	// Parse colors
-	if color, exists := args["color"]; exists {
-		options.Color = color
-	}
-	if background, exists := args["background"]; exists {
-		options.Background = background
-	}
+	return result
+}
 
-	// Parse boolean options
+// highlightNeuroShellSyntax applies syntax highlighting for NeuroShell-specific patterns
+func (c *RenderCommand) highlightNeuroShellSyntax(text string, theme *services.RenderTheme) string {
+	result := text
+
+	// Highlight variables: ${variable_name}
+	variablePattern := regexp.MustCompile(`\$\{[^}]+\}`)
+	result = variablePattern.ReplaceAllStringFunc(result, func(match string) string {
+		return theme.Variable.Render(match)
+	})
+
+	// Highlight commands: \command (but only if not already styled)
+	commandPattern := regexp.MustCompile(`\\[a-zA-Z_][a-zA-Z0-9_-]*`)
+	result = commandPattern.ReplaceAllStringFunc(result, func(match string) string {
+		// Check if this text is already styled (contains ANSI sequences)
+		if strings.Contains(match, "\x1b[") {
+			return match // Already styled, don't re-style
+		}
+		return theme.Command.Render(match)
+	})
+
+	return result
+}
+
+// applyGlobalStyling applies global style options to the entire text using theme and custom options
+func (c *RenderCommand) applyGlobalStyling(text string, args map[string]string, theme *services.RenderTheme) string {
+	style := lipgloss.NewStyle()
+
+	// Apply boolean styling options
 	if boldStr, exists := args["bold"]; exists {
-		if bold, err := strconv.ParseBool(boldStr); err == nil {
-			options.Bold = bold
+		if bold, err := strconv.ParseBool(boldStr); err == nil && bold {
+			style = style.Bold(true)
 		}
 	}
 	if italicStr, exists := args["italic"]; exists {
-		if italic, err := strconv.ParseBool(italicStr); err == nil {
-			options.Italic = italic
+		if italic, err := strconv.ParseBool(italicStr); err == nil && italic {
+			style = style.Italic(true)
 		}
 	}
 	if underlineStr, exists := args["underline"]; exists {
-		if underline, err := strconv.ParseBool(underlineStr); err == nil {
-			options.Underline = underline
+		if underline, err := strconv.ParseBool(underlineStr); err == nil && underline {
+			style = style.Underline(true)
 		}
 	}
 
-	return options, nil
+	// Apply custom colors
+	if color, exists := args["color"]; exists {
+		style = style.Foreground(lipgloss.Color(color))
+	}
+	if background, exists := args["background"]; exists {
+		style = style.Background(lipgloss.Color(background))
+	}
+
+	// Apply named semantic styles from theme
+	if styleOption, exists := args["style"]; exists {
+		switch styleOption {
+		case "bold":
+			style = theme.Bold
+		case "italic":
+			style = theme.Italic
+		case "underline":
+			style = theme.Underline
+		case "success":
+			style = theme.Success
+		case "error":
+			style = theme.Error
+		case "warning":
+			style = theme.Warning
+		case "info":
+			style = theme.Info
+		case "highlight":
+			style = theme.Highlight
+		}
+	}
+
+	return style.Render(text)
 }
 
 func init() {

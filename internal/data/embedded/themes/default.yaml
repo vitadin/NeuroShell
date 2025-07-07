@@ -1,0 +1,45 @@
+name: default
+description: Default adaptive theme that works well with both light and dark terminals
+styles:
+  keyword:
+    foreground:
+      light: "#0969da"
+      dark: "#58a6ff"
+  variable:
+    foreground:
+      light: "#6f42c1"
+      dark: "#a5a5ff"
+  command:
+    foreground:
+      light: "#cf222e"
+      dark: "#f85149"
+  success:
+    foreground:
+      light: "#1f883d"
+      dark: "#3fb950"
+  error:
+    foreground:
+      light: "#d1242f"
+      dark: "#f85149"
+  warning:
+    foreground:
+      light: "#bf8700"
+      dark: "#d29922"
+  info:
+    foreground:
+      light: "#0969da"
+      dark: "#58a6ff"
+  highlight:
+    foreground:
+      light: "#ffffff"
+      dark: "#000000"
+    background:
+      light: "#0969da"
+      dark: "#58a6ff"
+  bold:
+    bold: true
+  italic:
+    italic: true
+  underline:
+    underline: true
+  background: {}

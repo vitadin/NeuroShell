@@ -1,0 +1,15 @@
+name: plain
+description: Plain theme with no styling - returns text as-is
+styles:
+  keyword: {}
+  variable: {}
+  command: {}
+  success: {}
+  error: {}
+  warning: {}
+  info: {}
+  highlight: {}
+  bold: {}
+  italic: {}
+  underline: {}
+  background: {}

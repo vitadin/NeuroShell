@@ -100,6 +100,13 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
+	// Register RenderService if not already registered (needed for tests that clear the registry)
+	if !services.GetGlobalRegistry().HasService("render") {
+		if err := services.GetGlobalRegistry().RegisterService(services.NewRenderService()); err != nil {
+			return err
+		}
+	}
+
 	// Initialize all services with the global context
 	if err := services.GetGlobalRegistry().InitializeAll(globalCtx); err != nil {
 		return err
