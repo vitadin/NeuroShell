@@ -1,7 +1,7 @@
-Created model 'my-gpt4-model' (ID: {{PLACEHOLDER:8:8}}, Provider: openai, Base: gpt-4)
-#model_id = {{UUID}}
+Created model 'my-gpt4-model' (ID: 00000001, Provider: openai, Base: gpt-4)
+#model_id = 00000001-0000-4000-8000-000000000001
 #model_name = my-gpt4-model
 #model_provider = openai
 #model_base = gpt-4
 #model_param_count = 0
-_output = Created model 'my-gpt4-model' (ID: {{PLACEHOLDER:8:8}}, Provider: openai, Base: gpt-4)
+_output = Created model 'my-gpt4-model' (ID: 00000001, Provider: openai, Base: gpt-4)
