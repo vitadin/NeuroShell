@@ -9,7 +9,7 @@ Service Status Check:
   ✓ interpolation        - available/initialized
   ✓ model                - available/initialized
   ✓ model_catalog        - available/initialized
-  ✓ render               - available/initialized
   ✓ script               - available/initialized
+  ✓ theme                - available/initialized
   ✓ variable             - available/initialized
 Summary: 12/12 services healthy

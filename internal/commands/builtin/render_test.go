@@ -388,10 +388,10 @@ func TestRenderCommand_ThemeHandling(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			renderService, err := services.GetGlobalRenderService()
+			themeService, err := services.GetGlobalThemeService()
 			require.NoError(t, err)
 
-			theme := renderService.GetThemeByName(tt.themeName)
+			theme := themeService.GetThemeByName(tt.themeName)
 			assert.NotNil(t, theme, "Theme should never be nil")
 
 			if tt.expectPlain {
@@ -415,7 +415,7 @@ func setupTestServices(t *testing.T) {
 	services.GlobalRegistry = services.NewRegistry()
 
 	// Register required services
-	err := services.GlobalRegistry.RegisterService(services.NewRenderService())
+	err := services.GlobalRegistry.RegisterService(services.NewThemeService())
 	require.NoError(t, err)
 
 	err = services.GlobalRegistry.RegisterService(services.NewVariableService())

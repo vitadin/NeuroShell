@@ -115,7 +115,7 @@ func (c *HelpCommand) Execute(args map[string]string, input string) error {
 }
 
 // showCommandHelpNew displays detailed help information for a specific command using HelpInfo
-func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *services.HelpService, themeObj *services.RenderTheme) error {
+func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *services.HelpService, themeObj *services.Theme) error {
 	// Get the command directly from the help service
 	_, err := helpService.GetCommand(commandName)
 	if err != nil {
@@ -140,7 +140,7 @@ func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *servic
 }
 
 // showAllCommandsNew displays a list of all available commands using theme object
-func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, themeObj *services.RenderTheme) error {
+func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, themeObj *services.Theme) error {
 	// Get all commands from the help service
 	allCommands, err := helpService.GetAllCommands()
 	if err != nil {
@@ -152,7 +152,7 @@ func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, them
 }
 
 // showAllCommandsStyled displays all commands using only theme object semantic styles
-func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, themeObj *services.RenderTheme) error {
+func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, themeObj *services.Theme) error {
 
 	// Title
 	fmt.Println(themeObj.Success.Render("Neuro Shell Commands"))
@@ -193,7 +193,7 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, 
 }
 
 // renderHelpInfo renders help information using only theme object semantic styles
-func (c *HelpCommand) renderHelpInfo(helpInfo neurotypes.HelpInfo, theme *services.RenderTheme) string {
+func (c *HelpCommand) renderHelpInfo(helpInfo neurotypes.HelpInfo, theme *services.Theme) string {
 	var result strings.Builder
 
 	// Title
@@ -290,7 +290,7 @@ func (c *HelpCommand) parseModeToString(mode neurotypes.ParseMode) string {
 
 // highlightNeuroShellSyntax applies syntax highlighting for NeuroShell-specific patterns
 // This method handles command-specific syntax highlighting using semantic theme styles.
-func (c *HelpCommand) highlightNeuroShellSyntax(text string, theme *services.RenderTheme) string {
+func (c *HelpCommand) highlightNeuroShellSyntax(text string, theme *services.Theme) string {
 	result := text
 
 	// Highlight variables: ${variable_name}
@@ -313,7 +313,7 @@ func (c *HelpCommand) highlightNeuroShellSyntax(text string, theme *services.Ren
 }
 
 // getThemeObject retrieves the theme object based on the _style variable
-func (c *HelpCommand) getThemeObject() *services.RenderTheme {
+func (c *HelpCommand) getThemeObject() *services.Theme {
 	// Get _style variable for theme selection
 	styleValue := ""
 	if variableService, err := services.GetGlobalVariableService(); err == nil {
@@ -322,14 +322,14 @@ func (c *HelpCommand) getThemeObject() *services.RenderTheme {
 		}
 	}
 
-	// Get render service and theme object (always returns valid theme)
-	renderService, err := services.GetGlobalRenderService()
+	// Get theme service and theme object (always returns valid theme)
+	themeService, err := services.GetGlobalThemeService()
 	if err != nil {
 		// This should rarely happen, but we need to return something
-		panic(fmt.Sprintf("render service not available: %v", err))
+		panic(fmt.Sprintf("theme service not available: %v", err))
 	}
 
-	return renderService.GetThemeByName(styleValue)
+	return themeService.GetThemeByName(styleValue)
 }
 
 // getHelpService retrieves the help service from the global registry

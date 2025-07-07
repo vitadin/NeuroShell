@@ -13,6 +13,7 @@ default:
     @echo "  test-shell        - Run shell tests only"
     @echo "  test-all-units    - Run all unit, command, parser, context, and shell tests"
     @echo "  test-e2e          - Run end-to-end tests"
+    @echo "  record-all-e2e    - Re-record all end-to-end test cases"
     @echo "  test-bench        - Run benchmark tests"
     @echo ""
     @echo "CI/CD Commands:"
@@ -250,8 +251,18 @@ init:
 # Run end-to-end tests
 test-e2e: build
     @echo "Running end-to-end tests..."
-    ./bin/neurotest --neuro-cmd=./bin/neuro run-all
+    ./bin/neurotest --neuro-cmd="./bin/neuro" run-all
     @echo "End-to-end tests complete"
+
+# Re-record all end-to-end test cases
+record-all-e2e: build
+    #!/bin/bash
+    echo "Re-recording all end-to-end test cases..."
+    for test_name in $(find test/golden -mindepth 2 -name "*.neuro" -type f | cut -d'/' -f3 | sort -u); do \
+        echo "Recording $test_name..."; \
+        ./bin/neurotest --neuro-cmd="./bin/neuro" record "$test_name" >/dev/null 2>&1 && echo "✓ $test_name" || echo "✗ $test_name"; \
+    done
+    echo "All end-to-end test cases re-recorded"
 
 # Build neurotest binary
 build-neurotest:

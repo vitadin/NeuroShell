@@ -116,19 +116,19 @@ func (r *Registry) GetInterpolationService() (*InterpolationService, error) {
 	return interpolationService, nil
 }
 
-// GetRenderService retrieves the render service with proper type casting.
-func (r *Registry) GetRenderService() (*RenderService, error) {
-	service, err := r.GetService("render")
+// GetThemeService retrieves the theme service with proper type casting.
+func (r *Registry) GetThemeService() (*ThemeService, error) {
+	service, err := r.GetService("theme")
 	if err != nil {
 		return nil, err
 	}
 
-	renderService, ok := service.(*RenderService)
+	themeService, ok := service.(*ThemeService)
 	if !ok {
-		return nil, fmt.Errorf("render service has incorrect type")
+		return nil, fmt.Errorf("theme service has incorrect type")
 	}
 
-	return renderService, nil
+	return themeService, nil
 }
 
 // GetBashService retrieves the bash service with proper type casting.
@@ -298,9 +298,9 @@ func GetGlobalInterpolationService() (*InterpolationService, error) {
 	return GetGlobalRegistry().GetInterpolationService()
 }
 
-// GetGlobalRenderService returns the render service from the global registry.
-func GetGlobalRenderService() (*RenderService, error) {
-	return GetGlobalRegistry().GetRenderService()
+// GetGlobalThemeService returns the theme service from the global registry.
+func GetGlobalThemeService() (*ThemeService, error) {
+	return GetGlobalRegistry().GetThemeService()
 }
 
 // GetGlobalBashService returns the bash service from the global registry.

@@ -8,19 +8,19 @@ import (
 	"neuroshell/internal/testutils"
 )
 
-func TestRenderService_BasicFunctionality(t *testing.T) {
-	service := NewRenderService()
+func TestThemeService_BasicFunctionality(t *testing.T) {
+	service := NewThemeService()
 	ctx := testutils.NewMockContext()
 
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
 
-	assert.Equal(t, "render", service.Name())
+	assert.Equal(t, "theme", service.Name())
 	assert.True(t, service.initialized)
 }
 
-func TestRenderService_ThemeManagement(t *testing.T) {
-	service := NewRenderService()
+func TestThemeService_ThemeManagement(t *testing.T) {
+	service := NewThemeService()
 	ctx := testutils.NewMockContext()
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
@@ -50,8 +50,8 @@ func TestRenderService_ThemeManagement(t *testing.T) {
 	assert.False(t, exists)
 }
 
-func TestRenderService_GetThemeByName(t *testing.T) {
-	service := NewRenderService()
+func TestThemeService_GetThemeByName(t *testing.T) {
+	service := NewThemeService()
 	ctx := testutils.NewMockContext()
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
@@ -121,8 +121,8 @@ func TestRenderService_GetThemeByName(t *testing.T) {
 	}
 }
 
-func TestRenderService_GetDefaultTheme(t *testing.T) {
-	service := NewRenderService()
+func TestThemeService_GetDefaultTheme(t *testing.T) {
+	service := NewThemeService()
 
 	// Test without initialization
 	theme := service.GetDefaultTheme()
@@ -139,8 +139,8 @@ func TestRenderService_GetDefaultTheme(t *testing.T) {
 	assert.Equal(t, "plain", theme.Name)
 }
 
-func TestRenderService_ThemeStyles(t *testing.T) {
-	service := NewRenderService()
+func TestThemeService_ThemeStyles(t *testing.T) {
+	service := NewThemeService()
 	ctx := testutils.NewMockContext()
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
@@ -188,8 +188,8 @@ func TestRenderService_ThemeStyles(t *testing.T) {
 	}
 }
 
-func TestRenderService_ErrorHandling(t *testing.T) {
-	service := NewRenderService()
+func TestThemeService_ErrorHandling(t *testing.T) {
+	service := NewThemeService()
 	// Don't initialize the service
 
 	// Test operations on uninitialized service - should still work gracefully
@@ -204,8 +204,8 @@ func TestRenderService_ErrorHandling(t *testing.T) {
 	assert.False(t, exists, "Should return false for themes when not initialized")
 }
 
-func TestRenderService_PlainThemeRendering(t *testing.T) {
-	service := NewRenderService()
+func TestThemeService_PlainThemeRendering(t *testing.T) {
+	service := NewThemeService()
 	ctx := testutils.NewMockContext()
 	err := service.Initialize(ctx)
 	require.NoError(t, err)
@@ -225,8 +225,8 @@ func TestRenderService_PlainThemeRendering(t *testing.T) {
 	assert.Equal(t, testText, styledText, "Plain theme should return text unchanged")
 }
 
-func TestRenderService_ConcurrentAccess(t *testing.T) {
-	service := NewRenderService()
+func TestThemeService_ConcurrentAccess(t *testing.T) {
+	service := NewThemeService()
 	ctx := testutils.NewMockContext()
 	err := service.Initialize(ctx)
 	require.NoError(t, err)

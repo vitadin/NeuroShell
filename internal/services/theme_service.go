@@ -11,15 +11,15 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-// RenderService provides theme management for NeuroShell styling.
+// ThemeService provides theme management for NeuroShell styling.
 // It maintains theme objects that commands can use for semantic styling.
-type RenderService struct {
+type ThemeService struct {
 	initialized bool
-	themes      map[string]*RenderTheme
+	themes      map[string]*Theme
 }
 
-// RenderTheme defines color schemes and styles for text rendering
-type RenderTheme struct {
+// Theme defines color schemes and styles for text rendering
+type Theme struct {
 	Name       string
 	Keyword    lipgloss.Style
 	Variable   lipgloss.Style
@@ -35,30 +35,30 @@ type RenderTheme struct {
 	Background lipgloss.Style
 }
 
-// NewRenderService creates a new RenderService instance with themes loaded from YAML.
-func NewRenderService() *RenderService {
-	service := &RenderService{
+// NewThemeService creates a new ThemeService instance with themes loaded from YAML.
+func NewThemeService() *ThemeService {
+	service := &ThemeService{
 		initialized: false,
-		themes:      make(map[string]*RenderTheme),
+		themes:      make(map[string]*Theme),
 	}
 	// Load themes from embedded YAML files
 	service.loadThemesFromYAML()
 	return service
 }
 
-// Name returns the service name "render" for registration.
-func (r *RenderService) Name() string {
-	return "render"
+// Name returns the service name "theme" for registration.
+func (t *ThemeService) Name() string {
+	return "theme"
 }
 
-// Initialize sets up the RenderService for operation.
-func (r *RenderService) Initialize(_ neurotypes.Context) error {
-	r.initialized = true
+// Initialize sets up the ThemeService for operation.
+func (t *ThemeService) Initialize(_ neurotypes.Context) error {
+	t.initialized = true
 	return nil
 }
 
 // loadThemesFromYAML loads themes from embedded YAML files
-func (r *RenderService) loadThemesFromYAML() {
+func (t *ThemeService) loadThemesFromYAML() {
 	// Load individual theme files
 	themeFiles := map[string][]byte{
 		"default": embedded.DefaultThemeData,
@@ -68,67 +68,67 @@ func (r *RenderService) loadThemesFromYAML() {
 	}
 
 	for themeName, themeData := range themeFiles {
-		theme, err := r.loadThemeFile(themeData)
+		theme, err := t.loadThemeFile(themeData)
 		if err != nil {
 			logger.Error("Failed to load theme", "theme", themeName, "error", err)
 			// Fall back to creating a basic plain theme
-			r.themes[themeName] = r.createFallbackTheme(themeName)
+			t.themes[themeName] = t.createFallbackTheme(themeName)
 			continue
 		}
-		r.themes[themeName] = theme
+		t.themes[themeName] = theme
 	}
 
 	// Ensure we always have a plain theme as fallback
-	if _, exists := r.themes["plain"]; !exists {
-		r.themes["plain"] = r.createFallbackTheme("plain")
+	if _, exists := t.themes["plain"]; !exists {
+		t.themes["plain"] = t.createFallbackTheme("plain")
 	}
 }
 
 // loadThemeFile loads and parses an individual theme file from embedded YAML data.
-func (r *RenderService) loadThemeFile(data []byte) (*RenderTheme, error) {
+func (t *ThemeService) loadThemeFile(data []byte) (*Theme, error) {
 	var themeFile neurotypes.ThemeFile
 
 	if err := yaml.Unmarshal(data, &themeFile); err != nil {
 		return nil, fmt.Errorf("failed to parse theme file: %w", err)
 	}
 
-	// Convert ThemeConfig to RenderTheme
-	return r.convertThemeConfig(&themeFile.ThemeConfig), nil
+	// Convert ThemeConfig to Theme
+	return t.convertThemeConfig(&themeFile.ThemeConfig), nil
 }
 
-// convertThemeConfig converts a ThemeConfig from YAML to a RenderTheme with lipgloss styles.
-func (r *RenderService) convertThemeConfig(config *neurotypes.ThemeConfig) *RenderTheme {
-	return &RenderTheme{
+// convertThemeConfig converts a ThemeConfig from YAML to a Theme with lipgloss styles.
+func (t *ThemeService) convertThemeConfig(config *neurotypes.ThemeConfig) *Theme {
+	return &Theme{
 		Name:       config.Name,
-		Keyword:    r.createStyle(config.Styles.Keyword),
-		Variable:   r.createStyle(config.Styles.Variable),
-		Command:    r.createStyle(config.Styles.Command),
-		Success:    r.createStyle(config.Styles.Success),
-		Error:      r.createStyle(config.Styles.Error),
-		Warning:    r.createStyle(config.Styles.Warning),
-		Info:       r.createStyle(config.Styles.Info),
-		Highlight:  r.createStyle(config.Styles.Highlight),
-		Bold:       r.createStyle(config.Styles.Bold),
-		Italic:     r.createStyle(config.Styles.Italic),
-		Underline:  r.createStyle(config.Styles.Underline),
-		Background: r.createStyle(config.Styles.Background),
+		Keyword:    t.createStyle(config.Styles.Keyword),
+		Variable:   t.createStyle(config.Styles.Variable),
+		Command:    t.createStyle(config.Styles.Command),
+		Success:    t.createStyle(config.Styles.Success),
+		Error:      t.createStyle(config.Styles.Error),
+		Warning:    t.createStyle(config.Styles.Warning),
+		Info:       t.createStyle(config.Styles.Info),
+		Highlight:  t.createStyle(config.Styles.Highlight),
+		Bold:       t.createStyle(config.Styles.Bold),
+		Italic:     t.createStyle(config.Styles.Italic),
+		Underline:  t.createStyle(config.Styles.Underline),
+		Background: t.createStyle(config.Styles.Background),
 	}
 }
 
 // createStyle converts a StyleConfig to a lipgloss.Style.
-func (r *RenderService) createStyle(config neurotypes.StyleConfig) lipgloss.Style {
+func (t *ThemeService) createStyle(config neurotypes.StyleConfig) lipgloss.Style {
 	style := lipgloss.NewStyle()
 
 	// Handle foreground color
 	if config.Foreground != nil {
-		if color := r.parseColor(config.Foreground); color != nil {
+		if color := t.parseColor(config.Foreground); color != nil {
 			style = style.Foreground(color)
 		}
 	}
 
 	// Handle background color
 	if config.Background != nil {
-		if color := r.parseColor(config.Background); color != nil {
+		if color := t.parseColor(config.Background); color != nil {
 			style = style.Background(color)
 		}
 	}
@@ -151,7 +151,7 @@ func (r *RenderService) createStyle(config neurotypes.StyleConfig) lipgloss.Styl
 }
 
 // parseColor parses a color value that can be a string, AdaptiveColor, or map.
-func (r *RenderService) parseColor(colorValue interface{}) lipgloss.TerminalColor {
+func (t *ThemeService) parseColor(colorValue interface{}) lipgloss.TerminalColor {
 	switch v := colorValue.(type) {
 	case string:
 		// Simple color string
@@ -170,8 +170,8 @@ func (r *RenderService) parseColor(colorValue interface{}) lipgloss.TerminalColo
 }
 
 // createFallbackTheme creates a basic plain theme for fallback scenarios.
-func (r *RenderService) createFallbackTheme(name string) *RenderTheme {
-	return &RenderTheme{
+func (t *ThemeService) createFallbackTheme(name string) *Theme {
+	return &Theme{
 		Name:       name,
 		Keyword:    lipgloss.NewStyle(),
 		Variable:   lipgloss.NewStyle(),
@@ -189,68 +189,68 @@ func (r *RenderService) createFallbackTheme(name string) *RenderTheme {
 }
 
 // GetAvailableThemes returns a list of available theme names
-func (r *RenderService) GetAvailableThemes() []string {
-	if !r.initialized {
+func (t *ThemeService) GetAvailableThemes() []string {
+	if !t.initialized {
 		return []string{}
 	}
 
-	themes := make([]string, 0, len(r.themes))
-	for name := range r.themes {
+	themes := make([]string, 0, len(t.themes))
+	for name := range t.themes {
 		themes = append(themes, name)
 	}
 	return themes
 }
 
 // GetTheme returns a specific theme by name
-func (r *RenderService) GetTheme(name string) (*RenderTheme, bool) {
-	if !r.initialized {
+func (t *ThemeService) GetTheme(name string) (*Theme, bool) {
+	if !t.initialized {
 		return nil, false
 	}
 
-	theme, exists := r.themes[name]
+	theme, exists := t.themes[name]
 	return theme, exists
 }
 
 // GetThemeByName retrieves a theme by name with support for aliases and case-insensitive matching.
 // Supports aliases like "dark1" -> "dark". Always returns a valid theme object, never fails.
 // For invalid themes, logs a warning and returns the plain theme.
-func (r *RenderService) GetThemeByName(theme string) *RenderTheme {
-	if !r.initialized {
-		return r.GetDefaultTheme()
+func (t *ThemeService) GetThemeByName(theme string) *Theme {
+	if !t.initialized {
+		return t.GetDefaultTheme()
 	}
 
 	normalizedTheme := strings.ToLower(strings.TrimSpace(theme))
 
 	switch normalizedTheme {
 	case "", "plain":
-		return r.themes["plain"]
+		return t.themes["plain"]
 	case "dark1", "dark":
-		if themeObj, exists := r.themes["dark"]; exists {
+		if themeObj, exists := t.themes["dark"]; exists {
 			return themeObj
 		}
-		return r.themes["plain"]
+		return t.themes["plain"]
 	case "default":
-		if themeObj, exists := r.themes["default"]; exists {
+		if themeObj, exists := t.themes["default"]; exists {
 			return themeObj
 		}
-		return r.themes["plain"]
+		return t.themes["plain"]
 	case "light":
-		if themeObj, exists := r.themes["light"]; exists {
+		if themeObj, exists := t.themes["light"]; exists {
 			return themeObj
 		}
-		return r.themes["plain"]
+		return t.themes["plain"]
 	default:
 		// Invalid theme - log warning and return plain theme
-		logger.Debug("Invalid theme requested, using plain theme", "theme", theme, "available", r.GetAvailableThemes())
-		return r.themes["plain"]
+		logger.Debug("Invalid theme requested, using plain theme", "theme", theme, "available", t.GetAvailableThemes())
+		return t.themes["plain"]
 	}
 }
 
 // GetDefaultTheme returns the plain theme (no styling) for fallback scenarios.
-func (r *RenderService) GetDefaultTheme() *RenderTheme {
-	if !r.initialized {
+func (t *ThemeService) GetDefaultTheme() *Theme {
+	if !t.initialized {
 		// Return a basic plain theme if service not initialized
-		return &RenderTheme{
+		return &Theme{
 			Name:       "plain",
 			Keyword:    lipgloss.NewStyle(),
 			Variable:   lipgloss.NewStyle(),
@@ -266,12 +266,12 @@ func (r *RenderService) GetDefaultTheme() *RenderTheme {
 			Background: lipgloss.NewStyle(),
 		}
 	}
-	return r.themes["plain"]
+	return t.themes["plain"]
 }
 
 func init() {
-	// Register the RenderService with the global registry
-	if err := GlobalRegistry.RegisterService(NewRenderService()); err != nil {
-		panic(fmt.Sprintf("failed to register render service: %v", err))
+	// Register the ThemeService with the global registry
+	if err := GlobalRegistry.RegisterService(NewThemeService()); err != nil {
+		panic(fmt.Sprintf("failed to register theme service: %v", err))
 	}
 }

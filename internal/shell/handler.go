@@ -100,9 +100,9 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
-	// Register RenderService if not already registered (needed for tests that clear the registry)
-	if !services.GetGlobalRegistry().HasService("render") {
-		if err := services.GetGlobalRegistry().RegisterService(services.NewRenderService()); err != nil {
+	// Register ThemeService if not already registered (needed for tests that clear the registry)
+	if !services.GetGlobalRegistry().HasService("theme") {
+		if err := services.GetGlobalRegistry().RegisterService(services.NewThemeService()); err != nil {
 			return err
 		}
 	}
