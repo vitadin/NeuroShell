@@ -337,76 +337,73 @@ func TestRenderCommand_Execute_ErrorCases(t *testing.T) {
 	}
 }
 
-func TestRenderCommand_ParseRenderOptions(t *testing.T) {
-	cmd := &RenderCommand{}
-	ctx := context.New()
-	context.SetGlobalContext(ctx)
-
-	// Set up test variable
-	err := ctx.SetVariable("test_style", "bold")
-	require.NoError(t, err)
+func TestRenderCommand_ThemeHandling(t *testing.T) {
+	// Setup services
+	setupTestServices(t)
+	defer cleanupTestServices()
 
 	tests := []struct {
-		name     string
-		args     map[string]string
-		expected func(options services.RenderOptions) bool
+		name        string
+		themeName   string
+		expectPlain bool
+		description string
 	}{
 		{
-			name: "default options",
-			args: map[string]string{},
-			expected: func(options services.RenderOptions) bool {
-				return options.Theme == "default" && len(options.Keywords) == 0
-			},
+			name:        "default theme",
+			themeName:   "default",
+			expectPlain: false,
+			description: "Should use default theme",
 		},
 		{
-			name: "keywords parsing",
-			args: map[string]string{
-				"keywords": "[\\get, \\set]",
-			},
-			expected: func(options services.RenderOptions) bool {
-				return len(options.Keywords) == 2 &&
-					options.Keywords[0] == "\\get" &&
-					options.Keywords[1] == "\\set"
-			},
+			name:        "dark theme",
+			themeName:   "dark",
+			expectPlain: false,
+			description: "Should use dark theme",
 		},
 		{
-			name: "theme and style",
-			args: map[string]string{
-				"theme": "dark",
-				"style": "bold",
-			},
-			expected: func(options services.RenderOptions) bool {
-				return options.Theme == "dark" && options.Style == "bold"
-			},
+			name:        "dark1 alias",
+			themeName:   "dark1",
+			expectPlain: false,
+			description: "Should use dark theme via dark1 alias",
 		},
 		{
-			name: "colors",
-			args: map[string]string{
-				"color":      "#ff0000",
-				"background": "#00ff00",
-			},
-			expected: func(options services.RenderOptions) bool {
-				return options.Color == "#ff0000" && options.Background == "#00ff00"
-			},
+			name:        "plain theme",
+			themeName:   "plain",
+			expectPlain: true,
+			description: "Should use plain theme (no styling)",
 		},
 		{
-			name: "boolean options",
-			args: map[string]string{
-				"bold":      "true",
-				"italic":    "false",
-				"underline": "true",
-			},
-			expected: func(options services.RenderOptions) bool {
-				return options.Bold == true && options.Italic == false && options.Underline == true
-			},
+			name:        "empty theme",
+			themeName:   "",
+			expectPlain: true,
+			description: "Should use plain theme when empty",
+		},
+		{
+			name:        "invalid theme",
+			themeName:   "invalid",
+			expectPlain: true,
+			description: "Should fall back to plain theme for invalid themes",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			options, err := cmd.parseRenderOptions(tt.args)
+			renderService, err := services.GetGlobalRenderService()
 			require.NoError(t, err)
-			assert.True(t, tt.expected(options), "Options should match expected values")
+
+			theme := renderService.GetThemeByName(tt.themeName)
+			assert.NotNil(t, theme, "Theme should never be nil")
+
+			if tt.expectPlain {
+				assert.Equal(t, "plain", theme.Name, tt.description)
+			} else {
+				assert.NotEqual(t, "plain", theme.Name, tt.description)
+			}
+
+			// Test that theme can be used to render text
+			testText := "test"
+			styledText := theme.Command.Render(testText)
+			assert.NotEmpty(t, styledText, "Styled text should not be empty")
 		})
 	}
 }

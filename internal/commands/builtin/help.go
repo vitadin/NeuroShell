@@ -145,12 +145,8 @@ func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *servic
 		return fmt.Errorf("render service not available: %w", err)
 	}
 
-	// Get theme object (nil for plain text)
-	themeObj, isValid := renderService.GetThemeByName(theme)
-	if !isValid {
-		// Invalid theme, fall back to plain text
-		themeObj = nil
-	}
+	// Get theme object (always valid, never nil)
+	themeObj := renderService.GetThemeByName(theme)
 
 	// Render help info using theme object
 	output := c.renderHelpInfo(helpInfo, themeObj)
@@ -167,9 +163,14 @@ func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, them
 		return fmt.Errorf("failed to get command list: %w", err)
 	}
 
-	// Check if theme is specified (non-empty means styled output)
-	if theme != "" {
-		return c.showAllCommandsStyled(allCommands, helpService, theme)
+	// Get render service to check theme
+	renderService, err := services.GetGlobalRenderService()
+	if err == nil {
+		themeObj := renderService.GetThemeByName(theme)
+		// Check if this is not a plain theme (means styled output)
+		if themeObj.Name != "plain" {
+			return c.showAllCommandsStyled(allCommands, helpService, theme)
+		}
 	}
 
 	// Plain text output (existing behavior)
@@ -198,16 +199,8 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, 
 		return fmt.Errorf("render service not available: %w", err)
 	}
 
-	// Get theme object using alias support
-	themeObj, isValid := renderService.GetThemeByName(theme)
-	if !isValid {
-		// Invalid theme, fall back to default
-		themeObj, _ = renderService.GetTheme("default")
-	}
-	if themeObj == nil {
-		// Empty theme should not reach this styled method, fallback to default
-		themeObj, _ = renderService.GetTheme("default")
-	}
+	// Get theme object using alias support (always returns valid theme)
+	themeObj := renderService.GetThemeByName(theme)
 
 	// Title with border
 	titleStyle := lipgloss.NewStyle().
@@ -247,7 +240,8 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, 
 	}
 
 	for _, example := range examples {
-		styledExample, _ := renderService.HighlightKeywords(example, []string{})
+		// Apply NeuroShell syntax highlighting to examples
+		styledExample := c.highlightNeuroShellSyntax(example, themeObj)
 		fmt.Printf("  %s\n", exampleStyle.Render(styledExample))
 	}
 
@@ -261,9 +255,10 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, 
 	return nil
 }
 
-// renderHelpInfo renders help information using a theme object (nil for plain text)
+// renderHelpInfo renders help information using a theme object
 func (c *HelpCommand) renderHelpInfo(helpInfo neurotypes.HelpInfo, theme *services.RenderTheme) string {
-	if theme == nil {
+	// Check if this is a plain theme (no styling)
+	if theme.Name == "plain" {
 		return c.renderHelpInfoPlain(helpInfo)
 	}
 	return c.renderHelpInfoStyled(helpInfo, theme)
@@ -428,6 +423,7 @@ func (c *HelpCommand) parseModeToString(mode neurotypes.ParseMode) string {
 }
 
 // highlightNeuroShellSyntax applies syntax highlighting for NeuroShell-specific patterns
+// This method handles command-specific syntax highlighting using semantic theme styles.
 func (c *HelpCommand) highlightNeuroShellSyntax(text string, theme *services.RenderTheme) string {
 	result := text
 
