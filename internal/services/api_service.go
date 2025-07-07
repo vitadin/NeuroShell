@@ -9,17 +9,48 @@ import (
 	"strings"
 	"time"
 
+	"github.com/openai/openai-go"
+	"github.com/openai/openai-go/option"
+
 	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
 )
 
+// APIResponse represents a standardized response from LLM providers.
+type APIResponse struct {
+	Content      string                 `json:"content"`
+	Model        string                 `json:"model"`
+	Provider     string                 `json:"provider"`
+	Usage        *UsageInfo             `json:"usage,omitempty"`
+	Metadata     map[string]interface{} `json:"metadata,omitempty"`
+	FinishReason string                 `json:"finish_reason,omitempty"`
+}
+
+// UsageInfo contains token usage information from API responses.
+type UsageInfo struct {
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+	TotalTokens      int `json:"total_tokens"`
+}
+
+// ModelInfo represents unified model information across providers.
+type ModelInfo struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Provider    string   `json:"provider"`
+	Owned       string   `json:"owned_by,omitempty"`
+	Permissions []string `json:"permissions,omitempty"`
+	CreatedAt   int64    `json:"created,omitempty"`
+}
+
 // APIService provides API connectivity checking and management for LLM providers.
 type APIService struct {
-	initialized bool
-	httpClient  *http.Client
-	timeout     time.Duration
-	endpoints   map[string]string
+	initialized  bool
+	httpClient   *http.Client
+	timeout      time.Duration
+	endpoints    map[string]string
+	openaiClient *openai.Client
 }
 
 // NewAPIService creates a new APIService instance with default configuration.
@@ -52,6 +83,12 @@ func (a *APIService) Initialize(ctx neurotypes.Context) error {
 
 	// Configure provider endpoints
 	a.endpoints = a.getEndpoints(ctx)
+
+	// Initialize OpenAI client
+	if err := a.initializeOpenAIClient(); err != nil {
+		logger.Debug("Failed to initialize OpenAI client", "error", err)
+		// Don't fail initialization if OpenAI client fails - just log it
+	}
 
 	a.initialized = true
 	logger.Debug("APIService initialized", "timeout", a.timeout, "endpoints", len(a.endpoints))
@@ -239,4 +276,263 @@ func (a *APIService) SetTimeout(timeout time.Duration) {
 // GetTimeout returns the current timeout configuration.
 func (a *APIService) GetTimeout() time.Duration {
 	return a.timeout
+}
+
+// initializeOpenAIClient sets up the OpenAI client with API key from environment or context.
+func (a *APIService) initializeOpenAIClient() error {
+	// Get OpenAI API key
+	apiKey, err := a.getAPIKey("openai")
+	if err != nil {
+		return fmt.Errorf("failed to get OpenAI API key: %w", err)
+	}
+
+	// Create OpenAI client with options
+	options := []option.RequestOption{
+		option.WithAPIKey(apiKey),
+	}
+
+	// Check for custom base URL
+	if baseURL := a.getOpenAIBaseURL(); baseURL != "" {
+		options = append(options, option.WithBaseURL(baseURL))
+	}
+
+	client := openai.NewClient(options...)
+	a.openaiClient = &client
+	logger.Debug("OpenAI client initialized successfully")
+	return nil
+}
+
+// getOpenAIBaseURL retrieves custom OpenAI base URL from environment or context.
+func (a *APIService) getOpenAIBaseURL() string {
+	ctx := neuroshellcontext.GetGlobalContext()
+
+	// Check context variable first
+	if baseURL, err := ctx.GetVariable("@openai_base_url"); err == nil && baseURL != "" {
+		logger.Debug("Using context OpenAI base URL", "baseURL", baseURL)
+		return baseURL
+	}
+
+	// Check environment variable
+	if baseURL := os.Getenv("OPENAI_API_BASE_URL"); baseURL != "" {
+		logger.Debug("Using environment OpenAI base URL", "baseURL", baseURL)
+		return baseURL
+	}
+
+	return ""
+}
+
+// SendMessage sends a message to the specified provider and model, returning a standardized response.
+func (a *APIService) SendMessage(provider, model, message string, options map[string]any) (*APIResponse, error) {
+	if !a.initialized {
+		return nil, fmt.Errorf("api service not initialized")
+	}
+
+	switch strings.ToLower(provider) {
+	case "openai":
+		return a.sendOpenAIMessage(model, message, options)
+	case "anthropic":
+		return nil, fmt.Errorf("anthropic provider not yet implemented")
+	default:
+		return nil, fmt.Errorf("unsupported provider: %s", provider)
+	}
+}
+
+// sendOpenAIMessage handles sending messages to OpenAI using the official client.
+func (a *APIService) sendOpenAIMessage(model, message string, options map[string]any) (*APIResponse, error) {
+	if a.openaiClient == nil {
+		return nil, fmt.Errorf("openai client not initialized")
+	}
+
+	// Build chat completion parameters
+	params := openai.ChatCompletionNewParams{
+		Model: openai.ChatModel(model),
+		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.UserMessage(message),
+		},
+	}
+
+	// Apply optional parameters
+	if options != nil {
+		if temp, ok := options["temperature"]; ok {
+			if tempFloat, ok := temp.(float64); ok {
+				params.Temperature = openai.Float(tempFloat)
+			}
+		}
+		if maxTokens, ok := options["max_tokens"]; ok {
+			if maxTokensInt, ok := maxTokens.(int); ok {
+				params.MaxTokens = openai.Int(int64(maxTokensInt))
+			}
+		}
+		if topP, ok := options["top_p"]; ok {
+			if topPFloat, ok := topP.(float64); ok {
+				params.TopP = openai.Float(topPFloat)
+			}
+		}
+	}
+
+	// Make the API call
+	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
+	defer cancel()
+
+	completion, err := a.openaiClient.Chat.Completions.New(ctx, params)
+	if err != nil {
+		return nil, fmt.Errorf("openai api call failed: %w", err)
+	}
+
+	// Convert to standardized response
+	response := &APIResponse{
+		Provider: "openai",
+		Model:    model,
+	}
+
+	if len(completion.Choices) > 0 {
+		response.Content = completion.Choices[0].Message.Content
+		response.FinishReason = string(completion.Choices[0].FinishReason)
+	}
+
+	if completion.Usage.PromptTokens > 0 || completion.Usage.CompletionTokens > 0 || completion.Usage.TotalTokens > 0 {
+		response.Usage = &UsageInfo{
+			PromptTokens:     int(completion.Usage.PromptTokens),
+			CompletionTokens: int(completion.Usage.CompletionTokens),
+			TotalTokens:      int(completion.Usage.TotalTokens),
+		}
+	}
+
+	// Add metadata
+	response.Metadata = map[string]interface{}{
+		"id":      completion.ID,
+		"object":  completion.Object,
+		"created": completion.Created,
+	}
+
+	if completion.SystemFingerprint != "" {
+		response.Metadata["system_fingerprint"] = completion.SystemFingerprint
+	}
+
+	logger.Debug("OpenAI message sent successfully", "model", model, "usage", response.Usage)
+	return response, nil
+}
+
+// SendMessageStreaming sends a message with streaming responses via callback.
+func (a *APIService) SendMessageStreaming(provider, model, message string, options map[string]any, callback func(chunk string)) error {
+	if !a.initialized {
+		return fmt.Errorf("api service not initialized")
+	}
+
+	switch strings.ToLower(provider) {
+	case "openai":
+		return a.sendOpenAIMessageStreaming(model, message, options, callback)
+	case "anthropic":
+		return fmt.Errorf("anthropic provider not yet implemented")
+	default:
+		return fmt.Errorf("unsupported provider: %s", provider)
+	}
+}
+
+// sendOpenAIMessageStreaming handles streaming responses from OpenAI.
+func (a *APIService) sendOpenAIMessageStreaming(model, message string, options map[string]any, callback func(chunk string)) error {
+	if a.openaiClient == nil {
+		return fmt.Errorf("openai client not initialized")
+	}
+
+	// Build chat completion parameters for streaming
+	params := openai.ChatCompletionNewParams{
+		Model: openai.ChatModel(model),
+		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.UserMessage(message),
+		},
+	}
+
+	// Apply optional parameters
+	if options != nil {
+		if temp, ok := options["temperature"]; ok {
+			if tempFloat, ok := temp.(float64); ok {
+				params.Temperature = openai.Float(tempFloat)
+			}
+		}
+		if maxTokens, ok := options["max_tokens"]; ok {
+			if maxTokensInt, ok := maxTokens.(int); ok {
+				params.MaxTokens = openai.Int(int64(maxTokensInt))
+			}
+		}
+		if topP, ok := options["top_p"]; ok {
+			if topPFloat, ok := topP.(float64); ok {
+				params.TopP = openai.Float(topPFloat)
+			}
+		}
+	}
+
+	// Create streaming context
+	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
+	defer cancel()
+
+	// For now, use non-streaming API and call callback with full response
+	// Streaming implementation would require additional setup with SSE
+	completion, err := a.openaiClient.Chat.Completions.New(ctx, params)
+	if err != nil {
+		return fmt.Errorf("openai api call failed: %w", err)
+	}
+
+	// Call callback with the complete response
+	if len(completion.Choices) > 0 {
+		callback(completion.Choices[0].Message.Content)
+	}
+
+	logger.Debug("OpenAI streaming completed successfully", "model", model)
+	return nil
+}
+
+// ListProviderModels lists available models from the specified provider.
+func (a *APIService) ListProviderModels(provider string) ([]ModelInfo, error) {
+	if !a.initialized {
+		return nil, fmt.Errorf("api service not initialized")
+	}
+
+	switch strings.ToLower(provider) {
+	case "openai":
+		return a.listOpenAIModels()
+	case "anthropic":
+		return nil, fmt.Errorf("anthropic provider not yet implemented")
+	default:
+		return nil, fmt.Errorf("unsupported provider: %s", provider)
+	}
+}
+
+// listOpenAIModels retrieves available models from OpenAI.
+func (a *APIService) listOpenAIModels() ([]ModelInfo, error) {
+	if a.openaiClient == nil {
+		return nil, fmt.Errorf("openai client not initialized")
+	}
+
+	// Create context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), a.timeout)
+	defer cancel()
+
+	// Call OpenAI models API
+	models, err := a.openaiClient.Models.List(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list openai models: %w", err)
+	}
+
+	// Convert to standardized format
+	var modelInfos []ModelInfo
+	for _, model := range models.Data {
+		modelInfo := ModelInfo{
+			ID:        model.ID,
+			Name:      model.ID, // OpenAI uses ID as name
+			Provider:  "openai",
+			Owned:     model.OwnedBy,
+			CreatedAt: model.Created,
+		}
+
+		// Extract permissions if available
+		// Note: OpenAI API doesn't always provide detailed permissions in the list endpoint
+		// This is a placeholder for future extension
+		modelInfo.Permissions = []string{}
+
+		modelInfos = append(modelInfos, modelInfo)
+	}
+
+	logger.Debug("OpenAI models listed successfully", "count", len(modelInfos))
+	return modelInfos, nil
 }
