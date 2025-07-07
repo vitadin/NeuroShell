@@ -1,0 +1,18 @@
+%% Test basic _style variable setting with \set command
+%% This test verifies that users can set the whitelisted global variable _style
+
+%% Test setting _style with different values
+\set[_style="dark"]
+\get[_style]
+
+%% Test overwriting _style value
+\set[_style="light"]
+\get[_style]
+
+%% Test setting _style to empty string
+\set[_style=""]
+\get[_style]
+
+%% Test setting _style with space syntax
+\set _style compact
+\get[_style]
