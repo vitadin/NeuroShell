@@ -3,6 +3,8 @@
 [![CircleCI](https://dl.circleci.com/status-badge/img/circleci/RjkGUoMoHBKh13iJmkaXTF/Pfh8uXKBx5881azXtzYpio/tree/main.svg?style=svg&circle-token=CCIPRJ_UA4CCuNuLUnf978JvYtAzb_299edc3497615f5f30d9653830038654df0c471b)](https://dl.circleci.com/status-badge/redirect/circleci/RjkGUoMoHBKh13iJmkaXTF/Pfh8uXKBx5881azXtzYpio/tree/main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vitadin/NeuroShell)](https://goreportcard.com/report/github.com/vitadin/NeuroShell)
 
+![Neuro Logo](./assets/neurologo.svg)
+
 A specialized shell environment designed for seamless interaction with LLM agents. NeuroShell bridges traditional command-line interfaces and modern AI assistants, enabling professionals to create reproducible, automated workflows that combine system operations with LLM capabilities.
 
 ## Overview
