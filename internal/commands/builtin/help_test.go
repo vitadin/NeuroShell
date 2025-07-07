@@ -45,16 +45,16 @@ func setupHelpTestEnvironment(t *testing.T, testCommands []neurotypes.Command) n
 	err := testServiceRegistry.RegisterService(helpService)
 	require.NoError(t, err)
 
-	// Create and initialize render service (required by new help command)
-	renderService := services.NewRenderService()
-	err = testServiceRegistry.RegisterService(renderService)
+	// Create and initialize theme service (required by new help command)
+	themeService := services.NewThemeService()
+	err = testServiceRegistry.RegisterService(themeService)
 	require.NoError(t, err)
 
 	// Create context and initialize services
 	ctx := testutils.NewMockContext()
 	err = helpService.Initialize(ctx)
 	require.NoError(t, err)
-	err = renderService.Initialize(ctx)
+	err = themeService.Initialize(ctx)
 	require.NoError(t, err)
 
 	return ctx

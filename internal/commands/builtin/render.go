@@ -129,10 +129,10 @@ func (c *RenderCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
-	// Get render service
-	renderService, err := services.GetGlobalRenderService()
+	// Get theme service
+	themeService, err := services.GetGlobalThemeService()
 	if err != nil {
-		return fmt.Errorf("render service not available: %w", err)
+		return fmt.Errorf("theme service not available: %w", err)
 	}
 
 	// Get variable service for storing result
@@ -146,7 +146,7 @@ func (c *RenderCommand) Execute(args map[string]string, input string) error {
 	if themeName == "" {
 		themeName = "default"
 	}
-	theme := renderService.GetThemeByName(themeName)
+	theme := themeService.GetThemeByName(themeName)
 
 	// Apply styling to the input text
 	styledText := c.renderText(input, args, theme)
@@ -191,7 +191,7 @@ func (c *RenderCommand) Execute(args map[string]string, input string) error {
 }
 
 // renderText applies styling to text using theme objects and command arguments
-func (c *RenderCommand) renderText(text string, args map[string]string, theme *services.RenderTheme) string {
+func (c *RenderCommand) renderText(text string, args map[string]string, theme *services.Theme) string {
 	result := text
 
 	// Apply keyword highlighting first if specified
@@ -235,7 +235,7 @@ func (c *RenderCommand) hasGlobalStyling(args map[string]string) bool {
 }
 
 // highlightKeywords highlights specific keywords in the text using theme styles
-func (c *RenderCommand) highlightKeywords(text string, keywords []string, theme *services.RenderTheme) string {
+func (c *RenderCommand) highlightKeywords(text string, keywords []string, theme *services.Theme) string {
 	result := text
 
 	for _, keyword := range keywords {
@@ -260,7 +260,7 @@ func (c *RenderCommand) highlightKeywords(text string, keywords []string, theme 
 }
 
 // highlightNeuroShellSyntax applies syntax highlighting for NeuroShell-specific patterns
-func (c *RenderCommand) highlightNeuroShellSyntax(text string, theme *services.RenderTheme) string {
+func (c *RenderCommand) highlightNeuroShellSyntax(text string, theme *services.Theme) string {
 	result := text
 
 	// Highlight variables: ${variable_name}
@@ -283,7 +283,7 @@ func (c *RenderCommand) highlightNeuroShellSyntax(text string, theme *services.R
 }
 
 // applyGlobalStyling applies global style options to the entire text using theme and custom options
-func (c *RenderCommand) applyGlobalStyling(text string, args map[string]string, theme *services.RenderTheme) string {
+func (c *RenderCommand) applyGlobalStyling(text string, args map[string]string, theme *services.Theme) string {
 	style := lipgloss.NewStyle()
 
 	// Apply boolean styling options
