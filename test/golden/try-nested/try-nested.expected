@@ -1,0 +1,15 @@
+nested success
+_status = 0
+_error = 
+_output = nested success
+Error: ls: /nonexistent_nested: No such file or directory
+Exit status: 1
+_status = 1
+_error = ls: /nonexistent_nested: No such file or directory
+_status = 1
+_error = unknown command: unknown_nested_command
+Setting nested_var = deep
+_status = 1
+nested_var = deep
+_status = 1
+_error = unknown command: unknown_outer_command
