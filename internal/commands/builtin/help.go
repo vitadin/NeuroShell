@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -81,12 +82,12 @@ func (c *HelpCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("help service not available: %w", err)
 	}
 
-	// Check _style variable for styling preference
-	styled := false
+	// Get _style variable for theme selection
+	theme := ""
 	variableService, err := services.GetGlobalVariableService()
 	if err == nil {
 		if styleValue, err := variableService.Get("_style"); err == nil {
-			styled = strings.ToLower(styleValue) == "dark1"
+			theme = styleValue
 		}
 	}
 
@@ -113,15 +114,15 @@ func (c *HelpCommand) Execute(args map[string]string, input string) error {
 
 	// If specific command requested, show detailed help for that command
 	if requestedCommand != "" {
-		return c.showCommandHelpNew(requestedCommand, helpService, styled)
+		return c.showCommandHelpNew(requestedCommand, helpService, theme)
 	}
 
 	// Otherwise, show all commands (original behavior)
-	return c.showAllCommandsNew(helpService, styled)
+	return c.showAllCommandsNew(helpService, theme)
 }
 
 // showCommandHelpNew displays detailed help information for a specific command using HelpInfo
-func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *services.HelpService, styled bool) error {
+func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *services.HelpService, theme string) error {
 	// Get the command directly from the help service
 	_, err := helpService.GetCommand(commandName)
 	if err != nil {
@@ -138,46 +139,37 @@ func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *servic
 	// Get structured help info
 	helpInfo := command.HelpInfo()
 
-	// Get render service for styling
-	if styled {
-		renderService, err := services.GetGlobalRenderService()
-		if err != nil {
-			return fmt.Errorf("render service not available: %w", err)
-		}
-
-		styledOutput, err := renderService.RenderHelp(helpInfo, true)
-		if err != nil {
-			return fmt.Errorf("failed to render styled help: %w", err)
-		}
-
-		fmt.Print(styledOutput)
-	} else {
-		renderService, err := services.GetGlobalRenderService()
-		if err != nil {
-			return fmt.Errorf("render service not available: %w", err)
-		}
-
-		plainOutput, err := renderService.RenderHelp(helpInfo, false)
-		if err != nil {
-			return fmt.Errorf("failed to render plain help: %w", err)
-		}
-
-		fmt.Print(plainOutput)
+	// Get render service to access themes
+	renderService, err := services.GetGlobalRenderService()
+	if err != nil {
+		return fmt.Errorf("render service not available: %w", err)
 	}
+
+	// Get theme object (nil for plain text)
+	themeObj, isValid := renderService.GetThemeByName(theme)
+	if !isValid {
+		// Invalid theme, fall back to plain text
+		themeObj = nil
+	}
+
+	// Render help info using theme object
+	output := c.renderHelpInfo(helpInfo, themeObj)
+	fmt.Print(output)
 
 	return nil
 }
 
 // showAllCommandsNew displays a list of all available commands using HelpInfo
-func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, styled bool) error {
+func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, theme string) error {
 	// Get all commands from the help service
 	allCommands, err := helpService.GetAllCommands()
 	if err != nil {
 		return fmt.Errorf("failed to get command list: %w", err)
 	}
 
-	if styled {
-		return c.showAllCommandsStyled(allCommands, helpService)
+	// Check if theme is specified (non-empty means styled output)
+	if theme != "" {
+		return c.showAllCommandsStyled(allCommands, helpService, theme)
 	}
 
 	// Plain text output (existing behavior)
@@ -199,25 +191,31 @@ func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, styl
 	return nil
 }
 
-// showAllCommandsStyled displays all commands with professional styling
-func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, _ *services.HelpService) error {
+// showAllCommandsStyled displays all commands with professional styling using the specified theme
+func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, _ *services.HelpService, theme string) error {
 	renderService, err := services.GetGlobalRenderService()
 	if err != nil {
 		return fmt.Errorf("render service not available: %w", err)
 	}
 
-	theme, exists := renderService.GetTheme("default")
-	if !exists {
-		return fmt.Errorf("default theme not found")
+	// Get theme object using alias support
+	themeObj, isValid := renderService.GetThemeByName(theme)
+	if !isValid {
+		// Invalid theme, fall back to default
+		themeObj, _ = renderService.GetTheme("default")
+	}
+	if themeObj == nil {
+		// Empty theme should not reach this styled method, fallback to default
+		themeObj, _ = renderService.GetTheme("default")
 	}
 
 	// Title with border
 	titleStyle := lipgloss.NewStyle().
 		Bold(true).
-		Foreground(theme.Success.GetForeground()).
+		Foreground(themeObj.Success.GetForeground()).
 		Padding(1, 2).
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(theme.Info.GetForeground()).
+		BorderForeground(themeObj.Info.GetForeground()).
 		Width(60).
 		Align(lipgloss.Center)
 
@@ -226,8 +224,8 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, 
 
 	// Commands in styled format
 	for _, cmdInfo := range allCommands {
-		cmdStyle := theme.Command.Bold(true)
-		descStyle := theme.Info.Bold(false)
+		cmdStyle := themeObj.Command.Bold(true)
+		descStyle := themeObj.Info.Bold(false)
 
 		fmt.Printf("  %s - %s\n",
 			cmdStyle.Render(fmt.Sprintf("%-20s", cmdInfo.Usage)),
@@ -237,10 +235,10 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, 
 	fmt.Println()
 
 	// Styled examples section
-	exampleHeaderStyle := theme.Bold.Foreground(theme.Warning.GetForeground())
+	exampleHeaderStyle := themeObj.Bold.Foreground(themeObj.Warning.GetForeground())
 	fmt.Println(exampleHeaderStyle.Render("Examples:"))
 
-	exampleStyle := theme.Variable
+	exampleStyle := themeObj.Variable
 	examples := []string{
 		"\\send Hello world",
 		"\\set[name=\"John\"]",
@@ -256,11 +254,200 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, 
 	fmt.Println()
 
 	// Styled notes
-	noteStyle := theme.Info.Italic(true)
+	noteStyle := themeObj.Info.Italic(true)
 	fmt.Println(noteStyle.Render("Note: Text without \\ prefix is sent to LLM automatically"))
 	fmt.Println(noteStyle.Render("Use \\help[command] for detailed help on a specific command"))
 
 	return nil
+}
+
+// renderHelpInfo renders help information using a theme object (nil for plain text)
+func (c *HelpCommand) renderHelpInfo(helpInfo neurotypes.HelpInfo, theme *services.RenderTheme) string {
+	if theme == nil {
+		return c.renderHelpInfoPlain(helpInfo)
+	}
+	return c.renderHelpInfoStyled(helpInfo, theme)
+}
+
+// renderHelpInfoPlain renders help information as plain text
+func (c *HelpCommand) renderHelpInfoPlain(helpInfo neurotypes.HelpInfo) string {
+	var result strings.Builder
+
+	result.WriteString(fmt.Sprintf("Command: %s\n", helpInfo.Command))
+	result.WriteString(fmt.Sprintf("Description: %s\n", helpInfo.Description))
+	result.WriteString(fmt.Sprintf("Usage: %s\n", helpInfo.Usage))
+	result.WriteString(fmt.Sprintf("Parse Mode: %s\n", c.parseModeToString(helpInfo.ParseMode)))
+
+	if len(helpInfo.Options) > 0 {
+		result.WriteString("\nOptions:\n")
+		for _, option := range helpInfo.Options {
+			defaultStr := ""
+			if option.Default != "" {
+				defaultStr = fmt.Sprintf(" (default: %s)", option.Default)
+			}
+			requiredStr := ""
+			if option.Required {
+				requiredStr = " (required)"
+			}
+			result.WriteString(fmt.Sprintf("  %s - %s%s%s\n", option.Name, option.Description, defaultStr, requiredStr))
+		}
+	}
+
+	if len(helpInfo.Examples) > 0 {
+		result.WriteString("\nExamples:\n")
+		for _, example := range helpInfo.Examples {
+			result.WriteString(fmt.Sprintf("  %s\n", example.Command))
+			if example.Description != "" {
+				result.WriteString("    %% " + example.Description + "\n")
+			}
+		}
+	}
+
+	if len(helpInfo.Notes) > 0 {
+		result.WriteString("\nNotes:\n")
+		for _, note := range helpInfo.Notes {
+			result.WriteString(fmt.Sprintf("  %s\n", note))
+		}
+	}
+
+	return result.String()
+}
+
+// renderHelpInfoStyled renders help information with professional styling using the theme
+func (c *HelpCommand) renderHelpInfoStyled(helpInfo neurotypes.HelpInfo, theme *services.RenderTheme) string {
+	var result strings.Builder
+
+	// Title with border
+	titleStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(theme.Command.GetForeground()).
+		Padding(0, 1).
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(theme.Info.GetForeground())
+
+	title := fmt.Sprintf("Command: %s", helpInfo.Command)
+	result.WriteString(titleStyle.Render(title))
+	result.WriteString("\n\n")
+
+	// Description
+	descStyle := theme.Info.Bold(false)
+	result.WriteString(descStyle.Render("Description: "))
+	result.WriteString(helpInfo.Description)
+	result.WriteString("\n\n")
+
+	// Usage with syntax highlighting
+	usageStyle := theme.Bold.Foreground(theme.Success.GetForeground())
+	result.WriteString(usageStyle.Render("Usage: "))
+	styledUsage := c.highlightNeuroShellSyntax(helpInfo.Usage, theme)
+	result.WriteString(styledUsage)
+	result.WriteString("\n\n")
+
+	// Parse Mode
+	parseModeStyle := theme.Info.Bold(false)
+	result.WriteString(parseModeStyle.Render("Parse Mode: "))
+	result.WriteString(c.parseModeToString(helpInfo.ParseMode))
+	result.WriteString("\n")
+
+	// Options section
+	if len(helpInfo.Options) > 0 {
+		result.WriteString("\n")
+		optionHeaderStyle := theme.Bold.Foreground(theme.Warning.GetForeground())
+		result.WriteString(optionHeaderStyle.Render("Options:"))
+		result.WriteString("\n")
+
+		for _, option := range helpInfo.Options {
+			optionNameStyle := theme.Variable.Bold(true)
+			result.WriteString("  ")
+			result.WriteString(optionNameStyle.Render(option.Name))
+			result.WriteString(" - ")
+			result.WriteString(option.Description)
+
+			if option.Default != "" {
+				defaultStyle := theme.Info.Italic(true)
+				result.WriteString(defaultStyle.Render(fmt.Sprintf(" (default: %s)", option.Default)))
+			}
+			if option.Required {
+				requiredStyle := theme.Error.Bold(true)
+				result.WriteString(requiredStyle.Render(" (required)"))
+			}
+			result.WriteString("\n")
+		}
+	}
+
+	// Examples section
+	if len(helpInfo.Examples) > 0 {
+		result.WriteString("\n")
+		exampleHeaderStyle := theme.Bold.Foreground(theme.Success.GetForeground())
+		result.WriteString(exampleHeaderStyle.Render("Examples:"))
+		result.WriteString("\n")
+
+		for _, example := range helpInfo.Examples {
+			result.WriteString("  ")
+			styledExample := c.highlightNeuroShellSyntax(example.Command, theme)
+			result.WriteString(styledExample)
+			result.WriteString("\n")
+			if example.Description != "" {
+				commentStyle := theme.Info.Italic(true)
+				result.WriteString("    ")
+				result.WriteString(commentStyle.Render("%% " + example.Description))
+				result.WriteString("\n")
+			}
+		}
+	}
+
+	// Notes section
+	if len(helpInfo.Notes) > 0 {
+		result.WriteString("\n")
+		noteHeaderStyle := theme.Bold.Foreground(theme.Warning.GetForeground())
+		result.WriteString(noteHeaderStyle.Render("Notes:"))
+		result.WriteString("\n")
+
+		for _, note := range helpInfo.Notes {
+			noteStyle := theme.Info.Italic(true)
+			result.WriteString("  ")
+			result.WriteString(noteStyle.Render(note))
+			result.WriteString("\n")
+		}
+	}
+
+	return result.String()
+}
+
+// parseModeToString converts parse mode enum to readable string
+func (c *HelpCommand) parseModeToString(mode neurotypes.ParseMode) string {
+	switch mode {
+	case neurotypes.ParseModeKeyValue:
+		return "Key-Value (supports [key=value] syntax)"
+	case neurotypes.ParseModeRaw:
+		return "Raw (passes input directly without parsing)"
+	case neurotypes.ParseModeWithOptions:
+		return "With Options (supports additional options)"
+	default:
+		return "Unknown"
+	}
+}
+
+// highlightNeuroShellSyntax applies syntax highlighting for NeuroShell-specific patterns
+func (c *HelpCommand) highlightNeuroShellSyntax(text string, theme *services.RenderTheme) string {
+	result := text
+
+	// Highlight variables: ${variable_name}
+	variablePattern := regexp.MustCompile(`\$\{[^}]+\}`)
+	result = variablePattern.ReplaceAllStringFunc(result, func(match string) string {
+		return theme.Variable.Render(match)
+	})
+
+	// Highlight commands: \command (but only if not already styled)
+	commandPattern := regexp.MustCompile(`\\[a-zA-Z_][a-zA-Z0-9_-]*`)
+	result = commandPattern.ReplaceAllStringFunc(result, func(match string) string {
+		// Check if this text is already styled (contains ANSI sequences)
+		if strings.Contains(match, "\x1b[") {
+			return match // Already styled, don't re-style
+		}
+		return theme.Command.Render(match)
+	})
+
+	return result
 }
 
 // getHelpService retrieves the help service from the global registry

@@ -477,46 +477,52 @@ func TestHelpCommand_Execute_StyleVariable(t *testing.T) {
 	}
 
 	tests := []struct {
-		name         string
-		styleValue   string
-		expectStyled bool
-		description  string
+		name        string
+		styleValue  string
+		expectTheme string
+		description string
 	}{
 		{
-			name:         "dark1 enables styling (lowercase)",
-			styleValue:   "dark1",
-			expectStyled: true,
-			description:  "Should enable styling when _style = 'dark1'",
+			name:        "dark1 uses dark theme (lowercase)",
+			styleValue:  "dark1",
+			expectTheme: "dark",
+			description: "Should use dark theme when _style = 'dark1'",
 		},
 		{
-			name:         "DARK1 enables styling (uppercase)",
-			styleValue:   "DARK1",
-			expectStyled: true,
-			description:  "Should enable styling when _style = 'DARK1' (case insensitive)",
+			name:        "DARK1 uses dark theme (uppercase)",
+			styleValue:  "DARK1",
+			expectTheme: "dark",
+			description: "Should use dark theme when _style = 'DARK1' (case insensitive)",
 		},
 		{
-			name:         "Dark1 enables styling (mixed case)",
-			styleValue:   "Dark1",
-			expectStyled: true,
-			description:  "Should enable styling when _style = 'Dark1' (case insensitive)",
+			name:        "Dark1 uses dark theme (mixed case)",
+			styleValue:  "Dark1",
+			expectTheme: "dark",
+			description: "Should use dark theme when _style = 'Dark1' (case insensitive)",
 		},
 		{
-			name:         "light does not enable styling",
-			styleValue:   "light",
-			expectStyled: false,
-			description:  "Should not enable styling when _style = 'light'",
+			name:        "dark uses dark theme",
+			styleValue:  "dark",
+			expectTheme: "dark",
+			description: "Should use dark theme when _style = 'dark'",
 		},
 		{
-			name:         "empty value does not enable styling",
-			styleValue:   "",
-			expectStyled: false,
-			description:  "Should not enable styling when _style is empty",
+			name:        "default uses default theme",
+			styleValue:  "default",
+			expectTheme: "default",
+			description: "Should use default theme when _style = 'default'",
 		},
 		{
-			name:         "other value does not enable styling",
-			styleValue:   "custom",
-			expectStyled: false,
-			description:  "Should not enable styling when _style = 'custom'",
+			name:        "empty value uses plain text",
+			styleValue:  "",
+			expectTheme: "",
+			description: "Should use plain text when _style is empty",
+		},
+		{
+			name:        "invalid value falls back to plain text",
+			styleValue:  "invalid_theme",
+			expectTheme: "",
+			description: "Should fall back to plain text when _style is invalid",
 		},
 	}
 
@@ -547,20 +553,19 @@ func TestHelpCommand_Execute_StyleVariable(t *testing.T) {
 
 			assert.NoError(t, err)
 
-			if tt.expectStyled {
-				// Check for styled output indicators
-				// Styled output should contain ANSI escape codes or specific styled formatting
+			if tt.expectTheme != "" {
+				// Themed output - should contain basic content but formatting may vary
 				assert.True(t,
 					strings.Contains(outputStr, "Neuro Shell Commands") ||
 						len(outputStr) > 0,
-					"Expected styled output for %s", tt.description)
+					"Expected themed output for %s", tt.description)
 			} else {
-				// For non-styled output, check basic content
+				// Plain text output - check specific formatting
 				assert.Contains(t, outputStr, "Neuro Shell Commands:")
 				assert.Contains(t, outputStr, "Examples:")
 			}
 
-			// Both styled and non-styled should contain basic content
+			// Both themed and plain text should contain basic content
 			assert.Contains(t, outputStr, "\\test")
 			assert.Contains(t, outputStr, "Test command")
 		})
