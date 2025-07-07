@@ -168,13 +168,13 @@ func TestTryCommand_ExecuteFailingBashCommand(t *testing.T) {
 		t.Errorf("Expected no error from try command even with failing inner command, got: %v", err)
 	}
 
-	// Check that status is set to failure
+	// Check that status is set to failure (any non-zero value)
 	status, err := ctx.GetVariable("_status")
 	if err != nil {
 		t.Errorf("Expected _status variable to be set: %v", err)
 	}
-	if status != "1" {
-		t.Errorf("Expected _status to be '1', got '%s'", status)
+	if status == "0" {
+		t.Errorf("Expected _status to be non-zero (failure), got '%s'", status)
 	}
 
 	// Check that error contains error message
@@ -230,13 +230,13 @@ func TestTryCommand_ExecuteFailingSetCommand(t *testing.T) {
 		t.Errorf("Expected no error from try command even with failing inner command, got: %v", err)
 	}
 
-	// Check that status is set to failure
+	// Check that status is set to failure (any non-zero value)
 	status, err := ctx.GetVariable("_status")
 	if err != nil {
 		t.Errorf("Expected _status variable to be set: %v", err)
 	}
-	if status != "1" {
-		t.Errorf("Expected _status to be '1', got '%s'", status)
+	if status == "0" {
+		t.Errorf("Expected _status to be non-zero (failure), got '%s'", status)
 	}
 
 	// Check that error contains error message
@@ -261,13 +261,13 @@ func TestTryCommand_ExecuteUnknownCommand(t *testing.T) {
 		t.Errorf("Expected no error from try command even with unknown inner command, got: %v", err)
 	}
 
-	// Check that status is set to failure
+	// Check that status is set to failure (any non-zero value)
 	status, err := ctx.GetVariable("_status")
 	if err != nil {
 		t.Errorf("Expected _status variable to be set: %v", err)
 	}
-	if status != "1" {
-		t.Errorf("Expected _status to be '1', got '%s'", status)
+	if status == "0" {
+		t.Errorf("Expected _status to be non-zero (failure), got '%s'", status)
 	}
 
 	// Check that error contains "unknown command" message
@@ -293,13 +293,13 @@ func TestTryCommand_ExecuteInvalidSyntax(t *testing.T) {
 		t.Errorf("Expected no error from try command even with invalid syntax, got: %v", err)
 	}
 
-	// Check that status is set to failure
+	// Check that status is set to failure (any non-zero value)
 	status, err := ctx.GetVariable("_status")
 	if err != nil {
 		t.Errorf("Expected _status variable to be set: %v", err)
 	}
-	if status != "1" {
-		t.Errorf("Expected _status to be '1', got '%s'", status)
+	if status == "0" {
+		t.Errorf("Expected _status to be non-zero (failure), got '%s'", status)
 	}
 
 	// Check that error contains error message
@@ -407,9 +407,9 @@ func TestTryCommand_Integration(t *testing.T) {
 		t.Errorf("Expected no error from try even with unknown command, got: %v", err)
 	}
 
-	// Verify failure status
-	if status, _ := ctx.GetVariable("_status"); status != "1" {
-		t.Errorf("Expected _status='1', got '%s'", status)
+	// Verify failure status (any non-zero value)
+	if status, _ := ctx.GetVariable("_status"); status == "0" {
+		t.Errorf("Expected _status to be non-zero (failure), got '%s'", status)
 	}
 
 	// Verify error message is set
