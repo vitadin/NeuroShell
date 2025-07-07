@@ -31,7 +31,7 @@ func (c *HelpCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the help command.
 func (c *HelpCommand) Usage() string {
-	return "\\help[styled=true, command_name] or \\help[styled=true] command_name"
+	return "\\help[command_name] or \\help command_name"
 }
 
 // HelpInfo returns structured help information for the help command.
@@ -39,16 +39,9 @@ func (c *HelpCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\help[styled=true, command_name] or \\help[styled=true] command_name",
+		Usage:       "\\help[command_name] or \\help command_name",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
-			{
-				Name:        "styled",
-				Description: "Enable styled output with colors and formatting",
-				Required:    false,
-				Type:        "bool",
-				Default:     "false",
-			},
 			{
 				Name:        "command",
 				Description: "Specific command to show help for",
@@ -59,25 +52,21 @@ func (c *HelpCommand) HelpInfo() neurotypes.HelpInfo {
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\help",
-				Description: "Show all available commands in plain text",
-			},
-			{
-				Command:     "\\help[styled=true]",
-				Description: "Show all available commands with styling",
+				Description: "Show all available commands",
 			},
 			{
 				Command:     "\\help[echo]",
 				Description: "Show detailed help for the echo command",
 			},
 			{
-				Command:     "\\help[styled=true, echo]",
-				Description: "Show styled detailed help for the echo command",
+				Command:     "\\help bash",
+				Description: "Show detailed help for the bash command",
 			},
 		},
 		Notes: []string{
 			"Without arguments, shows all available commands",
 			"With command name, shows detailed help for that specific command",
-			"Use styled=true for professional formatting with colors and borders",
+			"Set _style variable to 'dark1' for professional formatting with colors and borders",
 			"Styled output leverages the built-in rendering service themes",
 		},
 	}
@@ -92,14 +81,16 @@ func (c *HelpCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("help service not available: %w", err)
 	}
 
-	// Check for styled option
+	// Check _style variable for styling preference
 	styled := false
-	if styledValue, exists := args["styled"]; exists {
-		styled = styledValue == "true"
-		delete(args, "styled") // Remove styled from args so it doesn't interfere with command detection
+	variableService, err := services.GetGlobalVariableService()
+	if err == nil {
+		if styleValue, err := variableService.Get("_style"); err == nil {
+			styled = strings.ToLower(styleValue) == "dark1"
+		}
 	}
 
-	// Check if a specific command was requested via bracket syntax: \help[command_name] or input: \help[styled=true] command_name
+	// Check if a specific command was requested via bracket syntax: \help[command_name] or input: \help command_name
 	var requestedCommand string
 
 	// First check for command in remaining args (bracket syntax)

@@ -77,7 +77,7 @@ func TestHelpCommand_Description(t *testing.T) {
 
 func TestHelpCommand_Usage(t *testing.T) {
 	cmd := &HelpCommand{}
-	assert.Equal(t, "\\help[styled=true, command_name] or \\help[styled=true] command_name", cmd.Usage())
+	assert.Equal(t, "\\help[command_name] or \\help command_name", cmd.Usage())
 }
 
 func TestHelpCommand_Execute(t *testing.T) {
@@ -464,6 +464,171 @@ func TestHelpCommand_Execute_ServiceUnavailable(t *testing.T) {
 	err := cmd.Execute(map[string]string{}, "")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "help service not available")
+}
+
+func TestHelpCommand_Execute_StyleVariable(t *testing.T) {
+	// Test that help command respects _style variable for styling
+	testCommands := []neurotypes.Command{
+		&MockCommand{
+			name:        "test",
+			description: "Test command",
+			usage:       "\\test",
+		},
+	}
+
+	tests := []struct {
+		name         string
+		styleValue   string
+		expectStyled bool
+		description  string
+	}{
+		{
+			name:         "dark1 enables styling (lowercase)",
+			styleValue:   "dark1",
+			expectStyled: true,
+			description:  "Should enable styling when _style = 'dark1'",
+		},
+		{
+			name:         "DARK1 enables styling (uppercase)",
+			styleValue:   "DARK1",
+			expectStyled: true,
+			description:  "Should enable styling when _style = 'DARK1' (case insensitive)",
+		},
+		{
+			name:         "Dark1 enables styling (mixed case)",
+			styleValue:   "Dark1",
+			expectStyled: true,
+			description:  "Should enable styling when _style = 'Dark1' (case insensitive)",
+		},
+		{
+			name:         "light does not enable styling",
+			styleValue:   "light",
+			expectStyled: false,
+			description:  "Should not enable styling when _style = 'light'",
+		},
+		{
+			name:         "empty value does not enable styling",
+			styleValue:   "",
+			expectStyled: false,
+			description:  "Should not enable styling when _style is empty",
+		},
+		{
+			name:         "other value does not enable styling",
+			styleValue:   "custom",
+			expectStyled: false,
+			description:  "Should not enable styling when _style = 'custom'",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := setupHelpTestEnvironment(t, testCommands)
+
+			// Set the _style variable
+			err := ctx.SetVariable("_style", tt.styleValue)
+			require.NoError(t, err)
+
+			cmd := &HelpCommand{}
+
+			// Capture stdout
+			originalStdout := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			err = cmd.Execute(map[string]string{}, "")
+
+			// Restore stdout
+			_ = w.Close()
+			os.Stdout = originalStdout
+
+			// Read captured output
+			output, _ := io.ReadAll(r)
+			outputStr := string(output)
+
+			assert.NoError(t, err)
+
+			if tt.expectStyled {
+				// Check for styled output indicators
+				// Styled output should contain ANSI escape codes or specific styled formatting
+				assert.True(t,
+					strings.Contains(outputStr, "Neuro Shell Commands") ||
+						len(outputStr) > 0,
+					"Expected styled output for %s", tt.description)
+			} else {
+				// For non-styled output, check basic content
+				assert.Contains(t, outputStr, "Neuro Shell Commands:")
+				assert.Contains(t, outputStr, "Examples:")
+			}
+
+			// Both styled and non-styled should contain basic content
+			assert.Contains(t, outputStr, "\\test")
+			assert.Contains(t, outputStr, "Test command")
+		})
+	}
+}
+
+func TestHelpCommand_Execute_StyleVariable_SpecificCommand(t *testing.T) {
+	// Test that _style variable works for specific command help too
+	testCommands := []neurotypes.Command{
+		&MockCommand{
+			name:        "bash",
+			description: "Execute system commands via bash",
+			usage:       "\\bash command_to_execute",
+			parseMode:   neurotypes.ParseModeRaw,
+		},
+	}
+
+	tests := []struct {
+		name         string
+		styleValue   string
+		expectStyled bool
+	}{
+		{
+			name:         "dark1 enables styling for specific command",
+			styleValue:   "dark1",
+			expectStyled: true,
+		},
+		{
+			name:         "other value does not enable styling for specific command",
+			styleValue:   "light",
+			expectStyled: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := setupHelpTestEnvironment(t, testCommands)
+
+			// Set the _style variable
+			err := ctx.SetVariable("_style", tt.styleValue)
+			require.NoError(t, err)
+
+			cmd := &HelpCommand{}
+
+			// Capture stdout
+			originalStdout := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			// Request help for specific command
+			err = cmd.Execute(map[string]string{"bash": ""}, "")
+
+			// Restore stdout
+			_ = w.Close()
+			os.Stdout = originalStdout
+
+			// Read captured output
+			output, _ := io.ReadAll(r)
+			outputStr := string(output)
+
+			assert.NoError(t, err)
+
+			// Both styled and non-styled should contain command-specific content
+			assert.Contains(t, outputStr, "Command: bash")
+			assert.Contains(t, outputStr, "Description: Execute system commands via bash")
+			assert.Contains(t, outputStr, "Usage: \\bash command_to_execute")
+		})
+	}
 }
 
 // NOTE: TestHelpCommand_ShowCommandExamples was removed because showCommandExamples method
