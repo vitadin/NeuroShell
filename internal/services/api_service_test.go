@@ -177,13 +177,36 @@ func TestAPIService_GetAPIKey(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Set environment variables
+			// Back up and clear relevant environment variables to ensure clean test environment
+			envVarsToCleanup := []string{"OPENAI_API_KEY", "ANTHROPIC_API_KEY"}
+			originalEnvVars := make(map[string]string)
+			originalEnvVarsSet := make(map[string]bool)
+
+			for _, key := range envVarsToCleanup {
+				originalValue := os.Getenv(key)
+				if originalValue != "" {
+					originalEnvVars[key] = originalValue
+					originalEnvVarsSet[key] = true
+				}
+				_ = os.Unsetenv(key)
+			}
+
+			// Set test-specific environment variables
 			for key, value := range tt.envVars {
 				_ = os.Setenv(key, value)
 			}
+
+			// Restore environment variables after test
 			defer func() {
+				// Unset test-specific environment variables
 				for key := range tt.envVars {
 					_ = os.Unsetenv(key)
+				}
+				// Restore original environment variables
+				for key, originalValue := range originalEnvVars {
+					if originalEnvVarsSet[key] {
+						_ = os.Setenv(key, originalValue)
+					}
 				}
 			}()
 
@@ -324,6 +347,30 @@ func TestAPIService_CheckConnectivity_NotInitialized(t *testing.T) {
 
 // TestAPIService_CheckConnectivity_NoAPIKey tests error when no API key found.
 func TestAPIService_CheckConnectivity_NoAPIKey(t *testing.T) {
+	// Back up and clear relevant environment variables to ensure clean test environment
+	envVarsToCleanup := []string{"OPENAI_API_KEY", "ANTHROPIC_API_KEY"}
+	originalEnvVars := make(map[string]string)
+	originalEnvVarsSet := make(map[string]bool)
+
+	for _, key := range envVarsToCleanup {
+		originalValue := os.Getenv(key)
+		if originalValue != "" {
+			originalEnvVars[key] = originalValue
+			originalEnvVarsSet[key] = true
+		}
+		_ = os.Unsetenv(key)
+	}
+
+	// Restore environment variables after test
+	defer func() {
+		// Restore original environment variables
+		for key, originalValue := range originalEnvVars {
+			if originalEnvVarsSet[key] {
+				_ = os.Setenv(key, originalValue)
+			}
+		}
+	}()
+
 	service := NewAPIService()
 	ctx := testutils.NewMockContext()
 	_ = service.Initialize(ctx)
