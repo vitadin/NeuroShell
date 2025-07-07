@@ -121,7 +121,7 @@ func TestHelpCommand_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify output contains expected elements
-	assert.Contains(t, outputStr, "Neuro Shell Commands:")
+	assert.Contains(t, outputStr, "Neuro Shell Commands")
 	assert.Contains(t, outputStr, "Examples:")
 	assert.Contains(t, outputStr, "Note: Text without \\ prefix is sent to LLM automatically")
 
@@ -203,7 +203,7 @@ func TestHelpCommand_Execute_EmptyRegistry(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should still show header and examples even with no commands
-	assert.Contains(t, outputStr, "Neuro Shell Commands:")
+	assert.Contains(t, outputStr, "Neuro Shell Commands")
 	assert.Contains(t, outputStr, "Examples:")
 	assert.Contains(t, outputStr, "Note: Text without \\ prefix is sent to LLM automatically")
 }
@@ -352,7 +352,7 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 
 	// Verify static content is present
 	expectedStaticContent := []string{
-		"Neuro Shell Commands:",
+		"Neuro Shell Commands",
 		"Examples:",
 		"\\send Hello world",
 		"\\set[name=\"John\"]",
@@ -561,7 +561,7 @@ func TestHelpCommand_Execute_StyleVariable(t *testing.T) {
 					"Expected themed output for %s", tt.description)
 			} else {
 				// Plain text output - check specific formatting
-				assert.Contains(t, outputStr, "Neuro Shell Commands:")
+				assert.Contains(t, outputStr, "Neuro Shell Commands")
 				assert.Contains(t, outputStr, "Examples:")
 			}
 
@@ -635,96 +635,6 @@ func TestHelpCommand_Execute_StyleVariable_SpecificCommand(t *testing.T) {
 		})
 	}
 }
-
-// NOTE: TestHelpCommand_ShowCommandExamples was removed because showCommandExamples method
-// was deprecated in favor of the new HelpInfo-based approach with RenderService integration
-/*
-func TestHelpCommand_ShowCommandExamples(t *testing.T) {
-	// Test the showCommandExamples function with different command types
-	cmd := &HelpCommand{}
-
-	tests := []struct {
-		name         string
-		cmdInfo      services.CommandInfo
-		expectedText []string
-	}{
-		{
-			name: "KeyValue parse mode command",
-			cmdInfo: services.CommandInfo{
-				Name:        "set",
-				Usage:       "\\set[var=value] or \\set var value",
-				ParseMode:   neurotypes.ParseModeKeyValue,
-				Description: "Set a variable",
-			},
-			expectedText: []string{
-				"Examples:",
-				"\\set[var=value] or \\set var value",
-				"\\set[option=value]",
-			},
-		},
-		{
-			name: "Raw parse mode command",
-			cmdInfo: services.CommandInfo{
-				Name:        "bash",
-				Usage:       "\\bash command_to_execute",
-				ParseMode:   neurotypes.ParseModeRaw,
-				Description: "Execute system commands via bash",
-			},
-			expectedText: []string{
-				"Examples:",
-				"\\bash command_to_execute",
-			},
-		},
-		{
-			name: "WithOptions parse mode command",
-			cmdInfo: services.CommandInfo{
-				Name:        "test",
-				Usage:       "\\test [options] message",
-				ParseMode:   neurotypes.ParseModeWithOptions,
-				Description: "Test command",
-			},
-			expectedText: []string{
-				"Examples:",
-				"\\test [options] message",
-				"\\test[option=value]",
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Capture stdout
-			originalStdout := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
-
-			cmd.showCommandExamples(tt.cmdInfo)
-
-			// Restore stdout
-			_ = w.Close()
-			os.Stdout = originalStdout
-
-			// Read captured output
-			output, _ := io.ReadAll(r)
-			outputStr := string(output)
-
-			// Verify all expected text is present
-			for _, expectedText := range tt.expectedText {
-				assert.Contains(t, outputStr, expectedText, "Missing expected text: %s", expectedText)
-			}
-
-			// Verify the primary usage is always shown
-			assert.Contains(t, outputStr, tt.cmdInfo.Usage)
-
-			// Verify KeyValue and WithOptions modes get generic parameter example
-			if tt.cmdInfo.ParseMode == neurotypes.ParseModeKeyValue || tt.cmdInfo.ParseMode == neurotypes.ParseModeWithOptions {
-				expectedGeneric := fmt.Sprintf("\\%s[option=value]", tt.cmdInfo.Name)
-				assert.Contains(t, outputStr, expectedGeneric)
-			}
-		})
-	}
-}
-*/
 
 // MockCommand for testing (reuse from registry_test.go structure)
 type MockCommand struct {
