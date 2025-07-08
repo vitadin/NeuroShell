@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/charmbracelet/lipgloss/list"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -117,8 +118,11 @@ func (c *VarsCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("failed to apply filters: %w", err)
 	}
 
+	// Get theme object for styling
+	themeObj := c.getThemeObject()
+
 	// Display results
-	c.displayVariables(filteredVars)
+	c.displayVariables(filteredVars, themeObj)
 
 	return nil
 }
@@ -171,12 +175,24 @@ func (c *VarsCommand) matchesTypeFilter(name, varType string) bool {
 }
 
 // displayVariables formats and displays the filtered variables
-func (c *VarsCommand) displayVariables(vars map[string]string) {
+func (c *VarsCommand) displayVariables(vars map[string]string, themeObj *services.Theme) {
 	if len(vars) == 0 {
 		fmt.Println("No variables found matching the specified criteria.")
 		return
 	}
 
+	// Check if styling is enabled (not plain theme)
+	if themeObj.Name != "plain" && themeObj.Name != "" {
+		c.displayVariablesStyled(vars, themeObj)
+		return
+	}
+
+	// Fall back to plain output
+	c.displayVariablesPlain(vars)
+}
+
+// displayVariablesPlain displays variables in plain text format (original implementation)
+func (c *VarsCommand) displayVariablesPlain(vars map[string]string) {
 	// Separate user and system variables
 	userVars := make(map[string]string)
 	systemVars := make(map[string]string)
@@ -258,6 +274,136 @@ func (c *VarsCommand) displayVariableGroup(vars map[string]string) {
 		formattedValue := c.formatValueForDisplay(value)
 		fmt.Printf("  %-20s = %s\n", name, formattedValue)
 	}
+}
+
+// displayVariablesStyled displays variables using lipgloss list styling
+func (c *VarsCommand) displayVariablesStyled(vars map[string]string, themeObj *services.Theme) {
+	// Title
+	fmt.Println(themeObj.Success.Render("Variables"))
+	fmt.Println()
+
+	// Separate user and system variables
+	userVars := make(map[string]string)
+	systemVars := make(map[string]string)
+
+	for name, value := range vars {
+		if strings.HasPrefix(name, "@") || strings.HasPrefix(name, "#") || strings.HasPrefix(name, "_") {
+			systemVars[name] = value
+		} else {
+			userVars[name] = value
+		}
+	}
+
+	// Create groups for display
+	if len(userVars) > 0 {
+		fmt.Println(themeObj.Warning.Render("User Variables:"))
+		userList := c.createVariableListStyled(userVars, themeObj)
+		fmt.Print(userList.String())
+		fmt.Println()
+	}
+
+	if len(systemVars) > 0 {
+		if len(userVars) > 0 {
+			fmt.Println() // Add spacing between groups
+		}
+		fmt.Println(themeObj.Warning.Render("System Variables:"))
+
+		// Group system variables by prefix
+		envVars := make(map[string]string)    // @
+		metaVars := make(map[string]string)   // #
+		outputVars := make(map[string]string) // _
+
+		for name, value := range systemVars {
+			switch {
+			case strings.HasPrefix(name, "@"):
+				envVars[name] = value
+			case strings.HasPrefix(name, "#"):
+				metaVars[name] = value
+			case strings.HasPrefix(name, "_"):
+				outputVars[name] = value
+			}
+		}
+
+		// Display environment variables
+		if len(envVars) > 0 {
+			fmt.Printf("  %s\n", themeObj.Info.Render("Environment (@):"))
+			envList := c.createVariableListStyled(envVars, themeObj)
+			fmt.Print(c.indentList(envList.String()))
+		}
+
+		// Display metadata variables
+		if len(metaVars) > 0 {
+			fmt.Printf("  %s\n", themeObj.Info.Render("Metadata (#):"))
+			metaList := c.createVariableListStyled(metaVars, themeObj)
+			fmt.Print(c.indentList(metaList.String()))
+		}
+
+		// Display output variables
+		if len(outputVars) > 0 {
+			fmt.Printf("  %s\n", themeObj.Info.Render("Command Outputs (_):"))
+			outputList := c.createVariableListStyled(outputVars, themeObj)
+			fmt.Print(c.indentList(outputList.String()))
+		}
+	}
+
+	// Display summary
+	fmt.Printf("\n%s\n", themeObj.Success.Render(fmt.Sprintf("Total: %d variables", len(vars))))
+}
+
+// createVariableListStyled creates a styled list for variables
+func (c *VarsCommand) createVariableListStyled(vars map[string]string, themeObj *services.Theme) *list.List {
+	// Sort variable names for consistent output
+	names := make([]string, 0, len(vars))
+	for name := range vars {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	// Create list
+	l := themeObj.CreateList()
+	for _, name := range names {
+		value := vars[name]
+		formattedValue := c.formatValueForDisplay(value)
+		formattedVar := fmt.Sprintf("%s = %s",
+			themeObj.Variable.Render(name),
+			themeObj.Info.Render(formattedValue))
+		l.Item(formattedVar)
+	}
+	return l
+}
+
+// indentList indents each line of the list output for nested display
+func (c *VarsCommand) indentList(listOutput string) string {
+	lines := strings.Split(listOutput, "\n")
+	var indentedLines []string
+	for _, line := range lines {
+		if line != "" {
+			indentedLines = append(indentedLines, "    "+line)
+		} else {
+			indentedLines = append(indentedLines, line)
+		}
+	}
+	return strings.Join(indentedLines, "\n")
+}
+
+// getThemeObject retrieves the theme object based on the _style variable
+func (c *VarsCommand) getThemeObject() *services.Theme {
+	// Get _style variable for theme selection
+	styleValue := ""
+	if variableService, err := services.GetGlobalVariableService(); err == nil {
+		if value, err := variableService.Get("_style"); err == nil {
+			styleValue = value
+		}
+	}
+
+	// Get theme service and theme object (always returns valid theme)
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// This should rarely happen, but we need to return something
+		panic(fmt.Sprintf("theme service not available: %v", err))
+	}
+
+	return themeService.GetThemeByName(styleValue)
 }
 
 func init() {

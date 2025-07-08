@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/list"
 	"gopkg.in/yaml.v3"
 	"neuroshell/internal/data/embedded"
 	"neuroshell/internal/logger"
@@ -33,6 +34,7 @@ type Theme struct {
 	Italic     lipgloss.Style
 	Underline  lipgloss.Style
 	Background lipgloss.Style
+	List       lipgloss.Style
 }
 
 // NewThemeService creates a new ThemeService instance with themes loaded from YAML.
@@ -112,6 +114,7 @@ func (t *ThemeService) convertThemeConfig(config *neurotypes.ThemeConfig) *Theme
 		Italic:     t.createStyle(config.Styles.Italic),
 		Underline:  t.createStyle(config.Styles.Underline),
 		Background: t.createStyle(config.Styles.Background),
+		List:       t.createStyle(config.Styles.List),
 	}
 }
 
@@ -185,6 +188,7 @@ func (t *ThemeService) createFallbackTheme(name string) *Theme {
 		Italic:     lipgloss.NewStyle(),
 		Underline:  lipgloss.NewStyle(),
 		Background: lipgloss.NewStyle(),
+		List:       lipgloss.NewStyle(),
 	}
 }
 
@@ -264,9 +268,52 @@ func (t *ThemeService) GetDefaultTheme() *Theme {
 			Italic:     lipgloss.NewStyle(),
 			Underline:  lipgloss.NewStyle(),
 			Background: lipgloss.NewStyle(),
+			List:       lipgloss.NewStyle(),
 		}
 	}
 	return t.themes["plain"]
+}
+
+// CreateList creates a new list with theme styling applied
+func (t *Theme) CreateList() *list.List {
+	return list.New().EnumeratorStyle(t.List)
+}
+
+// CreateSimpleList creates a simple list from string array
+func (t *Theme) CreateSimpleList(items []string) *list.List {
+	l := t.CreateList()
+	for _, item := range items {
+		l.Item(item)
+	}
+	return l
+}
+
+// CreateGroupedList creates a nested list from grouped data
+func (t *Theme) CreateGroupedList(groups map[string][]string) *list.List {
+	var items []interface{}
+	for groupName, groupItems := range groups {
+		if len(groupItems) > 0 {
+			items = append(items, t.Warning.Render(groupName))
+			subList := t.CreateList()
+			for _, item := range groupItems {
+				subList.Item(item)
+			}
+			items = append(items, subList)
+		}
+	}
+	return list.New(items...).EnumeratorStyle(t.List)
+}
+
+// CreateVariableList creates a formatted list for variables with name-value pairs
+func (t *Theme) CreateVariableList(vars map[string]string) *list.List {
+	l := t.CreateList()
+	for name, value := range vars {
+		formattedVar := fmt.Sprintf("%s = %s",
+			t.Variable.Render(name),
+			t.Info.Render(value))
+		l.Item(formattedVar)
+	}
+	return l
 }
 
 func init() {

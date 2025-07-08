@@ -335,9 +335,14 @@ func TestVarsCommand_DisplayVariables_SmartTruncation(t *testing.T) {
 				"test_var": tt.value,
 			}
 
+			// Create a plain theme for testing
+			plainTheme := &services.Theme{
+				Name: "plain",
+			}
+
 			// Capture stdout
 			output := captureOutput(func() {
-				cmd.displayVariables(vars)
+				cmd.displayVariables(vars, plainTheme)
 			})
 
 			// Check that expected strings appear
@@ -469,6 +474,10 @@ func setupVarsTestRegistry(t *testing.T, ctx neurotypes.Context) {
 
 	// Register interpolation service
 	err = services.GetGlobalRegistry().RegisterService(services.NewInterpolationService())
+	require.NoError(t, err)
+
+	// Register theme service
+	err = services.GetGlobalRegistry().RegisterService(services.NewThemeService())
 	require.NoError(t, err)
 
 	// Initialize services

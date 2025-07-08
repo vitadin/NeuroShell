@@ -53,6 +53,9 @@ type ThemeStyles struct {
 
 	// Background style for background elements
 	Background StyleConfig `yaml:"background" json:"background"`
+
+	// List style for list enumerators and bullet points
+	List StyleConfig `yaml:"list" json:"list"`
 }
 
 // StyleConfig defines the visual styling for a semantic element.
