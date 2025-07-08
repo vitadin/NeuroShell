@@ -32,7 +32,7 @@ func TestVariableService_Initialize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewVariableService()
-			err := service.Initialize(tt.ctx)
+			err := service.Initialize()
 
 			if tt.want != nil {
 				assert.Error(t, err)
@@ -104,7 +104,7 @@ func TestVariableService_Get(t *testing.T) {
 			}
 
 			// Initialize service
-			err := service.Initialize(ctx)
+			err := service.Initialize()
 			require.NoError(t, err)
 
 			// Setup global context for testing
@@ -196,7 +196,7 @@ func TestVariableService_Set(t *testing.T) {
 			}
 
 			// Initialize service
-			err := service.Initialize(ctx)
+			err := service.Initialize()
 			require.NoError(t, err)
 
 			// Test Set
@@ -240,7 +240,7 @@ func TestVariableService_InterpolateString(t *testing.T) {
 	ctx := testutils.NewMockContext()
 
 	// Initialize service
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Test interpolation - note this will fail since we're using MockContext
@@ -277,7 +277,7 @@ func TestVariableService_GetAllVariables(t *testing.T) {
 	ctx := testutils.NewMockContext()
 
 	// Initialize service
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Test GetAllVariables - note this will fail since we're using MockContext
@@ -315,7 +315,7 @@ func BenchmarkVariableService_Get(b *testing.B) {
 		"test_var": "test_value",
 	})
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	b.ResetTimer()
@@ -332,7 +332,7 @@ func BenchmarkVariableService_Set(b *testing.B) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	b.ResetTimer()
@@ -349,7 +349,7 @@ func BenchmarkVariableService_GetSystemVariable(b *testing.B) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	b.ResetTimer()
@@ -380,7 +380,7 @@ func TestVariableService_SystemVariables(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
@@ -400,7 +400,7 @@ func TestVariableService_ConcurrentAccess(t *testing.T) {
 	service := NewVariableService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup shared global context to avoid race conditions
@@ -476,7 +476,7 @@ func TestVariableService_SetSystemVariable(t *testing.T) {
 			ctx := context.New() // Use real NeuroContext instead of mock
 
 			// Initialize service
-			err := service.Initialize(ctx)
+			err := service.Initialize()
 			require.NoError(t, err)
 
 			// Test SetSystemVariable
@@ -520,7 +520,7 @@ func TestVariableService_SetSystemVariable_WrongContextType(t *testing.T) {
 	ctx := testutils.NewMockContext() // Use MockContext to test error case
 
 	// Initialize service
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Test SetSystemVariable with wrong context type

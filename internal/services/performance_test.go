@@ -14,13 +14,13 @@ import (
 
 // BenchmarkServiceInitialization tests service initialization performance
 func BenchmarkServiceInitialization(b *testing.B) {
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
 	b.Run("VariableService", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			service := NewVariableService()
-			_ = service.Initialize(ctx)
+			_ = service.Initialize()
 		}
 	})
 
@@ -28,7 +28,7 @@ func BenchmarkServiceInitialization(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			service := NewScriptService()
-			_ = service.Initialize(ctx)
+			_ = service.Initialize()
 		}
 	})
 
@@ -36,7 +36,7 @@ func BenchmarkServiceInitialization(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			service := NewExecutorService()
-			_ = service.Initialize(ctx)
+			_ = service.Initialize()
 		}
 	})
 
@@ -44,7 +44,7 @@ func BenchmarkServiceInitialization(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			service := NewInterpolationService()
-			_ = service.Initialize(ctx)
+			_ = service.Initialize()
 		}
 	})
 }
@@ -52,7 +52,7 @@ func BenchmarkServiceInitialization(b *testing.B) {
 // BenchmarkServiceRegistry_HighLoad tests registry under high load
 func BenchmarkServiceRegistry_HighLoad(b *testing.B) {
 	registry := NewRegistry()
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
 	// Pre-register many services
 	for i := 0; i < 1000; i++ {
@@ -78,7 +78,7 @@ func BenchmarkServiceRegistry_HighLoad(b *testing.B) {
 	b.Run("InitializeAll", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			_ = registry.InitializeAll(ctx)
+			_ = registry.InitializeAll()
 		}
 	})
 }
@@ -92,13 +92,14 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 	for i := 0; i < 10000; i++ {
 		vars[fmt.Sprintf("var_%d", i)] = fmt.Sprintf("value_%d", i)
 	}
-	ctx := testutils.NewMockContextWithVars(vars)
+	// ctx := testutils.NewMockContextWithVars(vars)
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	b.Run("Get_Existing", func(b *testing.B) {
 		// Setup global context for testing
+		ctx := testutils.NewMockContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -111,6 +112,7 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 
 	b.Run("Get_NonExisting", func(b *testing.B) {
 		// Setup global context for testing
+		ctx := testutils.NewMockContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -122,6 +124,7 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 
 	b.Run("Set_NewVariables", func(b *testing.B) {
 		// Setup global context for testing
+		ctx := testutils.NewMockContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -137,9 +140,9 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 // BenchmarkExecutorService_CommandParsing tests command parsing performance
 func BenchmarkExecutorService_CommandParsing(b *testing.B) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	commands := []string{
@@ -165,9 +168,9 @@ func BenchmarkExecutorService_CommandParsing(b *testing.B) {
 // BenchmarkInterpolationService_ComplexStrings tests interpolation with complex patterns
 func BenchmarkInterpolationService_ComplexStrings(b *testing.B) {
 	service := NewInterpolationService()
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	testStrings := []string{
@@ -187,6 +190,7 @@ func BenchmarkInterpolationService_ComplexStrings(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		str := testStrings[i%len(testStrings)]
 		// Setup global context for each test iteration
+		ctx := testutils.NewMockContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -197,9 +201,9 @@ func BenchmarkInterpolationService_ComplexStrings(b *testing.B) {
 // BenchmarkInterpolationService_CommandStructures tests command interpolation
 func BenchmarkInterpolationService_CommandStructures(b *testing.B) {
 	service := NewInterpolationService()
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	commands := []*parser.Command{
@@ -235,6 +239,7 @@ func BenchmarkInterpolationService_CommandStructures(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		cmd := commands[i%len(commands)]
 		// Setup global context for each test iteration
+		ctx := testutils.NewMockContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -246,11 +251,12 @@ func BenchmarkInterpolationService_CommandStructures(b *testing.B) {
 func BenchmarkConcurrentServiceUsage(b *testing.B) {
 	b.Run("VariableService_Concurrent", func(b *testing.B) {
 		service := NewVariableService()
-		ctx := testutils.NewMockContext()
-		err := service.Initialize(ctx)
+		// ctx := testutils.NewMockContext()
+		err := service.Initialize()
 		require.NoError(b, err)
 
 		// Setup global context for testing
+		ctx := testutils.NewMockContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -272,8 +278,8 @@ func BenchmarkConcurrentServiceUsage(b *testing.B) {
 			for pb.Next() {
 				// Each goroutine gets its own service to avoid race conditions
 				service := NewExecutorService()
-				ctx := testutils.NewMockContext()
-				_ = service.Initialize(ctx)
+				// ctx := testutils.NewMockContext()
+				_ = service.Initialize()
 
 				cmd := fmt.Sprintf(`\set[var_%d="value_%d"]`, i, i)
 				_, _ = service.ParseCommand(cmd)
@@ -334,8 +340,8 @@ func BenchmarkMemoryUsage(b *testing.B) {
 
 	b.Run("CommandParsing", func(b *testing.B) {
 		service := NewExecutorService()
-		ctx := testutils.NewMockContext()
-		_ = service.Initialize(ctx)
+		// ctx := testutils.NewMockContext()
+		_ = service.Initialize()
 
 		b.ReportAllocs()
 		b.ResetTimer()

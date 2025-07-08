@@ -9,7 +9,6 @@ import (
 	"time"
 
 	neuroshellcontext "neuroshell/internal/context"
-	"neuroshell/pkg/neurotypes"
 )
 
 // BashService provides system command execution operations for NeuroShell contexts.
@@ -32,7 +31,7 @@ func (b *BashService) Name() string {
 }
 
 // Initialize sets up the BashService for operation.
-func (b *BashService) Initialize(_ neurotypes.Context) error {
+func (b *BashService) Initialize() error {
 	b.initialized = true
 	return nil
 }

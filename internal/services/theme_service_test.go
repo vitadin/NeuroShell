@@ -5,14 +5,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"neuroshell/internal/testutils"
 )
 
 func TestThemeService_BasicFunctionality(t *testing.T) {
 	service := NewThemeService()
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	assert.Equal(t, "theme", service.Name())
@@ -21,8 +20,8 @@ func TestThemeService_BasicFunctionality(t *testing.T) {
 
 func TestThemeService_ThemeManagement(t *testing.T) {
 	service := NewThemeService()
-	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	// ctx := testutils.NewMockContext()
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Test available themes (should include plain theme now)
@@ -52,8 +51,8 @@ func TestThemeService_ThemeManagement(t *testing.T) {
 
 func TestThemeService_GetThemeByName(t *testing.T) {
 	service := NewThemeService()
-	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	// ctx := testutils.NewMockContext()
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -130,8 +129,8 @@ func TestThemeService_GetDefaultTheme(t *testing.T) {
 	assert.Equal(t, "plain", theme.Name)
 
 	// Test with initialization
-	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	// ctx := testutils.NewMockContext()
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	theme = service.GetDefaultTheme()
@@ -141,8 +140,8 @@ func TestThemeService_GetDefaultTheme(t *testing.T) {
 
 func TestThemeService_ThemeStyles(t *testing.T) {
 	service := NewThemeService()
-	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	// ctx := testutils.NewMockContext()
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Test that all themes have the required style fields
@@ -206,8 +205,8 @@ func TestThemeService_ErrorHandling(t *testing.T) {
 
 func TestThemeService_PlainThemeRendering(t *testing.T) {
 	service := NewThemeService()
-	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	// ctx := testutils.NewMockContext()
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	plainTheme := service.GetThemeByName("plain")
@@ -227,8 +226,8 @@ func TestThemeService_PlainThemeRendering(t *testing.T) {
 
 func TestThemeService_ConcurrentAccess(t *testing.T) {
 	service := NewThemeService()
-	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	// ctx := testutils.NewMockContext()
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Test concurrent access to themes

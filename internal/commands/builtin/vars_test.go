@@ -472,7 +472,7 @@ func setupVarsTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	require.NoError(t, err)
 
 	// Initialize services
-	err = services.GetGlobalRegistry().InitializeAll(ctx)
+	err = services.GetGlobalRegistry().InitializeAll()
 	require.NoError(t, err)
 
 	// Cleanup function to restore original registry

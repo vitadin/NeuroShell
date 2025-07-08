@@ -96,10 +96,6 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
-	if err := services.GetGlobalRegistry().RegisterService(services.NewAPIService()); err != nil {
-		return err
-	}
-
 	// Register ThemeService if not already registered (needed for tests that clear the registry)
 	if !services.GetGlobalRegistry().HasService("theme") {
 		if err := services.GetGlobalRegistry().RegisterService(services.NewThemeService()); err != nil {
@@ -107,8 +103,8 @@ func InitializeServices(testMode bool) error {
 		}
 	}
 
-	// Initialize all services with the global context
-	if err := services.GetGlobalRegistry().InitializeAll(globalCtx); err != nil {
+	// Initialize all services
+	if err := services.GetGlobalRegistry().InitializeAll(); err != nil {
 		return err
 	}
 

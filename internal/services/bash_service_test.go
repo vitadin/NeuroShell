@@ -35,7 +35,7 @@ func TestBashService_Initialize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewBashService()
-			err := service.Initialize(tt.ctx)
+			err := service.Initialize()
 
 			if tt.want != nil {
 				assert.Error(t, err)
@@ -64,7 +64,7 @@ func TestBashService_Execute_Success(t *testing.T) {
 	// Setup
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global registry for variable service
@@ -120,7 +120,7 @@ func TestBashService_Execute_WithError(t *testing.T) {
 	// Setup
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global registry for variable service
@@ -172,7 +172,7 @@ func TestBashService_Execute_WithStderr(t *testing.T) {
 	// Setup
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global registry for variable service
@@ -237,7 +237,7 @@ func TestBashService_Execute_WithStderr(t *testing.T) {
 func TestBashService_Execute_EmptyCommand(t *testing.T) {
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	tests := []string{"", "   ", "\t", "\n"}
@@ -275,7 +275,7 @@ func TestBashService_Execute_SetsSystemVariables(t *testing.T) {
 	// Setup
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global registry for variable service
@@ -316,7 +316,7 @@ func TestBashService_Execute_VariableServiceError(t *testing.T) {
 	// Setup
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Don't setup global registry - this will cause variable service to be unavailable
@@ -338,7 +338,7 @@ func TestBashService_Execute_Timeout(t *testing.T) {
 	service := NewBashService()
 	service.SetTimeout(100 * time.Millisecond) // Even shorter timeout
 	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Command that should timeout - use a command that definitely takes longer
@@ -371,7 +371,7 @@ func TestBashService_Execute_LongOutput(t *testing.T) {
 	// Setup
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global registry for variable service
@@ -397,7 +397,7 @@ func TestBashService_Execute_SpecialCharacters(t *testing.T) {
 	// Setup
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global registry for variable service
@@ -445,7 +445,7 @@ func TestBashService_Execute_MultilineOutput(t *testing.T) {
 	// Setup
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global registry for variable service
@@ -475,7 +475,7 @@ func TestBashService_Execute_EdgeCases(t *testing.T) {
 	// Setup
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global registry for variable service
@@ -532,7 +532,7 @@ func setupTestRegistry(t *testing.T) {
 func BenchmarkBashService_Execute_SimpleCommand(b *testing.B) {
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	_ = service.Initialize(ctx)
+	_ = service.Initialize()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -547,7 +547,7 @@ func BenchmarkBashService_Execute_SimpleCommand(b *testing.B) {
 func BenchmarkBashService_Execute_ComplexCommand(b *testing.B) {
 	service := NewBashService()
 	ctx := testutils.NewMockContext()
-	_ = service.Initialize(ctx)
+	_ = service.Initialize()
 
 	command := "echo 'test' | grep 'test' | wc -l"
 

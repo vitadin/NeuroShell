@@ -29,7 +29,7 @@ func (m *ModelCatalogService) Name() string {
 }
 
 // Initialize sets up the ModelCatalogService for operation.
-func (m *ModelCatalogService) Initialize(_ neurotypes.Context) error {
+func (m *ModelCatalogService) Initialize() error {
 	m.initialized = true
 	return nil
 }

@@ -53,13 +53,13 @@ func TestEditorCommand_Execute_EditorServiceNotAvailable(t *testing.T) {
 
 func TestEditorCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 	cmd := &EditorCommand{}
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 	// Set up registry with editor service but no variable service
 	registry := services.NewRegistry()
 	editorService := services.NewEditorService()
 	err := registry.RegisterService(editorService)
 	require.NoError(t, err)
-	err = editorService.Initialize(ctx)
+	err = editorService.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = editorService.Cleanup() }()
 
@@ -75,7 +75,7 @@ func TestEditorCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 
 func TestEditorCommand_Execute_MockSuccess(t *testing.T) {
 	cmd := &EditorCommand{}
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 	// Set up mock editor environment for fast testing
 	helper := testutils.SetupMockEditor()
 	defer helper.Cleanup()
@@ -87,7 +87,7 @@ func TestEditorCommand_Execute_MockSuccess(t *testing.T) {
 	editorService := services.NewEditorService()
 	err := registry.RegisterService(editorService)
 	require.NoError(t, err)
-	err = editorService.Initialize(ctx)
+	err = editorService.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = editorService.Cleanup() }()
 
@@ -95,7 +95,7 @@ func TestEditorCommand_Execute_MockSuccess(t *testing.T) {
 	variableService := services.NewVariableService()
 	err = registry.RegisterService(variableService)
 	require.NoError(t, err)
-	err = variableService.Initialize(ctx)
+	err = variableService.Initialize()
 	require.NoError(t, err)
 
 	services.SetGlobalRegistry(registry)
@@ -112,17 +112,15 @@ func TestEditorCommand_Execute_MockSuccess(t *testing.T) {
 		t.Logf("Execute failed (may be environment specific): %v", err)
 	} else {
 		// If successful, verify the _output variable was set
-		value, err := ctx.GetVariable("_output")
-		if err == nil {
-			t.Logf("Editor content stored in _output: %q", value)
-		}
+		// Note: ctx is commented out above, so we can't check variables in this test
+		t.Logf("Editor command executed successfully")
 	}
 }
 
 func TestEditorCommand_Execute_WithEchoEditor(t *testing.T) {
 	// This test specifically uses echo as EDITOR for fast, predictable testing
 	cmd := &EditorCommand{}
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 	// Set up mock editor environment for fast testing
 	helper := testutils.SetupMockEditor()
 	defer helper.Cleanup()
@@ -133,14 +131,14 @@ func TestEditorCommand_Execute_WithEchoEditor(t *testing.T) {
 	editorService := services.NewEditorService()
 	err := registry.RegisterService(editorService)
 	require.NoError(t, err)
-	err = editorService.Initialize(ctx)
+	err = editorService.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = editorService.Cleanup() }()
 
 	variableService := services.NewVariableService()
 	err = registry.RegisterService(variableService)
 	require.NoError(t, err)
-	err = variableService.Initialize(ctx)
+	err = variableService.Initialize()
 	require.NoError(t, err)
 
 	services.SetGlobalRegistry(registry)
@@ -157,21 +155,21 @@ func TestEditorCommand_Execute_WithEchoEditor(t *testing.T) {
 
 func TestEditorCommand_Execute_EmptyArgs(t *testing.T) {
 	cmd := &EditorCommand{}
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 	// Set up complete service registry
 	registry := services.NewRegistry()
 
 	editorService := services.NewEditorService()
 	err := registry.RegisterService(editorService)
 	require.NoError(t, err)
-	err = editorService.Initialize(ctx)
+	err = editorService.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = editorService.Cleanup() }()
 
 	variableService := services.NewVariableService()
 	err = registry.RegisterService(variableService)
 	require.NoError(t, err)
-	err = variableService.Initialize(ctx)
+	err = variableService.Initialize()
 	require.NoError(t, err)
 
 	services.SetGlobalRegistry(registry)
@@ -191,21 +189,21 @@ func TestEditorCommand_Execute_EmptyArgs(t *testing.T) {
 
 func TestEditorCommand_Execute_ArgsHandling(t *testing.T) {
 	cmd := &EditorCommand{}
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 	// Set up service registry
 	registry := services.NewRegistry()
 
 	editorService := services.NewEditorService()
 	err := registry.RegisterService(editorService)
 	require.NoError(t, err)
-	err = editorService.Initialize(ctx)
+	err = editorService.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = editorService.Cleanup() }()
 
 	variableService := services.NewVariableService()
 	err = registry.RegisterService(variableService)
 	require.NoError(t, err)
-	err = variableService.Initialize(ctx)
+	err = variableService.Initialize()
 	require.NoError(t, err)
 
 	services.SetGlobalRegistry(registry)
@@ -237,11 +235,11 @@ func TestEditorCommand_Integration_WithMockContext(t *testing.T) {
 	cmd := &EditorCommand{}
 
 	// Create context with some variables
-	vars := map[string]string{
-		"@editor":  "echo", // Use echo as a mock editor
-		"test_var": "test_value",
-	}
-	ctx := testutils.NewMockContextWithVars(vars)
+	// vars := map[string]string{
+	//	"@editor":  "echo", // Use echo as a mock editor
+	//	"test_var": "test_value",
+	// }
+	// ctx := testutils.NewMockContextWithVars(vars)
 
 	// Set up service registry
 	registry := services.NewRegistry()
@@ -249,14 +247,14 @@ func TestEditorCommand_Integration_WithMockContext(t *testing.T) {
 	editorService := services.NewEditorService()
 	err := registry.RegisterService(editorService)
 	require.NoError(t, err)
-	err = editorService.Initialize(ctx)
+	err = editorService.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = editorService.Cleanup() }()
 
 	variableService := services.NewVariableService()
 	err = registry.RegisterService(variableService)
 	require.NoError(t, err)
-	err = variableService.Initialize(ctx)
+	err = variableService.Initialize()
 	require.NoError(t, err)
 
 	services.SetGlobalRegistry(registry)
@@ -281,7 +279,7 @@ func TestEditorCommand_ServiceInteraction(t *testing.T) {
 	// without actually executing an external editor
 
 	cmd := &EditorCommand{}
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 	// Test 1: Missing editor service
 	registry1 := services.NewRegistry()
 	variableService := services.NewVariableService()
@@ -299,7 +297,7 @@ func TestEditorCommand_ServiceInteraction(t *testing.T) {
 	editorService := services.NewEditorService()
 	err = registry2.RegisterService(editorService)
 	require.NoError(t, err)
-	err = editorService.Initialize(ctx)
+	err = editorService.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = editorService.Cleanup() }()
 
@@ -315,14 +313,14 @@ func TestEditorCommand_ServiceInteraction(t *testing.T) {
 	editorService2 := services.NewEditorService()
 	err = registry3.RegisterService(editorService2)
 	require.NoError(t, err)
-	err = editorService2.Initialize(ctx)
+	err = editorService2.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = editorService2.Cleanup() }()
 
 	variableService2 := services.NewVariableService()
 	err = registry3.RegisterService(variableService2)
 	require.NoError(t, err)
-	err = variableService2.Initialize(ctx)
+	err = variableService2.Initialize()
 	require.NoError(t, err)
 
 	services.SetGlobalRegistry(registry3)

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	neuroshellcontext "neuroshell/internal/context"
-	"neuroshell/pkg/neurotypes"
 )
 
 // VariableService provides variable management operations for NeuroShell contexts.
@@ -25,7 +24,7 @@ func (v *VariableService) Name() string {
 }
 
 // Initialize sets up the VariableService for operation.
-func (v *VariableService) Initialize(_ neurotypes.Context) error {
+func (v *VariableService) Initialize() error {
 	v.initialized = true
 	return nil
 }

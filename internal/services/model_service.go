@@ -29,7 +29,7 @@ func (m *ModelService) Name() string {
 }
 
 // Initialize sets up the ModelService for operation.
-func (m *ModelService) Initialize(_ neurotypes.Context) error {
+func (m *ModelService) Initialize() error {
 	m.initialized = true
 	return nil
 }

@@ -31,9 +31,8 @@ func TestEditorService_Initialize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewEditorService()
-			ctx := testutils.NewMockContext()
 
-			err := service.Initialize(ctx)
+			err := service.Initialize()
 			assert.Equal(t, tt.want, err)
 
 			if err == nil {
@@ -55,10 +54,9 @@ func TestEditorService_Initialize_TempDirError(t *testing.T) {
 	// This test is platform-specific and may not work on all systems
 	// We'll create a basic test that checks the error handling
 	service := NewEditorService()
-	ctx := testutils.NewMockContext()
 
 	// First, test normal initialization works
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	assert.NoError(t, err)
 
 	// Cleanup for next test
@@ -128,9 +126,8 @@ func TestEditorService_getEditorCommand(t *testing.T) {
 
 func TestEditorService_createTempFile(t *testing.T) {
 	service := NewEditorService()
-	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = service.Cleanup() }()
 
@@ -184,9 +181,8 @@ func TestEditorService_createTempFileWithContent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewEditorService()
-			ctx := testutils.NewMockContext()
 
-			err := service.Initialize(ctx)
+			err := service.Initialize()
 			require.NoError(t, err)
 			defer func() { _ = service.Cleanup() }()
 
@@ -240,7 +236,7 @@ func TestEditorService_OpenEditor_NoEditorFound(t *testing.T) {
 	service := NewEditorService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = service.Cleanup() }()
 
@@ -260,9 +256,8 @@ func TestEditorService_OpenEditor_NoEditorFound(t *testing.T) {
 
 func TestEditorService_executeEditor_Success(t *testing.T) {
 	service := NewEditorService()
-	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = service.Cleanup() }()
 
@@ -284,9 +279,8 @@ func TestEditorService_executeEditor_Success(t *testing.T) {
 
 func TestEditorService_executeEditor_EmptyCommand(t *testing.T) {
 	service := NewEditorService()
-	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = service.Cleanup() }()
 
@@ -301,9 +295,8 @@ func TestEditorService_executeEditor_EmptyCommand(t *testing.T) {
 
 func TestEditorService_Cleanup(t *testing.T) {
 	service := NewEditorService()
-	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	tempDir := service.tempDir
@@ -338,7 +331,7 @@ func TestEditorService_ConcurrentAccess(t *testing.T) {
 	helper := testutils.SetupMockEditor()
 	defer helper.Cleanup()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = service.Cleanup() }()
 
@@ -370,9 +363,8 @@ func TestEditorService_EdgeCases(t *testing.T) {
 			name: "very long content",
 			testFunc: func(t *testing.T) {
 				service := NewEditorService()
-				ctx := testutils.NewMockContext()
 
-				err := service.Initialize(ctx)
+				err := service.Initialize()
 				require.NoError(t, err)
 				defer func() { _ = service.Cleanup() }()
 
@@ -393,9 +385,8 @@ func TestEditorService_EdgeCases(t *testing.T) {
 			name: "content with special characters",
 			testFunc: func(t *testing.T) {
 				service := NewEditorService()
-				ctx := testutils.NewMockContext()
 
-				err := service.Initialize(ctx)
+				err := service.Initialize()
 				require.NoError(t, err)
 				defer func() { _ = service.Cleanup() }()
 
@@ -414,9 +405,8 @@ func TestEditorService_EdgeCases(t *testing.T) {
 			name: "content with newlines",
 			testFunc: func(t *testing.T) {
 				service := NewEditorService()
-				ctx := testutils.NewMockContext()
 
-				err := service.Initialize(ctx)
+				err := service.Initialize()
 				require.NoError(t, err)
 				defer func() { _ = service.Cleanup() }()
 
@@ -453,7 +443,7 @@ func TestEditorService_IntegrationWithRealContext(t *testing.T) {
 	helper := testutils.SetupMockEditor()
 	defer helper.Cleanup()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 	defer func() { _ = service.Cleanup() }()
 

@@ -619,7 +619,7 @@ func TestInitializeServices_InitializationFailure(t *testing.T) {
 	context.SetGlobalContext(testCtx)
 
 	// This should fail during InitializeAll
-	err = services.GlobalRegistry.InitializeAll(testCtx)
+	err = services.GlobalRegistry.InitializeAll()
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "initialization failed")
 }
@@ -915,7 +915,7 @@ func (f *FailingService) Name() string {
 	return f.name
 }
 
-func (f *FailingService) Initialize(_ neurotypes.Context) error {
+func (f *FailingService) Initialize() error {
 	if f.shouldFail {
 		return errors.New("initialization failed")
 	}

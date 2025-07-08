@@ -77,7 +77,7 @@ func TestStatusCommand_Execute_EmptyModels(t *testing.T) {
 	_ = registry.RegisterService(services.NewModelService())
 	_ = registry.RegisterService(services.NewVariableService())
 	_ = registry.RegisterService(services.NewInterpolationService())
-	_ = registry.InitializeAll(ctx)
+	_ = registry.InitializeAll()
 
 	// Set global registry and context
 	oldRegistry := services.GetGlobalRegistry()
@@ -121,7 +121,7 @@ func TestStatusCommand_Execute_WithModels(t *testing.T) {
 	_ = registry.RegisterService(services.NewModelService())
 	_ = registry.RegisterService(services.NewVariableService())
 	_ = registry.RegisterService(services.NewInterpolationService())
-	_ = registry.InitializeAll(ctx)
+	_ = registry.InitializeAll()
 
 	// Set global registry and context
 	oldRegistry := services.GetGlobalRegistry()
@@ -185,7 +185,7 @@ func TestStatusCommand_Execute_FilterByName(t *testing.T) {
 	_ = registry.RegisterService(services.NewModelService())
 	_ = registry.RegisterService(services.NewVariableService())
 	_ = registry.RegisterService(services.NewInterpolationService())
-	_ = registry.InitializeAll(ctx)
+	_ = registry.InitializeAll()
 
 	// Set global registry and context
 	oldRegistry := services.GetGlobalRegistry()
@@ -250,7 +250,7 @@ func TestStatusCommand_Execute_FilterByProvider(t *testing.T) {
 	_ = registry.RegisterService(services.NewModelService())
 	_ = registry.RegisterService(services.NewVariableService())
 	_ = registry.RegisterService(services.NewInterpolationService())
-	_ = registry.InitializeAll(ctx)
+	_ = registry.InitializeAll()
 
 	// Set global registry and context
 	oldRegistry := services.GetGlobalRegistry()
@@ -306,7 +306,7 @@ func TestStatusCommand_Execute_SortByCreated(t *testing.T) {
 	_ = registry.RegisterService(services.NewModelService())
 	_ = registry.RegisterService(services.NewVariableService())
 	_ = registry.RegisterService(services.NewInterpolationService())
-	_ = registry.InitializeAll(ctx)
+	_ = registry.InitializeAll()
 
 	// Set global registry and context
 	oldRegistry := services.GetGlobalRegistry()
@@ -364,7 +364,7 @@ func TestStatusCommand_Execute_InvalidSort(t *testing.T) {
 	_ = registry.RegisterService(services.NewModelService())
 	_ = registry.RegisterService(services.NewVariableService())
 	_ = registry.RegisterService(services.NewInterpolationService())
-	_ = registry.InitializeAll(ctx)
+	_ = registry.InitializeAll()
 
 	// Set global registry and context
 	oldRegistry := services.GetGlobalRegistry()
@@ -411,7 +411,7 @@ func TestStatusCommand_Execute_NoMatchingModels(t *testing.T) {
 	_ = registry.RegisterService(services.NewModelService())
 	_ = registry.RegisterService(services.NewVariableService())
 	_ = registry.RegisterService(services.NewInterpolationService())
-	_ = registry.InitializeAll(ctx)
+	_ = registry.InitializeAll()
 
 	// Set global registry and context
 	oldRegistry := services.GetGlobalRegistry()

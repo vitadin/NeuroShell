@@ -428,7 +428,7 @@ func setupTestServices(t *testing.T) {
 	ctx := context.New()
 	// Set the test context as global context
 	context.SetGlobalContext(ctx)
-	err = services.GlobalRegistry.InitializeAll(ctx)
+	err = services.GlobalRegistry.InitializeAll()
 	require.NoError(t, err)
 }
 

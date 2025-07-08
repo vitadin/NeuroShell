@@ -30,7 +30,7 @@ func (c *ChatSessionService) Name() string {
 }
 
 // Initialize sets up the ChatSessionService for operation.
-func (c *ChatSessionService) Initialize(_ neurotypes.Context) error {
+func (c *ChatSessionService) Initialize() error {
 	c.initialized = true
 	return nil
 }

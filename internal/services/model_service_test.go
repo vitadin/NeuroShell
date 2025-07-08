@@ -29,7 +29,7 @@ func TestModelService_Initialize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewModelService()
-			err := service.Initialize(tt.ctx)
+			err := service.Initialize()
 
 			if tt.want != nil {
 				assert.Error(t, err)

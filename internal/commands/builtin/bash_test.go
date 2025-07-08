@@ -394,7 +394,7 @@ func setupBashTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	require.NoError(t, err)
 
 	// Initialize services
-	err = services.GetGlobalRegistry().InitializeAll(ctx)
+	err = services.GetGlobalRegistry().InitializeAll()
 	require.NoError(t, err)
 
 	// Cleanup function to restore original registry
@@ -437,8 +437,8 @@ func captureOutput(fn func()) string {
 // mockWrongService is a mock service with wrong type for testing
 type mockWrongService struct{}
 
-func (m *mockWrongService) Name() string                          { return "bash" }
-func (m *mockWrongService) Initialize(_ neurotypes.Context) error { return nil }
+func (m *mockWrongService) Name() string      { return "bash" }
+func (m *mockWrongService) Initialize() error { return nil }
 
 // Interface compliance test
 func TestBashCommand_InterfaceCompliance(_ *testing.T) {
@@ -448,13 +448,12 @@ func TestBashCommand_InterfaceCompliance(_ *testing.T) {
 // Benchmark tests
 func BenchmarkBashCommand_Execute_SimpleCommand(b *testing.B) {
 	cmd := &BashCommand{}
-	ctx := testutils.NewMockContext()
 
 	// Setup minimal registry
 	services.GlobalRegistry = services.NewRegistry()
 	_ = services.GlobalRegistry.RegisterService(services.NewVariableService())
 	_ = services.GlobalRegistry.RegisterService(services.NewBashService())
-	_ = services.GlobalRegistry.InitializeAll(ctx)
+	_ = services.GlobalRegistry.InitializeAll()
 
 	// Capture output to avoid printing during benchmark
 	oldStdout := os.Stdout

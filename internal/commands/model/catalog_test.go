@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -71,14 +70,13 @@ func TestCatalogCommand_HelpInfo(t *testing.T) {
 
 func TestCatalogCommand_Execute(t *testing.T) {
 	// Setup services and context
-	ctx := context.New()
 	registry := services.NewRegistry()
 
 	// Register required services
 	require.NoError(t, registry.RegisterService(services.NewModelCatalogService()))
 	require.NoError(t, registry.RegisterService(services.NewVariableService()))
 	require.NoError(t, registry.RegisterService(services.NewThemeService()))
-	require.NoError(t, registry.InitializeAll(ctx))
+	require.NoError(t, registry.InitializeAll())
 	services.SetGlobalRegistry(registry)
 
 	cmd := &CatalogCommand{}

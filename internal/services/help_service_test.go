@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/commands"
+	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
@@ -36,10 +37,15 @@ func TestHelpService_Initialize(t *testing.T) {
 	// Set up test environment
 	ctx := setupHelpServiceTest(t, testCommands)
 
+	// Set the global context for the service
+	oldCtx := neuroshellcontext.GetGlobalContext()
+	neuroshellcontext.SetGlobalContext(ctx)
+	defer neuroshellcontext.SetGlobalContext(oldCtx)
+
 	service := NewHelpService()
 	assert.False(t, service.initialized)
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	assert.NoError(t, err)
 	assert.True(t, service.initialized)
 
@@ -197,9 +203,15 @@ func TestHelpService_SystemVariableStorage(t *testing.T) {
 	}
 
 	ctx := setupHelpServiceTest(t, testCommands)
+
+	// Set the global context for the service
+	oldCtx := neuroshellcontext.GetGlobalContext()
+	neuroshellcontext.SetGlobalContext(ctx)
+	defer neuroshellcontext.SetGlobalContext(oldCtx)
+
 	service := NewHelpService()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Verify system variables were set
@@ -250,9 +262,17 @@ func setupHelpServiceTest(t *testing.T, testCommands []neurotypes.Command) neuro
 
 func setupInitializedHelpService(t *testing.T, testCommands []neurotypes.Command) (*HelpService, neurotypes.Context) {
 	ctx := setupHelpServiceTest(t, testCommands)
+
+	// Set the global context for the service
+	oldCtx := neuroshellcontext.GetGlobalContext()
+	neuroshellcontext.SetGlobalContext(ctx)
+	t.Cleanup(func() {
+		neuroshellcontext.SetGlobalContext(oldCtx)
+	})
+
 	service := NewHelpService()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	return service, ctx

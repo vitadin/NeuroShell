@@ -7,7 +7,6 @@ import (
 
 	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/internal/parser"
-	"neuroshell/pkg/neurotypes"
 )
 
 // ExecutorService manages command execution queue and orchestrates script processing.
@@ -28,7 +27,7 @@ func (e *ExecutorService) Name() string {
 }
 
 // Initialize sets up the ExecutorService for operation.
-func (e *ExecutorService) Initialize(_ neurotypes.Context) error {
+func (e *ExecutorService) Initialize() error {
 	e.initialized = true
 	return nil
 }

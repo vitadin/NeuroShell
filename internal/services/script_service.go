@@ -28,7 +28,7 @@ func (s *ScriptService) Name() string {
 }
 
 // Initialize sets up the ScriptService for operation.
-func (s *ScriptService) Initialize(_ neurotypes.Context) error {
+func (s *ScriptService) Initialize() error {
 	s.initialized = true
 	return nil
 }
