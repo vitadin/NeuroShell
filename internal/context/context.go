@@ -16,6 +16,7 @@ import (
 // allowedGlobalVariables defines which global variables (starting with _) can be set by users
 var allowedGlobalVariables = []string{
 	"_style",
+	"_reply_way",
 }
 
 // NeuroContext implements the neurotypes.Context interface providing session state management.
