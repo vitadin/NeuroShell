@@ -1,0 +1,4 @@
+%% Synchronous send command test
+%% Tests explicit send-sync functionality
+
+\send-sync Testing synchronous send mode

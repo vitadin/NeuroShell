@@ -1,0 +1,9 @@
+%% Send command with session management test
+%% Tests send functionality with explicit session creation
+
+\session-new test-session
+\send Hello from test session
+\echo Message history: ${1}
+\session-new another-session
+\send Hello from another session
+\echo Message history: ${1}

@@ -96,17 +96,29 @@ func (m *MockLLMService) Initialize() error {
 }
 
 // SendChatCompletion mocks sending a chat completion request
-func (m *MockLLMService) SendChatCompletion(_ *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (string, error) {
+func (m *MockLLMService) SendChatCompletion(session *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (string, error) {
 	if !m.initialized {
 		return "", fmt.Errorf("mock llm service not initialized")
 	}
 
-	// Check if we have a specific response for this model
-	if response, exists := m.responses[modelConfig.BaseModel]; exists {
-		return response, nil
+	// Extract the last user message from the session
+	var lastUserMessage string
+	if session != nil && len(session.Messages) > 0 {
+		// Find the last message with role "user"
+		for i := len(session.Messages) - 1; i >= 0; i-- {
+			if session.Messages[i].Role == "user" {
+				lastUserMessage = session.Messages[i].Content
+				break
+			}
+		}
 	}
 
-	// Return default response
+	// Return a response that includes the actual message content
+	if lastUserMessage != "" {
+		return fmt.Sprintf("This is a mocking reply message for the sending message: %s", lastUserMessage), nil
+	}
+
+	// Fall back to default response if no user message found
 	return m.responses["default"], nil
 }
 
@@ -121,7 +133,7 @@ func (m *MockLLMService) SetMockResponse(model, response string) {
 }
 
 // StreamChatCompletionWithGlobalContext mocks streaming chat completion (returns a channel with mock response)
-func (m *MockLLMService) StreamChatCompletionWithGlobalContext(_ *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan StreamChunk, error) {
+func (m *MockLLMService) StreamChatCompletionWithGlobalContext(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan StreamChunk, error) {
 	if !m.initialized {
 		return nil, fmt.Errorf("mock llm service not initialized")
 	}
@@ -129,12 +141,29 @@ func (m *MockLLMService) StreamChatCompletionWithGlobalContext(_ *neurotypes.Cha
 	// Create a channel for streaming response
 	responseChan := make(chan StreamChunk, 1)
 
+	// Extract the last user message from the session
+	var lastUserMessage string
+	if session != nil && len(session.Messages) > 0 {
+		// Find the last message with role "user"
+		for i := len(session.Messages) - 1; i >= 0; i-- {
+			if session.Messages[i].Role == "user" {
+				lastUserMessage = session.Messages[i].Content
+				break
+			}
+		}
+	}
+
 	// Get the mock response
 	var response string
-	if res, exists := m.responses[modelConfig.BaseModel]; exists {
-		response = res
+	if lastUserMessage != "" {
+		response = fmt.Sprintf("This is a mocking reply message for the sending message: %s", lastUserMessage)
 	} else {
-		response = m.responses["default"]
+		// Fall back to default response if no user message found
+		if res, exists := m.responses[modelConfig.BaseModel]; exists {
+			response = res
+		} else {
+			response = m.responses["default"]
+		}
 	}
 
 	// Send the response through the channel and close it

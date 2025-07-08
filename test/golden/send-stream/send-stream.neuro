@@ -1,0 +1,4 @@
+%% Streaming send command test
+%% Tests explicit send-stream functionality
+
+\send-stream Testing streaming send mode

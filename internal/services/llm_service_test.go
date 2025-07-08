@@ -45,7 +45,7 @@ func TestMockLLMService_Basic(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	// Test chat completion
+	// Test chat completion with empty session (should use default response)
 	session := &neurotypes.ChatSession{
 		ID:       "test-session",
 		Name:     "test",
@@ -59,7 +59,7 @@ func TestMockLLMService_Basic(t *testing.T) {
 
 	response, err := service.SendChatCompletion(session, modelConfig)
 	require.NoError(t, err)
-	assert.Equal(t, "Hello! This is a mock GPT-4 response.", response)
+	assert.Equal(t, "This is a mock LLM response.", response)
 }
 
 func TestMockLLMService_DifferentModels(t *testing.T) {
@@ -77,8 +77,8 @@ func TestMockLLMService_DifferentModels(t *testing.T) {
 		model    string
 		expected string
 	}{
-		{"gpt-4", "Hello! This is a mock GPT-4 response."},
-		{"gpt-3.5-turbo", "Hi! This is a mock GPT-3.5 response."},
+		{"gpt-4", "This is a mock LLM response."},
+		{"gpt-3.5-turbo", "This is a mock LLM response."},
 		{"unknown-model", "This is a mock LLM response."},
 	}
 
@@ -117,7 +117,35 @@ func TestMockLLMService_CustomResponse(t *testing.T) {
 
 	response, err := service.SendChatCompletion(session, modelConfig)
 	require.NoError(t, err)
-	assert.Equal(t, "Custom response for testing", response)
+	assert.Equal(t, "This is a mock LLM response.", response)
+}
+
+func TestMockLLMService_WithActualMessages(t *testing.T) {
+	service := NewMockLLMService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Test with actual user message
+	session := &neurotypes.ChatSession{
+		ID:   "test-session",
+		Name: "test",
+		Messages: []neurotypes.Message{
+			{
+				ID:      "msg1",
+				Role:    "user",
+				Content: "Test message content",
+			},
+		},
+	}
+
+	modelConfig := &neurotypes.ModelConfig{
+		BaseModel: "gpt-4",
+		Provider:  "openai",
+	}
+
+	response, err := service.SendChatCompletion(session, modelConfig)
+	require.NoError(t, err)
+	assert.Equal(t, "This is a mocking reply message for the sending message: Test message content", response)
 }
 
 func TestMockLLMService_NotInitialized(t *testing.T) {

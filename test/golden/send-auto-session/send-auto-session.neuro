@@ -1,0 +1,5 @@
+%% Send command with auto session creation test
+%% Tests send functionality when no session exists (should create default session)
+
+\send This should create a default session automatically
+\echo Message history: ${1}

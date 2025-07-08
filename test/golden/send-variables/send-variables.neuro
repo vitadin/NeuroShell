@@ -1,0 +1,8 @@
+%% Send command with message history variables test
+%% Tests message history variables (${1}, ${2}, etc.)
+
+\send First message
+\echo Latest assistant response: ${1}
+\send Second message  
+\echo Latest assistant response: ${1}
+\echo Previous user message: ${2}

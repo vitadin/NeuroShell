@@ -1,6 +1,6 @@
 _status = 0
 _status = 0
-Hello! This is a mock GPT-4 response.
+This is a mocking reply message for the sending message: %% this is not a comment!
 _status = 0
 _status = 0
 Setting complex_var = value with spaces and special chars !@#$%

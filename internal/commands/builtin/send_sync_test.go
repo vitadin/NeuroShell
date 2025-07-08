@@ -107,12 +107,12 @@ func TestSendSyncCommand_Execute_WithMockServices(t *testing.T) {
 	assert.Equal(t, "user", activeSession.Messages[0].Role)
 	assert.Equal(t, "Hello, test!", activeSession.Messages[0].Content)
 	assert.Equal(t, "assistant", activeSession.Messages[1].Role)
-	assert.Equal(t, "Hello! This is a mock GPT-4 response.", activeSession.Messages[1].Content)
+	assert.Equal(t, "This is a mocking reply message for the sending message: Hello, test!", activeSession.Messages[1].Content)
 
 	// Check that variables were updated
 	var1, err := varService.Get("1")
 	require.NoError(t, err)
-	assert.Equal(t, "Hello! This is a mock GPT-4 response.", var1) // Latest assistant response
+	assert.Equal(t, "This is a mocking reply message for the sending message: Hello, test!", var1) // Latest assistant response
 
 	var2, err := varService.Get("2")
 	require.NoError(t, err)
@@ -183,7 +183,7 @@ func TestSendSyncCommand_Execute_WithExistingSession(t *testing.T) {
 	assert.Equal(t, "user", activeSession.Messages[0].Role)
 	assert.Equal(t, "Second message", activeSession.Messages[0].Content)
 	assert.Equal(t, "assistant", activeSession.Messages[1].Role)
-	assert.Equal(t, "Hello! This is a mock GPT-4 response.", activeSession.Messages[1].Content)
+	assert.Equal(t, "This is a mocking reply message for the sending message: Second message", activeSession.Messages[1].Content)
 }
 
 func TestSendSyncCommand_Execute_ServiceErrors(t *testing.T) {
