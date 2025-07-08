@@ -1,5 +1,5 @@
-Sending: I think... this works
-Sending: Also this... works fine
+This is a mocking reply message for the sending message: I think... this works
+This is a mocking reply message for the sending message: Also this... works fine
 Natural ellipsis like this... should be kept intact
-Sending: Some text... with ellipsis... in multiple places
+This is a mocking reply message for the sending message: Some text... with ellipsis... in multiple places
 Testing multiple... natural ellipsis... patterns

@@ -96,6 +96,17 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
+	// Use mock LLM service in test mode, real LLM service in production
+	if testMode {
+		if err := services.GetGlobalRegistry().RegisterService(services.NewMockLLMService()); err != nil {
+			return err
+		}
+	} else {
+		if err := services.GetGlobalRegistry().RegisterService(services.NewLLMService()); err != nil {
+			return err
+		}
+	}
+
 	// Register ThemeService if not already registered (needed for tests that clear the registry)
 	if !services.GetGlobalRegistry().HasService("theme") {
 		if err := services.GetGlobalRegistry().RegisterService(services.NewThemeService()); err != nil {

@@ -297,3 +297,41 @@ func (m *ModelService) ValidateModelParameters(parameters map[string]any) error 
 
 	return nil
 }
+
+// GetActiveModelConfig returns the model configuration for the active chat session.
+// For now, this returns a default GPT-4 configuration. Future implementations could
+// link models to specific chat sessions or use global model settings.
+func (m *ModelService) GetActiveModelConfig(ctx neurotypes.Context) (*neurotypes.ModelConfig, error) {
+	if !m.initialized {
+		return nil, fmt.Errorf("model service not initialized")
+	}
+
+	// For now, return a default GPT-4 configuration
+	// TODO: In the future, this could:
+	// 1. Get the active chat session and its associated model
+	// 2. Use a global default model setting
+	// 3. Allow per-session model configuration
+
+	defaultConfig := &neurotypes.ModelConfig{
+		ID:        "default-gpt-4",
+		Name:      "default-gpt-4",
+		Provider:  "openai",
+		BaseModel: "gpt-4",
+		Parameters: map[string]any{
+			"temperature": 0.7,
+			"max_tokens":  1000,
+		},
+		Description: "Default GPT-4 configuration",
+		IsDefault:   true,
+		CreatedAt:   testutils.GetCurrentTime(ctx),
+		UpdatedAt:   testutils.GetCurrentTime(ctx),
+	}
+
+	return defaultConfig, nil
+}
+
+// GetActiveModelConfigWithGlobalContext returns the active model configuration using the global context singleton.
+func (m *ModelService) GetActiveModelConfigWithGlobalContext() (*neurotypes.ModelConfig, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return m.GetActiveModelConfig(ctx)
+}

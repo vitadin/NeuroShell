@@ -103,7 +103,7 @@ func init() {
 	// Add global flags
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
 	rootCmd.PersistentFlags().StringVar(&testDir, "test-dir", "test/golden", "Test directory")
-	rootCmd.PersistentFlags().StringVar(&neurocmd, "neuro-cmd", "neuro", "Neuro command to test")
+	rootCmd.PersistentFlags().StringVar(&neurocmd, "neuro-cmd", "./bin/neuro", "Neuro command to test")
 	rootCmd.PersistentFlags().IntVar(&testTimeout, "timeout", 30, "Test timeout in seconds")
 
 	// Add subcommands

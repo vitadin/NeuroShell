@@ -10,7 +10,7 @@
 \get[_status]
 
 %% Test try with just comments
-\try %% this is just a comment
+\try %% this is not a comment!
 \get[_status]
 
 %% Test try with empty bash command

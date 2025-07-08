@@ -251,6 +251,21 @@ func (r *Registry) GetModelCatalogService() (*ModelCatalogService, error) {
 	return modelCatalogService, nil
 }
 
+// GetLLMService retrieves the LLM service with proper type casting.
+func (r *Registry) GetLLMService() (LLMProvider, error) {
+	service, err := r.GetService("llm")
+	if err != nil {
+		return nil, err
+	}
+
+	llmService, ok := service.(LLMProvider)
+	if !ok {
+		return nil, fmt.Errorf("llm service has incorrect type")
+	}
+
+	return llmService, nil
+}
+
 // GlobalRegistry is the global service registry instance used throughout NeuroShell.
 var GlobalRegistry = NewRegistry()
 
@@ -326,4 +341,9 @@ func GetGlobalModelService() (*ModelService, error) {
 // GetGlobalModelCatalogService returns the model catalog service from the global registry.
 func GetGlobalModelCatalogService() (*ModelCatalogService, error) {
 	return GetGlobalRegistry().GetModelCatalogService()
+}
+
+// GetGlobalLLMService returns the LLM service from the global registry.
+func GetGlobalLLMService() (LLMProvider, error) {
+	return GetGlobalRegistry().GetLLMService()
 }

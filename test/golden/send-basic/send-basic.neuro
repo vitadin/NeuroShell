@@ -1,0 +1,4 @@
+%% Basic send command test  
+%% Tests fundamental send functionality
+
+\send Hello, this is a basic send test

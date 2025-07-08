@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/logger"
+	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -61,23 +63,63 @@ func (c *SendCommand) HelpInfo() neurotypes.HelpInfo {
 			"Variables are interpolated before sending",
 			"Supports multi-line messages and embedded content",
 			"Response will be stored in message history variables (${1}, ${2}, etc.)",
-			"Use without explicit \\send for convenience - plain text is auto-sent",
+			"Use \\set[_reply_way=stream] to enable streaming mode",
+			"Use \\set[_reply_way=sync] to enable synchronous mode",
+			"Routes to send-stream or send-sync based on _reply_way variable",
 		},
 	}
 }
 
-// Execute sends the provided message to an LLM agent.
-// Currently returns a placeholder message as actual LLM integration is not yet implemented.
-func (c *SendCommand) Execute(_ map[string]string, input string) error {
+// Execute acts as a router to delegate to either send-stream or send-sync based on the _reply_way variable.
+// It follows the established router pattern similar to the \try command.
+func (c *SendCommand) Execute(args map[string]string, input string) error {
+	logger.CommandExecution("send", args)
+	logger.Debug("Send router starting", "input", input)
+
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
-	// TODO: Implement actual LLM agent communication
-	// For now, just echo the message
-	fmt.Printf("Sending: %s\n", input)
+	// 1. Get variable service to check routing configuration
+	variableService, err := services.GetGlobalVariableService()
+	if err != nil {
+		logger.Error("Failed to get variable service", "error", err)
+		return fmt.Errorf("failed to get variable service: %w", err)
+	}
 
-	return nil
+	// 2. Check _reply_way variable (default to "sync" if not set)
+	replyWay, _ := variableService.Get("_reply_way")
+	if replyWay == "" {
+		replyWay = "sync" // Default to synchronous mode
+	}
+	logger.Debug("Reply way determined", "reply_way", replyWay)
+
+	// 3. Determine target command based on reply way
+	var targetCommand string
+	if replyWay == "stream" {
+		targetCommand = "send-stream"
+	} else {
+		targetCommand = "send-sync"
+	}
+	logger.Debug("Target command determined", "target_command", targetCommand)
+
+	// 4. Get command registry and execute target command
+	registry := commands.GetGlobalRegistry()
+	logger.Debug("Executing target command", "command", targetCommand, "args", args, "input", input)
+	err = registry.Execute(targetCommand, args, input)
+
+	// 5. Handle errors (following \try pattern - never fail, capture in variables)
+	if err != nil {
+		logger.Error("Target command failed", "command", targetCommand, "error", err)
+		_ = variableService.SetSystemVariable("_status", "1")
+		_ = variableService.SetSystemVariable("_error", err.Error())
+	} else {
+		logger.Debug("Target command succeeded", "command", targetCommand)
+		_ = variableService.SetSystemVariable("_status", "0")
+		_ = variableService.SetSystemVariable("_error", "")
+	}
+
+	return nil // Router never fails, always captures errors in variables
 }
 
 func init() {

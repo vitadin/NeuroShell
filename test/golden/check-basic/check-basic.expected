@@ -6,9 +6,10 @@ Service Status Check:
   ✓ executor             - available/initialized
   ✓ help                 - available/initialized
   ✓ interpolation        - available/initialized
+  ✓ llm                  - available/initialized
   ✓ model                - available/initialized
   ✓ model_catalog        - available/initialized
   ✓ script               - available/initialized
   ✓ theme                - available/initialized
   ✓ variable             - available/initialized
-Summary: 11/11 services healthy
+Summary: 12/12 services healthy
