@@ -232,6 +232,47 @@ func TestMarkdownService_GetCurrentTheme(t *testing.T) {
 	assert.Equal(t, "dark", theme)
 }
 
+func TestMarkdownService_ProcessEscapeSequences(t *testing.T) {
+	service := NewMarkdownService()
+
+	testCases := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{"newline escape", "Hello\\nWorld", "Hello\nWorld"},
+		{"tab escape", "Hello\\tWorld", "Hello\tWorld"},
+		{"carriage return escape", "Hello\\rWorld", "Hello\rWorld"},
+		{"escaped backslash", "Hello\\\\World", "Hello\\World"},
+		{"multiple escapes", "Line1\\nLine2\\tTabbed", "Line1\nLine2\tTabbed"},
+		{"no escapes", "Hello World", "Hello World"},
+		{"mixed content", "# Title\\n\\nThis is **bold** text", "# Title\n\nThis is **bold** text"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := service.processEscapeSequences(tc.input)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestMarkdownService_RenderWithEscapeSequences(t *testing.T) {
+	service := NewMarkdownService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Test that escape sequences are processed before rendering
+	markdown := "# Hello World\\n\\nThis is **bold** text"
+	result, err := service.Render(markdown)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, result)
+
+	// The result should contain both "Hello World" and "bold" on separate rendered lines
+	assert.True(t, containsText(result, "Hello World"), "Result should contain 'Hello World' text")
+	assert.True(t, containsText(result, "bold"), "Result should contain 'bold' text")
+}
+
 func TestMarkdownService_ComplexMarkdown(t *testing.T) {
 	service := NewMarkdownService()
 	err := service.Initialize()

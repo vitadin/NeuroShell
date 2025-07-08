@@ -59,6 +59,10 @@ func (c *MarkdownCommand) HelpInfo() neurotypes.HelpInfo {
 				Command:     "\\render-markdown [Link](https://example.com) and `inline code`",
 				Description: "Render links and inline code",
 			},
+			{
+				Command:     "\\render-markdown # Title\\n\\nThis is a paragraph\\nwith line breaks.",
+				Description: "Use escape sequences for formatting (\\n creates newlines)",
+			},
 		},
 		Notes: []string{
 			"Uses Glamour library for high-quality markdown rendering",
@@ -66,6 +70,7 @@ func (c *MarkdownCommand) HelpInfo() neurotypes.HelpInfo {
 			"Automatically detects terminal theme for optimal styling",
 			"Rendered output is stored in _output variable",
 			"Integrates with NeuroShell's theme system",
+			"Supports escape sequences: \\n (newline), \\t (tab), \\r (carriage return), \\\\ (backslash)",
 		},
 	}
 }

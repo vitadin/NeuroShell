@@ -57,8 +57,11 @@ func (m *MarkdownService) Render(markdown string) (string, error) {
 		return "", fmt.Errorf("markdown content cannot be empty")
 	}
 
+	// Process escape sequences before rendering
+	processedMarkdown := m.processEscapeSequences(markdown)
+
 	// Render the markdown content
-	rendered, err := m.renderer.Render(markdown)
+	rendered, err := m.renderer.Render(processedMarkdown)
 	if err != nil {
 		return "", fmt.Errorf("failed to render markdown: %w", err)
 	}
@@ -77,6 +80,9 @@ func (m *MarkdownService) RenderWithStyle(markdown string, style string) (string
 		return "", fmt.Errorf("markdown content cannot be empty")
 	}
 
+	// Process escape sequences before rendering
+	processedMarkdown := m.processEscapeSequences(markdown)
+
 	// Create a new renderer with the specified style
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithStylePath(style),
@@ -89,7 +95,7 @@ func (m *MarkdownService) RenderWithStyle(markdown string, style string) (string
 	}
 
 	// Render the markdown content
-	rendered, err := renderer.Render(markdown)
+	rendered, err := renderer.Render(processedMarkdown)
 	if err != nil {
 		return "", fmt.Errorf("failed to render markdown with style '%s': %w", style, err)
 	}
@@ -186,6 +192,19 @@ func (m *MarkdownService) GetAvailableStyles() []string {
 		"notty", // Plain text (no colors)
 		"ascii", // ASCII-only styling
 	}
+}
+
+// processEscapeSequences converts common escape sequences to their actual characters.
+// This allows users to input \n for newlines, \t for tabs, etc.
+func (m *MarkdownService) processEscapeSequences(text string) string {
+	// Replace common escape sequences
+	result := text
+	result = strings.ReplaceAll(result, "\\n", "\n")
+	result = strings.ReplaceAll(result, "\\t", "\t")
+	result = strings.ReplaceAll(result, "\\r", "\r")
+	result = strings.ReplaceAll(result, "\\\n", "\n") // Handle literal backslash-n
+	result = strings.ReplaceAll(result, "\\\\", "\\") // Handle escaped backslashes
+	return result
 }
 
 // GetServiceInfo returns information about the markdown service.

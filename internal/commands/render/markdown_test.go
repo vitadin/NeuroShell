@@ -198,6 +198,33 @@ func TestMarkdownCommand_Execute_VariableServiceError(t *testing.T) {
 	assert.Contains(t, err.Error(), "variable service not available")
 }
 
+func TestMarkdownCommand_Execute_WithEscapeSequences(t *testing.T) {
+	cmd := &MarkdownCommand{}
+
+	// Set up test environment
+	setupMarkdownCommandTestRegistry(t)
+
+	// Test with markdown containing escape sequences
+	args := map[string]string{}
+	markdown := "# Hello World\\n\\nThis is **bold** text\\nand some more content"
+
+	err := cmd.Execute(args, markdown)
+	assert.NoError(t, err)
+
+	// Check that output was stored and escape sequences were processed
+	variableService, err := services.GetGlobalVariableService()
+	require.NoError(t, err)
+
+	output, err := variableService.Get("_output")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, output)
+
+	// Verify that the content was properly rendered with escape sequences processed
+	assert.True(t, containsText(output, "Hello World"), "Output should contain 'Hello World' text")
+	assert.True(t, containsText(output, "bold"), "Output should contain 'bold' text")
+	assert.True(t, containsText(output, "some more content"), "Output should contain 'some more content' text")
+}
+
 func TestMarkdownCommand_Execute_InvalidMarkdown(t *testing.T) {
 	cmd := &MarkdownCommand{}
 
