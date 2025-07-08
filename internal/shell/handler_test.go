@@ -3,6 +3,7 @@ package shell
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -559,6 +560,13 @@ func TestInitializeServices_Success(t *testing.T) {
 			defer context.ResetGlobalContext()
 			testCtx := context.New()
 			context.SetGlobalContext(testCtx)
+
+			// Skip production mode test if OPENAI_API_KEY is not set (CI/CD environment)
+			if !tt.testMode {
+				if os.Getenv("OPENAI_API_KEY") == "" {
+					t.Skip("Skipping production mode test: OPENAI_API_KEY not set (likely CI/CD environment)")
+				}
+			}
 
 			err := InitializeServices(tt.testMode)
 			assert.NoError(t, err)
