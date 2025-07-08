@@ -114,6 +114,13 @@ func InitializeServices(testMode bool) error {
 		}
 	}
 
+	// Register AutoCompleteService if not already registered
+	if !services.GetGlobalRegistry().HasService("autocomplete") {
+		if err := services.GetGlobalRegistry().RegisterService(services.NewAutoCompleteService()); err != nil {
+			return err
+		}
+	}
+
 	// Initialize all services
 	if err := services.GetGlobalRegistry().InitializeAll(); err != nil {
 		return err

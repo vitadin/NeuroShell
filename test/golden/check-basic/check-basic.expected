@@ -1,5 +1,6 @@
 Service Status Check:
 ====================
+  ✓ autocomplete         - available/initialized
   ✓ bash                 - available/initialized
   ✓ chat_session         - available/initialized
   ✓ editor               - available/initialized
@@ -12,4 +13,4 @@ Service Status Check:
   ✓ script               - available/initialized
   ✓ theme                - available/initialized
   ✓ variable             - available/initialized
-Summary: 12/12 services healthy
+Summary: 13/13 services healthy
