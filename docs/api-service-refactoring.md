@@ -1,62 +1,122 @@
-# API Service Refactoring Plan
+# API Service Refactoring Plan - Three-Layer Architecture Compliant
 
 ## Overview
 
-This document outlines the refactoring plan for NeuroShell's API service layer to transition from a switch-case based provider routing design to a clean, maintainable interface-based architecture.
+This document outlines the refactoring plan for NeuroShell's API service to transition from a switch-case based provider routing design to a clean, maintainable interface-based architecture that **strictly adheres to the three-layer architecture** defined in CLAUDE.md.
 
-## Current Problems
+## Current Architecture Violations
 
-### 1. Switch-Case Anti-Pattern
+### 1. Direct Global Context Access
 
-The current `APIService` uses switch-case statements for provider routing:
+The current `APIService` violates the three-layer architecture by directly accessing the global context:
 
 ```go
-func (a *APIService) SendMessage(provider, model, message string, options map[string]any) (*APIResponse, error) {
-    switch strings.ToLower(provider) {
-    case "openai":
-        return a.sendOpenAIMessage(model, message, options)
-    case "anthropic":
-        return nil, fmt.Errorf("anthropic provider not yet implemented")
-    default:
-        return nil, fmt.Errorf("unsupported provider: %s", provider)
-    }
+// services/api_service.go:155
+ctx := neuroshellcontext.GetGlobalContext()
+```
+
+**Violation**: Services should only interact with the context passed during initialization, not access global state.
+
+### 2. Direct OS Environment Access
+
+The service directly accesses OS environment variables:
+
+```go
+// services/api_service.go:109
+if timeoutEnv := os.Getenv("API_TIMEOUT"); timeoutEnv != "" {
+```
+
+**Violation**: Only the Context Layer should interface with the OS. Services should receive configuration through the context.
+
+### 3. State Storage in Service Layer
+
+The service maintains internal state that belongs in the Context Layer:
+
+```go
+type APIService struct {
+    initialized  bool
+    httpClient   *http.Client
+    timeout      time.Duration
+    endpoints    map[string]string
+    openaiClient *openai.Client
 }
 ```
 
-**Problems:**
-- Violates Open/Closed Principle - adding providers requires modifying existing code
-- Creates tight coupling between APIService and provider implementations
-- Makes the service increasingly complex as providers are added
-- Hard to unit test individual provider logic
+**Violation**: Services should be stateless. All state should be managed by the Context Layer.
 
-### 2. Single Responsibility Violation
+### 4. Switch-Case Anti-Pattern
 
-The current `APIService` handles multiple responsibilities:
-- HTTP client management and connectivity checking
-- Provider-specific client initialization (OpenAI, Anthropic)
-- Message sending logic for each provider
-- Model listing for each provider
-- Response format standardization
+The current implementation uses switch-case for provider routing, violating the Open/Closed Principle.
 
-This violates the Single Responsibility Principle and makes the service difficult to maintain.
+## Three-Layer Architecture Principles
 
-### 3. Maintenance and Extensibility Issues
+According to CLAUDE.md, NeuroShell follows a strict three-layer architecture:
 
-- **Code Duplication**: Similar patterns repeated for each provider method
-- **Hard to Test**: Provider-specific logic is embedded in the main service
-- **Configuration Complexity**: Different providers have different configuration needs
-- **Scalability Problems**: Adding features requires touching the main service class
+```
+┌──────────────────────────────────┐
+│         Command Layer            │
+│  (\send, \set, \get, etc.)      │
+├──────────────────────────────────┤
+│        Service Layer             │
+│  (Stateless business logic)      │
+├──────────────────────────────────┤
+│        Context Layer             │
+│  (All state and resources)       │
+└──────────────────────────────────┘
+```
+
+**Key Rules**:
+1. **Context Layer**: Holds ALL state and resources
+2. **Service Layer**: Stateless business logic only
+3. **Command Layer**: Orchestrates services
+4. **No Cross-Layer Dependencies**: Layers can only interact through defined interfaces
+5. **Services Don't Know About Commands**: Services are independent
+6. **Commands Don't Access Context**: Commands only use services
 
 ## Proposed Architecture
 
-### Core Design Principles
+### Context Layer Extensions
 
-1. **Interface Segregation**: Clear, focused interfaces for different responsibilities
-2. **Dependency Injection**: Services depend on interfaces, not implementations
-3. **Open/Closed Principle**: Easy to add providers without modifying existing code
-4. **Single Responsibility**: Each service has one clear purpose
+Extend the Context interface to support API provider management:
 
-### Interface Definitions
+```go
+// Context interface extensions for API provider support
+type Context interface {
+    // Existing methods...
+    
+    // Provider Configuration Management
+    GetProviderConfig(provider string) (*ProviderConfig, error)
+    SetProviderConfig(provider string, config *ProviderConfig) error
+    ListProviderConfigs() map[string]*ProviderConfig
+    
+    // Provider Client Management (cached instances)
+    GetProviderClient(provider string) (interface{}, error)
+    SetProviderClient(provider string, client interface{}) error
+    ClearProviderClient(provider string) error
+    
+    // Factory Registry Management
+    RegisterProviderFactory(provider string, factory ClientFactory) error
+    GetProviderFactory(provider string) (ClientFactory, error)
+    ListProviderFactories() []string
+    
+    // API-related Environment Access (Context handles OS interface)
+    GetAPIEnvironmentVariable(key string) (string, bool)
+    GetAPITimeout() time.Duration
+}
+
+// ProviderConfig holds provider-specific configuration
+type ProviderConfig struct {
+    Provider    string
+    APIKey      string
+    BaseURL     string
+    Timeout     time.Duration
+    Parameters  map[string]interface{}
+}
+```
+
+### Core Interfaces (Keep These)
+
+These interfaces are well-designed and should be retained:
 
 ```go
 // LLMProvider defines the contract for all LLM provider implementations
@@ -82,322 +142,375 @@ type ClientFactory interface {
     ValidateConfig(config *ProviderConfig) error
 }
 
-// ProviderConfig holds provider-specific configuration
-type ProviderConfig struct {
+// Standard response format
+type APIResponse struct {
+    Content     string
     Provider    string
-    APIKey      string
-    BaseURL     string
-    Timeout     time.Duration
-    Parameters  map[string]interface{}
+    Model       string
+    TokensUsed  int
+    Metadata    map[string]interface{}
 }
 ```
 
-### Service Architecture
+### Service Layer Design (Stateless)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      APIService                            │
-│  • High-level API coordination                             │
-│  • Request routing via ProviderRegistryService             │
-│  • Response standardization                                │
-│  • Backward compatibility layer                            │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────┐
-│               ProviderRegistryService                       │
-│  • Provider factory registration and discovery             │
-│  • Provider instance management and caching                │
-│  • Thread-safe provider lookup                             │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────┐
-│                ClientManagerService                        │
-│  • Provider client creation and lifecycle                  │
-│  • Configuration management (context/environment)          │
-│  • Client caching and connection pooling                   │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────┐
-│                   Provider Implementations                 │
-│  ┌─────────────────┐  ┌─────────────────┐                  │
-│  │  OpenAIProvider │  │AnthropicProvider│  ...             │
-│  │  (LLMProvider)  │  │  (LLMProvider)  │                  │
-│  └─────────────────┘  └─────────────────┘                  │
-│                                                             │
-│  ┌─────────────────┐  ┌─────────────────┐                  │
-│  │OpenAIClientFact.│  │AnthropicClientF.│  ...             │
-│  │ (ClientFactory) │  │ (ClientFactory) │                  │
-│  └─────────────────┘  └─────────────────┘                  │
-└─────────────────────────────────────────────────────────────┘
-```
+The APIService becomes a pure orchestration layer with no state:
 
-## Implementation Roadmap
-
-### Phase 1: Foundation (Core Interfaces)
-
-**Deliverables:**
-- Create `internal/services/providers/` package
-- Define `LLMProvider` interface
-- Define `ClientFactory` interface
-- Define `ProviderConfig` struct
-- Create basic error types for provider operations
-
-**Estimated Effort:** 1-2 days
-
-### Phase 2: Provider Registry Service
-
-**Deliverables:**
-- Create `ProviderRegistryService`
-- Implement factory registration and discovery
-- Implement provider instance management
-- Add thread-safe provider lookup
-- Create provider registry tests
-
-**Key Features:**
 ```go
-type ProviderRegistryService struct {
-    factories map[string]ClientFactory
-    instances map[string]LLMProvider
-    mutex     sync.RWMutex
-}
-
-func (p *ProviderRegistryService) RegisterFactory(factory ClientFactory) error
-func (p *ProviderRegistryService) GetProvider(providerName string) (LLMProvider, error)
-func (p *ProviderRegistryService) ListProviders() []string
-```
-
-**Estimated Effort:** 2-3 days
-
-### Phase 3: Client Manager Service
-
-**Deliverables:**
-- Create `ClientManagerService`
-- Implement configuration management from context/environment
-- Implement client caching and lifecycle management
-- Handle provider-specific configuration needs
-- Create client manager tests
-
-**Key Features:**
-```go
-type ClientManagerService struct {
-    registry     *ProviderRegistryService
-    clients      map[string]LLMProvider
-    configs      map[string]*ProviderConfig
-    mutex        sync.RWMutex
-}
-
-func (c *ClientManagerService) GetClient(provider string) (LLMProvider, error)
-func (c *ClientManagerService) UpdateConfig(provider string, config *ProviderConfig) error
-func (c *ClientManagerService) RefreshClient(provider string) error
-```
-
-**Estimated Effort:** 2-3 days
-
-### Phase 4: Provider Implementations
-
-**Deliverables:**
-- Create `OpenAIProvider` implementing `LLMProvider`
-- Create `OpenAIClientFactory` implementing `ClientFactory`
-- Extract and refactor existing OpenAI logic
-- Implement proper error handling and logging
-- Create comprehensive provider tests
-
-**Implementation Example:**
-```go
-type OpenAIProvider struct {
-    client  *openai.Client
-    config  *ProviderConfig
-}
-
-func (o *OpenAIProvider) SendMessage(model, message string, options map[string]any) (*APIResponse, error) {
-    // Clean OpenAI-specific implementation
-}
-
-type OpenAIClientFactory struct{}
-
-func (f *OpenAIClientFactory) CreateClient(config *ProviderConfig) (LLMProvider, error) {
-    // Factory logic for OpenAI client creation
-}
-```
-
-**Estimated Effort:** 3-4 days
-
-### Phase 5: APIService Refactoring
-
-**Deliverables:**
-- Refactor `APIService` to use provider registry
-- Remove all switch-case provider routing
-- Implement provider delegation pattern
-- Maintain backward compatibility
-- Update APIService tests
-
-**New APIService Implementation:**
-```go
+// APIService - stateless orchestration of API operations
 type APIService struct {
-    initialized    bool
-    clientManager  *ClientManagerService
-    httpClient     *http.Client  // Keep for connectivity checks
-    timeout        time.Duration
+    // No state! Pure business logic only
 }
 
-func (a *APIService) SendMessage(provider, model, message string, options map[string]any) (*APIResponse, error) {
-    if !a.initialized {
-        return nil, fmt.Errorf("api service not initialized")
+// Initialize registers default provider factories with the context
+func (a *APIService) Initialize(ctx Context) error {
+    // Register built-in provider factories
+    if err := ctx.RegisterProviderFactory("openai", &OpenAIClientFactory{}); err != nil {
+        return fmt.Errorf("failed to register OpenAI factory: %w", err)
     }
     
-    client, err := a.clientManager.GetClient(provider)
+    // Future providers
+    // ctx.RegisterProviderFactory("anthropic", &AnthropicClientFactory{})
+    
+    return nil
+}
+
+// SendMessage orchestrates sending a message through the appropriate provider
+func (a *APIService) SendMessage(ctx Context, provider, model, message string, options map[string]any) (*APIResponse, error) {
+    // Get or create provider client
+    client, err := a.getOrCreateClient(ctx, provider)
     if err != nil {
         return nil, fmt.Errorf("failed to get provider client: %w", err)
     }
     
-    return client.SendMessage(model, message, options)
+    // Delegate to provider
+    response, err := client.SendMessage(model, message, options)
+    if err != nil {
+        return nil, fmt.Errorf("provider error: %w", err)
+    }
+    
+    // Update context with usage metrics
+    if response.TokensUsed > 0 {
+        ctx.SetVariable("#tokens_used", fmt.Sprintf("%d", response.TokensUsed))
+    }
+    
+    return response, nil
+}
+
+// ListModels lists available models for a provider
+func (a *APIService) ListModels(ctx Context, provider string) ([]ModelInfo, error) {
+    client, err := a.getOrCreateClient(ctx, provider)
+    if err != nil {
+        return nil, err
+    }
+    
+    return client.ListModels()
+}
+
+// CheckConnectivity tests provider connectivity
+func (a *APIService) CheckConnectivity(ctx Context, provider string) error {
+    client, err := a.getOrCreateClient(ctx, provider)
+    if err != nil {
+        return err
+    }
+    
+    return client.CheckConnectivity()
+}
+
+// getOrCreateClient is a private helper for client management
+func (a *APIService) getOrCreateClient(ctx Context, provider string) (LLMProvider, error) {
+    // Try to get cached client from context
+    if cached, err := ctx.GetProviderClient(provider); err == nil && cached != nil {
+        if client, ok := cached.(LLMProvider); ok {
+            return client, nil
+        }
+    }
+    
+    // Get factory from context
+    factory, err := ctx.GetProviderFactory(provider)
+    if err != nil {
+        return nil, fmt.Errorf("no factory registered for provider %s: %w", provider, err)
+    }
+    
+    // Get or create configuration
+    config, err := a.getProviderConfig(ctx, provider)
+    if err != nil {
+        return nil, fmt.Errorf("failed to get provider config: %w", err)
+    }
+    
+    // Create new client
+    client, err := factory.CreateClient(config)
+    if err != nil {
+        return nil, fmt.Errorf("failed to create client: %w", err)
+    }
+    
+    // Cache in context for reuse
+    if err := ctx.SetProviderClient(provider, client); err != nil {
+        // Log warning but continue - caching failure shouldn't block operation
+        fmt.Printf("Warning: failed to cache provider client: %v\n", err)
+    }
+    
+    return client, nil
+}
+
+// getProviderConfig assembles configuration from context
+func (a *APIService) getProviderConfig(ctx Context, provider string) (*ProviderConfig, error) {
+    // Check if explicit config exists
+    if config, err := ctx.GetProviderConfig(provider); err == nil && config != nil {
+        return config, nil
+    }
+    
+    // Build config from context variables and environment
+    config := &ProviderConfig{
+        Provider: provider,
+        Timeout:  ctx.GetAPITimeout(),
+    }
+    
+    // Get API key (check context variable first, then environment)
+    varName := fmt.Sprintf("%s_api_key", provider)
+    if apiKey, err := ctx.GetVariable(varName); err == nil && apiKey != "" {
+        config.APIKey = apiKey
+    } else {
+        envVar := fmt.Sprintf("%s_API_KEY", strings.ToUpper(provider))
+        if apiKey, found := ctx.GetAPIEnvironmentVariable(envVar); found {
+            config.APIKey = apiKey
+        }
+    }
+    
+    // Get base URL if needed
+    if baseURL, err := ctx.GetVariable(fmt.Sprintf("%s_base_url", provider)); err == nil && baseURL != "" {
+        config.BaseURL = baseURL
+    }
+    
+    return config, nil
 }
 ```
 
-**Estimated Effort:** 2-3 days
+### Provider Implementations
 
-### Phase 6: Integration and Testing
+Example OpenAI provider implementation:
 
-**Deliverables:**
-- Update service registry to include new services
-- Ensure all existing tests pass
-- Add integration tests for provider interactions
-- Performance testing and optimization
-- Documentation updates
-
-**Service Registration:**
 ```go
-// In registry initialization
-registry.RegisterService(NewProviderRegistryService())
-registry.RegisterService(NewClientManagerService())
+// OpenAIProvider implements LLMProvider for OpenAI
+type OpenAIProvider struct {
+    client *openai.Client
+    config *ProviderConfig
+}
 
-// Register provider factories
-providerRegistry.RegisterFactory(&OpenAIClientFactory{})
-// Future: providerRegistry.RegisterFactory(&AnthropicClientFactory{})
+func (o *OpenAIProvider) Name() string {
+    return "openai"
+}
+
+func (o *OpenAIProvider) SendMessage(model, message string, options map[string]any) (*APIResponse, error) {
+    // Implementation using OpenAI SDK
+    req := openai.ChatCompletionRequest{
+        Model: model,
+        Messages: []openai.ChatCompletionMessage{
+            {Role: openai.ChatMessageRoleUser, Content: message},
+        },
+    }
+    
+    resp, err := o.client.CreateChatCompletion(context.Background(), req)
+    if err != nil {
+        return nil, err
+    }
+    
+    return &APIResponse{
+        Content:    resp.Choices[0].Message.Content,
+        Provider:   "openai",
+        Model:      model,
+        TokensUsed: resp.Usage.TotalTokens,
+    }, nil
+}
+
+// OpenAIClientFactory creates OpenAI provider instances
+type OpenAIClientFactory struct{}
+
+func (f *OpenAIClientFactory) SupportedProvider() string {
+    return "openai"
+}
+
+func (f *OpenAIClientFactory) CreateClient(config *ProviderConfig) (LLMProvider, error) {
+    if config.APIKey == "" {
+        return nil, fmt.Errorf("OpenAI API key is required")
+    }
+    
+    clientConfig := openai.DefaultConfig(config.APIKey)
+    if config.BaseURL != "" {
+        clientConfig.BaseURL = config.BaseURL
+    }
+    
+    return &OpenAIProvider{
+        client: openai.NewClientWithConfig(clientConfig),
+        config: config,
+    }, nil
+}
+
+func (f *OpenAIClientFactory) ValidateConfig(config *ProviderConfig) error {
+    if config.APIKey == "" {
+        return fmt.Errorf("API key is required")
+    }
+    return nil
+}
 ```
 
-**Estimated Effort:** 2-3 days
+### Command Layer Integration
+
+Example of how commands use the refactored APIService:
+
+```go
+// SendCommand demonstrates proper three-layer interaction
+type SendCommand struct{}
+
+func (c *SendCommand) Execute(args []string, input string, services ServiceRegistry) error {
+    // Get services from registry
+    apiService := services.GetService("api").(*APIService)
+    variableService := services.GetService("variable").(*VariableService)
+    
+    // Parse arguments to get provider and model
+    provider := "openai" // default or from args
+    model := "gpt-4"     // default or from args
+    
+    // Get context from service registry (passed during command execution)
+    ctx := services.GetContext()
+    
+    // Send message through API service
+    response, err := apiService.SendMessage(ctx, provider, model, input, nil)
+    if err != nil {
+        return fmt.Errorf("failed to send message: %w", err)
+    }
+    
+    // Store response in context variables
+    if err := variableService.Set(ctx, "1", response.Content); err != nil {
+        return fmt.Errorf("failed to store response: %w", err)
+    }
+    
+    // Display response
+    fmt.Println(response.Content)
+    
+    return nil
+}
+```
+
+## Implementation Roadmap
+
+### Phase 1: Context Layer Extensions (2-3 days)
+
+1. Extend Context interface with API provider methods
+2. Implement provider configuration storage
+3. Implement provider client caching
+4. Implement factory registry
+5. Add environment variable access through context
+
+### Phase 2: Core Interfaces and Providers (3-4 days)
+
+1. Define `LLMProvider` and `ClientFactory` interfaces
+2. Implement `OpenAIProvider` and `OpenAIClientFactory`
+3. Create provider-specific error types
+4. Add comprehensive unit tests
+
+### Phase 3: APIService Refactoring (2-3 days)
+
+1. Remove all state from APIService
+2. Implement stateless orchestration methods
+3. Remove direct context and environment access
+4. Update all service methods to receive context as parameter
+5. Add service tests with mocked context
+
+### Phase 4: Command Integration (1-2 days)
+
+1. Update commands to pass context to service methods
+2. Remove any direct context access from commands
+3. Update command tests
+
+### Phase 5: Migration and Testing (2-3 days)
+
+1. Migrate existing configurations
+2. Ensure backward compatibility
+3. Run integration tests
+4. Performance testing
+5. Documentation updates
+
+## Benefits of This Architecture
+
+### 1. **Strict Layer Separation**
+- Context owns all state
+- Services are pure business logic
+- Commands orchestrate without knowing implementation details
+
+### 2. **Testability**
+- Services can be tested with mock contexts
+- No global state dependencies
+- Clear interfaces for mocking
+
+### 3. **Maintainability**
+- Adding providers doesn't modify existing code
+- Clear responsibilities for each layer
+- Consistent with other NeuroShell services
+
+### 4. **Extensibility**
+- New providers via factory registration
+- New features without architectural changes
+- Plugin-ready architecture
 
 ## Migration Strategy
 
-### Backward Compatibility
+### Step 1: Implement Context Extensions
+- Add new methods to Context interface
+- Implement in existing context implementation
+- No breaking changes
 
-The refactoring maintains full backward compatibility:
+### Step 2: Create New APIService
+- Implement as `APIServiceV2` initially
+- Run parallel with existing service
+- Gradual migration of commands
 
-1. **Public API Unchanged**: All existing `APIService` public methods remain the same
-2. **Service Registration**: Existing service registry patterns continue to work
-3. **Configuration**: Current context/environment variable patterns preserved
-4. **Error Handling**: Error messages and types remain consistent
+### Step 3: Provider Migration
+- Start with OpenAI (most used)
+- Add Anthropic and others incrementally
+- Each provider is independent
 
-### Gradual Migration Approach
+### Step 4: Deprecate Old Service
+- Mark old APIService as deprecated
+- Provide migration guide
+- Remove after transition period
 
-1. **Phase-by-Phase Implementation**: Each phase can be implemented and tested independently
-2. **Feature Flags**: New architecture can be enabled/disabled during development
-3. **Parallel Testing**: Both old and new implementations can run side-by-side during testing
-4. **Incremental Deployment**: Providers can be migrated one at a time
+## Example: Adding a New Provider
 
-### Testing Strategy
-
-1. **Unit Tests**: Each service and provider tested in isolation
-2. **Integration Tests**: Full provider workflow testing
-3. **Regression Tests**: Ensure all existing functionality continues to work
-4. **Performance Tests**: Verify no performance degradation
-
-## Benefits and Trade-offs
-
-### Benefits
-
-1. **Maintainability**: Clean separation of concerns, easy to understand and modify
-2. **Extensibility**: Adding new providers requires no changes to existing code
-3. **Testability**: Easy to mock and test individual components
-4. **Scalability**: Architecture scales well with new providers and features
-5. **Code Quality**: Eliminates switch-case anti-patterns and reduces duplication
-
-### Trade-offs
-
-1. **Initial Complexity**: More moving parts in the initial implementation
-2. **Learning Curve**: Developers need to understand the new architecture
-3. **Development Time**: Significant upfront investment (estimated 12-18 days)
-4. **Memory Overhead**: Slightly more memory usage due to additional service layers
-
-### Performance Considerations
-
-1. **Provider Caching**: Clients are cached to avoid initialization overhead
-2. **Registry Lookup**: Fast O(1) provider lookup via hash map
-3. **Minimal Overhead**: Interface-based dispatch has negligible performance impact
-4. **Connection Pooling**: Provider implementations can optimize connections independently
-
-## Code Examples
-
-### Example: Adding a New Provider
+With this architecture, adding a new provider is simple:
 
 ```go
 // 1. Implement the provider
-type ClaudeProvider struct {
+type AnthropicProvider struct {
     client *anthropic.Client
     config *ProviderConfig
 }
 
-func (c *ClaudeProvider) Name() string { return "anthropic" }
-
-func (c *ClaudeProvider) SendMessage(model, message string, options map[string]any) (*APIResponse, error) {
+func (a *AnthropicProvider) SendMessage(model, message string, options map[string]any) (*APIResponse, error) {
     // Anthropic-specific implementation
 }
 
 // 2. Implement the factory
-type ClaudeClientFactory struct{}
+type AnthropicClientFactory struct{}
 
-func (f *ClaudeClientFactory) CreateClient(config *ProviderConfig) (LLMProvider, error) {
-    // Create and configure Anthropic client
+func (f *AnthropicClientFactory) CreateClient(config *ProviderConfig) (LLMProvider, error) {
+    // Create Anthropic client
 }
 
-func (f *ClaudeClientFactory) SupportedProvider() string { return "anthropic" }
-
-// 3. Register the factory (in initialization code)
-providerRegistry.RegisterFactory(&ClaudeClientFactory{})
+// 3. Register in APIService.Initialize()
+ctx.RegisterProviderFactory("anthropic", &AnthropicClientFactory{})
 ```
 
-### Example: Using the New Architecture
-
-```go
-// Commands can use the same APIService interface
-apiService, err := services.GetGlobalAPIService()
-if err != nil {
-    return err
-}
-
-// Provider routing is handled automatically
-response, err := apiService.SendMessage("openai", "gpt-4", "Hello!", nil)
-if err != nil {
-    return err
-}
-
-// The implementation automatically:
-// 1. Looks up the provider via registry
-// 2. Gets/creates the appropriate client
-// 3. Delegates to the provider implementation
-// 4. Returns standardized response
-```
-
-## Future Considerations
-
-### Planned Extensions
-
-1. **Provider Plugins**: Dynamic loading of provider implementations
-2. **Circuit Breakers**: Automatic failover and retry logic
-3. **Metrics Collection**: Per-provider performance and usage metrics
-4. **Rate Limiting**: Provider-specific rate limiting and throttling
-5. **Provider Chaining**: Fallback providers for reliability
-
-### Technology Evolution
-
-1. **WebAssembly Providers**: Support for WASM-based provider implementations
-2. **gRPC Support**: Provider implementations using gRPC for better performance
-3. **Event-Driven Architecture**: Async messaging patterns for streaming responses
-4. **Configuration Management**: External configuration management integration
+No other code changes required!
 
 ## Conclusion
 
-This refactoring transforms the API service from a monolithic, switch-based design to a clean, extensible, interface-driven architecture. While requiring significant upfront investment, the benefits in maintainability, extensibility, and code quality make this a worthwhile improvement for the long-term evolution of NeuroShell.
+This refactoring plan transforms the API service to strictly follow NeuroShell's three-layer architecture while maintaining all the benefits of the interface-based design. The key improvements are:
 
-The phased implementation approach allows for gradual migration while maintaining backward compatibility and reducing implementation risk.
+1. **Complete removal of state from services**
+2. **All configuration through Context Layer**
+3. **No cross-layer violations**
+4. **Consistent with existing service patterns**
+5. **Maintains extensibility and testability**
+
+The architecture ensures that each layer has clear, focused responsibilities, making the system more maintainable and easier to understand while providing a solid foundation for future enhancements.
