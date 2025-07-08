@@ -10,6 +10,21 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
+// StreamChunk represents a single chunk of streaming response.
+type StreamChunk struct {
+	Content string // The text content of this chunk
+	Done    bool   // Whether this is the final chunk
+	Error   error  // Any error that occurred during streaming
+}
+
+// LLMProvider defines the interface for LLM service implementations.
+type LLMProvider interface {
+	neurotypes.Service
+	SendChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (string, error)
+	SendChatCompletionWithGlobalContext(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (string, error)
+	StreamChatCompletionWithGlobalContext(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan StreamChunk, error)
+}
+
 // LLMService provides LLM communication capabilities for NeuroShell.
 // It handles both streaming and synchronous communication with OpenAI models.
 type LLMService struct {
@@ -49,6 +64,90 @@ func (l *LLMService) Initialize() error {
 
 	logger.ServiceOperation("llm", "initialize", "completed")
 	return nil
+}
+
+// MockLLMService provides a mock implementation of LLMService for testing
+type MockLLMService struct {
+	initialized bool
+	responses   map[string]string // model -> response mapping
+}
+
+// NewMockLLMService creates a new MockLLMService instance
+func NewMockLLMService() *MockLLMService {
+	return &MockLLMService{
+		initialized: false,
+		responses: map[string]string{
+			"gpt-4":         "Hello! This is a mock GPT-4 response.",
+			"gpt-3.5-turbo": "Hi! This is a mock GPT-3.5 response.",
+			"default":       "This is a mock LLM response.",
+		},
+	}
+}
+
+// Name returns the service name "llm" for registration
+func (m *MockLLMService) Name() string {
+	return "llm"
+}
+
+// Initialize sets up the MockLLMService for operation
+func (m *MockLLMService) Initialize() error {
+	m.initialized = true
+	return nil
+}
+
+// SendChatCompletion mocks sending a chat completion request
+func (m *MockLLMService) SendChatCompletion(_ *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (string, error) {
+	if !m.initialized {
+		return "", fmt.Errorf("mock llm service not initialized")
+	}
+
+	// Check if we have a specific response for this model
+	if response, exists := m.responses[modelConfig.BaseModel]; exists {
+		return response, nil
+	}
+
+	// Return default response
+	return m.responses["default"], nil
+}
+
+// SendChatCompletionWithGlobalContext mocks sending a chat completion request using global context
+func (m *MockLLMService) SendChatCompletionWithGlobalContext(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (string, error) {
+	return m.SendChatCompletion(session, modelConfig)
+}
+
+// SetMockResponse sets a mock response for a specific model
+func (m *MockLLMService) SetMockResponse(model, response string) {
+	m.responses[model] = response
+}
+
+// StreamChatCompletionWithGlobalContext mocks streaming chat completion (returns a channel with mock response)
+func (m *MockLLMService) StreamChatCompletionWithGlobalContext(_ *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan StreamChunk, error) {
+	if !m.initialized {
+		return nil, fmt.Errorf("mock llm service not initialized")
+	}
+
+	// Create a channel for streaming response
+	responseChan := make(chan StreamChunk, 1)
+
+	// Get the mock response
+	var response string
+	if res, exists := m.responses[modelConfig.BaseModel]; exists {
+		response = res
+	} else {
+		response = m.responses["default"]
+	}
+
+	// Send the response through the channel and close it
+	go func() {
+		defer close(responseChan)
+		responseChan <- StreamChunk{
+			Content: response,
+			Done:    true,
+			Error:   nil,
+		}
+	}()
+
+	return responseChan, nil
 }
 
 // SendChatCompletion sends a chat completion request synchronously.
@@ -179,13 +278,6 @@ func (l *LLMService) StreamChatCompletion(session *neurotypes.ChatSession, model
 // StreamChatCompletionWithGlobalContext sends a streaming chat completion request using the global context singleton.
 func (l *LLMService) StreamChatCompletionWithGlobalContext(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan StreamChunk, error) {
 	return l.StreamChatCompletion(session, modelConfig)
-}
-
-// StreamChunk represents a single chunk of streaming response.
-type StreamChunk struct {
-	Content string // The text content of this chunk
-	Done    bool   // Whether this is the final chunk
-	Error   error  // Any error that occurred during streaming
 }
 
 // convertMessagesToOpenAI converts NeuroShell messages to OpenAI format.

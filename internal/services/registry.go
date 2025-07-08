@@ -252,13 +252,13 @@ func (r *Registry) GetModelCatalogService() (*ModelCatalogService, error) {
 }
 
 // GetLLMService retrieves the LLM service with proper type casting.
-func (r *Registry) GetLLMService() (*LLMService, error) {
+func (r *Registry) GetLLMService() (LLMProvider, error) {
 	service, err := r.GetService("llm")
 	if err != nil {
 		return nil, err
 	}
 
-	llmService, ok := service.(*LLMService)
+	llmService, ok := service.(LLMProvider)
 	if !ok {
 		return nil, fmt.Errorf("llm service has incorrect type")
 	}
@@ -344,6 +344,6 @@ func GetGlobalModelCatalogService() (*ModelCatalogService, error) {
 }
 
 // GetGlobalLLMService returns the LLM service from the global registry.
-func GetGlobalLLMService() (*LLMService, error) {
+func GetGlobalLLMService() (LLMProvider, error) {
 	return GetGlobalRegistry().GetLLMService()
 }

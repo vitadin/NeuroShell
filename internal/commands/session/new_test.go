@@ -158,10 +158,10 @@ func TestNewCommand_Execute_InvalidSessionNames(t *testing.T) {
 			errorMsg:    "too long",
 		},
 		{
-			name:        "reserved name",
+			name:        "reserved name auto-versioned",
 			sessionName: "new",
-			expectError: true,
-			errorMsg:    "reserved",
+			expectError: false,
+			errorMsg:    "",
 		},
 		{
 			name:        "control characters",
@@ -225,10 +225,9 @@ func TestNewCommand_Execute_DuplicateSessionNames(t *testing.T) {
 	err := cmd.Execute(map[string]string{}, "duplicate_test")
 	assert.NoError(t, err)
 
-	// Try to create second session with same name
+	// Try to create second session with same name - should succeed with auto-versioning
 	err = cmd.Execute(map[string]string{}, "duplicate_test")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "already in use")
+	assert.NoError(t, err)
 }
 
 func TestNewCommand_Execute_VariableInterpolation(t *testing.T) {

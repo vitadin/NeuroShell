@@ -369,19 +369,20 @@ func TestGetSystemVariable_MessageHistory(t *testing.T) {
 	ctx := New()
 
 	tests := []struct {
-		name     string
-		varName  string
-		expected string
+		name        string
+		varName     string
+		expected    string
+		shouldExist bool
 	}{
-		{"message_1", "1", "message_1_placeholder"},
-		{"message_2", "2", "message_2_placeholder"},
-		{"message_123", "123", "message_123_placeholder"},
+		{"message_1", "1", "", false},
+		{"message_2", "2", "", false},
+		{"message_123", "123", "", false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			value, ok := ctx.getSystemVariable(tt.varName)
-			assert.True(t, ok)
+			assert.Equal(t, tt.shouldExist, ok)
 			assert.Equal(t, tt.expected, value)
 		})
 	}

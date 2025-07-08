@@ -210,8 +210,12 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 
 	// Handle message history variables: ${1}, ${2}, etc.
 	if matched, _ := regexp.MatchString(`^\d+$`, name); matched {
-		// TODO: Implement message history access
-		return fmt.Sprintf("message_%s_placeholder", name), true
+		// Check if the variable is stored in the regular variables map first
+		if value, ok := ctx.variables[name]; ok {
+			return value, true
+		}
+		// Return empty string if not found (was previously returning placeholder)
+		return "", false
 	}
 
 	return "", false
