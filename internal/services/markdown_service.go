@@ -201,20 +201,20 @@ func (m *MarkdownService) GetAvailableStyles() []string {
 func (m *MarkdownService) cleanShellMarkers(text string) string {
 	// Handle both \n newlines and actual newlines
 	normalizedText := strings.ReplaceAll(text, "\\n", "\n")
-	
+
 	// Split text into lines for processing
 	lines := strings.Split(normalizedText, "\n")
 	var cleanedLines []string
-	
+
 	for _, line := range lines {
 		// Remove leading/trailing whitespace for pattern matching
 		trimmed := strings.TrimSpace(line)
-		
+
 		// Skip lines that are just continuation markers
 		if trimmed == "..." {
 			continue
 		}
-		
+
 		// Remove continuation markers at the beginning of lines
 		if strings.HasPrefix(trimmed, "... ") {
 			// Remove "... " prefix and preserve the rest
@@ -225,14 +225,14 @@ func (m *MarkdownService) cleanShellMarkers(text string) string {
 			cleanedLines = append(cleanedLines, line)
 		}
 	}
-	
+
 	result := strings.Join(cleanedLines, "\n")
-	
+
 	// Convert back to escape sequences if the original input used them
 	if !strings.Contains(text, "\n") && strings.Contains(text, "\\n") {
 		result = strings.ReplaceAll(result, "\n", "\\n")
 	}
-	
+
 	return result
 }
 
