@@ -151,43 +151,122 @@ func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, them
 	return c.showAllCommandsStyled(allCommands, themeObj)
 }
 
+// CommandCategory represents a category of commands
+type CommandCategory struct {
+	Name     string
+	Commands []services.CommandInfo
+}
+
+// categorizeCommands groups commands into logical categories
+func (c *HelpCommand) categorizeCommands(allCommands []services.CommandInfo) []CommandCategory {
+	categories := []CommandCategory{
+		{Name: "Core Commands", Commands: []services.CommandInfo{}},
+		{Name: "System Commands", Commands: []services.CommandInfo{}},
+		{Name: "Model Commands", Commands: []services.CommandInfo{}},
+		{Name: "Session Commands", Commands: []services.CommandInfo{}},
+		{Name: "Testing Commands", Commands: []services.CommandInfo{}},
+	}
+
+	// Define command categories
+	coreCommands := map[string]bool{
+		"bash": true, "echo": true, "exit": true, "get": true, "help": true,
+		"run": true, "send": true, "set": true, "try": true, "vars": true,
+	}
+
+	systemCommands := map[string]bool{
+		"check": true, "editor": true, "render": true,
+	}
+
+	modelCommands := map[string]bool{
+		"model-catalog": true, "model-new": true, "model-status": true,
+	}
+
+	sessionCommands := map[string]bool{
+		"session-delete": true, "session-list": true, "session-new": true,
+	}
+
+	testingCommands := map[string]bool{
+		"assert-equal": true,
+	}
+
+	// Categorize commands
+	for _, cmdInfo := range allCommands {
+		switch {
+		case coreCommands[cmdInfo.Name]:
+			categories[0].Commands = append(categories[0].Commands, cmdInfo)
+		case systemCommands[cmdInfo.Name]:
+			categories[1].Commands = append(categories[1].Commands, cmdInfo)
+		case modelCommands[cmdInfo.Name]:
+			categories[2].Commands = append(categories[2].Commands, cmdInfo)
+		case sessionCommands[cmdInfo.Name]:
+			categories[3].Commands = append(categories[3].Commands, cmdInfo)
+		case testingCommands[cmdInfo.Name]:
+			categories[4].Commands = append(categories[4].Commands, cmdInfo)
+		default:
+			// Unknown commands go to Core Commands category
+			categories[0].Commands = append(categories[0].Commands, cmdInfo)
+		}
+	}
+
+	// Filter out empty categories
+	result := []CommandCategory{}
+	for _, category := range categories {
+		if len(category.Commands) > 0 {
+			result = append(result, category)
+		}
+	}
+
+	return result
+}
+
 // showAllCommandsStyled displays all commands using only theme object semantic styles
 func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, themeObj *services.Theme) error {
 
 	// Title
-	fmt.Println(themeObj.Success.Render("Neuro Shell Commands"))
+	fmt.Println(themeObj.Success.Render("Neuro Shell - Quick Start Guide"))
 	fmt.Println()
 
-	// Commands using semantic styling
-	for _, cmdInfo := range allCommands {
-		fmt.Printf("  %s - %s\n",
-			themeObj.Command.Render(fmt.Sprintf("%-20s", cmdInfo.Usage)),
-			themeObj.Info.Render(cmdInfo.Description))
+	// Categorize commands
+	categories := c.categorizeCommands(allCommands)
+
+	// Display each category
+	for i, category := range categories {
+		if i > 0 {
+			fmt.Println()
+		}
+
+		fmt.Println(themeObj.Warning.Render(category.Name + ":"))
+
+		for _, cmdInfo := range category.Commands {
+			fmt.Printf("  %s - %s\n",
+				themeObj.Command.Render(fmt.Sprintf("%-15s", "\\"+cmdInfo.Name)),
+				themeObj.Info.Render(cmdInfo.Description))
+		}
 	}
 
 	fmt.Println()
 
-	// Examples section
-	fmt.Println(themeObj.Warning.Render("Examples:"))
+	// Quick Examples section
+	fmt.Println(themeObj.Warning.Render("Quick Examples:"))
 
 	examples := []string{
 		"\\send Hello world",
 		"\\set[name=\"John\"]",
-		"\\get[name]",
+		"\\model-new[name=\"gpt4\"]",
 		"\\bash[ls -la]",
 	}
 
 	for _, example := range examples {
 		// Apply NeuroShell syntax highlighting to examples
 		styledExample := c.highlightNeuroShellSyntax(example, themeObj)
-		fmt.Printf("  %s\n", themeObj.Variable.Render(styledExample))
+		fmt.Printf("  %s\n", styledExample)
 	}
 
 	fmt.Println()
 
 	// Notes
 	fmt.Println(themeObj.Info.Render("Note: Text without \\ prefix is sent to LLM automatically"))
-	fmt.Println(themeObj.Info.Render("Use \\help[command] for detailed help on a specific command"))
+	fmt.Println(themeObj.Info.Render("Use \\help[command] for detailed help on any command"))
 
 	return nil
 }

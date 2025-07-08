@@ -121,14 +121,14 @@ func TestHelpCommand_Execute(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Verify output contains expected elements
-	assert.Contains(t, outputStr, "Neuro Shell Commands")
-	assert.Contains(t, outputStr, "Examples:")
+	assert.Contains(t, outputStr, "Neuro Shell - Quick Start Guide")
+	assert.Contains(t, outputStr, "Quick Examples:")
 	assert.Contains(t, outputStr, "Note: Text without \\ prefix is sent to LLM automatically")
 
 	// Verify all test commands are listed
 	assert.Contains(t, outputStr, "\\test1")
 	assert.Contains(t, outputStr, "Test command 1")
-	assert.Contains(t, outputStr, "\\test2 [arg]")
+	assert.Contains(t, outputStr, "\\test2")
 	assert.Contains(t, outputStr, "Test command 2")
 	assert.Contains(t, outputStr, "\\aaa")
 	assert.Contains(t, outputStr, "First alphabetically")
@@ -136,7 +136,7 @@ func TestHelpCommand_Execute(t *testing.T) {
 	// Verify example commands are shown
 	assert.Contains(t, outputStr, "\\send Hello world")
 	assert.Contains(t, outputStr, "\\set[name=\"John\"]")
-	assert.Contains(t, outputStr, "\\get[name]")
+	assert.Contains(t, outputStr, "\\model-new[name=\"gpt4\"]")
 	assert.Contains(t, outputStr, "\\bash[ls -la]")
 }
 
@@ -203,8 +203,8 @@ func TestHelpCommand_Execute_EmptyRegistry(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should still show header and examples even with no commands
-	assert.Contains(t, outputStr, "Neuro Shell Commands")
-	assert.Contains(t, outputStr, "Examples:")
+	assert.Contains(t, outputStr, "Neuro Shell - Quick Start Guide")
+	assert.Contains(t, outputStr, "Quick Examples:")
 	assert.Contains(t, outputStr, "Note: Text without \\ prefix is sent to LLM automatically")
 }
 
@@ -319,9 +319,9 @@ func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 	// Verify all commands are present
 	assert.Contains(t, outputStr, "\\short")
 	assert.Contains(t, outputStr, "Short description")
-	assert.Contains(t, outputStr, "\\verylongcommandname [arg1] [arg2]")
+	assert.Contains(t, outputStr, "\\verylongcommandname")
 	assert.Contains(t, outputStr, "This is a very long description that tests formatting")
-	assert.Contains(t, outputStr, "\\mid [optional]")
+	assert.Contains(t, outputStr, "\\mid")
 	assert.Contains(t, outputStr, "Medium length description")
 }
 
@@ -352,11 +352,11 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 
 	// Verify static content is present
 	expectedStaticContent := []string{
-		"Neuro Shell Commands",
-		"Examples:",
+		"Neuro Shell - Quick Start Guide",
+		"Quick Examples:",
 		"\\send Hello world",
 		"\\set[name=\"John\"]",
-		"\\get[name]",
+		"\\model-new[name=\"gpt4\"]",
 		"\\bash[ls -la]",
 		"Note: Text without \\ prefix is sent to LLM automatically",
 	}
@@ -556,13 +556,13 @@ func TestHelpCommand_Execute_StyleVariable(t *testing.T) {
 			if tt.expectTheme != "" {
 				// Themed output - should contain basic content but formatting may vary
 				assert.True(t,
-					strings.Contains(outputStr, "Neuro Shell Commands") ||
+					strings.Contains(outputStr, "Neuro Shell - Quick Start Guide") ||
 						len(outputStr) > 0,
 					"Expected themed output for %s", tt.description)
 			} else {
 				// Plain text output - check specific formatting
-				assert.Contains(t, outputStr, "Neuro Shell Commands")
-				assert.Contains(t, outputStr, "Examples:")
+				assert.Contains(t, outputStr, "Neuro Shell - Quick Start Guide")
+				assert.Contains(t, outputStr, "Quick Examples:")
 			}
 
 			// Both themed and plain text should contain basic content
