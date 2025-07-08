@@ -232,6 +232,31 @@ func TestMarkdownService_GetCurrentTheme(t *testing.T) {
 	assert.Equal(t, "dark", theme)
 }
 
+func TestMarkdownService_CleanShellMarkers(t *testing.T) {
+	service := NewMarkdownService()
+	
+	testCases := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{"simple continuation", "line1\\n... line2", "line1\\nline2"},
+		{"marker only line", "line1\\n...\\nline2", "line1\\nline2"},
+		{"multiple markers", "line1\\n... line2\\n... line3", "line1\\nline2\\nline3"},
+		{"no markers", "line1\\nline2", "line1\\nline2"},
+		{"mixed content", "# Title\\n... This is content\\n...\\n## Section", "# Title\\nThis is content\\n## Section"},
+		{"actual newlines with markers", "line1\n... line2\nline3", "line1\nline2\nline3"},
+		{"marker with spaces", "line1\\n...    line2   ", "line1\\nline2"},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := service.cleanShellMarkers(tc.input)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestMarkdownService_ProcessEscapeSequences(t *testing.T) {
 	service := NewMarkdownService()
 
@@ -271,6 +296,26 @@ func TestMarkdownService_RenderWithEscapeSequences(t *testing.T) {
 	// The result should contain both "Hello World" and "bold" on separate rendered lines
 	assert.True(t, containsText(result, "Hello World"), "Result should contain 'Hello World' text")
 	assert.True(t, containsText(result, "bold"), "Result should contain 'bold' text")
+}
+
+func TestMarkdownService_RenderWithShellMarkersAndEscapeSequences(t *testing.T) {
+	service := NewMarkdownService()
+	err := service.Initialize()
+	require.NoError(t, err)
+	
+	// Test input similar to what user reported: shell continuation markers + escape sequences
+	markdown := "# dwdwdwd \\n dwdwdwd `dddd` \\n\\n...\\n... ## this is th"
+	result, err := service.Render(markdown)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, result)
+	
+	// The result should contain the content without shell markers
+	assert.True(t, containsText(result, "dwdwdwd"), "Result should contain 'dwdwdwd' text")
+	assert.True(t, containsText(result, "dddd"), "Result should contain 'dddd' text")
+	assert.True(t, containsText(result, "## this is th"), "Result should contain '## this is th' text")
+	
+	// The result should NOT contain shell continuation markers
+	assert.False(t, containsText(result, "..."), "Result should not contain '...' continuation markers")
 }
 
 func TestMarkdownService_ComplexMarkdown(t *testing.T) {

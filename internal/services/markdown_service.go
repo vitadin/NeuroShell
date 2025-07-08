@@ -57,8 +57,9 @@ func (m *MarkdownService) Render(markdown string) (string, error) {
 		return "", fmt.Errorf("markdown content cannot be empty")
 	}
 
-	// Process escape sequences before rendering
-	processedMarkdown := m.processEscapeSequences(markdown)
+	// Clean shell continuation markers and process escape sequences before rendering
+	cleanedMarkdown := m.cleanShellMarkers(markdown)
+	processedMarkdown := m.processEscapeSequences(cleanedMarkdown)
 
 	// Render the markdown content
 	rendered, err := m.renderer.Render(processedMarkdown)
@@ -80,8 +81,9 @@ func (m *MarkdownService) RenderWithStyle(markdown string, style string) (string
 		return "", fmt.Errorf("markdown content cannot be empty")
 	}
 
-	// Process escape sequences before rendering
-	processedMarkdown := m.processEscapeSequences(markdown)
+	// Clean shell continuation markers and process escape sequences before rendering
+	cleanedMarkdown := m.cleanShellMarkers(markdown)
+	processedMarkdown := m.processEscapeSequences(cleanedMarkdown)
 
 	// Create a new renderer with the specified style
 	renderer, err := glamour.NewTermRenderer(
@@ -192,6 +194,46 @@ func (m *MarkdownService) GetAvailableStyles() []string {
 		"notty", // Plain text (no colors)
 		"ascii", // ASCII-only styling
 	}
+}
+
+// cleanShellMarkers removes shell continuation markers that appear in multi-line input.
+// This handles markers like "..." that shells use to indicate continuation lines.
+func (m *MarkdownService) cleanShellMarkers(text string) string {
+	// Handle both \n newlines and actual newlines
+	normalizedText := strings.ReplaceAll(text, "\\n", "\n")
+	
+	// Split text into lines for processing
+	lines := strings.Split(normalizedText, "\n")
+	var cleanedLines []string
+	
+	for _, line := range lines {
+		// Remove leading/trailing whitespace for pattern matching
+		trimmed := strings.TrimSpace(line)
+		
+		// Skip lines that are just continuation markers
+		if trimmed == "..." {
+			continue
+		}
+		
+		// Remove continuation markers at the beginning of lines
+		if strings.HasPrefix(trimmed, "... ") {
+			// Remove "... " prefix and preserve the rest
+			cleaned := strings.TrimPrefix(trimmed, "... ")
+			cleanedLines = append(cleanedLines, cleaned)
+		} else {
+			// Keep the line as-is
+			cleanedLines = append(cleanedLines, line)
+		}
+	}
+	
+	result := strings.Join(cleanedLines, "\n")
+	
+	// Convert back to escape sequences if the original input used them
+	if !strings.Contains(text, "\n") && strings.Contains(text, "\\n") {
+		result = strings.ReplaceAll(result, "\n", "\\n")
+	}
+	
+	return result
 }
 
 // processEscapeSequences converts common escape sequences to their actual characters.
