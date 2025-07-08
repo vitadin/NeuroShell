@@ -9,16 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
 // Mock service for testing
 type MockService struct {
-	name              string
-	initializeCalled  bool
-	initializeError   error
-	initializeContext neurotypes.Context
+	name             string
+	initializeCalled bool
+	initializeError  error
 }
 
 func NewMockService(name string) *MockService {
@@ -31,9 +29,8 @@ func (m *MockService) Name() string {
 	return m.name
 }
 
-func (m *MockService) Initialize(ctx neurotypes.Context) error {
+func (m *MockService) Initialize() error {
 	m.initializeCalled = true
-	m.initializeContext = ctx
 	return m.initializeError
 }
 
@@ -152,7 +149,7 @@ func TestRegistry_GetService(t *testing.T) {
 }
 
 func TestRegistry_InitializeAll(t *testing.T) {
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
 	tests := []struct {
 		name     string
@@ -193,7 +190,7 @@ func TestRegistry_InitializeAll(t *testing.T) {
 			}
 
 			// Initialize all
-			err := registry.InitializeAll(ctx)
+			err := registry.InitializeAll()
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -204,7 +201,7 @@ func TestRegistry_InitializeAll(t *testing.T) {
 				for _, service := range tt.services {
 					mockService := service.(*MockService)
 					assert.True(t, mockService.initializeCalled)
-					assert.Equal(t, ctx, mockService.initializeContext)
+					// assert.Equal(t, ctx, mockService.initializeContext)
 				}
 			}
 		})
@@ -213,7 +210,7 @@ func TestRegistry_InitializeAll(t *testing.T) {
 
 func TestRegistry_InitializeAll_WithError(t *testing.T) {
 	registry := NewRegistry()
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
 	service1 := NewMockService("service1")
 	service2 := NewMockService("service2")
@@ -230,7 +227,7 @@ func TestRegistry_InitializeAll_WithError(t *testing.T) {
 	require.NoError(t, err)
 
 	// Initialize all - should fail on service2
-	err = registry.InitializeAll(ctx)
+	err = registry.InitializeAll()
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to initialize service service2")
 	assert.Contains(t, err.Error(), "initialization failed")
@@ -273,7 +270,7 @@ func TestRegistry_GetAllServices(t *testing.T) {
 // Test concurrent access
 func TestRegistry_ConcurrentAccess(t *testing.T) {
 	registry := NewRegistry()
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
 	// Number of goroutines
 	numGoroutines := 10
@@ -324,7 +321,7 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 	wg.Wait()
 
 	// Test concurrent initialization
-	err := registry.InitializeAll(ctx)
+	err := registry.InitializeAll()
 	assert.NoError(t, err)
 
 	// Verify all services were initialized
@@ -337,7 +334,7 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 // Test real services
 func TestRegistry_RealServices(t *testing.T) {
 	registry := NewRegistry()
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
 	// Register actual services
 	services := []neurotypes.Service{
@@ -365,7 +362,7 @@ func TestRegistry_RealServices(t *testing.T) {
 	}
 
 	// Initialize all services
-	err := registry.InitializeAll(ctx)
+	err := registry.InitializeAll()
 	assert.NoError(t, err)
 
 	// Cleanup EditorService temp directory

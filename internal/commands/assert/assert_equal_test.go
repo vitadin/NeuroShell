@@ -154,7 +154,7 @@ func TestEqualCommand_Execute_VariableServiceError(t *testing.T) {
 	interpolationService := services.NewInterpolationService()
 	err := services.GetGlobalRegistry().RegisterService(interpolationService)
 	require.NoError(t, err)
-	err = interpolationService.Initialize(ctx)
+	err = interpolationService.Initialize()
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
@@ -188,14 +188,14 @@ func setupTestServices(t *testing.T, ctx neurotypes.Context) {
 	interpolationService := services.NewInterpolationService()
 	err := services.GetGlobalRegistry().RegisterService(interpolationService)
 	require.NoError(t, err)
-	err = interpolationService.Initialize(ctx)
+	err = interpolationService.Initialize()
 	require.NoError(t, err)
 
 	// Register VariableService
 	variableService := services.NewVariableService()
 	err = services.GetGlobalRegistry().RegisterService(variableService)
 	require.NoError(t, err)
-	err = variableService.Initialize(ctx)
+	err = variableService.Initialize()
 	require.NoError(t, err)
 
 	// Cleanup function to restore original registry
@@ -208,8 +208,8 @@ func setupTestServices(t *testing.T, ctx neurotypes.Context) {
 // mockWrongService is a mock service with wrong type for testing
 type mockWrongService struct{}
 
-func (m *mockWrongService) Name() string                          { return "interpolation" }
-func (m *mockWrongService) Initialize(_ neurotypes.Context) error { return nil }
+func (m *mockWrongService) Name() string      { return "interpolation" }
+func (m *mockWrongService) Initialize() error { return nil }
 
 // Interface compliance test
 func TestEqualCommand_InterfaceCompliance(_ *testing.T) {
@@ -241,11 +241,11 @@ func BenchmarkEqualCommand_Execute_WithServices(b *testing.B) {
 	context.SetGlobalContext(ctx)
 	interpolationService := services.NewInterpolationService()
 	_ = services.GetGlobalRegistry().RegisterService(interpolationService)
-	_ = interpolationService.Initialize(ctx)
+	_ = interpolationService.Initialize()
 
 	variableService := services.NewVariableService()
 	_ = services.GetGlobalRegistry().RegisterService(variableService)
-	_ = variableService.Initialize(ctx)
+	_ = variableService.Initialize()
 
 	args := map[string]string{
 		"expect": "benchvalue",

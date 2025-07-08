@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -40,7 +41,10 @@ func (h *HelpService) Name() string {
 
 // Initialize collects command metadata from the command registry and stores it in context
 // as system variables, following the architecture pattern
-func (h *HelpService) Initialize(ctx neurotypes.Context) error {
+func (h *HelpService) Initialize() error {
+	// Get the global context
+	ctx := neuroshellcontext.GetGlobalContext()
+
 	// Collect all commands from the global registry using thread-safe accessor
 	allCommands := commands.GetGlobalRegistry().GetAll()
 

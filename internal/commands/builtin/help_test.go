@@ -52,9 +52,9 @@ func setupHelpTestEnvironment(t *testing.T, testCommands []neurotypes.Command) n
 
 	// Create context and initialize services
 	ctx := testutils.NewMockContext()
-	err = helpService.Initialize(ctx)
+	err = helpService.Initialize()
 	require.NoError(t, err)
-	err = themeService.Initialize(ctx)
+	err = themeService.Initialize()
 	require.NoError(t, err)
 
 	return ctx

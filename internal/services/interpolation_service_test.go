@@ -33,7 +33,7 @@ func TestInterpolationService_Initialize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewInterpolationService()
-			err := service.Initialize(tt.ctx)
+			err := service.Initialize()
 
 			if tt.want != nil {
 				assert.Error(t, err)
@@ -51,7 +51,7 @@ func TestInterpolationService_InterpolateString(t *testing.T) {
 	ctx := testutils.NewMockContext()
 
 	// Initialize service
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global context for testing
@@ -86,7 +86,7 @@ func TestInterpolationService_InterpolateCommand(t *testing.T) {
 	ctx := testutils.NewMockContext()
 
 	// Initialize service
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Create a test command
@@ -138,7 +138,7 @@ func TestInterpolationService_CommandStructurePreservation(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -214,7 +214,7 @@ func TestInterpolationService_StringInterpolationPatterns(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -253,7 +253,7 @@ func BenchmarkInterpolationService_InterpolateString_Simple(b *testing.B) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	input := "Hello ${name}"
@@ -273,7 +273,7 @@ func BenchmarkInterpolationService_InterpolateString_Complex(b *testing.B) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	input := "Complex interpolation: ${var1} ${var2} ${@user} ${@pwd} ${#session_id} ${nested_${var3}}"
@@ -293,7 +293,7 @@ func BenchmarkInterpolationService_InterpolateCommand(b *testing.B) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	cmd := &parser.Command{
@@ -324,7 +324,7 @@ func TestInterpolationService_EdgeCases(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	edgeCases := []struct {
@@ -371,7 +371,7 @@ func TestInterpolationService_ConcurrentAccess(t *testing.T) {
 		go func(_ int) {
 			// Each goroutine gets its own service instance to avoid race conditions
 			service := NewInterpolationService()
-			err := service.Initialize(sharedCtx)
+			err := service.Initialize()
 			assert.NoError(t, err)
 
 			// Try various interpolations concurrently
@@ -420,7 +420,7 @@ func TestInterpolationService_InitializationState(t *testing.T) {
 	assert.Contains(t, err.Error(), "not initialized")
 
 	// Initialize
-	err = service.Initialize(ctx)
+	err = service.Initialize()
 	assert.NoError(t, err)
 	assert.True(t, service.initialized)
 
@@ -430,7 +430,7 @@ func TestInterpolationService_InitializationState(t *testing.T) {
 	assert.Contains(t, err.Error(), "context is not a NeuroContext")
 
 	// Re-initialization should work
-	err = service.Initialize(ctx)
+	err = service.Initialize()
 	assert.NoError(t, err)
 	assert.True(t, service.initialized)
 }
@@ -440,7 +440,7 @@ func TestInterpolationService_NilHandling(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Test nil command
@@ -466,7 +466,7 @@ func TestInterpolationService_CommandOptionHandling(t *testing.T) {
 	service := NewInterpolationService()
 	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Set the mock context as global context for the service to use

@@ -6,7 +6,6 @@ import (
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/parser"
-	"neuroshell/pkg/neurotypes"
 )
 
 // InterpolationService handles variable interpolation in commands and text.
@@ -27,7 +26,7 @@ func (i *InterpolationService) Name() string {
 }
 
 // Initialize sets up the InterpolationService for operation.
-func (i *InterpolationService) Initialize(_ neurotypes.Context) error {
+func (i *InterpolationService) Initialize() error {
 	i.initialized = true
 	logger.ServiceOperation("interpolation", "initialize", "service ready")
 	return nil

@@ -48,9 +48,10 @@ type Context interface {
 
 // Service defines the interface for NeuroShell services that provide specific functionality.
 // Services are initialized at startup and can be accessed by commands during execution.
+// Services use the global context singleton for all state access.
 type Service interface {
 	Name() string
-	Initialize(ctx Context) error
+	Initialize() error
 }
 
 // Command defines the interface that all NeuroShell commands must implement.

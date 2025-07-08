@@ -212,7 +212,7 @@ func TestDeleteCommand_Execute_ChatServiceNotAvailable(t *testing.T) {
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
 	require.NoError(t, err)
 
-	err = services.GetGlobalRegistry().InitializeAll(ctx)
+	err = services.GetGlobalRegistry().InitializeAll()
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
@@ -240,7 +240,7 @@ func TestDeleteCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 	err := services.GetGlobalRegistry().RegisterService(services.NewChatSessionService())
 	require.NoError(t, err)
 
-	err = services.GetGlobalRegistry().InitializeAll(ctx)
+	err = services.GetGlobalRegistry().InitializeAll()
 	require.NoError(t, err)
 
 	t.Cleanup(func() {

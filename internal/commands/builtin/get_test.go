@@ -387,7 +387,7 @@ func BenchmarkGetCommand_Execute_BracketSyntax(b *testing.B) {
 	services.SetGlobalRegistry(services.NewRegistry())
 	context.SetGlobalContext(ctx)
 	_ = services.GetGlobalRegistry().RegisterService(services.NewVariableService())
-	_ = services.GetGlobalRegistry().InitializeAll(ctx)
+	_ = services.GetGlobalRegistry().InitializeAll()
 	defer func() {
 		services.SetGlobalRegistry(oldRegistry)
 		context.ResetGlobalContext()
@@ -416,7 +416,7 @@ func BenchmarkGetCommand_Execute_SpaceSyntax(b *testing.B) {
 	services.SetGlobalRegistry(services.NewRegistry())
 	context.SetGlobalContext(ctx)
 	_ = services.GetGlobalRegistry().RegisterService(services.NewVariableService())
-	_ = services.GetGlobalRegistry().InitializeAll(ctx)
+	_ = services.GetGlobalRegistry().InitializeAll()
 	defer func() {
 		services.SetGlobalRegistry(oldRegistry)
 		context.ResetGlobalContext()
@@ -443,7 +443,7 @@ func BenchmarkGetCommand_Execute_SystemVariable(b *testing.B) {
 	services.SetGlobalRegistry(services.NewRegistry())
 	context.SetGlobalContext(ctx)
 	_ = services.GetGlobalRegistry().RegisterService(services.NewVariableService())
-	_ = services.GetGlobalRegistry().InitializeAll(ctx)
+	_ = services.GetGlobalRegistry().InitializeAll()
 	defer func() {
 		services.SetGlobalRegistry(oldRegistry)
 		context.ResetGlobalContext()
@@ -475,7 +475,7 @@ func setupGetTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	require.NoError(t, err)
 
 	// Initialize services
-	err = services.GetGlobalRegistry().InitializeAll(ctx)
+	err = services.GetGlobalRegistry().InitializeAll()
 	require.NoError(t, err)
 
 	// Cleanup function to restore original registry

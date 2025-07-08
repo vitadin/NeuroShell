@@ -32,7 +32,7 @@ func TestModelCatalogService_Initialize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewModelCatalogService()
-			err := service.Initialize(tt.ctx)
+			err := service.Initialize()
 
 			if tt.want != nil {
 				assert.Error(t, err)
@@ -47,7 +47,7 @@ func TestModelCatalogService_Initialize(t *testing.T) {
 
 func TestModelCatalogService_GetModelCatalog(t *testing.T) {
 	service := NewModelCatalogService()
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
 	// Test not initialized
 	t.Run("not initialized", func(t *testing.T) {
@@ -58,7 +58,7 @@ func TestModelCatalogService_GetModelCatalog(t *testing.T) {
 	})
 
 	// Initialize service
-	require.NoError(t, service.Initialize(ctx))
+	require.NoError(t, service.Initialize())
 
 	t.Run("successful catalog retrieval", func(t *testing.T) {
 		models, err := service.GetModelCatalog()
@@ -97,7 +97,7 @@ func TestModelCatalogService_GetModelCatalog(t *testing.T) {
 
 func TestModelCatalogService_GetModelCatalogByProvider(t *testing.T) {
 	service := NewModelCatalogService()
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
 	// Test not initialized
 	t.Run("not initialized", func(t *testing.T) {
@@ -108,7 +108,7 @@ func TestModelCatalogService_GetModelCatalogByProvider(t *testing.T) {
 	})
 
 	// Initialize service
-	require.NoError(t, service.Initialize(ctx))
+	require.NoError(t, service.Initialize())
 
 	t.Run("get anthropic models", func(t *testing.T) {
 		models, err := service.GetModelCatalogByProvider("anthropic")
@@ -164,7 +164,7 @@ func TestModelCatalogService_GetModelCatalogByProvider(t *testing.T) {
 
 func TestModelCatalogService_SearchModelCatalog(t *testing.T) {
 	service := NewModelCatalogService()
-	ctx := testutils.NewMockContext()
+	// ctx := testutils.NewMockContext()
 
 	// Test not initialized (indirectly through GetModelCatalog)
 	t.Run("not initialized", func(t *testing.T) {
@@ -175,7 +175,7 @@ func TestModelCatalogService_SearchModelCatalog(t *testing.T) {
 	})
 
 	// Initialize service
-	require.NoError(t, service.Initialize(ctx))
+	require.NoError(t, service.Initialize())
 
 	t.Run("search by model name", func(t *testing.T) {
 		models, err := service.SearchModelCatalog("o3")
@@ -264,8 +264,8 @@ func TestModelCatalogService_GetSupportedProviders(t *testing.T) {
 
 func TestModelCatalogService_loadModelFile(t *testing.T) {
 	service := NewModelCatalogService()
-	ctx := testutils.NewMockContext()
-	require.NoError(t, service.Initialize(ctx))
+	// ctx := testutils.NewMockContext()
+	require.NoError(t, service.Initialize())
 
 	t.Run("load individual model file", func(t *testing.T) {
 		// Test loading individual model file with embedded data
@@ -304,8 +304,8 @@ context_window: 1000
 
 func TestModelCatalogService_GetModelByID(t *testing.T) {
 	service := NewModelCatalogService()
-	ctx := testutils.NewMockContext()
-	require.NoError(t, service.Initialize(ctx))
+	// ctx := testutils.NewMockContext()
+	require.NoError(t, service.Initialize())
 
 	t.Run("get model by exact ID", func(t *testing.T) {
 		model, err := service.GetModelByID("O3")
@@ -351,8 +351,8 @@ func TestModelCatalogService_GetModelByID(t *testing.T) {
 
 func TestModelCatalogService_validateUniqueIDs(t *testing.T) {
 	service := NewModelCatalogService()
-	ctx := testutils.NewMockContext()
-	require.NoError(t, service.Initialize(ctx))
+	// ctx := testutils.NewMockContext()
+	require.NoError(t, service.Initialize())
 
 	t.Run("unique IDs pass validation", func(t *testing.T) {
 		models := []neurotypes.ModelCatalogEntry{
@@ -430,8 +430,8 @@ func TestModelCatalogService_normalizeID(t *testing.T) {
 func TestModelCatalogService_IDValidationIntegration(t *testing.T) {
 	// This test ensures that the actual embedded YAML files have unique IDs
 	service := NewModelCatalogService()
-	ctx := testutils.NewMockContext()
-	require.NoError(t, service.Initialize(ctx))
+	// ctx := testutils.NewMockContext()
+	require.NoError(t, service.Initialize())
 
 	t.Run("real catalog has unique IDs", func(t *testing.T) {
 		models, err := service.GetModelCatalog()

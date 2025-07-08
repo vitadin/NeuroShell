@@ -52,7 +52,7 @@ func (t *ThemeService) Name() string {
 }
 
 // Initialize sets up the ThemeService for operation.
-func (t *ThemeService) Initialize(_ neurotypes.Context) error {
+func (t *ThemeService) Initialize() error {
 	t.initialized = true
 	return nil
 }

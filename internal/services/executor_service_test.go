@@ -32,7 +32,7 @@ func TestExecutorService_Initialize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewExecutorService()
-			err := service.Initialize(tt.ctx)
+			err := service.Initialize()
 
 			if tt.want != nil {
 				assert.Error(t, err)
@@ -79,10 +79,9 @@ func TestExecutorService_ParseCommand(t *testing.T) {
 	}
 
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
 	// Initialize service
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	for _, tt := range tests {
@@ -112,13 +111,13 @@ func TestExecutorService_ParseCommand_NotInitialized(t *testing.T) {
 
 func TestExecutorService_GetNextCommand(t *testing.T) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
 	// Initialize service
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global context for testing
+	ctx := testutils.NewMockContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -132,9 +131,9 @@ func TestExecutorService_GetNextCommand(t *testing.T) {
 
 func TestExecutorService_GetNextCommand_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
 	// Setup global context for testing
+	ctx := testutils.NewMockContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -147,13 +146,13 @@ func TestExecutorService_GetNextCommand_NotInitialized(t *testing.T) {
 
 func TestExecutorService_GetQueueStatus(t *testing.T) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
 	// Initialize service
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global context for testing
+	ctx := testutils.NewMockContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -167,9 +166,9 @@ func TestExecutorService_GetQueueStatus(t *testing.T) {
 
 func TestExecutorService_GetQueueStatus_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
 	// Setup global context for testing
+	ctx := testutils.NewMockContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -182,13 +181,13 @@ func TestExecutorService_GetQueueStatus_NotInitialized(t *testing.T) {
 
 func TestExecutorService_MarkCommandExecuted(t *testing.T) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
 	// Initialize service
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global context for testing
+	ctx := testutils.NewMockContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -201,9 +200,9 @@ func TestExecutorService_MarkCommandExecuted(t *testing.T) {
 
 func TestExecutorService_MarkCommandExecuted_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
 	// Setup global context for testing
+	ctx := testutils.NewMockContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -215,16 +214,16 @@ func TestExecutorService_MarkCommandExecuted_NotInitialized(t *testing.T) {
 
 func TestExecutorService_MarkExecutionError(t *testing.T) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
 	// Initialize service
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	testError := errors.New("test execution error")
 	testCommand := `\set[name="value"]`
 
 	// Setup global context for testing
+	ctx := testutils.NewMockContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -237,12 +236,12 @@ func TestExecutorService_MarkExecutionError(t *testing.T) {
 
 func TestExecutorService_MarkExecutionError_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
 	testError := errors.New("test execution error")
 	testCommand := `\set[name="value"]`
 
 	// Setup global context for testing
+	ctx := testutils.NewMockContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -254,13 +253,13 @@ func TestExecutorService_MarkExecutionError_NotInitialized(t *testing.T) {
 
 func TestExecutorService_MarkExecutionComplete(t *testing.T) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
 	// Initialize service
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	// Setup global context for testing
+	ctx := testutils.NewMockContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -273,9 +272,9 @@ func TestExecutorService_MarkExecutionComplete(t *testing.T) {
 
 func TestExecutorService_MarkExecutionComplete_NotInitialized(t *testing.T) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
 	// Setup global context for testing
+	ctx := testutils.NewMockContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -335,9 +334,8 @@ func TestExecutorService_ParseCommand_Comprehensive(t *testing.T) {
 	}
 
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	for _, tc := range testCases {
@@ -354,9 +352,8 @@ func TestExecutorService_ParseCommand_Comprehensive(t *testing.T) {
 // Benchmark tests
 func BenchmarkExecutorService_ParseCommand_Simple(b *testing.B) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	input := `\set[name="value"]`
@@ -369,9 +366,8 @@ func BenchmarkExecutorService_ParseCommand_Simple(b *testing.B) {
 
 func BenchmarkExecutorService_ParseCommand_Complex(b *testing.B) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(b, err)
 
 	input := `\send[model="gpt-4", temperature=0.7, max_tokens=1000] This is a complex message with multiple parameters and a longer text content that needs to be parsed efficiently`
@@ -385,9 +381,8 @@ func BenchmarkExecutorService_ParseCommand_Complex(b *testing.B) {
 // Test parsing edge cases
 func TestExecutorService_ParseCommand_EdgeCases(t *testing.T) {
 	service := NewExecutorService()
-	ctx := testutils.NewMockContext()
 
-	err := service.Initialize(ctx)
+	err := service.Initialize()
 	require.NoError(t, err)
 
 	edgeCases := []struct {
@@ -423,8 +418,7 @@ func TestExecutorService_ConcurrentAccess(t *testing.T) {
 		go func(_ int) {
 			// Each goroutine gets its own service instance to avoid race conditions
 			service := NewExecutorService()
-			ctx := testutils.NewMockContext()
-			err := service.Initialize(ctx)
+			err := service.Initialize()
 			assert.NoError(t, err)
 
 			// Parse different commands concurrently
@@ -464,8 +458,7 @@ func TestExecutorService_InitializationState(t *testing.T) {
 	assert.Contains(t, err.Error(), "not initialized")
 
 	// Initialize
-	ctx := testutils.NewMockContext()
-	err = service.Initialize(ctx)
+	err = service.Initialize()
 	assert.NoError(t, err)
 	assert.True(t, service.initialized)
 
@@ -474,7 +467,7 @@ func TestExecutorService_InitializationState(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Re-initialization should work
-	err = service.Initialize(ctx)
+	err = service.Initialize()
 	assert.NoError(t, err)
 	assert.True(t, service.initialized)
 }

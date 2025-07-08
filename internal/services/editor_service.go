@@ -31,7 +31,7 @@ func (e *EditorService) Name() string {
 }
 
 // Initialize sets up the EditorService for operation.
-func (e *EditorService) Initialize(_ neurotypes.Context) error {
+func (e *EditorService) Initialize() error {
 	// Create a temporary directory for editor files
 	tempDir, err := os.MkdirTemp("", "neuroshell-editor-*")
 	if err != nil {

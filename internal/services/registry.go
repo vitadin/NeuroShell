@@ -56,13 +56,13 @@ func (r *Registry) HasService(name string) bool {
 	return exists
 }
 
-// InitializeAll initializes all registered services with the provided context.
-func (r *Registry) InitializeAll(ctx neurotypes.Context) error {
+// InitializeAll initializes all registered services.
+func (r *Registry) InitializeAll() error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	for name, service := range r.services {
-		if err := service.Initialize(ctx); err != nil {
+		if err := service.Initialize(); err != nil {
 			return fmt.Errorf("failed to initialize service %s: %w", name, err)
 		}
 	}
@@ -251,21 +251,6 @@ func (r *Registry) GetModelCatalogService() (*ModelCatalogService, error) {
 	return modelCatalogService, nil
 }
 
-// GetAPIService retrieves the API service with proper type casting.
-func (r *Registry) GetAPIService() (*APIService, error) {
-	service, err := r.GetService("api")
-	if err != nil {
-		return nil, err
-	}
-
-	apiService, ok := service.(*APIService)
-	if !ok {
-		return nil, fmt.Errorf("api service has incorrect type")
-	}
-
-	return apiService, nil
-}
-
 // GlobalRegistry is the global service registry instance used throughout NeuroShell.
 var GlobalRegistry = NewRegistry()
 
@@ -341,9 +326,4 @@ func GetGlobalModelService() (*ModelService, error) {
 // GetGlobalModelCatalogService returns the model catalog service from the global registry.
 func GetGlobalModelCatalogService() (*ModelCatalogService, error) {
 	return GetGlobalRegistry().GetModelCatalogService()
-}
-
-// GetGlobalAPIService returns the API service from the global registry.
-func GetGlobalAPIService() (*APIService, error) {
-	return GetGlobalRegistry().GetAPIService()
 }
