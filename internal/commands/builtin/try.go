@@ -86,6 +86,18 @@ func (c *TryCommand) Execute(_ map[string]string, input string) error {
 		return nil
 	}
 
+	// Skip comment lines (same logic as shell handler and script service)
+	if strings.HasPrefix(commandToExecute, "%%") {
+		// Comments are treated as successful no-ops
+		globalCtx := neuroshellcontext.GetGlobalContext()
+		if neuroCtx, ok := globalCtx.(*neuroshellcontext.NeuroContext); ok {
+			_ = neuroCtx.SetSystemVariable("_status", "0")
+			_ = neuroCtx.SetSystemVariable("_error", "")
+			_ = neuroCtx.SetSystemVariable("_output", "")
+		}
+		return nil
+	}
+
 	// Initialize system variables for try command results
 	globalCtx := neuroshellcontext.GetGlobalContext()
 	var neuroCtx *neuroshellcontext.NeuroContext

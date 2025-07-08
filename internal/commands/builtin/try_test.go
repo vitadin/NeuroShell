@@ -280,6 +280,68 @@ func TestTryCommand_ExecuteUnknownCommand(t *testing.T) {
 	}
 }
 
+func TestTryCommand_ExecuteComment(t *testing.T) {
+	ctx := context.New()
+	setupTryTestRegistry(t, ctx)
+
+	cmd := &TryCommand{}
+	// Test with comment - should be treated as successful no-op
+	err := cmd.Execute(map[string]string{}, "%% this is a comment")
+
+	if err != nil {
+		t.Errorf("Expected no error for comment input, got: %v", err)
+	}
+
+	// Check that status is set to success
+	status, err := ctx.GetVariable("_status")
+	if err != nil {
+		t.Errorf("Expected _status variable to be set: %v", err)
+	}
+	if status != "0" {
+		t.Errorf("Expected _status to be '0' for comment, got '%s'", status)
+	}
+
+	// Check that error is empty
+	errorVar, err := ctx.GetVariable("_error")
+	if err != nil {
+		t.Errorf("Expected _error variable to be set: %v", err)
+	}
+	if errorVar != "" {
+		t.Errorf("Expected _error to be empty for comment, got '%s'", errorVar)
+	}
+
+	// Check that output is empty
+	output, err := ctx.GetVariable("_output")
+	if err != nil {
+		t.Errorf("Expected _output variable to be set: %v", err)
+	}
+	if output != "" {
+		t.Errorf("Expected _output to be empty for comment, got '%s'", output)
+	}
+}
+
+func TestTryCommand_ExecuteCommentWithSpaces(t *testing.T) {
+	ctx := context.New()
+	setupTryTestRegistry(t, ctx)
+
+	cmd := &TryCommand{}
+	// Test with comment that has leading/trailing spaces
+	err := cmd.Execute(map[string]string{}, "  %% comment with spaces  ")
+
+	if err != nil {
+		t.Errorf("Expected no error for comment with spaces, got: %v", err)
+	}
+
+	// Check that status is set to success
+	status, err := ctx.GetVariable("_status")
+	if err != nil {
+		t.Errorf("Expected _status variable to be set: %v", err)
+	}
+	if status != "0" {
+		t.Errorf("Expected _status to be '0' for comment with spaces, got '%s'", status)
+	}
+}
+
 func TestTryCommand_ExecuteInvalidSyntax(t *testing.T) {
 	ctx := context.New()
 	setupTryTestRegistry(t, ctx)
