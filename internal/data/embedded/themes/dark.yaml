@@ -25,3 +25,5 @@ styles:
   underline:
     underline: true
   background: {}
+  list:
+    foreground: "#58a6ff"

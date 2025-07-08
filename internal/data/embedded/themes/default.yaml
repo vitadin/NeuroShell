@@ -43,3 +43,7 @@ styles:
   underline:
     underline: true
   background: {}
+  list:
+    foreground:
+      light: "#0969da"
+      dark: "#58a6ff"
