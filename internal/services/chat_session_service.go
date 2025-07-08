@@ -3,9 +3,11 @@ package services
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	neuroshellcontext "neuroshell/internal/context"
+	"neuroshell/internal/logger"
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
@@ -59,14 +61,8 @@ func (c *ChatSessionService) ValidateSessionName(name string) (string, error) {
 		}
 	}
 
-	// Reserved names that cannot be used
-	reservedNames := []string{"new", "list", "active", "current", "default", "temp", "temporary"}
-	lowerName := strings.ToLower(processed)
-	for _, reserved := range reservedNames {
-		if lowerName == reserved {
-			return "", fmt.Errorf("session name '%s' is reserved", processed)
-		}
-	}
+	// Note: Reserved names are now handled in CreateSession with auto-versioning
+	// No longer rejecting reserved names here - they will be auto-versioned
 
 	return processed, nil
 }
@@ -106,6 +102,46 @@ func (c *ChatSessionService) IsSessionNameAvailable(name string) bool {
 	return !exists
 }
 
+// isNameReservedOrConflicted checks if a name is reserved or already in use.
+func (c *ChatSessionService) isNameReservedOrConflicted(name string) bool {
+	// Check if name is reserved
+	reservedNames := []string{"new", "list", "active", "current", "default", "temp", "temporary"}
+	lowerName := strings.ToLower(name)
+	for _, reserved := range reservedNames {
+		if lowerName == reserved {
+			return true
+		}
+	}
+
+	// Check if name is already in use
+	return !c.IsSessionNameAvailable(name)
+}
+
+// generateAvailableName generates an available session name using versioning.
+// If the preferred name conflicts (reserved or already exists), it tries name:v1, name:v2, etc.
+// Returns the available name.
+func (c *ChatSessionService) generateAvailableName(preferredName string) string {
+	if !c.isNameReservedOrConflicted(preferredName) {
+		return preferredName
+	}
+
+	// Try versioned names: name:v1, name:v2, etc.
+	version := 1
+	for {
+		versionedName := preferredName + ":v" + strconv.Itoa(version)
+		if !c.isNameReservedOrConflicted(versionedName) {
+			return versionedName
+		}
+		version++
+
+		// Safety check to avoid infinite loop (highly unlikely but good practice)
+		if version > 1000 {
+			// Fallback to timestamp-based name
+			return preferredName + ":v" + strconv.FormatInt(testutils.GetCurrentTime(neuroshellcontext.GetGlobalContext()).Unix(), 10)
+		}
+	}
+}
+
 // CreateSession creates a new chat session with the given parameters.
 // Returns the created session and any error encountered.
 func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage string) (*neurotypes.ChatSession, error) {
@@ -125,16 +161,21 @@ func (c *ChatSessionService) CreateSession(name, systemPrompt, initialMessage st
 		return nil, fmt.Errorf("session name is required")
 	}
 
-	// Check name availability
-	if !c.IsSessionNameAvailable(processedName) {
-		return nil, fmt.Errorf("session name '%s' is already in use", processedName)
+	// Generate available name with auto-versioning if needed
+	originalName := processedName
+	availableName := c.generateAvailableName(processedName)
+
+	// Show warning if name was changed
+	if availableName != originalName {
+		fmt.Printf("⚠️  Session name '%s' conflicts, created as '%s'\n", originalName, availableName)
+		logger.Info("Session name auto-versioned due to conflict", "original", originalName, "created", availableName)
 	}
 
 	// Generate unique session ID (deterministic in test mode)
 	sessionID := testutils.GenerateUUID(ctx)
 
-	// Use the processed name
-	name = processedName
+	// Use the available name
+	name = availableName
 
 	// Set default system prompt if not provided
 	if systemPrompt == "" {
