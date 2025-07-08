@@ -15,7 +15,7 @@ The current `APIService` violates the three-layer architecture by directly acces
 ctx := neuroshellcontext.GetGlobalContext()
 ```
 
-**Violation**: Services should only interact with the context passed during initialization, not access global state.
+**Current Pattern**: The current service accesses global context directly, which is actually the established pattern in NeuroShell. Services access the global context singleton when needed, not store a reference to it.
 
 ### 2. Direct OS Environment Access
 
@@ -154,16 +154,33 @@ type APIResponse struct {
 
 ### Service Layer Design (Stateless)
 
-The APIService becomes a pure orchestration layer with no state:
+The APIService follows NeuroShell's service pattern: stateless with access to global context when needed:
 
 ```go
 // APIService - stateless orchestration of API operations
 type APIService struct {
-    // No state! Pure business logic only
+    initialized bool
 }
 
-// Initialize registers default provider factories with the context
-func (a *APIService) Initialize(ctx Context) error {
+// NewAPIService creates a new APIService instance
+func NewAPIService() *APIService {
+    return &APIService{
+        initialized: false,
+    }
+}
+
+// Name returns the service name "api" for registration
+func (a *APIService) Name() string {
+    return "api"
+}
+
+// Initialize sets up the APIService and registers default provider factories
+func (a *APIService) Initialize(_ neurotypes.Context) error {
+    a.initialized = true
+    
+    // Get global context to register factories
+    ctx := neuroshellcontext.GetGlobalContext()
+    
     // Register built-in provider factories
     if err := ctx.RegisterProviderFactory("openai", &OpenAIClientFactory{}); err != nil {
         return fmt.Errorf("failed to register OpenAI factory: %w", err)
@@ -176,9 +193,42 @@ func (a *APIService) Initialize(ctx Context) error {
 }
 
 // SendMessage orchestrates sending a message through the appropriate provider
-func (a *APIService) SendMessage(ctx Context, provider, model, message string, options map[string]any) (*APIResponse, error) {
+func (a *APIService) SendMessage(provider, model, message string, options map[string]any) (*APIResponse, error) {
+    if !a.initialized {
+        return nil, fmt.Errorf("api service not initialized")
+    }
+    
+    // Get global context
+    ctx := neuroshellcontext.GetGlobalContext()
+    
     // Get or create provider client
-    client, err := a.getOrCreateClient(ctx, provider)
+    client, err := a.getOrCreateClient(provider)
+    if err != nil {
+        return nil, fmt.Errorf("failed to get provider client: %w", err)
+    }
+    
+    // Delegate to provider
+    response, err := client.SendMessage(model, message, options)
+    if err != nil {
+        return nil, fmt.Errorf("provider error: %w", err)
+    }
+    
+    // Update context with usage metrics
+    if response.TokensUsed > 0 {
+        ctx.SetVariable("#tokens_used", fmt.Sprintf("%d", response.TokensUsed))
+    }
+    
+    return response, nil
+}
+
+// SendMessageWithContext is the testable version that accepts a context parameter
+func (a *APIService) SendMessageWithContext(provider, model, message string, options map[string]any, ctx neurotypes.Context) (*APIResponse, error) {
+    if !a.initialized {
+        return nil, fmt.Errorf("api service not initialized")
+    }
+    
+    // Get or create provider client
+    client, err := a.getOrCreateClientWithContext(provider, ctx)
     if err != nil {
         return nil, fmt.Errorf("failed to get provider client: %w", err)
     }
@@ -198,8 +248,12 @@ func (a *APIService) SendMessage(ctx Context, provider, model, message string, o
 }
 
 // ListModels lists available models for a provider
-func (a *APIService) ListModels(ctx Context, provider string) ([]ModelInfo, error) {
-    client, err := a.getOrCreateClient(ctx, provider)
+func (a *APIService) ListModels(provider string) ([]ModelInfo, error) {
+    if !a.initialized {
+        return nil, fmt.Errorf("api service not initialized")
+    }
+    
+    client, err := a.getOrCreateClient(provider)
     if err != nil {
         return nil, err
     }
@@ -208,8 +262,12 @@ func (a *APIService) ListModels(ctx Context, provider string) ([]ModelInfo, erro
 }
 
 // CheckConnectivity tests provider connectivity
-func (a *APIService) CheckConnectivity(ctx Context, provider string) error {
-    client, err := a.getOrCreateClient(ctx, provider)
+func (a *APIService) CheckConnectivity(provider string) error {
+    if !a.initialized {
+        return fmt.Errorf("api service not initialized")
+    }
+    
+    client, err := a.getOrCreateClient(provider)
     if err != nil {
         return err
     }
@@ -217,8 +275,14 @@ func (a *APIService) CheckConnectivity(ctx Context, provider string) error {
     return client.CheckConnectivity()
 }
 
-// getOrCreateClient is a private helper for client management
-func (a *APIService) getOrCreateClient(ctx Context, provider string) (LLMProvider, error) {
+// getOrCreateClient is a private helper for client management using global context
+func (a *APIService) getOrCreateClient(provider string) (LLMProvider, error) {
+    ctx := neuroshellcontext.GetGlobalContext()
+    return a.getOrCreateClientWithContext(provider, ctx)
+}
+
+// getOrCreateClientWithContext is the testable version
+func (a *APIService) getOrCreateClientWithContext(provider string, ctx neurotypes.Context) (LLMProvider, error) {
     // Try to get cached client from context
     if cached, err := ctx.GetProviderClient(provider); err == nil && cached != nil {
         if client, ok := cached.(LLMProvider); ok {
@@ -233,7 +297,7 @@ func (a *APIService) getOrCreateClient(ctx Context, provider string) (LLMProvide
     }
     
     // Get or create configuration
-    config, err := a.getProviderConfig(ctx, provider)
+    config, err := a.getProviderConfig(provider, ctx)
     if err != nil {
         return nil, fmt.Errorf("failed to get provider config: %w", err)
     }
@@ -254,7 +318,7 @@ func (a *APIService) getOrCreateClient(ctx Context, provider string) (LLMProvide
 }
 
 // getProviderConfig assembles configuration from context
-func (a *APIService) getProviderConfig(ctx Context, provider string) (*ProviderConfig, error) {
+func (a *APIService) getProviderConfig(provider string, ctx neurotypes.Context) (*ProviderConfig, error) {
     // Check if explicit config exists
     if config, err := ctx.GetProviderConfig(provider); err == nil && config != nil {
         return config, nil
@@ -356,33 +420,57 @@ func (f *OpenAIClientFactory) ValidateConfig(config *ProviderConfig) error {
 
 ### Command Layer Integration
 
-Example of how commands use the refactored APIService:
+Example of how commands use the refactored APIService following NeuroShell's pattern:
 
 ```go
 // SendCommand demonstrates proper three-layer interaction
 type SendCommand struct{}
 
-func (c *SendCommand) Execute(args []string, input string, services ServiceRegistry) error {
-    // Get services from registry
-    apiService := services.GetService("api").(*APIService)
-    variableService := services.GetService("variable").(*VariableService)
+func (c *SendCommand) Name() string {
+    return "send"
+}
+
+func (c *SendCommand) Execute(args map[string]string, input string) error {
+    // Get services from global registry
+    apiService, err := services.GetGlobalAPIService()
+    if err != nil {
+        return fmt.Errorf("api service not available: %w", err)
+    }
+    
+    variableService, err := services.GetGlobalVariableService()
+    if err != nil {
+        return fmt.Errorf("variable service not available: %w", err)
+    }
     
     // Parse arguments to get provider and model
-    provider := "openai" // default or from args
-    model := "gpt-4"     // default or from args
+    provider := args["provider"]
+    if provider == "" {
+        provider = "openai" // default provider
+    }
     
-    // Get context from service registry (passed during command execution)
-    ctx := services.GetContext()
+    model := args["model"]
+    if model == "" {
+        model = "gpt-4" // default model
+    }
     
     // Send message through API service
-    response, err := apiService.SendMessage(ctx, provider, model, input, nil)
+    response, err := apiService.SendMessage(provider, model, input, nil)
     if err != nil {
         return fmt.Errorf("failed to send message: %w", err)
     }
     
     // Store response in context variables
-    if err := variableService.Set(ctx, "1", response.Content); err != nil {
+    if err := variableService.Set("1", response.Content); err != nil {
         return fmt.Errorf("failed to store response: %w", err)
+    }
+    
+    // Store metadata
+    if err := variableService.Set("_provider", response.Provider); err != nil {
+        return fmt.Errorf("failed to store provider: %w", err)
+    }
+    
+    if err := variableService.Set("_model", response.Model); err != nil {
+        return fmt.Errorf("failed to store model: %w", err)
     }
     
     // Display response
@@ -411,17 +499,18 @@ func (c *SendCommand) Execute(args []string, input string, services ServiceRegis
 
 ### Phase 3: APIService Refactoring (2-3 days)
 
-1. Remove all state from APIService
-2. Implement stateless orchestration methods
-3. Remove direct context and environment access
-4. Update all service methods to receive context as parameter
-5. Add service tests with mocked context
+1. Remove all state from APIService except `initialized` flag
+2. Implement stateless orchestration methods using `GetGlobalContext()`
+3. Remove direct OS environment access (use context methods)
+4. Add dual method pattern for testability (with/without context parameter)
+5. Add service tests with mocked context for the testable methods
 
 ### Phase 4: Command Integration (1-2 days)
 
-1. Update commands to pass context to service methods
-2. Remove any direct context access from commands
+1. Update commands to use global service registry
+2. Ensure commands never access context directly
 3. Update command tests
+4. Follow existing command patterns (e.g., SetCommand, ModelNewCommand)
 
 ### Phase 5: Migration and Testing (2-3 days)
 
