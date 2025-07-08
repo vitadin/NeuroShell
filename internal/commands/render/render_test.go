@@ -1,4 +1,4 @@
-package builtin
+package render
 
 import (
 	"testing"
@@ -10,8 +10,8 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-func TestRenderCommand_BasicFunctionality(t *testing.T) {
-	cmd := &RenderCommand{}
+func TestCommand_BasicFunctionality(t *testing.T) {
+	cmd := &Command{}
 
 	assert.Equal(t, "render", cmd.Name())
 	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
@@ -19,12 +19,12 @@ func TestRenderCommand_BasicFunctionality(t *testing.T) {
 	assert.NotEmpty(t, cmd.Usage())
 }
 
-func TestRenderCommand_Execute_BasicStyling(t *testing.T) {
+func TestCommand_Execute_BasicStyling(t *testing.T) {
 	// Setup services
 	setupTestServices(t)
 	defer cleanupTestServices()
 
-	cmd := &RenderCommand{}
+	cmd := &Command{}
 	ctx := context.GetGlobalContext()
 
 	tests := []struct {
@@ -83,12 +83,12 @@ func TestRenderCommand_Execute_BasicStyling(t *testing.T) {
 	}
 }
 
-func TestRenderCommand_Execute_KeywordHighlighting(t *testing.T) {
+func TestCommand_Execute_KeywordHighlighting(t *testing.T) {
 	// Setup services
 	setupTestServices(t)
 	defer cleanupTestServices()
 
-	cmd := &RenderCommand{}
+	cmd := &Command{}
 	ctx := context.GetGlobalContext()
 
 	tests := []struct {
@@ -148,12 +148,12 @@ func TestRenderCommand_Execute_KeywordHighlighting(t *testing.T) {
 	}
 }
 
-func TestRenderCommand_Execute_VariableInterpolation(t *testing.T) {
+func TestCommand_Execute_VariableInterpolation(t *testing.T) {
 	// Setup services
 	setupTestServices(t)
 	defer cleanupTestServices()
 
-	cmd := &RenderCommand{}
+	cmd := &Command{}
 	ctx := context.GetGlobalContext()
 
 	// Set up test variables
@@ -187,12 +187,12 @@ func TestRenderCommand_Execute_VariableInterpolation(t *testing.T) {
 	}
 }
 
-func TestRenderCommand_Execute_OutputVariable(t *testing.T) {
+func TestCommand_Execute_OutputVariable(t *testing.T) {
 	// Setup services
 	setupTestServices(t)
 	defer cleanupTestServices()
 
-	cmd := &RenderCommand{}
+	cmd := &Command{}
 	ctx := context.GetGlobalContext()
 
 	tests := []struct {
@@ -242,12 +242,12 @@ func TestRenderCommand_Execute_OutputVariable(t *testing.T) {
 	}
 }
 
-func TestRenderCommand_Execute_SilentMode(t *testing.T) {
+func TestCommand_Execute_SilentMode(t *testing.T) {
 	// Setup services
 	setupTestServices(t)
 	defer cleanupTestServices()
 
-	cmd := &RenderCommand{}
+	cmd := &Command{}
 	ctx := context.GetGlobalContext()
 
 	tests := []struct {
@@ -287,12 +287,12 @@ func TestRenderCommand_Execute_SilentMode(t *testing.T) {
 	}
 }
 
-func TestRenderCommand_Execute_ErrorCases(t *testing.T) {
+func TestCommand_Execute_ErrorCases(t *testing.T) {
 	// Setup services
 	setupTestServices(t)
 	defer cleanupTestServices()
 
-	cmd := &RenderCommand{}
+	cmd := &Command{}
 	context.GetGlobalContext()
 
 	tests := []struct {
@@ -337,7 +337,7 @@ func TestRenderCommand_Execute_ErrorCases(t *testing.T) {
 	}
 }
 
-func TestRenderCommand_ThemeHandling(t *testing.T) {
+func TestCommand_ThemeHandling(t *testing.T) {
 	// Setup services
 	setupTestServices(t)
 	defer cleanupTestServices()
