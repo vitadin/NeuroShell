@@ -3,8 +3,10 @@ package services
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/openai/openai-go"
+	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -30,27 +32,44 @@ func (l *LLMService) Name() string {
 // Initialize sets up the LLMService for operation.
 // It creates the OpenAI client with API key from environment.
 func (l *LLMService) Initialize() error {
+	logger.ServiceOperation("llm", "initialize", "starting")
+
+	// Check if OpenAI API key is set
+	apiKey := os.Getenv("OPENAI_API_KEY")
+	if apiKey == "" {
+		logger.Error("OpenAI API key not set", "env_var", "OPENAI_API_KEY")
+		return fmt.Errorf("OPENAI_API_KEY environment variable not set")
+	}
+	logger.Debug("OpenAI API key found", "key_length", len(apiKey))
+
 	// Create OpenAI client (will get API key from OPENAI_API_KEY env var)
 	client := openai.NewClient()
 	l.client = &client
 	l.initialized = true
+
+	logger.ServiceOperation("llm", "initialize", "completed")
 	return nil
 }
 
 // SendChatCompletion sends a chat completion request synchronously.
 // It takes the full conversation history from the session and returns the complete response.
 func (l *LLMService) SendChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (string, error) {
+	logger.ServiceOperation("llm", "send_chat_completion", "starting")
+
 	if !l.initialized {
+		logger.Error("LLM service not initialized")
 		return "", fmt.Errorf("llm service not initialized")
 	}
 
 	// Convert session messages to OpenAI format
 	messages := l.convertMessagesToOpenAI(session)
+	logger.Debug("Messages converted", "message_count", len(messages))
 
 	// Add system prompt if present
 	if session.SystemPrompt != "" {
 		systemMsg := openai.SystemMessage(session.SystemPrompt)
 		messages = append([]openai.ChatCompletionMessageParamUnion{systemMsg}, messages...)
+		logger.Debug("System prompt added", "system_prompt", session.SystemPrompt)
 	}
 
 	// Build completion parameters
@@ -58,26 +77,33 @@ func (l *LLMService) SendChatCompletion(session *neurotypes.ChatSession, modelCo
 		Model:    openai.ChatModel(modelConfig.BaseModel),
 		Messages: messages,
 	}
+	logger.Debug("Completion parameters built", "model", modelConfig.BaseModel, "message_count", len(messages))
 
 	// Apply model parameters if available
 	l.applyModelParameters(&params, modelConfig)
 
 	// Send request
+	logger.Debug("Sending OpenAI request", "model", modelConfig.BaseModel)
 	completion, err := l.client.Chat.Completions.New(context.Background(), params)
 	if err != nil {
+		logger.Error("OpenAI request failed", "error", err)
 		return "", fmt.Errorf("openai request failed: %w", err)
 	}
 
 	// Extract response content
 	if len(completion.Choices) == 0 {
+		logger.Error("No response choices returned")
 		return "", fmt.Errorf("no response choices returned")
 	}
 
 	content := completion.Choices[0].Message.Content
 	if content == "" {
+		logger.Error("Empty response content")
 		return "", fmt.Errorf("empty response content")
 	}
 
+	logger.Debug("OpenAI response received", "content_length", len(content))
+	logger.ServiceOperation("llm", "send_chat_completion", "completed")
 	return content, nil
 }
 
