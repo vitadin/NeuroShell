@@ -1,140 +1,125 @@
 // Package neurotypes defines core interfaces and data structures used throughout NeuroShell.
-// This package contains the fundamental neurotypes that enable the modular architecture,
-// including command interfaces, context management, and service registration.
+//
+// This package contains the fundamental types that enable NeuroShell's modular architecture,
+// providing the contracts and data structures that components use to interact with each other.
+// The package is organized into logical groupings to improve maintainability and discoverability.
+//
+// # Architecture Overview
+//
+// NeuroShell follows a three-layer architecture:
+//
+//   - Context Layer: Holds ALL state and resources (variables, sessions, models, etc.)
+//   - Service Layer: Stateless business logic that operates on the global context
+//   - Command Layer: Orchestrates services to handle user input and commands
+//
+// # Package Organization
+//
+// The neurotypes package is organized into the following files:
+//
+// ## Core Interfaces (core_interfaces.go)
+//
+// Contains the fundamental interfaces that define the system's structure:
+//
+//   - Context: Session state management and variable interpolation
+//   - Service: Services that provide specific functionality
+//   - Command: Commands that handle user input and actions
+//   - ServiceRegistry: Centralized service registration and retrieval
+//
+// ## Command System Types (command_types.go)
+//
+// Types for command parsing, execution, and help system:
+//
+//   - ParseMode: Defines how command arguments are parsed
+//   - CommandArgs: Structured command arguments and message content
+//   - HelpInfo, HelpOption, HelpExample: Rich help system data structures
+//
+// ## Session and Conversation Types (session_types.go)
+//
+// Types for managing conversation history and session state:
+//
+//   - Message: Individual messages in conversation history
+//   - SessionState: Complete session state for save/restore operations
+//   - ChatSession: LLM conversation sessions with metadata
+//
+// ## Model Configuration Types (model_types.go)
+//
+// Types for LLM model management and configuration:
+//
+//   - ModelConfig: User-defined model configurations with parameters
+//   - ModelCatalogEntry: Catalog entries for available models
+//   - ModelProviderInfo: Provider metadata and capabilities
+//   - StandardModelParameters: Common parameters across providers
+//
+// ## Theme and Styling Types (theme_types.go)
+//
+// Types for theme configuration and visual styling:
+//
+//   - ThemeConfig: Complete theme configuration from YAML
+//   - ThemeStyles: Styling for different semantic elements
+//   - StyleConfig: Visual styling for individual elements
+//   - AdaptiveColor: Colors that adapt to light/dark terminals
+//
+// # Usage Patterns
+//
+// The types in this package are designed to be used together in specific patterns:
+//
+// ## Service Pattern
+//
+// Services implement the Service interface and use the global context singleton:
+//
+//	type MyService struct {
+//		initialized bool
+//	}
+//
+//	func (s *MyService) Name() string { return "my" }
+//	func (s *MyService) Initialize() error {
+//		ctx := context.GetGlobalContext()
+//		// Use context for state access
+//		return nil
+//	}
+//
+// ## Command Pattern
+//
+// Commands implement the Command interface and orchestrate services:
+//
+//	type MyCommand struct{}
+//
+//	func (c *MyCommand) Name() string { return "my" }
+//	func (c *MyCommand) ParseMode() ParseMode { return ParseModeKeyValue }
+//	func (c *MyCommand) Execute(args map[string]string, input string) error {
+//		service, err := services.GetGlobalService("my")
+//		// Use service to perform operations
+//		return nil
+//	}
+//
+// ## Context Pattern
+//
+// The Context interface provides access to all session state:
+//
+//	ctx := context.GetGlobalContext()
+//	value, err := ctx.GetVariable("var_name")
+//	err = ctx.SetVariable("var_name", "value")
+//	sessions := ctx.GetChatSessions()
+//
+// # Design Principles
+//
+// The types in this package follow these design principles:
+//
+//   - Single Responsibility: Each type has a clear, focused purpose
+//   - Interface Segregation: Interfaces are focused and composable
+//   - Dependency Inversion: Components depend on abstractions, not implementations
+//   - Immutability: Data structures favor immutable operations where possible
+//   - Extensibility: New functionality can be added without breaking existing code
+//
+// # Backward Compatibility
+//
+// All types maintain backward compatibility. Existing code using:
+//
+//	import "neuroshell/pkg/neurotypes"
+//
+//	var ctx neurotypes.Context
+//	var cmd neurotypes.Command
+//	var svc neurotypes.Service
+//
+// Will continue to work without any changes.
 package neurotypes
-
-import "time"
-
-// ParseMode defines how command arguments are parsed from user input.
-type ParseMode int
-
-const (
-	// ParseModeKeyValue parses arguments as key=value pairs within brackets
-	ParseModeKeyValue ParseMode = iota
-	// ParseModeRaw treats the entire input as raw text without parsing
-	ParseModeRaw
-	// ParseModeWithOptions parses arguments with options support
-	ParseModeWithOptions
-)
-
-// Context provides session state management and variable interpolation for NeuroShell.
-// It maintains variables, message history, session metadata, and chat sessions across command executions.
-type Context interface {
-	GetVariable(name string) (string, error)
-	SetVariable(name string, value string) error
-	GetMessageHistory(n int) []Message
-	GetSessionState() SessionState
-	SetTestMode(testMode bool)
-	IsTestMode() bool
-
-	// Chat session storage methods
-	GetChatSessions() map[string]*ChatSession
-	SetChatSessions(sessions map[string]*ChatSession)
-	GetSessionNameToID() map[string]string
-	SetSessionNameToID(nameToID map[string]string)
-	GetActiveSessionID() string
-	SetActiveSessionID(sessionID string)
-
-	// Model storage methods (bidirectional mapping)
-	GetModels() map[string]*ModelConfig
-	SetModels(models map[string]*ModelConfig)
-	GetModelNameToID() map[string]string
-	SetModelNameToID(nameToID map[string]string)
-	GetModelIDToName() map[string]string
-	SetModelIDToName(idToName map[string]string)
-	ModelNameExists(name string) bool
-	ModelIDExists(id string) bool
-}
-
-// Service defines the interface for NeuroShell services that provide specific functionality.
-// Services are initialized at startup and can be accessed by commands during execution.
-// Services use the global context singleton for all state access.
-type Service interface {
-	Name() string
-	Initialize() error
-}
-
-// Command defines the interface that all NeuroShell commands must implement.
-// Commands handle user input and perform specific actions within the shell environment.
-// Commands should only interact with services, not context directly.
-type Command interface {
-	Name() string
-	ParseMode() ParseMode
-	Description() string
-	Usage() string
-	HelpInfo() HelpInfo
-	Execute(args map[string]string, input string) error
-}
-
-// ServiceRegistry manages the registration and retrieval of services within NeuroShell.
-// It provides a centralized way to access services across the application.
-type ServiceRegistry interface {
-	GetService(name string) (Service, error)
-	RegisterService(service Service) error
-}
-
-// Message represents a single message in the conversation history.
-// Messages track the role (user/assistant), content, and timestamp for each interaction.
-type Message struct {
-	ID        string    `json:"id"`
-	Role      string    `json:"role"`
-	Content   string    `json:"content"`
-	Timestamp time.Time `json:"timestamp"`
-}
-
-// SessionState represents the complete state of a NeuroShell session.
-// It includes all variables, message history, and metadata that can be saved and restored.
-type SessionState struct {
-	ID        string            `json:"id"`
-	Name      string            `json:"name"`
-	Variables map[string]string `json:"variables"`
-	History   []Message         `json:"history"`
-	CreatedAt time.Time         `json:"created_at"`
-	UpdatedAt time.Time         `json:"updated_at"`
-}
-
-// CommandArgs contains the parsed arguments and message content for command execution.
-// It provides a structured way to pass user input to command implementations.
-type CommandArgs struct {
-	Options map[string]string
-	Message string
-}
-
-// ChatSession represents a conversation session with an LLM agent.
-// It maintains conversation history, system context, and metadata for LLM interactions.
-type ChatSession struct {
-	ID           string    `json:"id"`            // Unique session identifier
-	Name         string    `json:"name"`          // User-friendly session name
-	SystemPrompt string    `json:"system_prompt"` // System message for LLM context
-	Messages     []Message `json:"messages"`      // Ordered conversation history
-	CreatedAt    time.Time `json:"created_at"`    // Session creation timestamp
-	UpdatedAt    time.Time `json:"updated_at"`    // Last modification timestamp
-	IsActive     bool      `json:"is_active"`     // Whether this is the current active session
-}
-
-// HelpInfo represents structured help information for a command.
-// It provides rich help data that can be rendered in both plain text and styled formats.
-type HelpInfo struct {
-	Command     string        `json:"command"`            // Command name
-	Description string        `json:"description"`        // Brief description of what the command does
-	Usage       string        `json:"usage"`              // Usage syntax
-	ParseMode   ParseMode     `json:"parse_mode"`         // How the command parses arguments
-	Options     []HelpOption  `json:"options,omitempty"`  // Command options/parameters
-	Examples    []HelpExample `json:"examples,omitempty"` // Usage examples
-	Notes       []string      `json:"notes,omitempty"`    // Additional notes or warnings
-}
-
-// HelpOption represents a command option/parameter with detailed information.
-type HelpOption struct {
-	Name        string `json:"name"`              // Option name
-	Description string `json:"description"`       // What this option does
-	Required    bool   `json:"required"`          // Whether this option is required
-	Type        string `json:"type"`              // Data type (string, bool, int, etc.)
-	Default     string `json:"default,omitempty"` // Default value if not specified
-}
-
-// HelpExample represents a usage example with explanation.
-type HelpExample struct {
-	Command     string `json:"command"`     // Example command
-	Description string `json:"description"` // What this example demonstrates
-}
