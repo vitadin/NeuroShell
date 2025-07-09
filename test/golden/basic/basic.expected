@@ -1,4 +1,9 @@
+Setting _echo_commands = true
+%%> \set[name="test"]
 Setting name = test
+%%> \set[status="working"]
 Setting status = working
+%%> \get[name]
 name = test
+%%> \get[status]
 status = working

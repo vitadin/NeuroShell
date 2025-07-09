@@ -72,6 +72,11 @@ func ExecuteScript(scriptPath string) error {
 		commandCount++
 		logger.Debug("Executing command", "number", commandCount, "command", cmd.Name, "message", cmd.Message)
 
+		// Output command line with %%> prefix if echo_commands is enabled
+		if echoCommands, _ := vs.Get("_echo_commands"); echoCommands == "true" {
+			fmt.Printf("%%%%> %s\n", cmd.String())
+		}
+
 		// Interpolate command using interpolation service
 		interpolatedCmd, err := is.InterpolateCommand(cmd)
 		if err != nil {

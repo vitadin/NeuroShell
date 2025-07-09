@@ -18,6 +18,7 @@ import (
 var allowedGlobalVariables = []string{
 	"_style",
 	"_reply_way",
+	"_echo_commands",
 }
 
 // NeuroContext implements the neurotypes.Context interface providing session state management.

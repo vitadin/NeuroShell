@@ -1,4 +1,5 @@
 %% Basic functionality test
+\set[_echo_commands="true"]
 \set[name="test"]
 \set[status="working"]
 \get[name]
