@@ -5,7 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"neuroshell/internal/commands"
 	"neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
 )
@@ -155,14 +154,18 @@ func TestAutoCompleteService_GetCommandCompletions(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	// Register test commands
-	registry := commands.GetGlobalRegistry()
-	err = registry.Register(&MockCommand{name: "send", description: "Send message"})
-	require.NoError(t, err)
-	err = registry.Register(&MockCommand{name: "set", description: "Set variable"})
-	require.NoError(t, err)
-	err = registry.Register(&MockCommand{name: "session", description: "Session management"})
-	require.NoError(t, err)
+	// Register test commands via context
+	ctx := context.GetGlobalContext()
+	require.NotNil(t, ctx)
+
+	// Cast to concrete type to access RegisterCommandWithInfo
+	neuroCtx, ok := ctx.(*context.NeuroContext)
+	require.True(t, ok)
+
+	// Register test commands with context
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "send", description: "Send message"})
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "set", description: "Set variable"})
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "session", description: "Session management"})
 
 	tests := []struct {
 		name     string
@@ -207,9 +210,15 @@ func TestAutoCompleteService_GetOptionCompletions(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	// Register test command with options
-	registry := commands.GetGlobalRegistry()
-	err = registry.Register(&MockCommand{
+	// Register test command with options via context
+	ctx := context.GetGlobalContext()
+	require.NotNil(t, ctx)
+
+	// Cast to concrete type to access RegisterCommandWithInfo
+	neuroCtx, ok := ctx.(*context.NeuroContext)
+	require.True(t, ok)
+
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{
 		name:        "set",
 		description: "Set variable",
 		options: []neurotypes.HelpOption{
@@ -218,7 +227,6 @@ func TestAutoCompleteService_GetOptionCompletions(t *testing.T) {
 			{Name: "global", Type: "bool", Description: "Global variable"},
 		},
 	})
-	require.NoError(t, err)
 
 	tests := []struct {
 		name        string
@@ -331,12 +339,16 @@ func TestAutoCompleteService_Do(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	// Register test commands
-	registry := commands.GetGlobalRegistry()
-	err = registry.Register(&MockCommand{name: "send", description: "Send message"})
-	require.NoError(t, err)
-	err = registry.Register(&MockCommand{name: "set", description: "Set variable"})
-	require.NoError(t, err)
+	// Register test commands via context
+	ctx := context.GetGlobalContext()
+	require.NotNil(t, ctx)
+
+	// Cast to concrete type to access RegisterCommandWithInfo
+	neuroCtx, ok := ctx.(*context.NeuroContext)
+	require.True(t, ok)
+
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "send", description: "Send message"})
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "set", description: "Set variable"})
 
 	tests := []struct {
 		name           string
@@ -392,19 +404,17 @@ func TestAutoCompleteService_Do(t *testing.T) {
 	}
 }
 
-// setupAutoCompleteTestRegistry creates a clean test registry
+// setupAutoCompleteTestRegistry creates a clean test environment
 func setupAutoCompleteTestRegistry(t *testing.T) {
-	// Create a new registry for testing
-	oldRegistry := commands.GetGlobalRegistry()
-	commands.SetGlobalRegistry(commands.NewRegistry())
-
 	// Create a new service registry for testing
 	oldServiceRegistry := GetGlobalRegistry()
 	SetGlobalRegistry(NewRegistry())
 
+	// Reset the global context to clean state
+	context.ResetGlobalContext()
+
 	// Cleanup function to restore original registries
 	t.Cleanup(func() {
-		commands.SetGlobalRegistry(oldRegistry)
 		SetGlobalRegistry(oldServiceRegistry)
 		context.ResetGlobalContext()
 	})

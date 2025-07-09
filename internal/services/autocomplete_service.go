@@ -189,7 +189,7 @@ func (a *AutoCompleteService) getVariableCompletions(prefix string) []string {
 }
 
 // getOptionCompletions returns completions for command options inside brackets.
-func (a *AutoCompleteService) getOptionCompletions(line string, _ int, currentWord string) []string {
+func (a *AutoCompleteService) getOptionCompletions(line string, _ int, _ string) []string {
 	// Parse the command name from incomplete input
 	commandName := a.extractCommandNameFromLine(line)
 	if commandName == "" {
@@ -214,37 +214,6 @@ func (a *AutoCompleteService) getOptionCompletions(line string, _ int, currentWo
 	// For now, option completion is simplified since we can't access command objects from context
 	// TODO: Consider storing command help information in context if needed
 	return make([]string, 0)
-}
-
-// getOptionValueCompletions returns completions for specific option values.
-func (a *AutoCompleteService) getOptionValueCompletions(commandName, optionName, valuePrefix string) []string {
-	var completions []string
-
-	// Context-specific completions based on command and option
-	switch commandName {
-	case "session":
-		if optionName == "name" {
-			// Complete with existing session names
-			completions = a.getSessionNameCompletions(valuePrefix)
-		}
-	case "model":
-		if optionName == "name" {
-			// Complete with available model names
-			completions = a.getModelNameCompletions(valuePrefix)
-		}
-	case "render":
-		if optionName == "style" {
-			// Complete with available theme names
-			completions = a.getThemeNameCompletions(valuePrefix)
-		}
-	case "set":
-		if optionName == "name" {
-			// Complete with existing variable names
-			completions = a.getVariableNameCompletions(valuePrefix)
-		}
-	}
-
-	return completions
 }
 
 // extractCommandNameFromLine extracts the command name from a line, handling incomplete bracket input.
@@ -281,99 +250,6 @@ func (a *AutoCompleteService) isInsideBrackets(line string, pos int) bool {
 
 	// We're inside brackets if the last [ is after the last ]
 	return lastBracketOpen > lastBracketClose
-}
-
-// getSessionNameCompletions returns completions for session names.
-func (a *AutoCompleteService) getSessionNameCompletions(prefix string) []string {
-	globalCtx := context.GetGlobalContext()
-	if globalCtx == nil {
-		return make([]string, 0)
-	}
-
-	_, ok := globalCtx.(*context.NeuroContext)
-	if !ok {
-		return make([]string, 0)
-	}
-
-	sessionNameToID := globalCtx.GetSessionNameToID()
-
-	var completions []string
-	for sessionName := range sessionNameToID {
-		if strings.HasPrefix(sessionName, prefix) {
-			completions = append(completions, sessionName)
-		}
-	}
-
-	sort.Strings(completions)
-	return completions
-}
-
-// getModelNameCompletions returns completions for model names.
-func (a *AutoCompleteService) getModelNameCompletions(prefix string) []string {
-	globalCtx := context.GetGlobalContext()
-	if globalCtx == nil {
-		return make([]string, 0)
-	}
-
-	_, ok := globalCtx.(*context.NeuroContext)
-	if !ok {
-		return make([]string, 0)
-	}
-
-	modelNameToID := globalCtx.GetModelNameToID()
-
-	var completions []string
-	for modelName := range modelNameToID {
-		if strings.HasPrefix(modelName, prefix) {
-			completions = append(completions, modelName)
-		}
-	}
-
-	sort.Strings(completions)
-	return completions
-}
-
-// getThemeNameCompletions returns completions for theme names.
-func (a *AutoCompleteService) getThemeNameCompletions(prefix string) []string {
-	themeService, err := GetGlobalThemeService()
-	if err != nil {
-		return make([]string, 0)
-	}
-
-	availableThemes := themeService.GetAvailableThemes()
-
-	var completions []string
-	for _, themeName := range availableThemes {
-		if strings.HasPrefix(themeName, prefix) {
-			completions = append(completions, themeName)
-		}
-	}
-
-	sort.Strings(completions)
-	return completions
-}
-
-// getVariableNameCompletions returns completions for variable names (without ${}).
-func (a *AutoCompleteService) getVariableNameCompletions(prefix string) []string {
-	variableService, err := GetGlobalVariableService()
-	if err != nil {
-		return make([]string, 0)
-	}
-
-	allVars, err := variableService.GetAllVariables()
-	if err != nil {
-		return make([]string, 0)
-	}
-
-	var completions []string
-	for varName := range allVars {
-		if strings.HasPrefix(varName, prefix) {
-			completions = append(completions, varName)
-		}
-	}
-
-	sort.Strings(completions)
-	return completions
 }
 
 func init() {
