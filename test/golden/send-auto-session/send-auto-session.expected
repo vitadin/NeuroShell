@@ -1,2 +1,5 @@
+Setting _echo_commands = true
+%%> \send This should create a default session automatically
 This is a mocking reply message for the sending message: This should create a default session automatically
+%%> \echo Message history: ${1}
 Message history: This is a mocking reply message for the sending message: This should create a default session automatically

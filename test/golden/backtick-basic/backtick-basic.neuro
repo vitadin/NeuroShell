@@ -1,4 +1,5 @@
 %% Basic backtick functionality test
+\set[_echo_commands="true"]
 %% Verifies that backtick characters can be used in variable values and commands
 
 %% Test simple backtick characters in variable values

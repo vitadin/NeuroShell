@@ -1,4 +1,5 @@
 %% Test session list with combined sort and filter options
+\set[_echo_commands="true"]
 %% Create sessions with different names and test combined options
 
 %% Create sessions in mixed order

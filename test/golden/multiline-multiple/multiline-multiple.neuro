@@ -1,4 +1,5 @@
 %% Multiple continuation lines test
+\set[_echo_commands="true"]
 %% Tests multiple ... markers in sequence
 
 first line ...

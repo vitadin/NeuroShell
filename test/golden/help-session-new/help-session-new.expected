@@ -1,3 +1,5 @@
+Setting _echo_commands = true
+%%> \help[session-new]
 Command: session-new
 Description: Create new chat session for LLM interactions
 Usage: \session-new[system=system_prompt] session_name

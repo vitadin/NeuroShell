@@ -17,18 +17,21 @@ type Command struct {
 	Options        map[string]string
 	Message        string
 	ParseMode      neurotypes.ParseMode
+	OriginalText   string // Store original command text for deterministic output
 }
 
 // ParseInput parses user input into a Command structure with name, options, and message.
 func ParseInput(input string) *Command {
+	originalInput := input // Store original before any processing
 	input = strings.TrimSpace(input)
 
 	// If doesn't start with \, treat as \send message
 	if !strings.HasPrefix(input, "\\") {
 		return &Command{
-			Name:    "send",
-			Message: input,
-			Options: make(map[string]string),
+			Name:         "send",
+			Message:      input,
+			Options:      make(map[string]string),
+			OriginalText: originalInput,
 		}
 	}
 
@@ -36,7 +39,8 @@ func ParseInput(input string) *Command {
 	input = input[1:]
 
 	cmd := &Command{
-		Options: make(map[string]string),
+		Options:      make(map[string]string),
+		OriginalText: originalInput,
 	}
 
 	// Try to parse command with brackets: command[content] message

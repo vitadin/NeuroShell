@@ -1,4 +1,5 @@
 %% Test complex render scenarios with variable interpolation and custom output
+\set[_echo_commands="true"]
 \set[cmd1="\\session-new"]
 \set[cmd2="\\session-list"]
 \render[keywords=[${cmd1}, ${cmd2}, \\help], theme=dark, style=bold, to=styled_output] Commands: ${cmd1}, ${cmd2}, and \\help are essential for session management

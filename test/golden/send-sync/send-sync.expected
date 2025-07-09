@@ -1,1 +1,3 @@
+Setting _echo_commands = true
+%%> \send-sync Testing synchronous send mode
 This is a mocking reply message for the sending message: Testing synchronous send mode

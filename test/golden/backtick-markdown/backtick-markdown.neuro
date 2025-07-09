@@ -1,4 +1,5 @@
 %% Markdown backtick functionality test
+\set[_echo_commands="true"]
 %% Verifies that markdown-style code blocks with backticks work correctly
 
 %% Test inline code with single backticks

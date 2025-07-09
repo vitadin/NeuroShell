@@ -1,4 +1,5 @@
 %% Test render with different themes and styles
+\set[_echo_commands="true"]
 \render[theme=default, style=bold] This is bold text with default theme
 \get[_output]
 \render[theme=dark, style=italic] This is italic text with dark theme

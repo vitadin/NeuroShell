@@ -1,7 +1,15 @@
+Setting _echo_commands = true
+%%> \model-new[provider="openai", base_model="gpt-4"] my-gpt4-model
 Created model 'my-gpt4-model' (ID: 00000001, Provider: openai, Base: gpt-4)
+%%> \get[#model_id]
 #model_id = 00000001-0000-4000-8000-000000000001
+%%> \get[#model_name]
 #model_name = my-gpt4-model
+%%> \get[#model_provider]
 #model_provider = openai
+%%> \get[#model_base]
 #model_base = gpt-4
+%%> \get[#model_param_count]
 #model_param_count = 0
+%%> \get[_output]
 _output = Created model 'my-gpt4-model' (ID: 00000001, Provider: openai, Base: gpt-4)

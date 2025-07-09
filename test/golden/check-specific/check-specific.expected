@@ -1,7 +1,10 @@
+Setting _echo_commands = true
+%%> \check[service=variable]
 Service Status Check:
 ====================
   ✓ variable             - available/initialized
 Summary: 1/1 services healthy
+%%> \check[service=help]
 Service Status Check:
 ====================
   ✓ help                 - available/initialized

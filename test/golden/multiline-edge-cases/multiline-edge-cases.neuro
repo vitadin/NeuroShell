@@ -1,4 +1,5 @@
 %% Edge cases for multiline continuation test
+\set[_echo_commands="true"]
 %% Tests various edge cases and boundary conditions
 
 %% Just dots without spaces

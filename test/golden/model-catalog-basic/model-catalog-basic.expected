@@ -1,3 +1,5 @@
+Setting _echo_commands = true
+%%> \model-catalog
 Model Catalog (6 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)

@@ -1,8 +1,17 @@
+Setting _echo_commands = true
+%%> \set[_style="dark"]
 Setting _style = dark
+%%> \get[_style]
 _style = dark
+%%> \set[_style="light"]
 Setting _style = light
+%%> \get[_style]
 _style = light
+%%> \set[_style=""]
 Setting _style = 
+%%> \get[_style]
 _style = 
+%%> \set _style compact
 Setting _style = compact
+%%> \get[_style]
 _style = compact

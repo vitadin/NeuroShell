@@ -1,4 +1,5 @@
 %% Test that session-list output is properly stored in ${_output} variable
+\set[_echo_commands="true"]
 %% Create a session, list it, then verify the output is in the variable
 
 %% Create a session

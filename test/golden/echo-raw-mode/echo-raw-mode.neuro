@@ -1,4 +1,5 @@
 %% Echo command raw mode functionality test
+\set[_echo_commands="true"]
 %% Tests raw option for escape sequence handling
 
 %% Test normal mode (default) - escape sequences are interpreted

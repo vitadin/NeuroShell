@@ -1,4 +1,5 @@
 %% Test complete session lifecycle: create and delete
+\set[_echo_commands="true"]
 %% This verifies the bug fix for session-delete command
 
 %% Create a named session

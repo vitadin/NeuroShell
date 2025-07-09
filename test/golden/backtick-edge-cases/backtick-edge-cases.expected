@@ -1,32 +1,65 @@
+Setting _echo_commands = true
+%%> \set[multiple_backticks="Use `` for empty code or ``` for blocks"]
 Setting multiple_backticks = Use `` for empty code or ``` for blocks
+%%> \set[many_backticks="```````"]
 Setting many_backticks = ```````
+%%> \set[with_newlines="`code\nwith\nnewlines`"]
 Setting with_newlines = `code\nwith\nnewlines`
+%%> \set[with_tabs="`code\twith\ttabs`"]
 Setting with_tabs = `code\twith\ttabs`
+%%> \set[with_quotes="`code 'with' \"quotes\"`"]
 Setting with_quotes = `code 'with' \"quotes\"`
+%%> \set[long_code="`function veryLongFunctionNameThatGoesOnAndOnAndEventuallyEnds() { return 'this is a very long string with backticks'; }`"]
 Setting long_code = `function veryLongFunctionNameThatGoesOnAndOnAndEventuallyEnds() { return 'this is a very long string with backticks'; }`
+%%> \set[unicode_code="`console.log('Hello 世界! 🌍');`"]
 Setting unicode_code = `console.log('Hello 世界! 🌍');`
+%%> \set[emoji_code="`const greeting = '👋 Hello!';`"]
 Setting emoji_code = `const greeting = '👋 Hello!';`
+%%> \set[empty_backticks="``"]
 Setting empty_backticks = ``
+%%> \set[empty_block="```\n```"]
 Setting empty_block = ```\n```
+%%> \set[start_backtick="`starts with backtick"]
 Setting start_backtick = `starts with backtick
+%%> \set[end_backtick="ends with backtick`"]
 Setting end_backtick = ends with backtick`
+%%> \set[only_backticks="`"]
 Setting only_backticks = `
+%%> \set[complex_nesting="'Use `code` in \"quotes\"' and `'quote' in code`"]
 Setting complex_nesting = 'Use `code` in \"quotes\"' and `'quote' in code`
+%%> \set[with_escapes="`console.log('Hello\\nWorld');`"]
 Setting with_escapes = `console.log('Hello\\nWorld');`
+%%> \set[deeply_nested="```\n`inner code`\n\"with 'quotes'\"\n```"]
 Setting deeply_nested = ```\n`inner code`\n\"with 'quotes'\"\n```
+%%> \get[multiple_backticks]
 multiple_backticks = Use `` for empty code or ``` for blocks
+%%> \get[many_backticks]
 many_backticks = ```````
+%%> \get[with_newlines]
 with_newlines = `code\nwith\nnewlines`
+%%> \get[with_tabs]
 with_tabs = `code\twith\ttabs`
+%%> \get[with_quotes]
 with_quotes = `code 'with' \"quotes\"`
+%%> \get[long_code]
 long_code = `function veryLongFunctionNameThatGoesOnAndOnAndEventuallyEnds() { return 'this is a very long string with backticks'; }`
+%%> \get[unicode_code]
 unicode_code = `console.log('Hello 世界! 🌍');`
+%%> \get[emoji_code]
 emoji_code = `const greeting = '👋 Hello!';`
+%%> \get[empty_backticks]
 empty_backticks = ``
+%%> \get[empty_block]
 empty_block = ```\n```
+%%> \get[start_backtick]
 start_backtick = `starts with backtick
+%%> \get[end_backtick]
 end_backtick = ends with backtick`
+%%> \get[only_backticks]
 only_backticks = `
+%%> \get[complex_nesting]
 complex_nesting = 'Use `code` in \"quotes\"' and `'quote' in code`
+%%> \get[with_escapes]
 with_escapes = `console.log('Hello\\nWorld');`
+%%> \get[deeply_nested]
 deeply_nested = ```\n`inner code`\n\"with 'quotes'\"\n```

@@ -1,4 +1,5 @@
 %% Edge cases and special scenarios for \try command
+\set[_echo_commands="true"]
 %% This test covers unusual syntax and boundary conditions
 
 %% Test try with empty command (should do nothing)

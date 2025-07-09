@@ -1,4 +1,5 @@
 %% Search functionality test
+\set[_echo_commands="true"]
 %% Tests searching models by name, display name, and description
 \model-catalog[search=o3]
 \model-catalog[search=claude]

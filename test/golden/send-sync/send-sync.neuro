@@ -1,4 +1,5 @@
 %% Synchronous send command test
+\set[_echo_commands="true"]
 %% Tests explicit send-sync functionality
 
 \send-sync Testing synchronous send mode

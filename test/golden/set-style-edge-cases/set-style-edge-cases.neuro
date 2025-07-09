@@ -1,4 +1,5 @@
 %% Test _style variable edge cases and special values
+\set[_echo_commands="true"]
 %% This test verifies _style handles various edge cases properly
 
 %% Test with special characters

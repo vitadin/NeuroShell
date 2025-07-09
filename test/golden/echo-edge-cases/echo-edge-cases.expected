@@ -1,17 +1,32 @@
+Setting _echo_commands = true
+%%> \echo[raw=true] Unicode: 世界\nEmoji: 🌍
 Unicode: 世界\nEmoji: 🌍
+%%> \echo[raw=false] Unicode: 世界\nEmoji: 🌍
 Unicode: 世界
 Emoji: 🌍
+%%> \echo[raw=true] Complex: \"He said: 'Hello\\nWorld'\"\tEnd
 Complex: \"He said: 'Hello\\nWorld'\"\tEnd
+%%> \echo[raw=false] Complex: \"He said: 'Hello\\nWorld'\"\tEnd
 Complex: "He said: 'Hello\
 World'"	End
+%%> \echo[raw=true] \n\t\r\\\"\'
 \n\t\r\\\"\'
+%%> \echo[raw=false] \n\t\r\\\"\'
 	\"'
+%%> \echo[raw=true] Very long content with escapes\nand multiple\tlines that should\rtest the system's handling of\nlarge text blocks with various\tescape sequences
 Very long content with escapes\nand multiple\tlines that should\rtest the system's handling of\nlarge text blocks with various\tescape sequences
+%%> \echo[raw=true] Already ends with newline\n
 Already ends with newline\n
+%%> \echo[raw=false] Already ends with newline\n
 Already ends with newline
+%%> \echo[raw=true]    Leading and trailing spaces   \n\t
 Leading and trailing spaces   \n\t
+%%> \echo[raw=false]    Leading and trailing spaces   \n\t
 Leading and trailing spaces   
+%%> \echo[raw=true] Shell chars: $PATH ${HOME} `command` $(subshell)
 Shell chars: $PATH  `command` $(subshell)
+%%> \echo[raw=true] Backslashes: \\ \\\\ \\n \\t \\r
 Backslashes: \\ \\\\ \\n \\t \\r
+%%> \echo[raw=false] Backslashes: \\ \\\\ \\n \\t \\r
 Backslashes: \ \\ \
  \	 \

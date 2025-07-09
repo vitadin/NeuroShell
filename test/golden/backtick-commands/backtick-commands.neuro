@@ -1,4 +1,5 @@
 %% Backticks in commands test
+\set[_echo_commands="true"]
 %% Verifies that backticks work correctly in various NeuroShell commands
 
 %% Test backticks in \echo command (simulated since we're in test mode)

@@ -1,4 +1,5 @@
 %% Echo command variable interpolation test
+\set[_echo_commands="true"]
 %% Tests variable interpolation combined with raw mode functionality
 
 %% Set up test variables
