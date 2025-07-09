@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -177,6 +178,9 @@ func TestClientFactoryService_DetermineAPIKeyForProvider(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
+	// Create context for testing
+	ctx := context.New()
+
 	tests := []struct {
 		name        string
 		provider    string
@@ -240,7 +244,7 @@ func TestClientFactoryService_DetermineAPIKeyForProvider(t *testing.T) {
 				}
 			}
 
-			apiKey, err := service.DetermineAPIKeyForProvider(tt.provider)
+			apiKey, err := service.DetermineAPIKeyForProvider(tt.provider, ctx)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -400,6 +404,9 @@ func TestClientFactoryService_DetermineAPIKeyForProvider_ErrorMessages(t *testin
 	_ = os.Unsetenv("OPENAI_API_KEY")
 	_ = os.Unsetenv("ANTHROPIC_API_KEY")
 
+	// Create context for testing
+	ctx := context.New()
+
 	tests := []struct {
 		name     string
 		provider string
@@ -429,7 +436,7 @@ func TestClientFactoryService_DetermineAPIKeyForProvider_ErrorMessages(t *testin
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := service.DetermineAPIKeyForProvider(tt.provider)
+			_, err := service.DetermineAPIKeyForProvider(tt.provider, ctx)
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), tt.expected)
 		})
@@ -446,8 +453,11 @@ func TestClientFactoryService_Integration(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
+	// Create context for testing
+	ctx := context.New()
+
 	// Test the full flow: determine API key -> create client
-	apiKey, err := service.DetermineAPIKeyForProvider("openai")
+	apiKey, err := service.DetermineAPIKeyForProvider("openai", ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, "sk-test-integration-key", apiKey)
 

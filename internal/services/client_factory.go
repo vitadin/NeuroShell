@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"os"
 	"sync"
 
 	"neuroshell/internal/logger"
@@ -93,8 +92,8 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 }
 
 // DetermineAPIKeyForProvider determines the API key for a specific provider.
-// It checks provider-specific environment variables in order of preference.
-func (f *ClientFactoryService) DetermineAPIKeyForProvider(provider string) (string, error) {
+// It checks provider-specific environment variables through the context layer.
+func (f *ClientFactoryService) DetermineAPIKeyForProvider(provider string, ctx neurotypes.Context) (string, error) {
 	if provider == "" {
 		return "", fmt.Errorf("provider cannot be empty")
 	}
@@ -102,14 +101,14 @@ func (f *ClientFactoryService) DetermineAPIKeyForProvider(provider string) (stri
 	var apiKey string
 	var envVarName string
 
-	// Check provider-specific environment variables
+	// Check provider-specific environment variables through context
 	switch provider {
 	case "openai":
 		envVarName = "OPENAI_API_KEY"
-		apiKey = os.Getenv(envVarName)
+		apiKey = ctx.GetEnv(envVarName)
 	case "anthropic":
 		envVarName = "ANTHROPIC_API_KEY"
-		apiKey = os.Getenv(envVarName)
+		apiKey = ctx.GetEnv(envVarName)
 	default:
 		return "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, anthropic", provider)
 	}

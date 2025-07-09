@@ -13,6 +13,7 @@ type Context interface {
 	GetSessionState() SessionState
 	SetTestMode(testMode bool)
 	IsTestMode() bool
+	GetEnv(key string) string
 
 	// Chat session storage methods
 	GetChatSessions() map[string]*ChatSession

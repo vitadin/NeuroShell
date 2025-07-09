@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -140,15 +141,18 @@ func (c *SendCommand) Execute(args map[string]string, input string) error {
 	}
 	logger.Debug("Model config acquired", "model", modelConfig.BaseModel, "provider", modelConfig.Provider)
 
-	// 5. Determine API key for the specific provider
+	// 5. Get global context for API key determination
+	globalContext := context.GetGlobalContext()
+
+	// 6. Determine API key for the specific provider
 	logger.Debug("Determining API key for provider", "provider", modelConfig.Provider)
-	apiKey, err := clientFactory.DetermineAPIKeyForProvider(modelConfig.Provider)
+	apiKey, err := clientFactory.DetermineAPIKeyForProvider(modelConfig.Provider, globalContext)
 	if err != nil {
 		logger.Error("Failed to determine API key", "provider", modelConfig.Provider, "error", err)
 		return fmt.Errorf("failed to determine API key: %w", err)
 	}
 
-	// 6. Get appropriate client for the provider
+	// 7. Get appropriate client for the provider
 	logger.Debug("Getting LLM client", "provider", modelConfig.Provider)
 	client, err := clientFactory.GetClientForProvider(modelConfig.Provider, apiKey)
 	if err != nil {
@@ -156,7 +160,7 @@ func (c *SendCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to get LLM client: %w", err)
 	}
 
-	// 7. Determine reply mode and execute appropriate LLM interaction
+	// 8. Determine reply mode and execute appropriate LLM interaction
 	replyWay, _ := variableService.Get("_reply_way")
 	if replyWay == "" {
 		replyWay = "sync" // Default to synchronous mode
@@ -174,7 +178,7 @@ func (c *SendCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("LLM interaction failed: %w", err)
 	}
 
-	// 8. Add user message to session
+	// 9. Add user message to session
 	logger.Debug("Adding user message to session")
 	err = chatSessionService.AddMessage(activeSession.ID, "user", input)
 	if err != nil {
@@ -182,7 +186,7 @@ func (c *SendCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to add user message: %w", err)
 	}
 
-	// 9. Add LLM response to session
+	// 10. Add LLM response to session
 	logger.Debug("Adding LLM response to session")
 	err = chatSessionService.AddMessage(activeSession.ID, "assistant", response)
 	if err != nil {
@@ -190,7 +194,7 @@ func (c *SendCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to add assistant message: %w", err)
 	}
 
-	// 10. Update message history variables (${1}, ${2}, etc.)
+	// 11. Update message history variables (${1}, ${2}, etc.)
 	logger.Debug("Updating message history variables")
 	err = variableService.UpdateMessageHistoryVariables(activeSession)
 	if err != nil {

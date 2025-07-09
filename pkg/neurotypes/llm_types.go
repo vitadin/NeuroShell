@@ -38,8 +38,8 @@ type ClientFactory interface {
 	GetClientForProvider(provider, apiKey string) (LLMClient, error)
 
 	// DetermineAPIKeyForProvider determines the API key for a specific provider.
-	// It checks provider-specific environment variables and returns appropriate error messages.
-	DetermineAPIKeyForProvider(provider string) (string, error)
+	// It checks provider-specific environment variables through the context layer.
+	DetermineAPIKeyForProvider(provider string, ctx Context) (string, error)
 }
 
 // LLMService defines the refined interface for LLM operations.

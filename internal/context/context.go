@@ -445,6 +445,33 @@ func (ctx *NeuroContext) IsTestMode() bool {
 	return ctx.testMode
 }
 
+// GetEnv retrieves environment variables, providing test mode appropriate values.
+// In test mode, returns predefined test values. In normal mode, returns os.Getenv().
+func (ctx *NeuroContext) GetEnv(key string) string {
+	if ctx.IsTestMode() {
+		return ctx.getTestEnvValue(key)
+	}
+	return os.Getenv(key)
+}
+
+// getTestEnvValue returns test mode appropriate values for environment variables.
+func (ctx *NeuroContext) getTestEnvValue(key string) string {
+	switch key {
+	case "OPENAI_API_KEY":
+		return "test-openai-key"
+	case "ANTHROPIC_API_KEY":
+		return "test-anthropic-key"
+	case "EDITOR":
+		return "test-editor"
+	case "GOOS":
+		return "test-os"
+	case "GOARCH":
+		return "test-arch"
+	default:
+		return ""
+	}
+}
+
 // GetAllVariables returns all variables including both user variables and computed system variables.
 func (ctx *NeuroContext) GetAllVariables() map[string]string {
 	result := make(map[string]string)
