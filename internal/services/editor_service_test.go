@@ -10,7 +10,28 @@ import (
 
 	"neuroshell/internal/context"
 	"neuroshell/internal/testutils"
+	"neuroshell/pkg/neurotypes"
 )
+
+// NewTestContextWithVars creates a real context with predefined variables for testing
+func NewTestContextWithVars(vars map[string]string) neurotypes.Context {
+	ctx := context.NewTestContext()
+
+	for k, v := range vars {
+		// Use SetSystemVariable for system variables (starting with @, #, or _)
+		// Use SetVariable for user variables
+		if strings.HasPrefix(k, "@") || strings.HasPrefix(k, "#") || strings.HasPrefix(k, "_") {
+			// Cast to concrete type to access SetSystemVariable method
+			if neuroCtx, ok := ctx.(*context.NeuroContext); ok {
+				_ = neuroCtx.SetSystemVariable(k, v)
+			}
+		} else {
+			_ = ctx.SetVariable(k, v)
+		}
+	}
+
+	return ctx
+}
 
 func TestEditorService_Name(t *testing.T) {
 	service := NewEditorService()
@@ -96,7 +117,7 @@ func TestEditorService_getEditorCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewEditorService()
-			ctx := testutils.NewMockContextWithVars(tt.contextVars)
+			ctx := NewTestContextWithVars(tt.contextVars)
 
 			// Set up environment using test helper
 			var helper *testutils.EditorTestHelper
@@ -105,7 +126,14 @@ func TestEditorService_getEditorCommand(t *testing.T) {
 				helper.Cleanup() // Initialize with current env
 				_ = os.Setenv("EDITOR", tt.envEditor)
 			} else {
-				helper = testutils.SetupMockEditor() // Use echo by default
+				// Only set up mock editor if we don't have @editor variable
+				// This allows @editor variable to take precedence
+				if _, hasEditorVar := tt.contextVars["@editor"]; !hasEditorVar {
+					helper = testutils.SetupMockEditor() // Use echo by default
+				} else {
+					helper = &testutils.EditorTestHelper{}
+					helper.Cleanup() // Clear any existing EDITOR env var
+				}
 			}
 			defer helper.Cleanup()
 
@@ -206,7 +234,7 @@ func TestEditorService_createTempFileWithContent(t *testing.T) {
 
 func TestEditorService_OpenEditor_NotInitialized(t *testing.T) {
 	service := NewEditorService()
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	// Setup global context for testing
 	context.SetGlobalContext(ctx)
@@ -220,7 +248,7 @@ func TestEditorService_OpenEditor_NotInitialized(t *testing.T) {
 
 func TestEditorService_OpenEditorWithContent_NotInitialized(t *testing.T) {
 	service := NewEditorService()
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	// Setup global context for testing
 	context.SetGlobalContext(ctx)
@@ -234,7 +262,7 @@ func TestEditorService_OpenEditorWithContent_NotInitialized(t *testing.T) {
 
 func TestEditorService_OpenEditor_NoEditorFound(t *testing.T) {
 	service := NewEditorService()
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	err := service.Initialize()
 	require.NoError(t, err)
@@ -325,7 +353,7 @@ func TestEditorService_Cleanup_EmptyTempDir(t *testing.T) {
 
 func TestEditorService_ConcurrentAccess(t *testing.T) {
 	service := NewEditorService()
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	// Set up mock editor environment for consistent results
 	helper := testutils.SetupMockEditor()
@@ -434,7 +462,7 @@ func TestEditorService_EdgeCases(t *testing.T) {
 func TestEditorService_IntegrationWithRealContext(t *testing.T) {
 	// Test with a more realistic context setup
 	service := NewEditorService()
-	ctx := testutils.NewMockContextWithVars(map[string]string{
+	ctx := NewTestContextWithVars(map[string]string{
 		"@editor":  "echo", // Use echo as a "fake" editor for testing
 		"test_var": "test_value",
 	})

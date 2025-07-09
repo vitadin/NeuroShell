@@ -276,8 +276,9 @@ func TestSetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	assert.Equal(t, "bracketvalue", bracketValue)
 
 	// Space syntax variable should not be set
-	_, err = variableService.Get("spacevar")
-	assert.Error(t, err)
+	spaceValue, err := variableService.Get("spacevar")
+	assert.NoError(t, err)
+	assert.Equal(t, "", spaceValue) // Should return empty string for non-existent variables
 
 	// Output should only mention bracket variable
 	assert.Contains(t, outputStr, "Setting bracketvar = bracketvalue")

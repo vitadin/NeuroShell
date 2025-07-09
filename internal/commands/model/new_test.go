@@ -571,8 +571,9 @@ func TestNewCommand_Execute_EdgeCases(t *testing.T) {
 			expectError: false,
 			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
 				// Should not set description variable if empty
-				_, err := ctx.GetVariable("#model_description")
-				assert.Error(t, err) // Variable should not exist
+				value, err := ctx.GetVariable("#model_description")
+				assert.NoError(t, err)
+				assert.Equal(t, "", value) // Variable should return empty string if not set
 			},
 		},
 		{
