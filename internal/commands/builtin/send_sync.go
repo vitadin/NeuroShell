@@ -3,8 +3,6 @@ package builtin
 import (
 	"fmt"
 
-	"os"
-
 	"neuroshell/internal/commands"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
@@ -56,7 +54,7 @@ func (c *SendSyncCommand) HelpInfo() neurotypes.HelpInfo {
 			"Messages are sent to the active chat session",
 			"Response is received as a complete message",
 			"Message history variables (${1}, ${2}, etc.) are updated after completion",
-			"Requires OPENAI_API_KEY environment variable to be set",
+			"Requires provider-specific API key: OPENAI_API_KEY for OpenAI, ANTHROPIC_API_KEY for Anthropic",
 		},
 	}
 }
@@ -141,18 +139,19 @@ func (c *SendSyncCommand) Execute(_ map[string]string, input string) error {
 	}
 	logger.Debug("Model config acquired", "model", modelConfig.BaseModel, "provider", modelConfig.Provider)
 
-	// 6. Determine API key source (model config, user config, or env var)
-	apiKey := c.determineAPIKey(modelConfig)
-	if apiKey == "" {
-		logger.Error("No API key found")
-		return fmt.Errorf("no API key found. Set OPENAI_API_KEY environment variable or configure in model")
+	// 6. Determine API key for the specific provider
+	logger.Debug("Determining API key for provider", "provider", modelConfig.Provider)
+	apiKey, err := clientFactory.DetermineAPIKeyForProvider(modelConfig.Provider)
+	if err != nil {
+		logger.Error("Failed to determine API key", "provider", modelConfig.Provider, "error", err)
+		return fmt.Errorf("failed to determine API key: %w", err)
 	}
 
-	// 7. Get appropriate client
+	// 7. Get appropriate client for the provider
 	logger.Debug("Getting LLM client", "provider", modelConfig.Provider)
-	client, err := clientFactory.GetClient(apiKey)
+	client, err := clientFactory.GetClientForProvider(modelConfig.Provider, apiKey)
 	if err != nil {
-		logger.Error("Failed to get LLM client", "error", err)
+		logger.Error("Failed to get LLM client", "provider", modelConfig.Provider, "error", err)
 		return fmt.Errorf("failed to get LLM client: %w", err)
 	}
 
@@ -195,19 +194,6 @@ func (c *SendSyncCommand) Execute(_ map[string]string, input string) error {
 
 	logger.Debug("Send-sync completed successfully")
 	return nil
-}
-
-// determineAPIKey determines the API key from multiple sources in order of preference:
-// 1. Model configuration
-// 2. Environment variable
-func (c *SendSyncCommand) determineAPIKey(_ *neurotypes.ModelConfig) string {
-	// Check model configuration first (future enhancement)
-	// if modelConfig.APIKey != "" {
-	//     return modelConfig.APIKey
-	// }
-
-	// Check environment variable
-	return os.Getenv("OPENAI_API_KEY")
 }
 
 func init() {
