@@ -88,3 +88,39 @@ func (i *InterpolationService) InterpolateCommand(cmd *parser.Command) (*parser.
 func (i *InterpolationService) InterpolateCommandWithGlobalContext(cmd *parser.Command) (*parser.Command, error) {
 	return i.InterpolateCommand(cmd)
 }
+
+// InterpolateCommandLine performs command-level macro expansion on an entire command line.
+// This enables variables to contain complete commands that are expanded before parsing.
+//
+// Examples:
+//
+//	\set[cmd="echo"]
+//	${cmd} Hello World    # Expands to: \echo Hello World
+//
+//	\set[full_cmd="\echo[style=red] DEBUG:"]
+//	${full_cmd} Message   # Expands to: \echo[style=red] DEBUG: Message
+func (i *InterpolationService) InterpolateCommandLine(line string) (string, error) {
+	if !i.initialized {
+		return "", fmt.Errorf("interpolation service not initialized")
+	}
+
+	ctx := context.GetGlobalContext()
+	neuroCtx, ok := ctx.(*context.NeuroContext)
+	if !ok {
+		return "", fmt.Errorf("context is not a NeuroContext")
+	}
+
+	// Apply variable interpolation to the entire command line
+	// This leverages the existing InterpolateVariables method which already handles:
+	// - Nested variable expansion (up to 10 iterations)
+	// - Circular reference detection
+	// - Proper brace matching
+	result := neuroCtx.InterpolateVariables(line)
+
+	// Log macro expansion for debugging
+	if line != result {
+		logger.Debug("Command-level macro expansion performed", "original", line, "expanded", result)
+	}
+
+	return result, nil
+}

@@ -3,17 +3,12 @@ Setting _echo_commands = true
 Setting message = Hello World
 %%> \get[message]
 message = Hello World
-%%> \echo This is an important message
-that needs to be on multiple lines
-for better readability
-This is an important message
-that needs to be on multiple lines
-for better readability
+%%> \echo This is an important message  that needs to be on multiple lines  for better readability
+This is an important message  that needs to be on multiple lines  for better readability
 %%> \set[greeting="Hello"]
 Setting greeting = Hello
 %%> \set[name="World"]
 Setting name = World
-%%> \echo ${greeting}
-${name} from multiline
-Hello
-World from multiline
+%%> \echo ${greeting}  ${name} from multiline
+%%> [expanded] \echo Hello  World from multiline
+Hello  World from multiline

@@ -4,6 +4,7 @@ Setting expected_value = hello
 %%> \set[actual_value="world"]
 Setting actual_value = world
 %%> \assert-equal[expect="${expected_value}", actual="${actual_value}"]
+%%> [expanded] \assert-equal[expect="hello", actual="world"]
 ✗ Assertion failed: values are not equal
   Expected: hello
   Actual:   world

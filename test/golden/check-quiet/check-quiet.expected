@@ -1,8 +1,11 @@
 Setting _echo_commands = true
 %%> \check[quiet=true]
 %%> \echo Status: ${_check_status}
+%%> [expanded] \echo Status: success
 Status: success
 %%> \echo Total services: ${_check_total_services}
+%%> [expanded] \echo Total services: 15
 Total services: 15
 %%> \echo Failed count: ${_check_failed_count}
+%%> [expanded] \echo Failed count: 0
 Failed count: 0

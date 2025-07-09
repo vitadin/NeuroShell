@@ -1,25 +1,5 @@
 Setting _echo_commands = true
-%%> just_dots
-spaces_before
-multiple_spaces  
-empty_continuation
-whitespace_only
-\echo Tab before	
-space after
-both	
-special_chars !@#$%^&*()
-more special chars
-This is a mocking reply message for the sending message: just_dots
-spaces_before
-multiple_spaces  
-empty_continuation
-whitespace_only
-\echo Tab before	
-space after
-both	
-special_chars !@#$%^&*()
-more special chars
-%%> unicode_test 世界
-hello world
-This is a mocking reply message for the sending message: unicode_test 世界
-hello world
+%%> just_dots spaces_before  multiple_spaces    empty_continuation  whitespace_only  \echo Tab before	 space after  both	 special_chars !@#$%^&*()  more special chars
+This is a mocking reply message for the sending message: just_dots spaces_before  multiple_spaces    empty_continuation  whitespace_only  \echo Tab before	 space after  both	 special_chars !@#$%^&*()  more special chars
+%%> unicode_test 世界  hello world
+This is a mocking reply message for the sending message: unicode_test 世界  hello world

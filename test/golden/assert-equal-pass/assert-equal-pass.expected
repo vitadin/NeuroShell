@@ -2,6 +2,7 @@ Setting _echo_commands = true
 %%> \set[test_value="hello world"]
 Setting test_value = hello world
 %%> \assert-equal[expect="hello world", actual="${test_value}"]
+%%> [expanded] \assert-equal[expect="hello world", actual="hello world"]
 ✓ Assertion passed: values are equal
   Value: hello world
 %%> \get[_status]
