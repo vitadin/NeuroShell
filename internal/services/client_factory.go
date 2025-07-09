@@ -37,44 +37,6 @@ func (f *ClientFactoryService) Initialize() error {
 	return nil
 }
 
-// GetClient returns an LLM client for the given API key.
-// If a client for this API key already exists, it returns the cached client.
-// If not, it creates a new client and caches it for future use.
-func (f *ClientFactoryService) GetClient(apiKey string) (neurotypes.LLMClient, error) {
-	if !f.initialized {
-		return nil, fmt.Errorf("client factory service not initialized")
-	}
-
-	if apiKey == "" {
-		return nil, fmt.Errorf("API key cannot be empty")
-	}
-
-	f.mutex.RLock()
-	if client, exists := f.clients[apiKey]; exists {
-		f.mutex.RUnlock()
-		logger.Debug("Returning cached client", "provider", client.GetProviderName())
-		return client, nil
-	}
-	f.mutex.RUnlock()
-
-	// Create new client with write lock
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
-
-	// Double-check pattern - another goroutine might have created it
-	if client, exists := f.clients[apiKey]; exists {
-		logger.Debug("Returning cached client (double-check)", "provider", client.GetProviderName())
-		return client, nil
-	}
-
-	// Create new OpenAI client (lazy initialization)
-	client := NewOpenAIClient(apiKey)
-	f.clients[apiKey] = client
-
-	logger.Debug("Created new client", "provider", client.GetProviderName())
-	return client, nil
-}
-
 // GetClientForProvider returns an LLM client for the specified provider and API key.
 // This allows for explicit provider selection when multiple providers are supported.
 func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (neurotypes.LLMClient, error) {
@@ -82,12 +44,12 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 		return nil, fmt.Errorf("client factory service not initialized")
 	}
 
-	if apiKey == "" {
-		return nil, fmt.Errorf("API key cannot be empty")
-	}
-
 	if provider == "" {
 		return nil, fmt.Errorf("provider cannot be empty")
+	}
+
+	if apiKey == "" {
+		return nil, fmt.Errorf("API key cannot be empty for provider '%s'", provider)
 	}
 
 	// Create a composite key for provider-specific caching
@@ -116,14 +78,48 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 	switch provider {
 	case "openai":
 		client = NewOpenAIClient(apiKey)
+	case "anthropic":
+		// TODO: Implement AnthropicClient when available
+		return nil, fmt.Errorf("anthropic provider is not yet implemented")
 	default:
-		return nil, fmt.Errorf("unsupported provider: %s", provider)
+		return nil, fmt.Errorf("unsupported provider '%s'. Supported providers: openai, anthropic", provider)
 	}
 
 	f.clients[cacheKey] = client
 
 	logger.Debug("Created new provider client", "provider", provider)
 	return client, nil
+}
+
+// DetermineAPIKeyForProvider determines the API key for a specific provider.
+// It checks provider-specific environment variables through the context layer.
+func (f *ClientFactoryService) DetermineAPIKeyForProvider(provider string, ctx neurotypes.Context) (string, error) {
+	if provider == "" {
+		return "", fmt.Errorf("provider cannot be empty")
+	}
+
+	var apiKey string
+	var envVarName string
+
+	// Check provider-specific environment variables through context
+	switch provider {
+	case "openai":
+		envVarName = "OPENAI_API_KEY"
+		apiKey = ctx.GetEnv(envVarName)
+	case "anthropic":
+		envVarName = "ANTHROPIC_API_KEY"
+		apiKey = ctx.GetEnv(envVarName)
+	default:
+		return "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, anthropic", provider)
+	}
+
+	if apiKey == "" {
+		return "", fmt.Errorf("%s API key not found. Please set the %s environment variable",
+			provider, envVarName)
+	}
+
+	logger.Debug("API key found for provider", "provider", provider, "env_var", envVarName)
+	return apiKey, nil
 }
 
 // GetCachedClientCount returns the number of cached clients (for testing/debugging).

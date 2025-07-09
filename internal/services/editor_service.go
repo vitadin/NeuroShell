@@ -101,8 +101,8 @@ func (e *EditorService) getEditorCommand(ctx neurotypes.Context) string {
 		return editorVar
 	}
 
-	// Check environment variable
-	if editor := os.Getenv("EDITOR"); editor != "" {
+	// Check environment variable through context
+	if editor := ctx.GetEnv("EDITOR"); editor != "" {
 		logger.Debug("Using EDITOR environment variable", "editor", editor)
 		return editor
 	}

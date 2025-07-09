@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"neuroshell/internal/commands"
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -50,33 +49,48 @@ func TestSendCommand_Execute_EmptyInput(t *testing.T) {
 	assert.Contains(t, err.Error(), "Usage:")
 }
 
-func TestSendCommand_Execute_RouterLogic(t *testing.T) {
+func TestSendCommand_Execute_PipelineOrchestration(t *testing.T) {
 	// Setup test environment
 	ctx := context.New()
 	ctx.SetTestMode(true)
 	context.SetGlobalContext(ctx)
 
-	// Create a new registry for testing
-	registry := commands.NewRegistry()
-
-	// Register mock send-sync command
-	mockSendSync := &MockSendSyncCommand{}
-	err := registry.Register(mockSendSync)
-	require.NoError(t, err)
-
-	// Temporarily replace global registry
-	originalRegistry := commands.GlobalRegistry
-	commands.GlobalRegistry = registry
-	defer func() { commands.GlobalRegistry = originalRegistry }()
-
-	// Setup variable service
-	varService := services.NewVariableService()
-	err = varService.Initialize()
-	require.NoError(t, err)
-
-	// Create test registry for services
+	// Create and setup services
 	serviceRegistry := services.NewRegistry()
+
+	// Variable service
+	varService := services.NewVariableService()
+	err := varService.Initialize()
+	require.NoError(t, err)
 	err = serviceRegistry.RegisterService(varService)
+	require.NoError(t, err)
+
+	// Chat session service
+	chatSessionService := services.NewChatSessionService()
+	err = chatSessionService.Initialize()
+	require.NoError(t, err)
+	err = serviceRegistry.RegisterService(chatSessionService)
+	require.NoError(t, err)
+
+	// Model service
+	modelService := services.NewModelService()
+	err = modelService.Initialize()
+	require.NoError(t, err)
+	err = serviceRegistry.RegisterService(modelService)
+	require.NoError(t, err)
+
+	// Client factory service
+	clientFactory := services.NewClientFactoryService()
+	err = clientFactory.Initialize()
+	require.NoError(t, err)
+	err = serviceRegistry.RegisterService(clientFactory)
+	require.NoError(t, err)
+
+	// LLM service (mock)
+	llmService := services.NewMockLLMService()
+	err = llmService.Initialize()
+	require.NoError(t, err)
+	err = serviceRegistry.RegisterService(llmService)
 	require.NoError(t, err)
 
 	// Temporarily replace global service registry
@@ -86,24 +100,19 @@ func TestSendCommand_Execute_RouterLogic(t *testing.T) {
 
 	cmd := &SendCommand{}
 
-	// Test default routing (should route to send-sync)
+	// Test with mock services (should succeed)
 	err = cmd.Execute(map[string]string{}, "hello")
-	assert.NoError(t, err) // Router never fails
-	assert.True(t, mockSendSync.executed)
-	assert.Equal(t, "hello", mockSendSync.lastInput)
-
-	// Reset mock
-	mockSendSync.executed = false
-	mockSendSync.lastInput = ""
-
-	// Test with _reply_way=sync
-	err = varService.Set("_reply_way", "sync")
 	require.NoError(t, err)
 
-	err = cmd.Execute(map[string]string{}, "test sync")
-	assert.NoError(t, err)
-	assert.True(t, mockSendSync.executed)
-	assert.Equal(t, "test sync", mockSendSync.lastInput)
+	// Test with sync mode (default)
+	_ = varService.Set("_reply_way", "sync")
+	err = cmd.Execute(map[string]string{}, "hello sync")
+	require.NoError(t, err)
+
+	// Test with stream mode
+	_ = varService.Set("_reply_way", "stream")
+	err = cmd.Execute(map[string]string{}, "hello stream")
+	require.NoError(t, err)
 }
 
 // MockSendSyncCommand provides a mock implementation for testing

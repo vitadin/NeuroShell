@@ -33,14 +33,13 @@ type LLMClient interface {
 type ClientFactory interface {
 	Service
 
-	// GetClient returns an LLM client for the given API key.
-	// If a client for this API key already exists, it returns the cached client.
-	// If not, it creates a new client and caches it for future use.
-	GetClient(apiKey string) (LLMClient, error)
-
 	// GetClientForProvider returns an LLM client for the specified provider and API key.
 	// This allows for explicit provider selection when multiple providers are supported.
 	GetClientForProvider(provider, apiKey string) (LLMClient, error)
+
+	// DetermineAPIKeyForProvider determines the API key for a specific provider.
+	// It checks provider-specific environment variables through the context layer.
+	DetermineAPIKeyForProvider(provider string, ctx Context) (string, error)
 }
 
 // LLMService defines the refined interface for LLM operations.
