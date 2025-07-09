@@ -86,6 +86,13 @@ func TestSendSyncCommand_Execute_WithMockServices(t *testing.T) {
 	err = serviceRegistry.RegisterService(mockLLMService)
 	require.NoError(t, err)
 
+	// Setup client factory service
+	clientFactory := services.NewClientFactoryService()
+	err = clientFactory.Initialize()
+	require.NoError(t, err)
+	err = serviceRegistry.RegisterService(clientFactory)
+	require.NoError(t, err)
+
 	// Temporarily replace global service registry
 	originalServiceRegistry := services.GlobalRegistry
 	services.GlobalRegistry = serviceRegistry
@@ -154,6 +161,13 @@ func TestSendSyncCommand_Execute_WithExistingSession(t *testing.T) {
 	err = mockLLMService.Initialize()
 	require.NoError(t, err)
 	err = serviceRegistry.RegisterService(mockLLMService)
+	require.NoError(t, err)
+
+	// Setup client factory service
+	clientFactory := services.NewClientFactoryService()
+	err = clientFactory.Initialize()
+	require.NoError(t, err)
+	err = serviceRegistry.RegisterService(clientFactory)
 	require.NoError(t, err)
 
 	// Temporarily replace global service registry

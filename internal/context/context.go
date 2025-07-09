@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"regexp"
 	"strings"
+	"sync"
 
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
@@ -23,10 +24,13 @@ var allowedGlobalVariables = []string{
 // It maintains variables, message history, execution queues, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
 	variables      map[string]string
+	variablesMutex sync.RWMutex // Protects variables map for concurrent access
 	history        []neurotypes.Message
 	sessionID      string
 	executionQueue []string
+	queueMutex     sync.Mutex // Protects executionQueue slice for concurrent access
 	scriptMetadata map[string]interface{}
+	scriptMutex    sync.RWMutex // Protects scriptMetadata map for concurrent access
 	testMode       bool
 
 	// Chat session storage
@@ -38,6 +42,9 @@ type NeuroContext struct {
 	models        map[string]*neurotypes.ModelConfig // Model storage by ID
 	modelNameToID map[string]string                  // Name to ID mapping
 	modelIDToName map[string]string                  // ID to name mapping
+
+	// LLM client storage
+	llmClients map[string]neurotypes.LLMClient // LLM client storage by API key identifier
 }
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
@@ -59,6 +66,9 @@ func New() *NeuroContext {
 		models:        make(map[string]*neurotypes.ModelConfig),
 		modelNameToID: make(map[string]string),
 		modelIDToName: make(map[string]string),
+
+		// Initialize LLM client storage
+		llmClients: make(map[string]neurotypes.LLMClient),
 	}
 
 	// Generate initial session ID (will be deterministic if test mode is set later)
@@ -67,6 +77,15 @@ func New() *NeuroContext {
 	// Initialize whitelisted global variables with default values
 	_ = ctx.SetSystemVariable("_style", "")
 
+	return ctx
+}
+
+// NewTestContext creates a clean real context for testing purposes.
+// This function is designed to be used by unit tests across the codebase.
+func NewTestContext() neurotypes.Context {
+	ResetGlobalContext()
+	ctx := GetGlobalContext()
+	ctx.SetTestMode(true)
 	return ctx
 }
 
@@ -82,12 +101,17 @@ func (ctx *NeuroContext) GetVariable(name string) (string, error) {
 		return value, nil
 	}
 
-	// Handle user variables
-	if value, ok := ctx.variables[name]; ok {
+	// Handle user variables with read lock
+	ctx.variablesMutex.RLock()
+	value, ok := ctx.variables[name]
+	ctx.variablesMutex.RUnlock()
+
+	if ok {
 		return value, nil
 	}
 
-	return "", fmt.Errorf("variable %s not found", name)
+	// Return empty string for non-existent variables
+	return "", nil
 }
 
 // SetVariable sets a user variable, preventing modification of system variables.
@@ -111,8 +135,15 @@ func (ctx *NeuroContext) SetVariable(name string, value string) error {
 		}
 	}
 
+	ctx.variablesMutex.Lock()
 	ctx.variables[name] = value
+	ctx.variablesMutex.Unlock()
 	return nil
+}
+
+// SetVariableWithValidation is an alias for SetVariable for backward compatibility in tests.
+func (ctx *NeuroContext) SetVariableWithValidation(name string, value string) error {
+	return ctx.SetVariable(name, value)
 }
 
 // SetSystemVariable sets a system variable, allowing internal app use only.
@@ -123,7 +154,9 @@ func (ctx *NeuroContext) SetSystemVariable(name string, value string) error {
 		return fmt.Errorf("SetSystemVariable can only set system variables (prefixed with @, #, or _), got: %s", name)
 	}
 
+	ctx.variablesMutex.Lock()
 	ctx.variables[name] = value
+	ctx.variablesMutex.Unlock()
 	return nil
 }
 
@@ -150,6 +183,24 @@ func (ctx *NeuroContext) GetSessionState() neurotypes.SessionState {
 }
 
 func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
+	// In test mode, return fixed values for consistency
+	if ctx.testMode {
+		switch name {
+		case "@pwd":
+			return "/test/pwd", true
+		case "@user":
+			return "testuser", true
+		case "@home":
+			return "/test/home", true
+		case "@date":
+			return "2024-01-01", true
+		case "@time":
+			return "12:00:00", true
+		case "@os":
+			return "test-os", true
+		}
+	}
+
 	switch name {
 	case "@pwd":
 		if pwd, err := os.Getwd(); err == nil {
@@ -171,14 +222,20 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		return fmt.Sprintf("%s/%s", os.Getenv("GOOS"), os.Getenv("GOARCH")), true
 	case "#session_id":
 		// Check if there's a stored chat session ID first
-		if value, ok := ctx.variables["#session_id"]; ok {
+		ctx.variablesMutex.RLock()
+		value, ok := ctx.variables["#session_id"]
+		ctx.variablesMutex.RUnlock()
+		if ok {
 			return value, true
 		}
 		// Fall back to shell session ID
 		return ctx.sessionID, true
 	case "#message_count":
 		// Check if there's a stored session message count first
-		if value, ok := ctx.variables["#message_count"]; ok {
+		ctx.variablesMutex.RLock()
+		value, ok := ctx.variables["#message_count"]
+		ctx.variablesMutex.RUnlock()
+		if ok {
 			return value, true
 		}
 		// Fall back to NeuroShell context history count
@@ -190,19 +247,28 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		return "false", true
 	case "#session_name":
 		// Look for stored session name variable
-		if value, ok := ctx.variables["#session_name"]; ok {
+		ctx.variablesMutex.RLock()
+		value, ok := ctx.variables["#session_name"]
+		ctx.variablesMutex.RUnlock()
+		if ok {
 			return value, true
 		}
 		return "", false
 	case "#system_prompt":
 		// Look for stored system prompt variable
-		if value, ok := ctx.variables["#system_prompt"]; ok {
+		ctx.variablesMutex.RLock()
+		value, ok := ctx.variables["#system_prompt"]
+		ctx.variablesMutex.RUnlock()
+		if ok {
 			return value, true
 		}
 		return "", false
 	case "#session_created":
 		// Look for stored session creation time variable
-		if value, ok := ctx.variables["#session_created"]; ok {
+		ctx.variablesMutex.RLock()
+		value, ok := ctx.variables["#session_created"]
+		ctx.variablesMutex.RUnlock()
+		if ok {
 			return value, true
 		}
 		return "", false
@@ -211,7 +277,10 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 	// Handle message history variables: ${1}, ${2}, etc.
 	if matched, _ := regexp.MatchString(`^\d+$`, name); matched {
 		// Check if the variable is stored in the regular variables map first
-		if value, ok := ctx.variables[name]; ok {
+		ctx.variablesMutex.RLock()
+		value, ok := ctx.variables[name]
+		ctx.variablesMutex.RUnlock()
+		if ok {
 			return value, true
 		}
 		// Return empty string if not found (was previously returning placeholder)
@@ -298,11 +367,16 @@ func (ctx *NeuroContext) interpolateOnce(text string) string {
 
 // QueueCommand adds a command to the execution queue.
 func (ctx *NeuroContext) QueueCommand(command string) {
+	ctx.queueMutex.Lock()
 	ctx.executionQueue = append(ctx.executionQueue, command)
+	ctx.queueMutex.Unlock()
 }
 
 // DequeueCommand removes and returns the first command from the queue.
 func (ctx *NeuroContext) DequeueCommand() (string, bool) {
+	ctx.queueMutex.Lock()
+	defer ctx.queueMutex.Unlock()
+
 	if len(ctx.executionQueue) == 0 {
 		return "", false
 	}
@@ -314,16 +388,23 @@ func (ctx *NeuroContext) DequeueCommand() (string, bool) {
 
 // GetQueueSize returns the number of commands in the execution queue.
 func (ctx *NeuroContext) GetQueueSize() int {
+	ctx.queueMutex.Lock()
+	defer ctx.queueMutex.Unlock()
 	return len(ctx.executionQueue)
 }
 
 // ClearQueue removes all commands from the execution queue.
 func (ctx *NeuroContext) ClearQueue() {
+	ctx.queueMutex.Lock()
 	ctx.executionQueue = make([]string, 0)
+	ctx.queueMutex.Unlock()
 }
 
 // PeekQueue returns a copy of the execution queue without modifying it.
 func (ctx *NeuroContext) PeekQueue() []string {
+	ctx.queueMutex.Lock()
+	defer ctx.queueMutex.Unlock()
+
 	// Return a copy to prevent external modification
 	result := make([]string, len(ctx.executionQueue))
 	copy(result, ctx.executionQueue)
@@ -332,18 +413,24 @@ func (ctx *NeuroContext) PeekQueue() []string {
 
 // SetScriptMetadata stores metadata associated with script execution.
 func (ctx *NeuroContext) SetScriptMetadata(key string, value interface{}) {
+	ctx.scriptMutex.Lock()
 	ctx.scriptMetadata[key] = value
+	ctx.scriptMutex.Unlock()
 }
 
 // GetScriptMetadata retrieves metadata by key, returning the value and existence flag.
 func (ctx *NeuroContext) GetScriptMetadata(key string) (interface{}, bool) {
+	ctx.scriptMutex.RLock()
 	value, exists := ctx.scriptMetadata[key]
+	ctx.scriptMutex.RUnlock()
 	return value, exists
 }
 
 // ClearScriptMetadata removes all script metadata.
 func (ctx *NeuroContext) ClearScriptMetadata() {
+	ctx.scriptMutex.Lock()
 	ctx.scriptMetadata = make(map[string]interface{})
+	ctx.scriptMutex.Unlock()
 }
 
 // SetTestMode enables or disables test mode for deterministic behavior.
@@ -448,4 +535,15 @@ func (ctx *NeuroContext) ModelNameExists(name string) bool {
 func (ctx *NeuroContext) ModelIDExists(id string) bool {
 	_, exists := ctx.models[id]
 	return exists
+}
+
+// GetLLMClient retrieves an LLM client by API key identifier
+func (ctx *NeuroContext) GetLLMClient(apiKey string) (neurotypes.LLMClient, bool) {
+	client, exists := ctx.llmClients[apiKey]
+	return client, exists
+}
+
+// SetLLMClient stores an LLM client by API key identifier
+func (ctx *NeuroContext) SetLLMClient(apiKey string, client neurotypes.LLMClient) {
+	ctx.llmClients[apiKey] = client
 }

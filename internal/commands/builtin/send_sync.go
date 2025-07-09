@@ -3,6 +3,8 @@ package builtin
 import (
 	"fmt"
 
+	"os"
+
 	"neuroshell/internal/commands"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
@@ -90,10 +92,24 @@ func (c *SendSyncCommand) Execute(_ map[string]string, input string) error {
 		return fmt.Errorf("failed to get variable service: %w", err)
 	}
 
-	llmService, err := services.GetGlobalLLMService()
+	// Get client factory service
+	clientFactoryService, err := services.GetGlobalRegistry().GetService("client_factory")
+	if err != nil {
+		logger.Error("Failed to get client factory service", "error", err)
+		return fmt.Errorf("failed to get client factory service: %w", err)
+	}
+	clientFactory := clientFactoryService.(neurotypes.ClientFactory)
+
+	// Get new LLM service
+	llmServiceRaw, err := services.GetGlobalRegistry().GetService("llm")
 	if err != nil {
 		logger.Error("Failed to get LLM service", "error", err)
 		return fmt.Errorf("failed to get LLM service: %w", err)
+	}
+	llmService, ok := llmServiceRaw.(neurotypes.LLMService)
+	if !ok {
+		logger.Error("LLM service does not implement neurotypes.LLMService interface")
+		return fmt.Errorf("LLM service does not implement neurotypes.LLMService interface")
 	}
 	logger.Debug("All services acquired successfully")
 
@@ -114,13 +130,7 @@ func (c *SendSyncCommand) Execute(_ map[string]string, input string) error {
 		logger.Debug("Active session found", "session_id", activeSession.ID)
 	}
 
-	// 4. Add user message to session
-	logger.Debug("Adding user message to session", "session_id", activeSession.ID, "message", input)
-	err = chatSessionService.AddMessage(activeSession.ID, "user", input)
-	if err != nil {
-		logger.Error("Failed to add user message", "error", err)
-		return fmt.Errorf("failed to add user message: %w", err)
-	}
+	// 4. Note: User message will be added by the LLM service during request
 
 	// 5. Get model configuration for active session
 	logger.Debug("Getting model configuration")
@@ -131,20 +141,43 @@ func (c *SendSyncCommand) Execute(_ map[string]string, input string) error {
 	}
 	logger.Debug("Model config acquired", "model", modelConfig.BaseModel, "provider", modelConfig.Provider)
 
-	// 6. Send synchronous request to LLM
+	// 6. Determine API key source (model config, user config, or env var)
+	apiKey := c.determineAPIKey(modelConfig)
+	if apiKey == "" {
+		logger.Error("No API key found")
+		return fmt.Errorf("no API key found. Set OPENAI_API_KEY environment variable or configure in model")
+	}
+
+	// 7. Get appropriate client
+	logger.Debug("Getting LLM client", "provider", modelConfig.Provider)
+	client, err := clientFactory.GetClient(apiKey)
+	if err != nil {
+		logger.Error("Failed to get LLM client", "error", err)
+		return fmt.Errorf("failed to get LLM client: %w", err)
+	}
+
+	// 8. Send synchronous request to LLM using new orchestration pattern
 	logger.Debug("Sending LLM request", "model", modelConfig.BaseModel)
-	response, err := llmService.SendChatCompletionWithGlobalContext(activeSession, modelConfig)
+	response, err := llmService.SendCompletion(client, activeSession, modelConfig, input)
 	if err != nil {
 		logger.Error("LLM request failed", "error", err)
 		return fmt.Errorf("LLM request failed: %w", err)
 	}
 	logger.Debug("LLM response received", "response_length", len(response))
 
-	// 7. Display response to user
+	// 9. Display response to user
 	logger.Debug("Displaying response to user")
 	fmt.Println(response)
 
-	// 8. Add LLM response to session
+	// 10. Add user message to session
+	logger.Debug("Adding user message to session")
+	err = chatSessionService.AddMessage(activeSession.ID, "user", input)
+	if err != nil {
+		logger.Error("Failed to add user message", "error", err)
+		return fmt.Errorf("failed to add user message: %w", err)
+	}
+
+	// 11. Add LLM response to session
 	logger.Debug("Adding LLM response to session")
 	err = chatSessionService.AddMessage(activeSession.ID, "assistant", response)
 	if err != nil {
@@ -152,7 +185,7 @@ func (c *SendSyncCommand) Execute(_ map[string]string, input string) error {
 		return fmt.Errorf("failed to add assistant message: %w", err)
 	}
 
-	// 9. Update message history variables (${1}, ${2}, etc.)
+	// 12. Update message history variables (${1}, ${2}, etc.)
 	logger.Debug("Updating message history variables")
 	err = variableService.UpdateMessageHistoryVariables(activeSession)
 	if err != nil {
@@ -162,6 +195,19 @@ func (c *SendSyncCommand) Execute(_ map[string]string, input string) error {
 
 	logger.Debug("Send-sync completed successfully")
 	return nil
+}
+
+// determineAPIKey determines the API key from multiple sources in order of preference:
+// 1. Model configuration
+// 2. Environment variable
+func (c *SendSyncCommand) determineAPIKey(_ *neurotypes.ModelConfig) string {
+	// Check model configuration first (future enhancement)
+	// if modelConfig.APIKey != "" {
+	//     return modelConfig.APIKey
+	// }
+
+	// Check environment variable
+	return os.Getenv("OPENAI_API_KEY")
 }
 
 func init() {

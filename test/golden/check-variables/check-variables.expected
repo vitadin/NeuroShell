@@ -1,18 +1,21 @@
 Status: success
-Output: ✓ bash - available/initialized
+Output: ✓ autocomplete - available/initialized
+✓ bash - available/initialized
 ✓ chat_session - available/initialized
+✓ client_factory - available/initialized
 ✓ editor - available/initialized
 ✓ executor - available/initialized
 ✓ help - available/initialized
 ✓ interpolation - available/initialized
 ✓ llm - available/initialized
+✓ markdown - available/initialized
 ✓ model - available/initialized
 ✓ model_catalog - available/initialized
 ✓ script - available/initialized
 ✓ theme - available/initialized
 ✓ variable - available/initialized
 Failed services: 
-Total services: 12
+Total services: 15
 Failed count: 0
 Bash check status: success
 Bash total services: 1

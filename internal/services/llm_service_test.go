@@ -1,7 +1,6 @@
 package services
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,36 +15,54 @@ func TestLLMService_Name(t *testing.T) {
 	assert.Equal(t, "llm", service.Name())
 }
 
-func TestLLMService_Initialize_WithoutAPIKey(t *testing.T) {
+func TestLLMService_Initialize(t *testing.T) {
 	service := NewLLMService()
 
-	// Temporarily unset OPENAI_API_KEY
-	originalKey := os.Getenv("OPENAI_API_KEY")
-	_ = os.Unsetenv("OPENAI_API_KEY")
-	defer func() {
-		if originalKey != "" {
-			_ = os.Setenv("OPENAI_API_KEY", originalKey)
-		}
-	}()
-
-	// This should fail because OPENAI_API_KEY is not set
+	// The new LLMService no longer depends on API keys for initialization
 	err := service.Initialize()
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "OPENAI_API_KEY environment variable not set")
+	require.NoError(t, err)
 }
 
-// Test MockLLMService
-func TestMockLLMService_Basic(t *testing.T) {
-	service := NewMockLLMService()
+// MockLLMClient for testing
+type MockLLMClient struct {
+	configured bool
+	response   string
+}
 
-	// Test name
-	assert.Equal(t, "llm", service.Name())
+func NewMockLLMClient() *MockLLMClient {
+	return &MockLLMClient{
+		configured: true,
+		response:   "This is a mock LLM response.",
+	}
+}
 
-	// Test initialization
+func (m *MockLLMClient) SendChatCompletion(_ *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (string, error) {
+	return m.response, nil
+}
+
+func (m *MockLLMClient) StreamChatCompletion(_ *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
+	ch := make(chan neurotypes.StreamChunk, 1)
+	ch <- neurotypes.StreamChunk{Content: m.response, Done: true}
+	close(ch)
+	return ch, nil
+}
+
+func (m *MockLLMClient) GetProviderName() string {
+	return "mock"
+}
+
+func (m *MockLLMClient) IsConfigured() bool {
+	return m.configured
+}
+
+// Test LLMService with mock client
+func TestLLMService_SendCompletion(t *testing.T) {
+	service := NewLLMService()
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	// Test chat completion with empty session (should use default response)
+	client := NewMockLLMClient()
+
 	session := &neurotypes.ChatSession{
 		ID:       "test-session",
 		Name:     "test",
@@ -57,15 +74,17 @@ func TestMockLLMService_Basic(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	response, err := service.SendChatCompletion(session, modelConfig)
+	response, err := service.SendCompletion(client, session, modelConfig, "Hello, world!")
 	require.NoError(t, err)
 	assert.Equal(t, "This is a mock LLM response.", response)
 }
 
-func TestMockLLMService_DifferentModels(t *testing.T) {
-	service := NewMockLLMService()
+func TestLLMService_SendCompletion_DifferentModels(t *testing.T) {
+	service := NewLLMService()
 	err := service.Initialize()
 	require.NoError(t, err)
+
+	client := NewMockLLMClient()
 
 	session := &neurotypes.ChatSession{
 		ID:       "test-session",
@@ -89,20 +108,23 @@ func TestMockLLMService_DifferentModels(t *testing.T) {
 				Provider:  "openai",
 			}
 
-			response, err := service.SendChatCompletion(session, modelConfig)
+			response, err := service.SendCompletion(client, session, modelConfig, "Hello")
 			require.NoError(t, err)
 			assert.Equal(t, tt.expected, response)
 		})
 	}
 }
 
-func TestMockLLMService_CustomResponse(t *testing.T) {
-	service := NewMockLLMService()
+func TestLLMService_SendCompletion_CustomResponse(t *testing.T) {
+	service := NewLLMService()
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	// Set custom response
-	service.SetMockResponse("custom-model", "Custom response for testing")
+	// Create mock client with custom response
+	client := &MockLLMClient{
+		configured: true,
+		response:   "Custom response for testing",
+	}
 
 	session := &neurotypes.ChatSession{
 		ID:       "test-session",
@@ -115,17 +137,19 @@ func TestMockLLMService_CustomResponse(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	response, err := service.SendChatCompletion(session, modelConfig)
+	response, err := service.SendCompletion(client, session, modelConfig, "Hello")
 	require.NoError(t, err)
-	assert.Equal(t, "This is a mock LLM response.", response)
+	assert.Equal(t, "Custom response for testing", response)
 }
 
-func TestMockLLMService_WithActualMessages(t *testing.T) {
-	service := NewMockLLMService()
+func TestLLMService_SendCompletion_WithActualMessages(t *testing.T) {
+	service := NewLLMService()
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	// Test with actual user message
+	client := NewMockLLMClient()
+
+	// Test with existing messages in session
 	session := &neurotypes.ChatSession{
 		ID:   "test-session",
 		Name: "test",
@@ -133,7 +157,7 @@ func TestMockLLMService_WithActualMessages(t *testing.T) {
 			{
 				ID:      "msg1",
 				Role:    "user",
-				Content: "Test message content",
+				Content: "Previous message",
 			},
 		},
 	}
@@ -143,13 +167,36 @@ func TestMockLLMService_WithActualMessages(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	response, err := service.SendChatCompletion(session, modelConfig)
+	response, err := service.SendCompletion(client, session, modelConfig, "New message")
 	require.NoError(t, err)
-	assert.Equal(t, "This is a mocking reply message for the sending message: Test message content", response)
+	assert.Equal(t, "This is a mock LLM response.", response)
 }
 
-func TestMockLLMService_NotInitialized(t *testing.T) {
-	service := NewMockLLMService()
+func TestLLMService_SendCompletion_NotInitialized(t *testing.T) {
+	service := NewLLMService()
+	// Don't initialize the service
+
+	client := NewMockLLMClient()
+	session := &neurotypes.ChatSession{
+		ID:       "test-session",
+		Name:     "test",
+		Messages: []neurotypes.Message{},
+	}
+
+	modelConfig := &neurotypes.ModelConfig{
+		BaseModel: "gpt-4",
+		Provider:  "openai",
+	}
+
+	_, err := service.SendCompletion(client, session, modelConfig, "Hello")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "llm service not initialized")
+}
+
+func TestLLMService_SendCompletion_NilClient(t *testing.T) {
+	service := NewLLMService()
+	err := service.Initialize()
+	require.NoError(t, err)
 
 	session := &neurotypes.ChatSession{
 		ID:       "test-session",
@@ -162,7 +209,34 @@ func TestMockLLMService_NotInitialized(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	_, err := service.SendChatCompletion(session, modelConfig)
+	_, err = service.SendCompletion(nil, session, modelConfig, "Hello")
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "mock llm service not initialized")
+	assert.Contains(t, err.Error(), "llm client cannot be nil")
+}
+
+func TestLLMService_SendCompletion_UnconfiguredClient(t *testing.T) {
+	service := NewLLMService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Create unconfigured client
+	client := &MockLLMClient{
+		configured: false,
+		response:   "Should not see this",
+	}
+
+	session := &neurotypes.ChatSession{
+		ID:       "test-session",
+		Name:     "test",
+		Messages: []neurotypes.Message{},
+	}
+
+	modelConfig := &neurotypes.ModelConfig{
+		BaseModel: "gpt-4",
+		Provider:  "openai",
+	}
+
+	_, err = service.SendCompletion(client, session, modelConfig, "Hello")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "llm client is not configured")
 }

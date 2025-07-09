@@ -10,6 +10,7 @@ import (
 	_ "neuroshell/internal/commands/assert"  // Import assert commands (init functions)
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
 	_ "neuroshell/internal/commands/model"   // Import model commands (init functions)
+	_ "neuroshell/internal/commands/render"  // Import render commands (init functions)
 	_ "neuroshell/internal/commands/session" // Import session commands (init functions)
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
@@ -96,7 +97,12 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
-	// Use mock LLM service in test mode, real LLM service in production
+	// Register ClientFactory service
+	if err := services.GetGlobalRegistry().RegisterService(services.NewClientFactoryService()); err != nil {
+		return err
+	}
+
+	// Use mock LLM service in test mode, new LLM service in production
 	if testMode {
 		if err := services.GetGlobalRegistry().RegisterService(services.NewMockLLMService()); err != nil {
 			return err
@@ -110,6 +116,20 @@ func InitializeServices(testMode bool) error {
 	// Register ThemeService if not already registered (needed for tests that clear the registry)
 	if !services.GetGlobalRegistry().HasService("theme") {
 		if err := services.GetGlobalRegistry().RegisterService(services.NewThemeService()); err != nil {
+			return err
+		}
+	}
+
+	// Register AutoCompleteService if not already registered
+	if !services.GetGlobalRegistry().HasService("autocomplete") {
+		if err := services.GetGlobalRegistry().RegisterService(services.NewAutoCompleteService()); err != nil {
+			return err
+		}
+	}
+
+	// Register MarkdownService if not already registered
+	if !services.GetGlobalRegistry().HasService("markdown") {
+		if err := services.GetGlobalRegistry().RegisterService(services.NewMarkdownService()); err != nil {
 			return err
 		}
 	}

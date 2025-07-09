@@ -53,7 +53,7 @@ func TestEditorCommand_Execute_EditorServiceNotAvailable(t *testing.T) {
 
 func TestEditorCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 	cmd := &EditorCommand{}
-	// ctx := testutils.NewMockContext()
+	// ctx := context.NewTestContext()
 	// Set up registry with editor service but no variable service
 	registry := services.NewRegistry()
 	editorService := services.NewEditorService()
@@ -75,7 +75,7 @@ func TestEditorCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 
 func TestEditorCommand_Execute_MockSuccess(t *testing.T) {
 	cmd := &EditorCommand{}
-	// ctx := testutils.NewMockContext()
+	// ctx := context.NewTestContext()
 	// Set up mock editor environment for fast testing
 	helper := testutils.SetupMockEditor()
 	defer helper.Cleanup()
@@ -120,7 +120,7 @@ func TestEditorCommand_Execute_MockSuccess(t *testing.T) {
 func TestEditorCommand_Execute_WithEchoEditor(t *testing.T) {
 	// This test specifically uses echo as EDITOR for fast, predictable testing
 	cmd := &EditorCommand{}
-	// ctx := testutils.NewMockContext()
+	// ctx := context.NewTestContext()
 	// Set up mock editor environment for fast testing
 	helper := testutils.SetupMockEditor()
 	defer helper.Cleanup()
@@ -155,7 +155,7 @@ func TestEditorCommand_Execute_WithEchoEditor(t *testing.T) {
 
 func TestEditorCommand_Execute_EmptyArgs(t *testing.T) {
 	cmd := &EditorCommand{}
-	// ctx := testutils.NewMockContext()
+	// ctx := context.NewTestContext()
 	// Set up complete service registry
 	registry := services.NewRegistry()
 
@@ -189,7 +189,7 @@ func TestEditorCommand_Execute_EmptyArgs(t *testing.T) {
 
 func TestEditorCommand_Execute_ArgsHandling(t *testing.T) {
 	cmd := &EditorCommand{}
-	// ctx := testutils.NewMockContext()
+	// ctx := context.NewTestContext()
 	// Set up service registry
 	registry := services.NewRegistry()
 
@@ -239,7 +239,7 @@ func TestEditorCommand_Integration_WithMockContext(t *testing.T) {
 	//	"@editor":  "echo", // Use echo as a mock editor
 	//	"test_var": "test_value",
 	// }
-	// ctx := testutils.NewMockContextWithVars(vars)
+	// ctx := context.NewTestContextWithVars(vars)
 
 	// Set up service registry
 	registry := services.NewRegistry()
@@ -279,7 +279,7 @@ func TestEditorCommand_ServiceInteraction(t *testing.T) {
 	// without actually executing an external editor
 
 	cmd := &EditorCommand{}
-	// ctx := testutils.NewMockContext()
+	// ctx := context.NewTestContext()
 	// Test 1: Missing editor service
 	registry1 := services.NewRegistry()
 	variableService := services.NewVariableService()

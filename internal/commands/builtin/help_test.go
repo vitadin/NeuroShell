@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/context"
 	"neuroshell/internal/services"
-	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -51,7 +51,7 @@ func setupHelpTestEnvironment(t *testing.T, testCommands []neurotypes.Command) n
 	require.NoError(t, err)
 
 	// Create context and initialize services
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 	err = helpService.Initialize()
 	require.NoError(t, err)
 	err = themeService.Initialize()
@@ -458,7 +458,7 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 func TestHelpCommand_Execute_ServiceUnavailable(t *testing.T) {
 	// Test when help service is not available
 	cmd := &HelpCommand{}
-	testutils.NewMockContext()
+	context.NewTestContext()
 
 	// Don't set up help service - this will cause service not found error
 	err := cmd.Execute(map[string]string{}, "")
@@ -708,7 +708,7 @@ func BenchmarkHelpCommand_Execute_SmallRegistry(b *testing.B) {
 	}()
 
 	cmd := &HelpCommand{}
-	testutils.NewMockContext()
+	context.NewTestContext()
 
 	// Redirect stdout to avoid benchmark noise
 	originalStdout := os.Stdout
@@ -742,7 +742,7 @@ func BenchmarkHelpCommand_Execute_LargeRegistry(b *testing.B) {
 	}()
 
 	cmd := &HelpCommand{}
-	testutils.NewMockContext()
+	context.NewTestContext()
 
 	// Redirect stdout to avoid benchmark noise
 	originalStdout := os.Stdout

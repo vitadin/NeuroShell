@@ -31,6 +31,14 @@ type Context interface {
 	SetModelIDToName(idToName map[string]string)
 	ModelNameExists(name string) bool
 	ModelIDExists(id string) bool
+
+	// LLM client storage methods
+	GetLLMClient(apiKey string) (LLMClient, bool)
+	SetLLMClient(apiKey string, client LLMClient)
+
+	// Testing and debugging methods
+	GetAllVariables() map[string]string
+	SetVariableWithValidation(name string, value string) error
 }
 
 // Service defines the interface for NeuroShell services that provide specific functionality.

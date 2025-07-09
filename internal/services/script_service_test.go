@@ -11,6 +11,7 @@ import (
 
 	"neuroshell/internal/context"
 	"neuroshell/internal/testutils"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestScriptService_Name(t *testing.T) {
@@ -21,12 +22,12 @@ func TestScriptService_Name(t *testing.T) {
 func TestScriptService_Initialize(t *testing.T) {
 	tests := []struct {
 		name string
-		ctx  *testutils.MockContext
+		ctx  neurotypes.Context
 		want error
 	}{
 		{
 			name: "successful initialization",
-			ctx:  testutils.NewMockContext(),
+			ctx:  context.NewTestContext(),
 			want: nil,
 		},
 	}
@@ -108,9 +109,9 @@ func TestScriptService_LoadScript(t *testing.T) {
 			// Create temporary script file
 			scriptPath := fileHelper.CreateTempFile(t, tt.scriptName, tt.scriptContent)
 
-			// Test LoadScript - note this will fail since MockContext is not NeuroContext
+			// Test LoadScript with TestContext
 			// Setup global context for testing
-			ctx := testutils.NewMockContext()
+			ctx := context.NewTestContext()
 			context.SetGlobalContext(ctx)
 			defer context.ResetGlobalContext()
 
@@ -120,9 +121,8 @@ func TestScriptService_LoadScript(t *testing.T) {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.wantError)
 			} else {
-				// Should fail because MockContext is not a NeuroContext
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), "context is not a NeuroContext")
+				// TestContext should work properly
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -138,7 +138,7 @@ func TestScriptService_LoadScript_FileNotFound(t *testing.T) {
 
 	// Try to load non-existent file
 	// Setup global context for testing
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -158,7 +158,7 @@ func TestScriptService_LoadScript_NotInitialized(t *testing.T) {
 
 	// Try to load without initialization
 	// Setup global context for testing
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 	context.SetGlobalContext(ctx)
 	defer context.ResetGlobalContext()
 
@@ -176,19 +176,18 @@ func TestScriptService_GetScriptMetadata(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	// Test GetScriptMetadata - note this will fail since MockContext is not NeuroContext
-	ctx := testutils.NewMockContext()
+	// Test GetScriptMetadata with TestContext
+	ctx := context.NewTestContext()
 	metadata, err := service.GetScriptMetadata(ctx)
 
-	// Should fail because MockContext is not a NeuroContext
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "context is not a NeuroContext")
-	assert.Nil(t, metadata)
+	// TestContext should work properly
+	assert.NoError(t, err)
+	assert.NotNil(t, metadata)
 }
 
 func TestScriptService_GetScriptMetadata_NotInitialized(t *testing.T) {
 	service := NewScriptService()
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	metadata, err := service.GetScriptMetadata(ctx)
 
@@ -292,9 +291,9 @@ func BenchmarkScriptService_LoadScript_Small(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		// This will error due to MockContext, but we're measuring file I/O performance
+		// This will work with TestContext
 		// Setup global context for testing
-		ctx := testutils.NewMockContext()
+		ctx := context.NewTestContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -322,9 +321,9 @@ func BenchmarkScriptService_LoadScript_Large(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		// This will error due to MockContext, but we're measuring file I/O performance
+		// This will work with TestContext
 		// Setup global context for testing
-		ctx := testutils.NewMockContext()
+		ctx := context.NewTestContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -367,15 +366,15 @@ func TestScriptService_EdgeCases(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			scriptPath := fileHelper.CreateTempFile(t, "edge.neuro", tc.content)
 
-			// Should handle edge cases gracefully (even if it errors due to MockContext)
+			// Should handle edge cases gracefully
 			// Setup global context for testing
-			ctx := testutils.NewMockContext()
+			ctx := context.NewTestContext()
 			context.SetGlobalContext(ctx)
 			defer context.ResetGlobalContext()
 
 			err := service.LoadScript(scriptPath)
-			// We expect error due to MockContext, but it shouldn't panic
-			assert.Error(t, err)
+			// Should work with TestContext
+			assert.NoError(t, err)
 		})
 	}
 }
@@ -393,7 +392,7 @@ func TestScriptService_ConcurrentAccess(t *testing.T) {
 	tmpDir := fileHelper.CreateTempDir(t, scripts)
 
 	// Set up shared global context to avoid race conditions
-	sharedCtx := testutils.NewMockContext()
+	sharedCtx := context.NewTestContext()
 	context.SetGlobalContext(sharedCtx)
 	defer context.ResetGlobalContext()
 
@@ -410,8 +409,8 @@ func TestScriptService_ConcurrentAccess(t *testing.T) {
 			scriptPath := filepath.Join(tmpDir, fmt.Sprintf("script%d.neuro", id+1))
 
 			err = service.LoadScript(scriptPath)
-			// Expect error due to MockContext, but shouldn't panic
-			assert.Error(t, err)
+			// Should work with TestContext
+			assert.NoError(t, err)
 
 			done <- true
 		}(i)

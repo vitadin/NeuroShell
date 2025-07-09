@@ -5,7 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"neuroshell/internal/testutils"
+	"neuroshell/internal/context"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestModelService_Name(t *testing.T) {
@@ -16,12 +17,12 @@ func TestModelService_Name(t *testing.T) {
 func TestModelService_Initialize(t *testing.T) {
 	tests := []struct {
 		name string
-		ctx  *testutils.MockContext
+		ctx  neurotypes.Context
 		want error
 	}{
 		{
 			name: "successful initialization",
-			ctx:  testutils.NewMockContext(),
+			ctx:  context.NewTestContext(),
 			want: nil,
 		},
 	}

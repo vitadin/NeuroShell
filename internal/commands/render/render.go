@@ -1,4 +1,4 @@
-package builtin
+package render
 
 import (
 	"fmt"
@@ -13,32 +13,32 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-// RenderCommand implements the \render command for styling and highlighting text.
+// Command implements the \render command for styling and highlighting text.
 // It provides lipgloss-based text rendering with keyword highlighting and theme support.
-type RenderCommand struct{}
+type Command struct{}
 
 // Name returns the command name "render" for registration and lookup.
-func (c *RenderCommand) Name() string {
+func (c *Command) Name() string {
 	return "render"
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
-func (c *RenderCommand) ParseMode() neurotypes.ParseMode {
+func (c *Command) ParseMode() neurotypes.ParseMode {
 	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the render command does.
-func (c *RenderCommand) Description() string {
+func (c *Command) Description() string {
 	return "Style and highlight text using lipgloss with keyword support"
 }
 
 // Usage returns the syntax and usage examples for the render command.
-func (c *RenderCommand) Usage() string {
+func (c *Command) Usage() string {
 	return "\\render[keywords=[\\get,\\set], style=bold, theme=dark, to=var] text to render"
 }
 
 // HelpInfo returns structured help information for the render command.
-func (c *RenderCommand) HelpInfo() neurotypes.HelpInfo {
+func (c *Command) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
@@ -124,7 +124,7 @@ func (c *RenderCommand) HelpInfo() neurotypes.HelpInfo {
 //   - underline: make text underlined (true/false)
 //   - to: variable to store result (default: ${_output})
 //   - silent: suppress console output (true/false, default: false)
-func (c *RenderCommand) Execute(args map[string]string, input string) error {
+func (c *Command) Execute(args map[string]string, input string) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
@@ -191,7 +191,7 @@ func (c *RenderCommand) Execute(args map[string]string, input string) error {
 }
 
 // renderText applies styling to text using theme objects and command arguments
-func (c *RenderCommand) renderText(text string, args map[string]string, theme *services.Theme) string {
+func (c *Command) renderText(text string, args map[string]string, theme *services.Theme) string {
 	result := text
 
 	// Apply keyword highlighting first if specified
@@ -223,7 +223,7 @@ func (c *RenderCommand) renderText(text string, args map[string]string, theme *s
 }
 
 // hasGlobalStyling checks if any global styling options are specified
-func (c *RenderCommand) hasGlobalStyling(args map[string]string) bool {
+func (c *Command) hasGlobalStyling(args map[string]string) bool {
 	_, hasStyle := args["style"]
 	_, hasColor := args["color"]
 	_, hasBackground := args["background"]
@@ -235,7 +235,7 @@ func (c *RenderCommand) hasGlobalStyling(args map[string]string) bool {
 }
 
 // highlightKeywords highlights specific keywords in the text using theme styles
-func (c *RenderCommand) highlightKeywords(text string, keywords []string, theme *services.Theme) string {
+func (c *Command) highlightKeywords(text string, keywords []string, theme *services.Theme) string {
 	result := text
 
 	for _, keyword := range keywords {
@@ -260,7 +260,7 @@ func (c *RenderCommand) highlightKeywords(text string, keywords []string, theme 
 }
 
 // highlightNeuroShellSyntax applies syntax highlighting for NeuroShell-specific patterns
-func (c *RenderCommand) highlightNeuroShellSyntax(text string, theme *services.Theme) string {
+func (c *Command) highlightNeuroShellSyntax(text string, theme *services.Theme) string {
 	result := text
 
 	// Highlight variables: ${variable_name}
@@ -283,7 +283,7 @@ func (c *RenderCommand) highlightNeuroShellSyntax(text string, theme *services.T
 }
 
 // applyGlobalStyling applies global style options to the entire text using theme and custom options
-func (c *RenderCommand) applyGlobalStyling(text string, args map[string]string, theme *services.Theme) string {
+func (c *Command) applyGlobalStyling(text string, args map[string]string, theme *services.Theme) string {
 	style := lipgloss.NewStyle()
 
 	// Apply boolean styling options
@@ -337,7 +337,7 @@ func (c *RenderCommand) applyGlobalStyling(text string, args map[string]string, 
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&RenderCommand{}); err != nil {
+	if err := commands.GlobalRegistry.Register(&Command{}); err != nil {
 		panic(fmt.Sprintf("failed to register render command: %v", err))
 	}
 }

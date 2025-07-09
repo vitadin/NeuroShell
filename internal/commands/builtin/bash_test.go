@@ -12,7 +12,6 @@ import (
 
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
-	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -39,7 +38,7 @@ func TestBashCommand_Usage(t *testing.T) {
 func TestBashCommand_Execute_Success(t *testing.T) {
 	// Setup
 	cmd := &BashCommand{}
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	// Setup test registry with bash service
 	setupBashTestRegistry(t, ctx)
@@ -93,7 +92,7 @@ func TestBashCommand_Execute_Success(t *testing.T) {
 func TestBashCommand_Execute_WithError(t *testing.T) {
 	// Setup
 	cmd := &BashCommand{}
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	// Setup test registry with bash service
 	setupBashTestRegistry(t, ctx)
@@ -191,7 +190,7 @@ func TestBashCommand_Execute_WrongServiceType(t *testing.T) {
 func TestBashCommand_Execute_OutputFormatting(t *testing.T) {
 	// Setup
 	cmd := &BashCommand{}
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	// Setup test registry with bash service
 	setupBashTestRegistry(t, ctx)
@@ -249,7 +248,7 @@ func TestBashCommand_Execute_OutputFormatting(t *testing.T) {
 func TestBashCommand_Execute_VariablesSet(t *testing.T) {
 	// Setup
 	cmd := &BashCommand{}
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	// Setup test registry with bash service
 	setupBashTestRegistry(t, ctx)
@@ -277,7 +276,7 @@ func TestBashCommand_Execute_VariablesSet(t *testing.T) {
 func TestBashCommand_Execute_FailedCommandVariables(t *testing.T) {
 	// Setup
 	cmd := &BashCommand{}
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	// Setup test registry with bash service
 	setupBashTestRegistry(t, ctx)
@@ -305,7 +304,7 @@ func TestBashCommand_Execute_FailedCommandVariables(t *testing.T) {
 func TestBashCommand_Execute_IntegrationWithRealCommands(t *testing.T) {
 	// Setup
 	cmd := &BashCommand{}
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	// Setup test registry with bash service
 	setupBashTestRegistry(t, ctx)
@@ -314,12 +313,12 @@ func TestBashCommand_Execute_IntegrationWithRealCommands(t *testing.T) {
 	tests := []struct {
 		name    string
 		command string
-		check   func(t *testing.T, output string, ctx *testutils.MockContext)
+		check   func(t *testing.T, output string, ctx neurotypes.Context)
 	}{
 		{
 			name:    "pwd command",
 			command: "pwd",
-			check: func(t *testing.T, output string, ctx *testutils.MockContext) {
+			check: func(t *testing.T, output string, ctx neurotypes.Context) {
 				// Should contain a path
 				assert.Contains(t, output, "/")
 
@@ -333,7 +332,7 @@ func TestBashCommand_Execute_IntegrationWithRealCommands(t *testing.T) {
 		{
 			name:    "date command",
 			command: "date +%Y",
-			check: func(t *testing.T, output string, ctx *testutils.MockContext) {
+			check: func(t *testing.T, output string, ctx neurotypes.Context) {
 				// Should contain a 4-digit year
 				assert.Regexp(t, `\d{4}`, output)
 
@@ -347,7 +346,7 @@ func TestBashCommand_Execute_IntegrationWithRealCommands(t *testing.T) {
 		{
 			name:    "ls of current directory",
 			command: "ls -la .",
-			check: func(t *testing.T, output string, ctx *testutils.MockContext) {
+			check: func(t *testing.T, output string, ctx neurotypes.Context) {
 				// Should contain directory listing markers
 				assert.Contains(t, output, ".")
 

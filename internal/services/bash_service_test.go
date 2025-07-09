@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/context"
-	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -27,7 +26,7 @@ func TestBashService_Initialize(t *testing.T) {
 	}{
 		{
 			name: "successful initialization",
-			ctx:  testutils.NewMockContext(),
+			ctx:  context.GetGlobalContext(),
 			want: nil,
 		},
 	}
@@ -63,7 +62,12 @@ func TestBashService_SetTimeout(t *testing.T) {
 func TestBashService_Execute_Success(t *testing.T) {
 	// Setup
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
+
 	err := service.Initialize()
 	require.NoError(t, err)
 
@@ -102,9 +106,7 @@ func TestBashService_Execute_Success(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Setup global context for testing
-			context.SetGlobalContext(ctx)
-			defer context.ResetGlobalContext()
+			// Context is already set up globally for this test
 
 			stdout, stderr, exitCode, err := service.Execute(tt.command)
 
@@ -119,7 +121,10 @@ func TestBashService_Execute_Success(t *testing.T) {
 func TestBashService_Execute_WithError(t *testing.T) {
 	// Setup
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	err := service.Initialize()
 	require.NoError(t, err)
 
@@ -150,9 +155,7 @@ func TestBashService_Execute_WithError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Setup global context for testing
-			context.SetGlobalContext(ctx)
-			defer context.ResetGlobalContext()
+			// Context is already set up globally for this test
 
 			stdout, stderr, exitCode, err := service.Execute(tt.command)
 
@@ -171,7 +174,12 @@ func TestBashService_Execute_WithError(t *testing.T) {
 func TestBashService_Execute_WithStderr(t *testing.T) {
 	// Setup
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
+
 	err := service.Initialize()
 	require.NoError(t, err)
 
@@ -214,9 +222,7 @@ func TestBashService_Execute_WithStderr(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Setup global context for testing
-			context.SetGlobalContext(ctx)
-			defer context.ResetGlobalContext()
+			// Context is already set up globally for this test
 
 			stdout, stderr, exitCode, err := service.Execute(tt.command)
 
@@ -236,7 +242,10 @@ func TestBashService_Execute_WithStderr(t *testing.T) {
 
 func TestBashService_Execute_EmptyCommand(t *testing.T) {
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	err := service.Initialize()
 	require.NoError(t, err)
 
@@ -244,9 +253,7 @@ func TestBashService_Execute_EmptyCommand(t *testing.T) {
 
 	for _, emptyCmd := range tests {
 		t.Run(fmt.Sprintf("empty_command_%q", emptyCmd), func(t *testing.T) {
-			// Setup global context for testing
-			context.SetGlobalContext(ctx)
-			defer context.ResetGlobalContext()
+			// Context is already set up globally for this test
 
 			_, _, _, err := service.Execute(emptyCmd)
 			assert.Error(t, err)
@@ -257,7 +264,10 @@ func TestBashService_Execute_EmptyCommand(t *testing.T) {
 
 func TestBashService_Execute_NotInitialized(t *testing.T) {
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 
 	// Setup global context for testing
 	context.SetGlobalContext(ctx)
@@ -274,7 +284,10 @@ func TestBashService_Execute_NotInitialized(t *testing.T) {
 func TestBashService_Execute_SetsSystemVariables(t *testing.T) {
 	// Setup
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	err := service.Initialize()
 	require.NoError(t, err)
 
@@ -296,18 +309,15 @@ func TestBashService_Execute_SetsSystemVariables(t *testing.T) {
 	assert.Equal(t, 0, exitCode)
 
 	// Since the service calls SetSystemVariable through the VariableService,
-	// and our MockContext supports it, the variables should be set
-	// Let's verify by checking the MockContext directly
-	allVars := ctx.GetAllVariables()
-
-	// Check if system variables were set (they should be there if SetSystemVariable was called)
-	if outputVar, exists := allVars["_output"]; exists {
+	// the variables should be set in the context
+	// We can test this by trying to get the variables directly
+	if outputVar, err := ctx.GetVariable("_output"); err == nil {
 		assert.Equal(t, stdout, outputVar)
 	}
-	if statusVar, exists := allVars["_status"]; exists {
+	if statusVar, err := ctx.GetVariable("_status"); err == nil {
 		assert.Equal(t, fmt.Sprintf("%d", exitCode), statusVar)
 	}
-	if errorVar, exists := allVars["_error"]; exists {
+	if errorVar, err := ctx.GetVariable("_error"); err == nil {
 		assert.Equal(t, stderr, errorVar)
 	}
 }
@@ -315,7 +325,10 @@ func TestBashService_Execute_SetsSystemVariables(t *testing.T) {
 func TestBashService_Execute_VariableServiceError(t *testing.T) {
 	// Setup
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	err := service.Initialize()
 	require.NoError(t, err)
 
@@ -337,7 +350,10 @@ func TestBashService_Execute_Timeout(t *testing.T) {
 	// Setup with very short timeout
 	service := NewBashService()
 	service.SetTimeout(100 * time.Millisecond) // Even shorter timeout
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	err := service.Initialize()
 	require.NoError(t, err)
 
@@ -370,7 +386,10 @@ func TestBashService_Execute_Timeout(t *testing.T) {
 func TestBashService_Execute_LongOutput(t *testing.T) {
 	// Setup
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	err := service.Initialize()
 	require.NoError(t, err)
 
@@ -396,7 +415,10 @@ func TestBashService_Execute_LongOutput(t *testing.T) {
 func TestBashService_Execute_SpecialCharacters(t *testing.T) {
 	// Setup
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	err := service.Initialize()
 	require.NoError(t, err)
 
@@ -427,9 +449,7 @@ func TestBashService_Execute_SpecialCharacters(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Setup global context for testing
-			context.SetGlobalContext(ctx)
-			defer context.ResetGlobalContext()
+			// Context is already set up globally for this test
 
 			stdout, stderr, exitCode, err := service.Execute(tt.command)
 
@@ -444,7 +464,10 @@ func TestBashService_Execute_SpecialCharacters(t *testing.T) {
 func TestBashService_Execute_MultilineOutput(t *testing.T) {
 	// Setup
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	err := service.Initialize()
 	require.NoError(t, err)
 
@@ -474,7 +497,10 @@ func TestBashService_Execute_MultilineOutput(t *testing.T) {
 func TestBashService_Execute_EdgeCases(t *testing.T) {
 	// Setup
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	err := service.Initialize()
 	require.NoError(t, err)
 
@@ -505,9 +531,7 @@ func TestBashService_Execute_EdgeCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Setup global context for testing
-			context.SetGlobalContext(ctx)
-			defer context.ResetGlobalContext()
+			// Context is already set up globally for this test
 
 			_, _, _, err := service.Execute(tt.command)
 			assert.NoError(t, err, "Command should execute without error: %s", tt.command)
@@ -519,7 +543,10 @@ func TestBashService_Execute_EdgeCases(t *testing.T) {
 // With the new architecture, BashService uses global context directly
 func setupTestRegistry(t *testing.T) {
 	// Set up a mock context for testing
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	context.SetGlobalContext(ctx)
 
 	// Cleanup function to reset global context
@@ -531,7 +558,10 @@ func setupTestRegistry(t *testing.T) {
 // Benchmark tests
 func BenchmarkBashService_Execute_SimpleCommand(b *testing.B) {
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	_ = service.Initialize()
 
 	b.ResetTimer()
@@ -546,7 +576,10 @@ func BenchmarkBashService_Execute_SimpleCommand(b *testing.B) {
 
 func BenchmarkBashService_Execute_ComplexCommand(b *testing.B) {
 	service := NewBashService()
-	ctx := testutils.NewMockContext()
+	// Reset global context for clean test state
+	context.ResetGlobalContext()
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 	_ = service.Initialize()
 
 	command := "echo 'test' | grep 'test' | wc -l"

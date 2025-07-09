@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 	_ "neuroshell/internal/commands/assert"  // Import assert commands (init functions)
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
+	_ "neuroshell/internal/commands/render"  // Import render commands (init functions)
 	_ "neuroshell/internal/commands/session" // Import session commands (init functions)
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
@@ -170,6 +171,24 @@ func openEditorAndGetContent(initialContent string) (string, error) {
 	return content, nil
 }
 
+// setupAutoComplete configures the shell with custom autocomplete functionality.
+func setupAutoComplete(sh *ishell.Shell) error {
+	// Get the autocomplete service
+	autocompleteService, err := services.GetGlobalRegistry().GetService("autocomplete")
+	if err != nil {
+		return fmt.Errorf("autocomplete service not available: %w", err)
+	}
+
+	// Cast to AutoCompleteService
+	autoCompleter := autocompleteService.(*services.AutoCompleteService)
+
+	// Set up custom completer
+	sh.CustomCompleter(autoCompleter)
+
+	logger.Debug("Autocomplete service configured successfully")
+	return nil
+}
+
 func runShell(_ *cobra.Command, _ []string) {
 	logger.Info("Starting NeuroShell", "version", version)
 
@@ -183,6 +202,12 @@ func runShell(_ *cobra.Command, _ []string) {
 	// Create shell with custom readline configuration
 	cfg := createCustomReadlineConfig()
 	sh := ishell.NewWithConfig(cfg)
+
+	// Set up autocomplete
+	if err := setupAutoComplete(sh); err != nil {
+		logger.Error("Failed to setup autocomplete", "error", err)
+		// Don't fail startup, just log the error
+	}
 
 	// Remove built-in commands so they become user messages or Neuro commands
 	sh.DeleteCmd("exit")
