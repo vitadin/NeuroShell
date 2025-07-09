@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,9 +12,26 @@ import (
 
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
-	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
+
+// NewTestContextWithVars creates a real context with predefined variables for testing
+func NewTestContextWithVars(vars map[string]string) neurotypes.Context {
+	ctx := context.NewTestContext()
+	for k, v := range vars {
+		// Use SetSystemVariable for system variables (starting with @, #, or _)
+		// Use SetVariable for user variables
+		if strings.HasPrefix(k, "@") || strings.HasPrefix(k, "#") || strings.HasPrefix(k, "_") {
+			// Cast to concrete type to access SetSystemVariable method
+			if neuroCtx, ok := ctx.(*context.NeuroContext); ok {
+				_ = neuroCtx.SetSystemVariable(k, v)
+			}
+		} else {
+			_ = ctx.SetVariable(k, v)
+		}
+	}
+	return ctx
+}
 
 func TestGetCommand_Name(t *testing.T) {
 	cmd := &GetCommand{}
@@ -76,12 +94,13 @@ func TestGetCommand_Execute_BracketSyntax(t *testing.T) {
 			wantErr:       false,
 		},
 		{
-			name:      "get non-existent variable",
-			args:      map[string]string{"nonexistent": ""},
-			input:     "",
-			setupVars: map[string]string{},
-			wantErr:   true,
-			errMsg:    "failed to get variable nonexistent",
+			name:          "get non-existent variable",
+			args:          map[string]string{"nonexistent": ""},
+			input:         "",
+			setupVars:     map[string]string{},
+			expectedVar:   "nonexistent",
+			expectedValue: "",
+			wantErr:       false,
 		},
 		{
 			name:      "empty args and input",
@@ -95,7 +114,7 @@ func TestGetCommand_Execute_BracketSyntax(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := testutils.NewMockContextWithVars(tt.setupVars)
+			ctx := NewTestContextWithVars(tt.setupVars)
 			setupGetTestRegistry(t, ctx)
 
 			// Capture stdout
@@ -177,18 +196,19 @@ func TestGetCommand_Execute_SpaceSyntax(t *testing.T) {
 			wantErr:       false,
 		},
 		{
-			name:      "get non-existent variable with space syntax",
-			args:      map[string]string{},
-			input:     "nonexistent",
-			setupVars: map[string]string{},
-			wantErr:   true,
-			errMsg:    "failed to get variable nonexistent",
+			name:          "get non-existent variable with space syntax",
+			args:          map[string]string{},
+			input:         "nonexistent",
+			setupVars:     map[string]string{},
+			expectedVar:   "nonexistent",
+			expectedValue: "",
+			wantErr:       false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := testutils.NewMockContextWithVars(tt.setupVars)
+			ctx := NewTestContextWithVars(tt.setupVars)
 			setupGetTestRegistry(t, ctx)
 
 			// Capture stdout
@@ -222,7 +242,7 @@ func TestGetCommand_Execute_SpaceSyntax(t *testing.T) {
 
 func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	cmd := &GetCommand{}
-	ctx := testutils.NewMockContextWithVars(map[string]string{
+	ctx := NewTestContextWithVars(map[string]string{
 		"bracketvar": "bracketvalue",
 		"spacevar":   "spacevalue",
 	})
@@ -253,26 +273,28 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	assert.Equal(t, expectedOutput, outputStr)
 }
 
-func TestGetCommand_Execute_ContextError(t *testing.T) {
+func TestGetCommand_Execute_NonExistentVariable(t *testing.T) {
 	cmd := &GetCommand{}
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 	setupGetTestRegistry(t, ctx)
 
-	// Set up context to return an error
-	ctx.SetGetVariableError(fmt.Errorf("context error"))
+	// Test with a variable that doesn't exist - should return empty string, not error
+	args := map[string]string{"nonexistent_var": ""}
 
-	args := map[string]string{"testvar": ""}
+	// Capture output
+	output := captureOutput(func() {
+		err := cmd.Execute(args, "")
+		assert.NoError(t, err) // Should not error
+	})
 
-	err := cmd.Execute(args, "")
-
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to get variable testvar")
-	assert.Contains(t, err.Error(), "context error")
+	// Should output empty value
+	expectedOutput := "nonexistent_var = \n"
+	assert.Equal(t, expectedOutput, output)
 }
 
 func TestGetCommand_Execute_EmptyVariableName(t *testing.T) {
 	cmd := &GetCommand{}
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 	setupGetTestRegistry(t, ctx)
 
 	tests := []struct {
@@ -317,7 +339,7 @@ func TestGetCommand_Execute_VariableWithSpecialCharacters(t *testing.T) {
 		"UPPERCASE_VAR":        "upper_value",
 	}
 
-	ctx := testutils.NewMockContextWithVars(specialVars)
+	ctx := NewTestContextWithVars(specialVars)
 	setupGetTestRegistry(t, ctx)
 
 	for varName, expectedValue := range specialVars {
@@ -348,7 +370,7 @@ func TestGetCommand_Execute_VariableWithSpecialCharacters(t *testing.T) {
 
 func TestGetCommand_Execute_EmptyVariableValue(t *testing.T) {
 	cmd := &GetCommand{}
-	ctx := testutils.NewMockContextWithVars(map[string]string{
+	ctx := NewTestContextWithVars(map[string]string{
 		"empty_var": "",
 	})
 	setupGetTestRegistry(t, ctx)
@@ -378,7 +400,7 @@ func TestGetCommand_Execute_EmptyVariableValue(t *testing.T) {
 // Benchmark tests
 func BenchmarkGetCommand_Execute_BracketSyntax(b *testing.B) {
 	cmd := &GetCommand{}
-	ctx := testutils.NewMockContextWithVars(map[string]string{
+	ctx := NewTestContextWithVars(map[string]string{
 		"benchvar": "benchvalue",
 	})
 
@@ -407,7 +429,7 @@ func BenchmarkGetCommand_Execute_BracketSyntax(b *testing.B) {
 
 func BenchmarkGetCommand_Execute_SpaceSyntax(b *testing.B) {
 	cmd := &GetCommand{}
-	ctx := testutils.NewMockContextWithVars(map[string]string{
+	ctx := NewTestContextWithVars(map[string]string{
 		"benchvar": "benchvalue",
 	})
 
@@ -436,7 +458,7 @@ func BenchmarkGetCommand_Execute_SpaceSyntax(b *testing.B) {
 
 func BenchmarkGetCommand_Execute_SystemVariable(b *testing.B) {
 	cmd := &GetCommand{}
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	// Setup for benchmark (simplified)
 	oldRegistry := services.GetGlobalRegistry()

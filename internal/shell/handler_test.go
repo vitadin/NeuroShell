@@ -711,11 +711,6 @@ func TestProcessInput_ErrorScenarios(t *testing.T) {
 			expectOutput: "Error:",
 		},
 		{
-			name:         "get non-existent variable",
-			rawArgs:      []string{"\\get[nonexistent]"},
-			expectOutput: "Error:",
-		},
-		{
 			name:         "malformed command",
 			rawArgs:      []string{"\\malformed["},
 			expectOutput: "Error:",

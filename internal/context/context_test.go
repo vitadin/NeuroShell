@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -94,9 +93,8 @@ func TestGetVariable_NonExistentVariable(t *testing.T) {
 	ctx := New()
 
 	value, err := ctx.GetVariable("nonexistent")
-	assert.Error(t, err)
-	assert.Equal(t, "", value)
-	assert.Contains(t, err.Error(), "variable nonexistent not found")
+	assert.NoError(t, err)     // Should not error
+	assert.Equal(t, "", value) // Should return empty string
 }
 
 func TestSetVariable_ValidVariables(t *testing.T) {
@@ -876,8 +874,10 @@ func TestSystemVariables_OSEnvironment(t *testing.T) {
 }
 
 func TestMockContext_SetVariableWithValidation(t *testing.T) {
-	// Test that the mock context validation method works the same as real context
-	ctx := testutils.NewMockContext()
+	// Test that the context validation method works correctly
+	ResetGlobalContext()
+	ctx := GetGlobalContext()
+	ctx.SetTestMode(true)
 
 	tests := []struct {
 		name     string

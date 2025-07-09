@@ -8,7 +8,6 @@ import (
 
 	"neuroshell/internal/commands"
 	neuroshellcontext "neuroshell/internal/context"
-	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -215,8 +214,7 @@ func TestHelpService_SystemVariableStorage(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify system variables were set
-	mockCtx := ctx.(*testutils.MockContext)
-	allVars := mockCtx.GetAllVariables()
+	allVars := ctx.GetAllVariables()
 
 	// Check command list
 	assert.Contains(t, allVars, "#cmd_list")
@@ -257,7 +255,10 @@ func setupHelpServiceTest(t *testing.T, testCommands []neurotypes.Command) neuro
 		commands.SetGlobalRegistry(originalCommandRegistry)
 	})
 
-	return testutils.NewMockContext()
+	neuroshellcontext.ResetGlobalContext()
+	ctx := neuroshellcontext.GetGlobalContext()
+	ctx.SetTestMode(true)
+	return ctx
 }
 
 func setupInitializedHelpService(t *testing.T, testCommands []neurotypes.Command) (*HelpService, neurotypes.Context) {

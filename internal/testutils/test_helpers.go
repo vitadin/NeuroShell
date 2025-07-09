@@ -10,6 +10,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"neuroshell/pkg/neurotypes"
 )
 
 // TestDataGenerator provides common test data
@@ -128,14 +130,14 @@ func NewAssertionHelpers(t *testing.T) *AssertionHelpers {
 }
 
 // AssertVariableEquals checks if a variable has the expected value
-func (h *AssertionHelpers) AssertVariableEquals(ctx *MockContext, name, expected string) {
+func (h *AssertionHelpers) AssertVariableEquals(ctx neurotypes.Context, name, expected string) {
 	actual, err := ctx.GetVariable(name)
 	require.NoError(h.t, err, "Getting variable %s should not error", name)
 	assert.Equal(h.t, expected, actual, "Variable %s should equal %s", name, expected)
 }
 
 // AssertVariableNotFound checks if a variable is not found
-func (h *AssertionHelpers) AssertVariableNotFound(ctx *MockContext, name string) {
+func (h *AssertionHelpers) AssertVariableNotFound(ctx neurotypes.Context, name string) {
 	_, err := ctx.GetVariable(name)
 	assert.Error(h.t, err, "Variable %s should not be found", name)
 	assert.Contains(h.t, err.Error(), "not found", "Error should indicate variable not found")
@@ -329,4 +331,43 @@ type ExpectedResult struct {
 	Output   string
 	Error    string
 	ExitCode int
+}
+
+// EditorTestHelper provides utilities for testing editor functionality
+type EditorTestHelper struct {
+	originalEditor string
+	originalPath   string
+}
+
+// SetupMockEditor configures the environment for fast, non-hanging editor tests
+func SetupMockEditor() *EditorTestHelper {
+	helper := &EditorTestHelper{
+		originalEditor: os.Getenv("EDITOR"),
+		originalPath:   os.Getenv("PATH"),
+	}
+
+	// Set EDITOR to echo for fast, predictable testing
+	_ = os.Setenv("EDITOR", "echo")
+
+	return helper
+}
+
+// SetupNoEditor configures the environment to simulate no editor available
+func SetupNoEditor() *EditorTestHelper {
+	helper := &EditorTestHelper{
+		originalEditor: os.Getenv("EDITOR"),
+		originalPath:   os.Getenv("PATH"),
+	}
+
+	// Remove editor and PATH to simulate no editor found
+	_ = os.Unsetenv("EDITOR")
+	_ = os.Setenv("PATH", "")
+
+	return helper
+}
+
+// Cleanup restores the original environment variables
+func (h *EditorTestHelper) Cleanup() {
+	_ = os.Setenv("EDITOR", h.originalEditor)
+	_ = os.Setenv("PATH", h.originalPath)
 }

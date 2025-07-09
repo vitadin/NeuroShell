@@ -252,18 +252,33 @@ func (r *Registry) GetModelCatalogService() (*ModelCatalogService, error) {
 }
 
 // GetLLMService retrieves the LLM service with proper type casting.
-func (r *Registry) GetLLMService() (LLMProvider, error) {
+func (r *Registry) GetLLMService() (neurotypes.LLMService, error) {
 	service, err := r.GetService("llm")
 	if err != nil {
 		return nil, err
 	}
 
-	llmService, ok := service.(LLMProvider)
+	llmService, ok := service.(neurotypes.LLMService)
 	if !ok {
 		return nil, fmt.Errorf("llm service has incorrect type")
 	}
 
 	return llmService, nil
+}
+
+// GetClientFactoryService retrieves the client factory service with proper type casting.
+func (r *Registry) GetClientFactoryService() (*ClientFactoryService, error) {
+	service, err := r.GetService("client_factory")
+	if err != nil {
+		return nil, err
+	}
+
+	clientFactoryService, ok := service.(*ClientFactoryService)
+	if !ok {
+		return nil, fmt.Errorf("client factory service has incorrect type")
+	}
+
+	return clientFactoryService, nil
 }
 
 // GlobalRegistry is the global service registry instance used throughout NeuroShell.
@@ -344,6 +359,11 @@ func GetGlobalModelCatalogService() (*ModelCatalogService, error) {
 }
 
 // GetGlobalLLMService returns the LLM service from the global registry.
-func GetGlobalLLMService() (LLMProvider, error) {
+func GetGlobalLLMService() (neurotypes.LLMService, error) {
 	return GetGlobalRegistry().GetLLMService()
+}
+
+// GetGlobalClientFactoryService returns the client factory service from the global registry.
+func GetGlobalClientFactoryService() (*ClientFactoryService, error) {
+	return GetGlobalRegistry().GetClientFactoryService()
 }

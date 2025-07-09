@@ -57,6 +57,10 @@ func (i *InterpolationService) InterpolateCommand(cmd *parser.Command) (*parser.
 		return nil, fmt.Errorf("interpolation service not initialized")
 	}
 
+	if cmd == nil {
+		return nil, fmt.Errorf("command cannot be nil")
+	}
+
 	ctx := context.GetGlobalContext()
 	neuroCtx, ok := ctx.(*context.NeuroContext)
 	if !ok {

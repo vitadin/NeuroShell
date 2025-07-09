@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"neuroshell/internal/testutils"
+	"neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -169,7 +169,7 @@ func TestExitCommand_Execute_MessageOnly(t *testing.T) {
 		return nil
 	}
 
-	ctx := testutils.NewMockContext()
+	ctx := context.NewTestContext()
 
 	// Test the execution logic
 	err := executeFunc(map[string]string{}, "", ctx)

@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
-	"neuroshell/internal/testutils"
 )
 
 // Comprehensive performance tests for service operations
@@ -99,7 +98,7 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 
 	b.Run("Get_Existing", func(b *testing.B) {
 		// Setup global context for testing
-		ctx := testutils.NewMockContext()
+		ctx := context.NewTestContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -112,7 +111,7 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 
 	b.Run("Get_NonExisting", func(b *testing.B) {
 		// Setup global context for testing
-		ctx := testutils.NewMockContext()
+		ctx := context.NewTestContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -124,7 +123,7 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 
 	b.Run("Set_NewVariables", func(b *testing.B) {
 		// Setup global context for testing
-		ctx := testutils.NewMockContext()
+		ctx := context.NewTestContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -190,7 +189,7 @@ func BenchmarkInterpolationService_ComplexStrings(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		str := testStrings[i%len(testStrings)]
 		// Setup global context for each test iteration
-		ctx := testutils.NewMockContext()
+		ctx := context.NewTestContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -239,7 +238,7 @@ func BenchmarkInterpolationService_CommandStructures(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		cmd := commands[i%len(commands)]
 		// Setup global context for each test iteration
-		ctx := testutils.NewMockContext()
+		ctx := context.NewTestContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 
@@ -256,7 +255,7 @@ func BenchmarkConcurrentServiceUsage(b *testing.B) {
 		require.NoError(b, err)
 
 		// Setup global context for testing
-		ctx := testutils.NewMockContext()
+		ctx := context.NewTestContext()
 		context.SetGlobalContext(ctx)
 		defer context.ResetGlobalContext()
 

@@ -97,7 +97,12 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
-	// Use mock LLM service in test mode, real LLM service in production
+	// Register ClientFactory service
+	if err := services.GetGlobalRegistry().RegisterService(services.NewClientFactoryService()); err != nil {
+		return err
+	}
+
+	// Use mock LLM service in test mode, new LLM service in production
 	if testMode {
 		if err := services.GetGlobalRegistry().RegisterService(services.NewMockLLMService()); err != nil {
 			return err
