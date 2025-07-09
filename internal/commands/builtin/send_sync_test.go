@@ -42,9 +42,22 @@ func TestSendSyncCommand_HelpInfo(t *testing.T) {
 }
 
 func TestSendSyncCommand_Execute_EmptyInput(t *testing.T) {
+	// Setup minimal service for variable service requirement
+	varService := services.NewVariableService()
+	err := varService.Initialize()
+	require.NoError(t, err)
+
+	serviceRegistry := services.NewRegistry()
+	err = serviceRegistry.RegisterService(varService)
+	require.NoError(t, err)
+
+	originalServiceRegistry := services.GlobalRegistry
+	services.GlobalRegistry = serviceRegistry
+	defer func() { services.GlobalRegistry = originalServiceRegistry }()
+
 	cmd := &SendSyncCommand{}
 
-	err := cmd.Execute(map[string]string{}, "")
+	err = cmd.Execute(map[string]string{}, "")
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "Usage:")
 }
@@ -216,8 +229,8 @@ func TestSendSyncCommand_Execute_ServiceErrors(t *testing.T) {
 
 	cmd := &SendSyncCommand{}
 
-	// Test with missing chat session service
+	// Test with missing variable service (first service checked)
 	err := cmd.Execute(map[string]string{}, "Hello")
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to get chat session service")
+	assert.Contains(t, err.Error(), "failed to get variable service")
 }
