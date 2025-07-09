@@ -1,4 +1,5 @@
 %% Send command with session management test
+\set[_echo_commands="true"]
 %% Tests send functionality with explicit session creation
 
 \session-new test-session

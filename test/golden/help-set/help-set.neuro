@@ -1,2 +1,3 @@
 %% Test help information for set command
+\set[_echo_commands="true"]
 \help[set]

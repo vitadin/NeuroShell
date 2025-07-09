@@ -1,6 +1,13 @@
+Setting _echo_commands = true
+%%> \send I think... but wait
+there is more to say
 This is a mocking reply message for the sending message: I think... but wait
 there is more to say
+%%> \echo This message has natural... ellipsis and also
+continues on next line
 This message has natural... ellipsis and also
 continues on next line
+%%> \send Processing data... please wait
+operation complete
 This is a mocking reply message for the sending message: Processing data... please wait
 operation complete

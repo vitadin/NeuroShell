@@ -1,3 +1,4 @@
 %% Test basic check command functionality
+\set[_echo_commands="true"]
 %% This test verifies that \check lists all available services
 \check

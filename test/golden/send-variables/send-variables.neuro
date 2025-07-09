@@ -1,4 +1,5 @@
 %% Send command with message history variables test
+\set[_echo_commands="true"]
 %% Tests message history variables (${1}, ${2}, etc.)
 
 \send First message

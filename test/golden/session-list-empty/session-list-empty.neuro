@@ -1,4 +1,5 @@
 %% Test session list when no sessions exist
+\set[_echo_commands="true"]
 %% This should show "No sessions found."
 
 \session-list

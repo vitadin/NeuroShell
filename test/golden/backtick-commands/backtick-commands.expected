@@ -1,13 +1,27 @@
+Setting _echo_commands = true
+%%> \set[message_with_code="Here's some code: `function test() { return true; }`"]
 Setting message_with_code = Here's some code: `function test() { return true; }`
+%%> \get[message_with_code]
 message_with_code = Here's some code: `function test() { return true; }`
+%%> \set[sql_query="SELECT * FROM users WHERE name = `john` AND status = 'active'"]
 Setting sql_query = SELECT * FROM users WHERE name = `john` AND status = 'active'
+%%> \set[shell_command="Run `ls -la` to list files"]
 Setting shell_command = Run `ls -la` to list files
+%%> \set[docker_cmd="Use `docker ps` to see containers"]
 Setting docker_cmd = Use `docker ps` to see containers
+%%> \set[var_with_backticks="This contains `backticks` in the value"]
 Setting var_with_backticks = This contains `backticks` in the value
+%%> \set[help_text="Use `\\\\get[variable]` to retrieve values"]
 Setting help_text = Use `\\get[variable]` to retrieve values
+%%> \get[sql_query]
 sql_query = SELECT * FROM users WHERE name = `john` AND status = 'active'
+%%> \get[shell_command]
 shell_command = Run `ls -la` to list files
+%%> \get[docker_cmd]
 docker_cmd = Use `docker ps` to see containers
+%%> \get[var_with_backticks]
 var_with_backticks = This contains `backticks` in the value
+%%> \get[help_text]
 help_text = Use `\\get[variable]` to retrieve values
+%%> \get[#test_mode]
 #test_mode = true

@@ -1,4 +1,5 @@
 %% Echo command edge cases test
+\set[_echo_commands="true"]
 %% Tests edge cases, special characters, and error conditions
 
 %% Test Unicode characters with raw mode

@@ -1,1 +1,3 @@
+Setting _echo_commands = true
+%%> \get[#test_mode]
 #test_mode = true

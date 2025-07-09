@@ -1,2 +1,5 @@
+Setting _echo_commands = true
+%%> \render Hello, this is a basic render test
 Hello, this is a basic render test
+%%> \get[_output]
 _output = Hello, this is a basic render test

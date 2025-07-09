@@ -1,4 +1,5 @@
 %% Test assert-equal command with values that should not be equal (FAIL case)
+\set[_echo_commands="true"]
 \set[expected_value="hello"]
 \set[actual_value="world"]
 \assert-equal[expect="${expected_value}", actual="${actual_value}"]

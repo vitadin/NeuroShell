@@ -1,4 +1,5 @@
 %% Basic multiline continuation test
+\set[_echo_commands="true"]
 %% Tests fundamental ... continuation functionality
 
 hello world ...

@@ -1,4 +1,5 @@
 %% Mixed continuation and natural ellipsis test
+\set[_echo_commands="true"]
 %% Tests both continuation markers and natural ellipsis in same input
 
 I think... but wait ...

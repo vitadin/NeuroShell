@@ -1,10 +1,21 @@
+Setting _echo_commands = true
+%%> \get[_style]
 _style = 
+%%> \set[_style="initialized"]
 Setting _style = initialized
+%%> \get[_style]
 _style = initialized
+%%> \set[_style]
 Setting _style = 
+%%> \get[_style]
 _style = 
+%%> \set[_style="persistent"]
 Setting _style = persistent
+%%> \get[_style]
 _style = persistent
+%%> \set[regular_var="normal"]
 Setting regular_var = normal
+%%> \get[regular_var]
 regular_var = normal
+%%> \get[_style]
 _style = persistent

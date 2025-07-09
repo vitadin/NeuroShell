@@ -1,4 +1,5 @@
 %% Combined options test
+\set[_echo_commands="true"]
 %% Tests using multiple options together
 \model-catalog[provider=openai, sort=name]
 \model-catalog[provider=anthropic, search=claude, sort=name]

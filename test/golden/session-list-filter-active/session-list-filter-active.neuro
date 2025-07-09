@@ -1,4 +1,5 @@
 %% Test session list with filter for active session only
+\set[_echo_commands="true"]
 %% Create multiple sessions and filter to show only the active one
 
 %% Create multiple sessions (last one becomes active)

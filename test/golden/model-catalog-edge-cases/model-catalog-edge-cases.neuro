@@ -1,4 +1,5 @@
 %% Edge cases test
+\set[_echo_commands="true"]
 %% Tests edge cases that should work but return minimal results
 \model-catalog[search=nonexistentmodel123]
 \model-catalog[provider=openai, search=claude]

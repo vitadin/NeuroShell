@@ -1,4 +1,5 @@
 %% Test check command variable outputs
+\set[_echo_commands="true"]
 %% This test verifies all result variables set by the check command
 \check[quiet=true]
 \echo Status: ${_check_status}

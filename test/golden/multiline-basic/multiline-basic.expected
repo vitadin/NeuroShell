@@ -1,4 +1,9 @@
+Setting _echo_commands = true
+%%> \send hello world
+this is continued
 This is a mocking reply message for the sending message: hello world
 this is continued
+%%> \echo This is a message
+that spans two lines
 This is a message
 that spans two lines

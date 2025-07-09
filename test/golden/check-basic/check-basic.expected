@@ -1,3 +1,5 @@
+Setting _echo_commands = true
+%%> \check
 Service Status Check:
 ====================
   ✓ autocomplete         - available/initialized

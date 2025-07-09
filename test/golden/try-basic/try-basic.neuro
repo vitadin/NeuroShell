@@ -1,4 +1,5 @@
 %% Basic test for \try command with successful and failing operations
+\set[_echo_commands="true"]
 %% This test verifies \try captures errors without terminating execution
 
 %% Test successful bash command

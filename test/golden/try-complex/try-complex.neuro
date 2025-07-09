@@ -1,4 +1,5 @@
 %% Complex test scenarios for \try command with interpolation and chaining
+\set[_echo_commands="true"]
 %% This test verifies \try works with variable interpolation and complex commands
 
 %% Set up test variables

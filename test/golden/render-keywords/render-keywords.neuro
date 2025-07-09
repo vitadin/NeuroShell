@@ -1,3 +1,4 @@
 %% Test render with keyword highlighting
+\set[_echo_commands="true"]
 \render[keywords=[\get, \set, \vars]] Use \get to retrieve values, \set to store them, and \vars to list all variables
 \get[_output]

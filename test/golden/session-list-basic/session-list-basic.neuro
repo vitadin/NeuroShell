@@ -1,4 +1,5 @@
 %% Test basic session list functionality
+\set[_echo_commands="true"]
 %% Create multiple sessions and list them with default behavior (sort by created, newest first)
 
 %% Create sessions in order

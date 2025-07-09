@@ -1,25 +1,51 @@
+Setting _echo_commands = true
+%%> \get[_style]
 _style = 
+%%> \set[_style="dark"]
 Setting _style = dark
+%%> \get[_style]
 _style = dark
+%%> \set[theme="light"]
 Setting theme = light
+%%> \set[mode="compact"]
 Setting mode = compact
+%%> \set[_style="${theme}-${mode}"]
 Setting _style = light-compact
+%%> \get[_style]
 _style = light-compact
+%%> \set[current_theme="Theme: ${_style}"]
 Setting current_theme = Theme: light-compact
+%%> \get[current_theme]
 current_theme = Theme: light-compact
+%%> \set[base="material"]
 Setting base = material
+%%> \set[variant="design"]
 Setting variant = design
+%%> \set[version="v3"]
 Setting version = v3
+%%> \set[_style="${base}-${variant}-${version}"]
 Setting _style = material-design-v3
+%%> \get[_style]
 _style = material-design-v3
+%%> \set _style ${base}-minimal
 Setting _style = material-minimal
+%%> \get[_style]
 _style = material-minimal
+%%> \set[_style="${theme}-${mode}-${version}"]
 Setting _style = light-compact-v3
+%%> \get[_style]
 _style = light-compact-v3
+%%> \set _style modern
 Setting _style = modern
+%%> \set[_style="${_style}-enhanced"]
 Setting _style = modern-enhanced
+%%> \get[_style]
 _style = modern-enhanced
+%%> \get[theme]
 theme = light
+%%> \get[mode]
 mode = compact
+%%> \get[base]
 base = material
+%%> \get[_style]
 _style = modern-enhanced

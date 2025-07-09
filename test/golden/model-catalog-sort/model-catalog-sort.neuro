@@ -1,4 +1,5 @@
 %% Sort options test
+\set[_echo_commands="true"]
 %% Tests sorting models by name and provider
 \model-catalog[sort=name]
 \model-catalog[sort=provider]

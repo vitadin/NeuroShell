@@ -1,27 +1,55 @@
+Setting _echo_commands = true
+%%> \set[test_file="/tmp/nonexistent_test_file"]
 Setting test_file = /tmp/nonexistent_test_file
+%%> \set[test_var="hello"]
 Setting test_var = hello
+%%> \try \bash echo "Testing ${test_var}"
 Testing hello
+%%> \get[_status]
 _status = 0
+%%> \get[_output]
 _output = Testing hello
+%%> \try \bash cat ${test_file}
 Error: cat: /tmp/nonexistent_test_file: No such file or directory
 Exit status: 1
+%%> \get[_status]
 _status = 1
+%%> \get[_error]
 _error = cat: /tmp/nonexistent_test_file: No such file or directory
+%%> \set[base_value="world"]
 Setting base_value = world
+%%> \try \set[combined=${test_var}_${base_value}]
 Setting combined = hello_world
+%%> \get[_status]
 _status = 1
+%%> \get[combined]
 combined = hello_world
+%%> \try \bash echo "test" | grep "test"
 test
+%%> \get[_status]
 _status = 0
+%%> \get[_output]
 _output = test
+%%> \try \bash echo "test" | grep "notfound" | wc -l
        0
+%%> \get[_status]
 _status = 0
+%%> \set[before_try="preserved"]
 Setting before_try = preserved
+%%> \try \set[_invalid=fail]
+%%> \get[before_try]
 before_try = preserved
+%%> \get[_status]
 _status = 1
+%%> \try \set[seq1=first]
 Setting seq1 = first
+%%> \try \set[seq2=second]
 Setting seq2 = second
+%%> \try \bash echo "sequence test"
 sequence test
+%%> \get[seq1]
 seq1 = first
+%%> \get[seq2]
 seq2 = second
+%%> \get[_status]
 _status = 0

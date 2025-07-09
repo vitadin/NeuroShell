@@ -1,5 +1,11 @@
+Setting _echo_commands = true
+%%> \send First message
 This is a mocking reply message for the sending message: First message
+%%> \echo Latest assistant response: ${1}
 Latest assistant response: This is a mocking reply message for the sending message: First message
+%%> \send Second message
 This is a mocking reply message for the sending message: Second message
+%%> \echo Latest assistant response: ${1}
 Latest assistant response: This is a mocking reply message for the sending message: Second message
+%%> \echo Previous user message: ${2}
 Previous user message: Second message

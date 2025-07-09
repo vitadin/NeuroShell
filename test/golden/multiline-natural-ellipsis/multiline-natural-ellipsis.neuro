@@ -1,4 +1,5 @@
 %% Natural ellipsis preservation test
+\set[_echo_commands="true"]
 %% Tests that natural ... in text is preserved
 
 I think... this works
