@@ -6,24 +6,29 @@ Setting variant = compact
 %%> \set[suffix="v2"]
 Setting suffix = v2
 %%> \set[_style="${theme_base}-${variant}-${suffix}"]
+%%> [expanded] \set[_style="dark-compact-v2"]
 Setting _style = dark-compact-v2
 %%> \get[_style]
 _style = dark-compact-v2
 %%> \set[description="Current theme is ${_style}"]
+%%> [expanded] \set[description="Current theme is dark-compact-v2"]
 Setting description = Current theme is dark-compact-v2
 %%> \get[description]
 description = Current theme is dark-compact-v2
 %%> \set[user_pref="advanced"]
 Setting user_pref = advanced
 %%> \set[_style="${theme_base}-${user_pref}-theme"]
+%%> [expanded] \set[_style="dark-advanced-theme"]
 Setting _style = dark-advanced-theme
 %%> \get[_style]
 _style = dark-advanced-theme
 %%> \set[theme_name="modern"]
 Setting theme_name = modern
 %%> \set[style_template="${theme_name}-style"]
+%%> [expanded] \set[style_template="modern-style"]
 Setting style_template = modern-style
 %%> \set[_style="${style_template}"]
+%%> [expanded] \set[_style="modern-style"]
 Setting _style = modern-style
 %%> \get[_style]
 _style = modern-style

@@ -4,6 +4,7 @@ Setting greeting = Hello
 %%> \set[name="World"]
 Setting name = World
 %%> \set[message="${greeting}, ${name}!"]
+%%> [expanded] \set[message="Hello, World!"]
 Setting message = Hello, World!
 %%> \get[message]
 message = Hello, World!

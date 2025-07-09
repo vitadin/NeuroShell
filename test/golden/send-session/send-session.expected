@@ -4,10 +4,12 @@ Created session 'test-session' (ID: 00000001)
 %%> \send Hello from test session
 This is a mocking reply message for the sending message: Hello from test session
 %%> \echo Message history: ${1}
+%%> [expanded] \echo Message history: This is a mocking reply message for the sending message: Hello from test session
 Message history: This is a mocking reply message for the sending message: Hello from test session
 %%> \session-new another-session
 Created session 'another-session' (ID: 00000004)
 %%> \send Hello from another session
 This is a mocking reply message for the sending message: Hello from another session
 %%> \echo Message history: ${1}
+%%> [expanded] \echo Message history: This is a mocking reply message for the sending message: Hello from another session
 Message history: This is a mocking reply message for the sending message: Hello from another session
