@@ -4,7 +4,6 @@ import (
 	"sort"
 	"strings"
 
-	"neuroshell/internal/commands"
 	"neuroshell/internal/context"
 )
 
@@ -114,13 +113,21 @@ func (a *AutoCompleteService) getCommandCompletions(prefix string) []string {
 	// Remove the \ prefix for matching
 	commandPrefix := strings.TrimPrefix(prefix, "\\")
 
-	// Get all registered commands
-	registry := commands.GetGlobalRegistry()
-	allCommands := registry.GetAll()
+	// Get all registered commands from global context
+	globalCtx := context.GetGlobalContext()
+	if globalCtx == nil {
+		return []string{}
+	}
+
+	neuroCtx, ok := globalCtx.(*context.NeuroContext)
+	if !ok {
+		return []string{}
+	}
+
+	commandList := neuroCtx.GetRegisteredCommands()
 
 	var completions []string
-	for _, cmd := range allCommands {
-		cmdName := cmd.Name()
+	for _, cmdName := range commandList {
 		if strings.HasPrefix(cmdName, commandPrefix) {
 			completions = append(completions, "\\"+cmdName)
 		}
@@ -189,51 +196,24 @@ func (a *AutoCompleteService) getOptionCompletions(line string, _ int, currentWo
 		return make([]string, 0)
 	}
 
-	// Get the command from registry
-	registry := commands.GetGlobalRegistry()
-	command, exists := registry.Get(commandName)
-	if !exists {
+	// Check if the command exists in the global context
+	globalCtx := context.GetGlobalContext()
+	if globalCtx == nil {
 		return make([]string, 0)
 	}
 
-	// Get the command's help info for options
-	helpInfo := command.HelpInfo()
-
-	var completions []string
-
-	// Check if we're completing an option name (no = in current word)
-	if !strings.Contains(currentWord, "=") {
-		// Complete option names
-		for _, option := range helpInfo.Options {
-			optionName := option.Name
-			if strings.HasPrefix(optionName, currentWord) {
-				if option.Type == "bool" {
-					// Boolean options don't need =
-					completions = append(completions, optionName)
-				} else {
-					// Add = for value options
-					completions = append(completions, optionName+"=")
-				}
-			}
-		}
-	} else {
-		// We're completing an option value
-		parts := strings.SplitN(currentWord, "=", 2)
-		if len(parts) == 2 {
-			optionName := parts[0]
-			valuePrefix := parts[1]
-
-			// Get context-specific completions for this option
-			contextCompletions := a.getOptionValueCompletions(commandName, optionName, valuePrefix)
-			for _, completion := range contextCompletions {
-				completions = append(completions, optionName+"="+completion)
-			}
-		}
+	neuroCtx, ok := globalCtx.(*context.NeuroContext)
+	if !ok {
+		return make([]string, 0)
 	}
 
-	// Sort completions alphabetically
-	sort.Strings(completions)
-	return completions
+	if !neuroCtx.IsCommandRegistered(commandName) {
+		return make([]string, 0)
+	}
+
+	// For now, option completion is simplified since we can't access command objects from context
+	// TODO: Consider storing command help information in context if needed
+	return make([]string, 0)
 }
 
 // getOptionValueCompletions returns completions for specific option values.

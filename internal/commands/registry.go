@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sync"
 
+	"neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -38,6 +39,14 @@ func (r *Registry) Register(cmd neurotypes.Command) error {
 	}
 
 	r.commands[cmd.Name()] = cmd
+
+	// Register the command with info in global context for autocomplete and help
+	if globalCtx := context.GetGlobalContext(); globalCtx != nil {
+		if neuroCtx, ok := globalCtx.(*context.NeuroContext); ok {
+			neuroCtx.RegisterCommandWithInfo(cmd)
+		}
+	}
+
 	return nil
 }
 
@@ -47,6 +56,13 @@ func (r *Registry) Unregister(name string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	delete(r.commands, name)
+
+	// Unregister the command name from global context
+	if globalCtx := context.GetGlobalContext(); globalCtx != nil {
+		if neuroCtx, ok := globalCtx.(*context.NeuroContext); ok {
+			neuroCtx.UnregisterCommand(name)
+		}
+	}
 }
 
 // Get retrieves a command by name. Returns the command and true if found,

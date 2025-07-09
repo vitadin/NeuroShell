@@ -154,17 +154,17 @@ func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, them
 // CommandCategory represents a category of commands
 type CommandCategory struct {
 	Name     string
-	Commands []services.CommandInfo
+	Commands []*neurotypes.CommandInfo
 }
 
 // categorizeCommands groups commands into logical categories
-func (c *HelpCommand) categorizeCommands(allCommands []services.CommandInfo) []CommandCategory {
+func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.CommandInfo) []CommandCategory {
 	categories := []CommandCategory{
-		{Name: "Core Commands", Commands: []services.CommandInfo{}},
-		{Name: "System Commands", Commands: []services.CommandInfo{}},
-		{Name: "Model Commands", Commands: []services.CommandInfo{}},
-		{Name: "Session Commands", Commands: []services.CommandInfo{}},
-		{Name: "Testing Commands", Commands: []services.CommandInfo{}},
+		{Name: "Core Commands", Commands: []*neurotypes.CommandInfo{}},
+		{Name: "System Commands", Commands: []*neurotypes.CommandInfo{}},
+		{Name: "Model Commands", Commands: []*neurotypes.CommandInfo{}},
+		{Name: "Session Commands", Commands: []*neurotypes.CommandInfo{}},
+		{Name: "Testing Commands", Commands: []*neurotypes.CommandInfo{}},
 	}
 
 	// Define command categories
@@ -220,7 +220,7 @@ func (c *HelpCommand) categorizeCommands(allCommands []services.CommandInfo) []C
 }
 
 // showAllCommandsStyled displays all commands using only theme object semantic styles
-func (c *HelpCommand) showAllCommandsStyled(allCommands []services.CommandInfo, themeObj *services.Theme) error {
+func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.CommandInfo, themeObj *services.Theme) error {
 
 	// Title
 	fmt.Println(themeObj.Success.Render("Neuro Shell - Quick Start Guide"))
