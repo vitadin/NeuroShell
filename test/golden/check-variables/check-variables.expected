@@ -1,5 +1,5 @@
 Setting _echo_commands = true
-%%> \check[quiet="true"]
+%%> \check[quiet=true]
 %%> \echo Status: ${_check_status}
 Status: success
 %%> \echo Output: ${_check_output}
@@ -24,7 +24,7 @@ Failed services:
 Total services: 15
 %%> \echo Failed count: ${_check_failed_count}
 Failed count: 0
-%%> \check[service="bash", quiet="true"]
+%%> \check[service=bash, quiet=true]
 %%> \echo Bash check status: ${_check_status}
 Bash check status: success
 %%> \echo Bash total services: ${_check_total_services}

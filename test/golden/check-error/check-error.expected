@@ -1,5 +1,5 @@
 Setting _echo_commands = true
-%%> \check[service="nonexistent_service"]
+%%> \check[service=nonexistent_service]
 Service Status Check:
 ====================
   ✗ nonexistent_service  - not available (service nonexistent_service not found)

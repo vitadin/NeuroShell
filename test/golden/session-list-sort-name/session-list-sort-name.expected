@@ -5,7 +5,7 @@ Created session 'zebra_session' (ID: 00000001)
 Created session 'alpha_session' (ID: 00000002)
 %%> \session-new beta_session
 Created session 'beta_session' (ID: 00000003)
-%%> \session-list[sort="name"]
+%%> \session-list[sort=name]
 Sessions (3 total):
   alpha_session    (ID: 00000002, 0 messages, created: 2025-01-01)
   beta_session    (ID: 00000003, active, 0 messages, created: 2025-01-01)

@@ -7,7 +7,7 @@ _style = dark
 Setting _style = light
 %%> \get[_style]
 _style = light
-%%> \set[_style]
+%%> \set[_style=""]
 Setting _style = 
 %%> \get[_style]
 _style = 

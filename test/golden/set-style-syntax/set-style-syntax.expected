@@ -3,11 +3,11 @@ Setting _echo_commands = true
 Setting _style = classic
 %%> \get[_style]
 _style = classic
-%%> \set[_style="minimal"]
+%%> \set[_style=minimal]
 Setting _style = minimal
 %%> \get[_style]
 _style = minimal
-%%> \set[_style]
+%%> \set[_style=""]
 Setting _style = 
 %%> \get[_style]
 _style = 
@@ -31,7 +31,7 @@ _style = bracket-set
 Setting _style = space-set
 %%> \get[_style]
 _style = space-set
-%%> \set _style   whitespace-test
+%%> \set   _style   whitespace-test
 Setting _style = whitespace-test
 %%> \get[_style]
 _style = whitespace-test

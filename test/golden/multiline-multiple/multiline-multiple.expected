@@ -1,5 +1,5 @@
 Setting _echo_commands = true
-%%> \send first line
+%%> first line
 second line
 third line
 final line

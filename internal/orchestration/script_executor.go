@@ -74,7 +74,12 @@ func ExecuteScript(scriptPath string) error {
 
 		// Output command line with %%> prefix if echo_commands is enabled
 		if echoCommands, _ := vs.Get("_echo_commands"); echoCommands == "true" {
-			fmt.Printf("%%%%> %s\n", cmd.String())
+			// Use original text if available, otherwise fall back to reconstructed
+			originalText := cmd.OriginalText
+			if originalText == "" {
+				originalText = cmd.String()
+			}
+			fmt.Printf("%%%%> %s\n", originalText)
 		}
 
 		// Interpolate command using interpolation service

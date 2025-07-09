@@ -1,11 +1,11 @@
 Setting _echo_commands = true
-%%> \send I think... this works
+%%> I think... this works
 This is a mocking reply message for the sending message: I think... this works
-%%> \send Also this... works fine
+%%> Also this... works fine
 This is a mocking reply message for the sending message: Also this... works fine
 %%> \echo Natural ellipsis like this... should be kept intact
 Natural ellipsis like this... should be kept intact
-%%> \send Some text... with ellipsis... in multiple places
+%%> Some text... with ellipsis... in multiple places
 This is a mocking reply message for the sending message: Some text... with ellipsis... in multiple places
 %%> \echo Testing multiple... natural ellipsis... patterns
 Testing multiple... natural ellipsis... patterns

@@ -1,43 +1,43 @@
 Setting _echo_commands = true
-%%> \echo[raw="true", silent="true", to="test1"] Silent\nraw\tmode
+%%> \echo[raw=true,silent=true,to=test1] Silent\nraw\tmode
 %%> \get[test1]
 test1 = Silent\nraw\tmode
-%%> \echo[raw="false", silent="true", to="test2"] Silent\ninterpreted\tmode
+%%> \echo[raw=false,silent=true,to=test2] Silent\ninterpreted\tmode
 %%> \get[test2]
 test2 = Silent
 interpreted	mode
-%%> \echo[raw="true", silent="true"] Default\nvariable\traw
+%%> \echo[raw=true,silent=true] Default\nvariable\traw
 %%> \get[_output]
 _output = Default\nvariable\traw
-%%> \echo[raw="false", silent="true"] Default\nvariable\tinterpreted
+%%> \echo[raw=false,silent=true] Default\nvariable\tinterpreted
 %%> \get[_output]
 _output = Default
 variable	interpreted
-%%> \echo[raw="true", to="test3"] Verbose\nraw\tmode
+%%> \echo[raw=true,to=test3] Verbose\nraw\tmode
 Verbose\nraw\tmode
 %%> \get[test3]
 test3 = Verbose\nraw\tmode
-%%> \echo[raw="false", to="test4"] Verbose\ninterpreted\tmode
+%%> \echo[raw=false,to=test4] Verbose\ninterpreted\tmode
 Verbose
 interpreted	mode
 %%> \get[test4]
 test4 = Verbose
 interpreted	mode
-%%> \set[message="Hello\\nWorld"]
+%%> \set[message="Hello\nWorld"]
 Setting message = Hello\nWorld
-%%> \echo[to="combo1", raw="true", silent="true"] Variable: ${message}\tEnd
+%%> \echo[raw=true,silent=true,to=combo1] Variable: ${message}\tEnd
 %%> \get[combo1]
 combo1 = Variable: Hello\nWorld\tEnd
-%%> \echo[raw="false", silent="true", to="combo2"] Variable: ${message}\tEnd
+%%> \echo[raw=false,silent=true,to=combo2] Variable: ${message}\tEnd
 %%> \get[combo2]
 combo2 = Variable: Hello
 World	End
-%%> \set[complex="Multi\\nLine\\tContent"]
+%%> \set[complex="Multi\nLine\tContent"]
 Setting complex = Multi\nLine\tContent
-%%> \echo[silent="true", to="final_test", raw="true"] Complex: ${complex}\nWith more\tescapes
+%%> \echo[raw=true,silent=true,to=final_test] Complex: ${complex}\nWith more\tescapes
 %%> \get[final_test]
 final_test = Complex: Multi\nLine\tContent\nWith more\tescapes
-%%> \echo[raw="false", silent="false", to="explicit"] Explicit\noptions\ttest
+%%> \echo[raw=false,silent=false,to=explicit] Explicit\noptions\ttest
 Explicit
 options	test
 %%> \get[explicit]

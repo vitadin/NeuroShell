@@ -1,5 +1,5 @@
 Setting _echo_commands = true
-%%> \check[quiet="true"]
+%%> \check[quiet=true]
 %%> \echo Status: ${_check_status}
 Status: success
 %%> \echo Total services: ${_check_total_services}

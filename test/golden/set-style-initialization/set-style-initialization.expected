@@ -5,7 +5,7 @@ _style =
 Setting _style = initialized
 %%> \get[_style]
 _style = initialized
-%%> \set[_style]
+%%> \set[_style=""]
 Setting _style = 
 %%> \get[_style]
 _style = 

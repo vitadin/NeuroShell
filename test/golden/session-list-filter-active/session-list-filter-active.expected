@@ -5,6 +5,6 @@ Created session 'first_session' (ID: 00000001)
 Created session 'second_session' (ID: 00000002)
 %%> \session-new active_session
 Created session 'active_session' (ID: 00000003)
-%%> \session-list[filter="active"]
+%%> \session-list[filter=active]
 Sessions (1 total):
   active_session    (ID: 00000003, active, 0 messages, created: 2025-01-01)

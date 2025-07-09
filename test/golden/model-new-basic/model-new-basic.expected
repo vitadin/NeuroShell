@@ -1,5 +1,5 @@
 Setting _echo_commands = true
-%%> \model-new[base_model="gpt-4", provider="openai"] my-gpt4-model
+%%> \model-new[provider="openai", base_model="gpt-4"] my-gpt4-model
 Created model 'my-gpt4-model' (ID: 00000001, Provider: openai, Base: gpt-4)
 %%> \get[#model_id]
 #model_id = 00000001-0000-4000-8000-000000000001

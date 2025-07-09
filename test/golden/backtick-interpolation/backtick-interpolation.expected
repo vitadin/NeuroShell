@@ -23,7 +23,7 @@ Setting project = myapp
 Setting instruction = Run `cd myapp` then `npm install`
 %%> \set[full_example="In `${language}`, use `${function_name}()` after running `${command}`"]
 Setting full_example = In `javascript`, use `getData()` after running `npm install`
-%%> \set[meta_example="Use `\\${variable}` syntax for interpolation"]
+%%> \set[meta_example="Use `\${variable}` syntax for interpolation"]
 Setting meta_example = Use `\` syntax for interpolation
 %%> \get[code_example]
 code_example = Use `getData()` in your code

@@ -1,11 +1,11 @@
 Setting _echo_commands = true
 %%> \echo Simple text output
 Simple text output
-%%> \echo[to="custom_var"] Stored in variable
+%%> \echo[to=custom_var] Stored in variable
 Stored in variable
 %%> \get[custom_var]
 custom_var = Stored in variable
-%%> \echo[silent="true"] Silent output test
+%%> \echo[silent=true] Silent output test
 %%> \get[_output]
 _output = Silent output test
 %%> \echo Default behavior stores in _output

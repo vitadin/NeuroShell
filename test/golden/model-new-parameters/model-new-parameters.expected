@@ -1,5 +1,5 @@
 Setting _echo_commands = true
-%%> \model-new[max_tokens="2000", description="Advanced model for creative tasks", provider="anthropic", base_model="claude-3-sonnet", temperature="0.8"] creative-claude
+%%> \model-new[provider="anthropic", base_model="claude-3-sonnet", temperature="0.8", max_tokens="2000", description="Advanced model for creative tasks"] creative-claude
 Created model 'creative-claude' (ID: 00000001, Provider: anthropic, Base: claude-3-sonnet)
 %%> \get[#model_id]
 #model_id = 00000001-0000-4000-8000-000000000001
