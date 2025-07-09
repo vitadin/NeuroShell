@@ -232,52 +232,105 @@ func TestMarkdownService_GetCurrentTheme(t *testing.T) {
 	assert.Equal(t, "dark", theme)
 }
 
-func TestMarkdownService_CleanShellMarkers(t *testing.T) {
+func TestMarkdownService_RenderWithOptions(t *testing.T) {
 	service := NewMarkdownService()
+	err := service.Initialize()
+	require.NoError(t, err)
 
 	testCases := []struct {
-		name     string
-		input    string
-		expected string
+		name                string
+		input               string
+		interpretEscapes    bool
+		expectedContains    []string
+		expectedNotContains []string
 	}{
-		{"simple continuation", "line1\\n... line2", "line1\\nline2"},
-		{"marker only line", "line1\\n...\\nline2", "line1\\nline2"},
-		{"multiple markers", "line1\\n... line2\\n... line3", "line1\\nline2\\nline3"},
-		{"no markers", "line1\\nline2", "line1\\nline2"},
-		{"mixed content", "# Title\\n... This is content\\n...\\n## Section", "# Title\\nThis is content\\n## Section"},
-		{"actual newlines with markers", "line1\n... line2\nline3", "line1\nline2\nline3"},
-		{"marker with spaces", "line1\\n...    line2   ", "line1\\nline2"},
+		{
+			name:                "raw mode - literal escapes",
+			input:               "# Hello\\nWorld",
+			interpretEscapes:    false,
+			expectedContains:    []string{"Hello\\nWorld"},
+			expectedNotContains: []string{},
+		},
+		{
+			name:                "interpret escapes mode",
+			input:               "# Hello\\nWorld",
+			interpretEscapes:    true,
+			expectedContains:    []string{"Hello", "World"},
+			expectedNotContains: []string{"\\n"},
+		},
+		{
+			name:                "continuation markers with raw mode",
+			input:               "# Title\\n... continued content",
+			interpretEscapes:    false,
+			expectedContains:    []string{"Title\\ncontinued content"},
+			expectedNotContains: []string{"..."},
+		},
+		{
+			name:                "continuation markers with escape interpretation",
+			input:               "# Title\\n... continued content",
+			interpretEscapes:    true,
+			expectedContains:    []string{"Title", "continued content"},
+			expectedNotContains: []string{"...", "\\n"},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := service.cleanShellMarkers(tc.input)
-			assert.Equal(t, tc.expected, result)
+			result, err := service.RenderWithOptions(tc.input, tc.interpretEscapes)
+			assert.NoError(t, err)
+			assert.NotEmpty(t, result)
+
+			for _, expected := range tc.expectedContains {
+				assert.True(t, containsText(result, expected),
+					"Result should contain '%s' text", expected)
+			}
+
+			for _, notExpected := range tc.expectedNotContains {
+				assert.False(t, containsText(result, notExpected),
+					"Result should not contain '%s' text", notExpected)
+			}
 		})
 	}
 }
 
-func TestMarkdownService_ProcessEscapeSequences(t *testing.T) {
+func TestMarkdownService_RenderWithStyleAndOptions(t *testing.T) {
 	service := NewMarkdownService()
+	err := service.Initialize()
+	require.NoError(t, err)
 
 	testCases := []struct {
-		name     string
-		input    string
-		expected string
+		name             string
+		input            string
+		style            string
+		interpretEscapes bool
+		expectedContains []string
 	}{
-		{"newline escape", "Hello\\nWorld", "Hello\nWorld"},
-		{"tab escape", "Hello\\tWorld", "Hello\tWorld"},
-		{"carriage return escape", "Hello\\rWorld", "Hello\rWorld"},
-		{"escaped backslash", "Hello\\\\World", "Hello\\World"},
-		{"multiple escapes", "Line1\\nLine2\\tTabbed", "Line1\nLine2\tTabbed"},
-		{"no escapes", "Hello World", "Hello World"},
-		{"mixed content", "# Title\\n\\nThis is **bold** text", "# Title\n\nThis is **bold** text"},
+		{
+			name:             "dark style with raw mode",
+			input:            "# Hello\\nWorld",
+			style:            "dark",
+			interpretEscapes: false,
+			expectedContains: []string{"Hello\\nWorld"},
+		},
+		{
+			name:             "auto style with escape interpretation",
+			input:            "# Hello\\nWorld",
+			style:            "auto",
+			interpretEscapes: true,
+			expectedContains: []string{"Hello", "World"},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := service.processEscapeSequences(tc.input)
-			assert.Equal(t, tc.expected, result)
+			result, err := service.RenderWithStyleAndOptions(tc.input, tc.style, tc.interpretEscapes)
+			assert.NoError(t, err)
+			assert.NotEmpty(t, result)
+
+			for _, expected := range tc.expectedContains {
+				assert.True(t, containsText(result, expected),
+					"Result should contain '%s' text", expected)
+			}
 		})
 	}
 }

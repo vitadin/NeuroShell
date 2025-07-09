@@ -4,6 +4,7 @@ package render
 
 import (
 	"fmt"
+	"strconv"
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
@@ -31,7 +32,7 @@ func (c *MarkdownCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the render-markdown command.
 func (c *MarkdownCommand) Usage() string {
-	return "\\render-markdown markdown content to render"
+	return "\\render-markdown[raw=true] markdown content to render"
 }
 
 // HelpInfo returns structured help information for the render-markdown command.
@@ -41,15 +42,27 @@ func (c *MarkdownCommand) HelpInfo() neurotypes.HelpInfo {
 		Description: c.Description(),
 		Usage:       c.Usage(),
 		ParseMode:   c.ParseMode(),
-		Options:     []neurotypes.HelpOption{},
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "raw",
+				Description: "Treat escape sequences as literal characters without interpreting them",
+				Required:    false,
+				Type:        "bool",
+				Default:     "true",
+			},
+		},
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\render-markdown # Hello World\\nThis is **bold** text",
-				Description: "Render a simple markdown heading and bold text",
+				Description: "Render markdown with literal \\n (default raw=true)",
+			},
+			{
+				Command:     "\\render-markdown[raw=false] # Hello World\\nThis is **bold** text",
+				Description: "Render markdown with \\n converted to actual newlines",
 			},
 			{
 				Command:     "\\render-markdown ## Features\\n- Item 1\\n- Item 2\\n- Item 3",
-				Description: "Render a heading with a bulleted list",
+				Description: "Render a heading with a bulleted list (raw mode)",
 			},
 			{
 				Command:     "\\render-markdown ```go\\nfunc main() {\\n    fmt.Println(\"Hello\")\\n}\\n```",
@@ -60,8 +73,8 @@ func (c *MarkdownCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Render links and inline code",
 			},
 			{
-				Command:     "\\render-markdown # Title\\n\\nThis is a paragraph\\nwith line breaks.",
-				Description: "Use escape sequences for formatting (\\n creates newlines)",
+				Command:     "\\render-markdown # Multiline input ...\\n... with continuation markers",
+				Description: "Handle multiline input with continuation markers",
 			},
 		},
 		Notes: []string{
@@ -70,16 +83,31 @@ func (c *MarkdownCommand) HelpInfo() neurotypes.HelpInfo {
 			"Automatically detects terminal theme for optimal styling",
 			"Rendered output is stored in _output variable",
 			"Integrates with NeuroShell's theme system",
-			"Supports escape sequences: \\n (newline), \\t (tab), \\r (carriage return), \\\\ (backslash)",
+			"Default raw=true treats \\n as literal characters",
+			"Set raw=false to interpret escape sequences: \\n (newline), \\t (tab), \\r (carriage return), \\\\ (backslash)",
+			"Continuation markers (...) are always processed regardless of raw setting",
 		},
 	}
 }
 
 // Execute renders markdown content using the MarkdownService.
 // The rendered output is displayed to the console and stored in the _output variable.
-func (c *MarkdownCommand) Execute(_ map[string]string, input string) error {
+// Options:
+//   - raw: treat escape sequences as literal characters (default: true)
+func (c *MarkdownCommand) Execute(args map[string]string, input string) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
+	}
+
+	// Parse raw option (default to true for backward compatibility with the user's requirement)
+	rawStr := args["raw"]
+	raw := true // Default to raw=true (treat \n as literal)
+	if rawStr != "" {
+		var err error
+		raw, err = strconv.ParseBool(rawStr)
+		if err != nil {
+			return fmt.Errorf("invalid value for raw option: %s (must be true or false)", rawStr)
+		}
 	}
 
 	// Get markdown service
@@ -91,8 +119,9 @@ func (c *MarkdownCommand) Execute(_ map[string]string, input string) error {
 	// Cast to MarkdownService
 	mdService := markdownService.(*services.MarkdownService)
 
-	// Render the markdown content using theme integration
-	rendered, err := mdService.RenderWithTheme(input)
+	// Render the markdown content using theme integration with configurable escape processing
+	// Note: raw=true means DON'T interpret escapes, so we pass !raw to interpretEscapes
+	rendered, err := mdService.RenderWithThemeAndOptions(input, !raw)
 	if err != nil {
 		return fmt.Errorf("failed to render markdown: %w", err)
 	}

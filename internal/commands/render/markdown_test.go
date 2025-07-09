@@ -198,20 +198,113 @@ func TestMarkdownCommand_Execute_VariableServiceError(t *testing.T) {
 	assert.Contains(t, err.Error(), "variable service not available")
 }
 
+func TestMarkdownCommand_Execute_WithRawOption(t *testing.T) {
+	cmd := &MarkdownCommand{}
+
+	// Set up test environment
+	setupMarkdownCommandTestRegistry(t)
+
+	testCases := []struct {
+		name                string
+		args                map[string]string
+		markdown            string
+		expectedContains    []string
+		expectedNotContains []string
+	}{
+		{
+			name:                "default raw=true (literal escapes)",
+			args:                map[string]string{},
+			markdown:            "# Hello\\nWorld",
+			expectedContains:    []string{"Hello\\nWorld"},
+			expectedNotContains: []string{},
+		},
+		{
+			name:                "explicit raw=true",
+			args:                map[string]string{"raw": "true"},
+			markdown:            "# Hello\\nWorld",
+			expectedContains:    []string{"Hello\\nWorld"},
+			expectedNotContains: []string{},
+		},
+		{
+			name:                "raw=false (interpret escapes)",
+			args:                map[string]string{"raw": "false"},
+			markdown:            "# Hello\\nWorld",
+			expectedContains:    []string{"Hello", "World"},
+			expectedNotContains: []string{"\\n"},
+		},
+		{
+			name:                "raw=true with continuation markers",
+			args:                map[string]string{"raw": "true"},
+			markdown:            "# Title\\n... continued content",
+			expectedContains:    []string{"Title\\ncontinued content"},
+			expectedNotContains: []string{"..."},
+		},
+		{
+			name:                "raw=false with continuation markers",
+			args:                map[string]string{"raw": "false"},
+			markdown:            "# Title\\n... continued content",
+			expectedContains:    []string{"Title", "continued content"},
+			expectedNotContains: []string{"...", "\\n"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := cmd.Execute(tc.args, tc.markdown)
+			assert.NoError(t, err)
+
+			// Check that output was stored
+			variableService, err := services.GetGlobalVariableService()
+			require.NoError(t, err)
+
+			output, err := variableService.Get("_output")
+			assert.NoError(t, err)
+			assert.NotEmpty(t, output)
+
+			// Check expected content
+			for _, expected := range tc.expectedContains {
+				assert.True(t, containsText(output, expected),
+					"Output should contain '%s' text", expected)
+			}
+
+			// Check content that should not be present
+			for _, notExpected := range tc.expectedNotContains {
+				assert.False(t, containsText(output, notExpected),
+					"Output should not contain '%s' text", notExpected)
+			}
+		})
+	}
+}
+
+func TestMarkdownCommand_Execute_RawOptionInvalidValue(t *testing.T) {
+	cmd := &MarkdownCommand{}
+
+	// Set up test environment
+	setupMarkdownCommandTestRegistry(t)
+
+	// Test with invalid raw option value
+	args := map[string]string{"raw": "invalid"}
+	markdown := "# Hello World"
+
+	err := cmd.Execute(args, markdown)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid value for raw option")
+}
+
 func TestMarkdownCommand_Execute_WithEscapeSequences(t *testing.T) {
 	cmd := &MarkdownCommand{}
 
 	// Set up test environment
 	setupMarkdownCommandTestRegistry(t)
 
-	// Test with markdown containing escape sequences
+	// Test with markdown containing escape sequences (default raw=true behavior)
 	args := map[string]string{}
 	markdown := "# Hello World\\n\\nThis is **bold** text\\nand some more content"
 
 	err := cmd.Execute(args, markdown)
 	assert.NoError(t, err)
 
-	// Check that output was stored and escape sequences were processed
+	// Check that output was stored and escape sequences were NOT processed (raw=true default)
 	variableService, err := services.GetGlobalVariableService()
 	require.NoError(t, err)
 
@@ -219,7 +312,7 @@ func TestMarkdownCommand_Execute_WithEscapeSequences(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, output)
 
-	// Verify that the content was properly rendered with escape sequences processed
+	// Verify that the content was properly rendered with literal escape sequences
 	assert.True(t, containsText(output, "Hello World"), "Output should contain 'Hello World' text")
 	assert.True(t, containsText(output, "bold"), "Output should contain 'bold' text")
 	assert.True(t, containsText(output, "some more content"), "Output should contain 'some more content' text")

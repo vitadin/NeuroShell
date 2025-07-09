@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/glamour"
 	"neuroshell/internal/logger"
+	"neuroshell/internal/stringprocessing"
 )
 
 // MarkdownService provides markdown rendering capabilities for NeuroShell using Glamour.
@@ -48,7 +49,14 @@ func (m *MarkdownService) Initialize() error {
 
 // Render renders markdown content to ANSI terminal output.
 // It returns the rendered content as a string with ANSI escape sequences.
+// By default, it interprets escape sequences (legacy behavior).
 func (m *MarkdownService) Render(markdown string) (string, error) {
+	return m.RenderWithOptions(markdown, true)
+}
+
+// RenderWithOptions renders markdown content with configurable string processing.
+// interpretEscapes controls whether escape sequences like \n are converted to actual characters.
+func (m *MarkdownService) RenderWithOptions(markdown string, interpretEscapes bool) (string, error) {
 	if !m.initialized {
 		return "", fmt.Errorf("markdown service not initialized")
 	}
@@ -57,9 +65,8 @@ func (m *MarkdownService) Render(markdown string) (string, error) {
 		return "", fmt.Errorf("markdown content cannot be empty")
 	}
 
-	// Clean shell continuation markers and process escape sequences before rendering
-	cleanedMarkdown := m.cleanShellMarkers(markdown)
-	processedMarkdown := m.processEscapeSequences(cleanedMarkdown)
+	// Process text using the shared utility functions
+	processedMarkdown := stringprocessing.ProcessTextForMarkdown(markdown, interpretEscapes)
 
 	// Render the markdown content
 	rendered, err := m.renderer.Render(processedMarkdown)
@@ -72,7 +79,13 @@ func (m *MarkdownService) Render(markdown string) (string, error) {
 
 // RenderWithStyle renders markdown content with a specific style.
 // Supported styles include: "auto", "dark", "light", "notty", "ascii"
+// By default, it interprets escape sequences (legacy behavior).
 func (m *MarkdownService) RenderWithStyle(markdown string, style string) (string, error) {
+	return m.RenderWithStyleAndOptions(markdown, style, true)
+}
+
+// RenderWithStyleAndOptions renders markdown content with a specific style and configurable string processing.
+func (m *MarkdownService) RenderWithStyleAndOptions(markdown string, style string, interpretEscapes bool) (string, error) {
 	if !m.initialized {
 		return "", fmt.Errorf("markdown service not initialized")
 	}
@@ -81,9 +94,8 @@ func (m *MarkdownService) RenderWithStyle(markdown string, style string) (string
 		return "", fmt.Errorf("markdown content cannot be empty")
 	}
 
-	// Clean shell continuation markers and process escape sequences before rendering
-	cleanedMarkdown := m.cleanShellMarkers(markdown)
-	processedMarkdown := m.processEscapeSequences(cleanedMarkdown)
+	// Process text using the shared utility functions
+	processedMarkdown := stringprocessing.ProcessTextForMarkdown(markdown, interpretEscapes)
 
 	// Create a new renderer with the specified style
 	renderer, err := glamour.NewTermRenderer(
@@ -93,7 +105,7 @@ func (m *MarkdownService) RenderWithStyle(markdown string, style string) (string
 	if err != nil {
 		// Fall back to default renderer if style is not available
 		logger.Debug("Failed to create renderer with style, falling back to default", "style", style, "error", err)
-		return m.Render(markdown)
+		return m.RenderWithOptions(markdown, interpretEscapes)
 	}
 
 	// Render the markdown content
@@ -107,7 +119,13 @@ func (m *MarkdownService) RenderWithStyle(markdown string, style string) (string
 
 // RenderWithTheme renders markdown content using NeuroShell's theme system.
 // It maps the current theme to an appropriate Glamour style.
+// By default, it interprets escape sequences (legacy behavior).
 func (m *MarkdownService) RenderWithTheme(markdown string) (string, error) {
+	return m.RenderWithThemeAndOptions(markdown, true)
+}
+
+// RenderWithThemeAndOptions renders markdown content using NeuroShell's theme system with configurable string processing.
+func (m *MarkdownService) RenderWithThemeAndOptions(markdown string, interpretEscapes bool) (string, error) {
 	if !m.initialized {
 		return "", fmt.Errorf("markdown service not initialized")
 	}
@@ -118,8 +136,8 @@ func (m *MarkdownService) RenderWithTheme(markdown string) (string, error) {
 	// Map NeuroShell theme to Glamour style
 	glamourStyle := m.mapThemeToGlamourStyle(themeName)
 
-	// Render with the mapped style
-	return m.RenderWithStyle(markdown, glamourStyle)
+	// Render with the mapped style and options
+	return m.RenderWithStyleAndOptions(markdown, glamourStyle, interpretEscapes)
 }
 
 // SetWordWrap sets the word wrap width for markdown rendering.
@@ -194,59 +212,6 @@ func (m *MarkdownService) GetAvailableStyles() []string {
 		"notty", // Plain text (no colors)
 		"ascii", // ASCII-only styling
 	}
-}
-
-// cleanShellMarkers removes shell continuation markers that appear in multi-line input.
-// This handles markers like "..." that shells use to indicate continuation lines.
-func (m *MarkdownService) cleanShellMarkers(text string) string {
-	// Handle both \n newlines and actual newlines
-	normalizedText := strings.ReplaceAll(text, "\\n", "\n")
-
-	// Split text into lines for processing
-	lines := strings.Split(normalizedText, "\n")
-	var cleanedLines []string
-
-	for _, line := range lines {
-		// Remove leading/trailing whitespace for pattern matching
-		trimmed := strings.TrimSpace(line)
-
-		// Skip lines that are just continuation markers
-		if trimmed == "..." {
-			continue
-		}
-
-		// Remove continuation markers at the beginning of lines
-		if strings.HasPrefix(trimmed, "... ") {
-			// Remove "... " prefix and preserve the rest
-			cleaned := strings.TrimPrefix(trimmed, "... ")
-			cleanedLines = append(cleanedLines, cleaned)
-		} else {
-			// Keep the line as-is
-			cleanedLines = append(cleanedLines, line)
-		}
-	}
-
-	result := strings.Join(cleanedLines, "\n")
-
-	// Convert back to escape sequences if the original input used them
-	if !strings.Contains(text, "\n") && strings.Contains(text, "\\n") {
-		result = strings.ReplaceAll(result, "\n", "\\n")
-	}
-
-	return result
-}
-
-// processEscapeSequences converts common escape sequences to their actual characters.
-// This allows users to input \n for newlines, \t for tabs, etc.
-func (m *MarkdownService) processEscapeSequences(text string) string {
-	// Replace common escape sequences
-	result := text
-	result = strings.ReplaceAll(result, "\\n", "\n")
-	result = strings.ReplaceAll(result, "\\t", "\t")
-	result = strings.ReplaceAll(result, "\\r", "\r")
-	result = strings.ReplaceAll(result, "\\\n", "\n") // Handle literal backslash-n
-	result = strings.ReplaceAll(result, "\\\\", "\\") // Handle escaped backslashes
-	return result
 }
 
 // GetServiceInfo returns information about the markdown service.
