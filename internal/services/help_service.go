@@ -3,6 +3,7 @@ package services
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
@@ -29,12 +30,43 @@ func (h *HelpService) Name() string {
 // Initialize collects command metadata from the command registry and stores it in context
 // as system variables, following the architecture pattern
 func (h *HelpService) Initialize() error {
+	// Get all command help info from global context
+	globalCtx := neuroshellcontext.GetGlobalContext()
+	if globalCtx == nil {
+		h.initialized = true
+		return nil // Don't fail if context is not available
+	}
+
+	neuroCtx, ok := globalCtx.(*neuroshellcontext.NeuroContext)
+	if !ok {
+		h.initialized = true
+		return nil // Don't fail if context type is incorrect
+	}
+
+	commandInfoMap := neuroCtx.GetAllCommandHelpInfo()
+
+	// Store command metadata as system variables
+	commandNames := make([]string, 0, len(commandInfoMap))
+	for name, info := range commandInfoMap {
+		commandNames = append(commandNames, name)
+
+		// Store individual command metadata
+		_ = neuroCtx.SetSystemVariable(fmt.Sprintf("#cmd_%s_desc", name), info.Description)
+		_ = neuroCtx.SetSystemVariable(fmt.Sprintf("#cmd_%s_usage", name), info.Usage)
+		_ = neuroCtx.SetSystemVariable(fmt.Sprintf("#cmd_%s_parsemode", name), h.parseModeToString(info.ParseMode))
+	}
+
+	// Store command list and count
+	sort.Strings(commandNames)
+	_ = neuroCtx.SetSystemVariable("#cmd_list", strings.Join(commandNames, ","))
+	_ = neuroCtx.SetSystemVariable("#cmd_count", fmt.Sprintf("%d", len(commandNames)))
+
 	h.initialized = true
 	return nil
 }
 
 // GetAllCommands returns metadata for all registered commands
-func (h *HelpService) GetAllCommands() ([]*neurotypes.CommandInfo, error) {
+func (h *HelpService) GetAllCommands() ([]*neurotypes.HelpInfo, error) {
 	if !h.initialized {
 		return nil, fmt.Errorf("help service not initialized")
 	}
@@ -50,23 +82,23 @@ func (h *HelpService) GetAllCommands() ([]*neurotypes.CommandInfo, error) {
 		return nil, fmt.Errorf("invalid context type")
 	}
 
-	commandInfoMap := neuroCtx.GetAllCommandInfo()
+	commandInfoMap := neuroCtx.GetAllCommandHelpInfo()
 
-	result := make([]*neurotypes.CommandInfo, 0, len(commandInfoMap))
+	result := make([]*neurotypes.HelpInfo, 0, len(commandInfoMap))
 	for _, info := range commandInfoMap {
 		result = append(result, info)
 	}
 
 	// Sort by name for consistent output
 	sort.Slice(result, func(i, j int) bool {
-		return result[i].Name < result[j].Name
+		return result[i].Command < result[j].Command
 	})
 
 	return result, nil
 }
 
 // GetCommand returns metadata for a specific command by name
-func (h *HelpService) GetCommand(name string) (*neurotypes.CommandInfo, error) {
+func (h *HelpService) GetCommand(name string) (*neurotypes.HelpInfo, error) {
 	if !h.initialized {
 		return nil, fmt.Errorf("help service not initialized")
 	}
@@ -82,7 +114,7 @@ func (h *HelpService) GetCommand(name string) (*neurotypes.CommandInfo, error) {
 		return nil, fmt.Errorf("invalid context type")
 	}
 
-	info, exists := neuroCtx.GetCommandInfo(name)
+	info, exists := neuroCtx.GetCommandHelpInfo(name)
 	if !exists {
 		return nil, fmt.Errorf("command '%s' not found", name)
 	}
@@ -150,4 +182,18 @@ func (h *HelpService) GetCommandCount() int {
 	}
 
 	return len(neuroCtx.GetRegisteredCommands())
+}
+
+// parseModeToString converts ParseMode to string representation
+func (h *HelpService) parseModeToString(mode neurotypes.ParseMode) string {
+	switch mode {
+	case neurotypes.ParseModeKeyValue:
+		return "KeyValue"
+	case neurotypes.ParseModeRaw:
+		return "Raw"
+	case neurotypes.ParseModeWithOptions:
+		return "WithOptions"
+	default:
+		return "Unknown"
+	}
 }

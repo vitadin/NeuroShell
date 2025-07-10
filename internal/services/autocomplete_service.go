@@ -189,7 +189,7 @@ func (a *AutoCompleteService) getVariableCompletions(prefix string) []string {
 }
 
 // getOptionCompletions returns completions for command options inside brackets.
-func (a *AutoCompleteService) getOptionCompletions(line string, _ int, _ string) []string {
+func (a *AutoCompleteService) getOptionCompletions(line string, _ int, currentWord string) []string {
 	// Parse the command name from incomplete input
 	commandName := a.extractCommandNameFromLine(line)
 	if commandName == "" {
@@ -207,13 +207,31 @@ func (a *AutoCompleteService) getOptionCompletions(line string, _ int, _ string)
 		return make([]string, 0)
 	}
 
-	if !neuroCtx.IsCommandRegistered(commandName) {
+	// Get command help info from context
+	commandHelpInfo, exists := neuroCtx.GetCommandHelpInfo(commandName)
+	if !exists {
 		return make([]string, 0)
 	}
 
-	// For now, option completion is simplified since we can't access command objects from context
-	// TODO: Consider storing command help information in context if needed
-	return make([]string, 0)
+	// Get completions based on command options
+	var completions []string
+	for _, option := range commandHelpInfo.Options {
+		optionName := option.Name
+
+		// Check if this option matches the current word prefix
+		if strings.HasPrefix(optionName, currentWord) {
+			// For boolean options, add just the name
+			if option.Type == "bool" {
+				completions = append(completions, optionName)
+			} else {
+				// For other types, add name with = suffix
+				completions = append(completions, optionName+"=")
+			}
+		}
+	}
+
+	sort.Strings(completions)
+	return completions
 }
 
 // extractCommandNameFromLine extracts the command name from a line, handling incomplete bracket input.

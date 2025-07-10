@@ -49,9 +49,9 @@ type NeuroContext struct {
 	llmClients map[string]neurotypes.LLMClient // LLM client storage by API key identifier
 
 	// Command registry information
-	registeredCommands map[string]bool                    // Track registered command names for autocomplete
-	commandInfo        map[string]*neurotypes.CommandInfo // Store command metadata for help system
-	commandMutex       sync.RWMutex                       // Protects registeredCommands and commandInfo maps
+	registeredCommands map[string]bool                 // Track registered command names for autocomplete
+	commandHelpInfo    map[string]*neurotypes.HelpInfo // Store detailed help info for autocomplete and help system
+	commandMutex       sync.RWMutex                    // Protects registeredCommands and commandHelpInfo maps
 }
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
@@ -79,7 +79,7 @@ func New() *NeuroContext {
 
 		// Initialize command registry information
 		registeredCommands: make(map[string]bool),
-		commandInfo:        make(map[string]*neurotypes.CommandInfo),
+		commandHelpInfo:    make(map[string]*neurotypes.HelpInfo),
 	}
 
 	// Generate initial session ID (will be deterministic if test mode is set later)
@@ -601,32 +601,22 @@ func (ctx *NeuroContext) RegisterCommandWithInfo(cmd neurotypes.Command) {
 	commandName := cmd.Name()
 	ctx.registeredCommands[commandName] = true
 
-	// Store command metadata
-	ctx.commandInfo[commandName] = &neurotypes.CommandInfo{
-		Name:        commandName,
-		Description: cmd.Description(),
-		Usage:       cmd.Usage(),
-		ParseMode:   cmd.ParseMode(),
-		CommandType: neurotypes.CommandTypeBuiltin, // Default to builtin
-	}
+	// Store command help information
+	helpInfo := cmd.HelpInfo()
+	ctx.commandHelpInfo[commandName] = &helpInfo
 }
 
 // RegisterCommandWithInfoAndType registers a command with its metadata and type.
-func (ctx *NeuroContext) RegisterCommandWithInfoAndType(cmd neurotypes.Command, cmdType neurotypes.CommandType) {
+func (ctx *NeuroContext) RegisterCommandWithInfoAndType(cmd neurotypes.Command, _ neurotypes.CommandType) {
 	ctx.commandMutex.Lock()
 	defer ctx.commandMutex.Unlock()
 
 	commandName := cmd.Name()
 	ctx.registeredCommands[commandName] = true
 
-	// Store command metadata
-	ctx.commandInfo[commandName] = &neurotypes.CommandInfo{
-		Name:        commandName,
-		Description: cmd.Description(),
-		Usage:       cmd.Usage(),
-		ParseMode:   cmd.ParseMode(),
-		CommandType: cmdType,
-	}
+	// Store command help information
+	helpInfo := cmd.HelpInfo()
+	ctx.commandHelpInfo[commandName] = &helpInfo
 }
 
 // UnregisterCommand removes a command name from the autocomplete registry.
@@ -634,7 +624,7 @@ func (ctx *NeuroContext) UnregisterCommand(commandName string) {
 	ctx.commandMutex.Lock()
 	defer ctx.commandMutex.Unlock()
 	delete(ctx.registeredCommands, commandName)
-	delete(ctx.commandInfo, commandName)
+	delete(ctx.commandHelpInfo, commandName)
 }
 
 // GetRegisteredCommands returns a list of all registered command names.
@@ -656,21 +646,21 @@ func (ctx *NeuroContext) IsCommandRegistered(commandName string) bool {
 	return ctx.registeredCommands[commandName]
 }
 
-// GetCommandInfo returns the metadata for a specific command.
-func (ctx *NeuroContext) GetCommandInfo(commandName string) (*neurotypes.CommandInfo, bool) {
+// GetCommandHelpInfo returns the help information for a specific command.
+func (ctx *NeuroContext) GetCommandHelpInfo(commandName string) (*neurotypes.HelpInfo, bool) {
 	ctx.commandMutex.RLock()
 	defer ctx.commandMutex.RUnlock()
-	info, exists := ctx.commandInfo[commandName]
+	info, exists := ctx.commandHelpInfo[commandName]
 	return info, exists
 }
 
-// GetAllCommandInfo returns all registered command metadata.
-func (ctx *NeuroContext) GetAllCommandInfo() map[string]*neurotypes.CommandInfo {
+// GetAllCommandHelpInfo returns all registered command help information.
+func (ctx *NeuroContext) GetAllCommandHelpInfo() map[string]*neurotypes.HelpInfo {
 	ctx.commandMutex.RLock()
 	defer ctx.commandMutex.RUnlock()
 
-	result := make(map[string]*neurotypes.CommandInfo)
-	for name, info := range ctx.commandInfo {
+	result := make(map[string]*neurotypes.HelpInfo)
+	for name, info := range ctx.commandHelpInfo {
 		result[name] = info
 	}
 	return result

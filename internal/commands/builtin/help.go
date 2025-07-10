@@ -154,17 +154,17 @@ func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, them
 // CommandCategory represents a category of commands
 type CommandCategory struct {
 	Name     string
-	Commands []*neurotypes.CommandInfo
+	Commands []*neurotypes.HelpInfo
 }
 
 // categorizeCommands groups commands into logical categories
-func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.CommandInfo) []CommandCategory {
+func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []CommandCategory {
 	categories := []CommandCategory{
-		{Name: "Core Commands", Commands: []*neurotypes.CommandInfo{}},
-		{Name: "System Commands", Commands: []*neurotypes.CommandInfo{}},
-		{Name: "Model Commands", Commands: []*neurotypes.CommandInfo{}},
-		{Name: "Session Commands", Commands: []*neurotypes.CommandInfo{}},
-		{Name: "Testing Commands", Commands: []*neurotypes.CommandInfo{}},
+		{Name: "Core Commands", Commands: []*neurotypes.HelpInfo{}},
+		{Name: "System Commands", Commands: []*neurotypes.HelpInfo{}},
+		{Name: "Model Commands", Commands: []*neurotypes.HelpInfo{}},
+		{Name: "Session Commands", Commands: []*neurotypes.HelpInfo{}},
+		{Name: "Testing Commands", Commands: []*neurotypes.HelpInfo{}},
 	}
 
 	// Define command categories
@@ -192,15 +192,15 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.CommandInfo) 
 	// Categorize commands
 	for _, cmdInfo := range allCommands {
 		switch {
-		case coreCommands[cmdInfo.Name]:
+		case coreCommands[cmdInfo.Command]:
 			categories[0].Commands = append(categories[0].Commands, cmdInfo)
-		case systemCommands[cmdInfo.Name]:
+		case systemCommands[cmdInfo.Command]:
 			categories[1].Commands = append(categories[1].Commands, cmdInfo)
-		case modelCommands[cmdInfo.Name]:
+		case modelCommands[cmdInfo.Command]:
 			categories[2].Commands = append(categories[2].Commands, cmdInfo)
-		case sessionCommands[cmdInfo.Name]:
+		case sessionCommands[cmdInfo.Command]:
 			categories[3].Commands = append(categories[3].Commands, cmdInfo)
-		case testingCommands[cmdInfo.Name]:
+		case testingCommands[cmdInfo.Command]:
 			categories[4].Commands = append(categories[4].Commands, cmdInfo)
 		default:
 			// Unknown commands go to Core Commands category
@@ -220,7 +220,7 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.CommandInfo) 
 }
 
 // showAllCommandsStyled displays all commands using only theme object semantic styles
-func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.CommandInfo, themeObj *services.Theme) error {
+func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.HelpInfo, themeObj *services.Theme) error {
 
 	// Title
 	fmt.Println(themeObj.Success.Render("Neuro Shell - Quick Start Guide"))
@@ -239,7 +239,7 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.CommandInf
 
 		for _, cmdInfo := range category.Commands {
 			fmt.Printf("  %s - %s\n",
-				themeObj.Command.Render(fmt.Sprintf("%-15s", "\\"+cmdInfo.Name)),
+				themeObj.Command.Render(fmt.Sprintf("%-15s", "\\"+cmdInfo.Command)),
 				themeObj.Info.Render(cmdInfo.Description))
 		}
 	}

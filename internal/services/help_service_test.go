@@ -55,7 +55,7 @@ func TestHelpService_Initialize(t *testing.T) {
 	// Check command names
 	commandNames := make([]string, len(commands))
 	for i, cmd := range commands {
-		commandNames[i] = cmd.Name
+		commandNames[i] = cmd.Command
 	}
 	assert.Contains(t, commandNames, "test1")
 	assert.Contains(t, commandNames, "test2")
@@ -75,9 +75,9 @@ func TestHelpService_GetAllCommands(t *testing.T) {
 	assert.Len(t, allCommands, 3)
 
 	// Verify they are sorted alphabetically
-	assert.Equal(t, "apple", allCommands[0].Name)
-	assert.Equal(t, "banana", allCommands[1].Name)
-	assert.Equal(t, "zebra", allCommands[2].Name)
+	assert.Equal(t, "apple", allCommands[0].Command)
+	assert.Equal(t, "banana", allCommands[1].Command)
+	assert.Equal(t, "zebra", allCommands[2].Command)
 }
 
 func TestHelpService_GetCommand(t *testing.T) {
@@ -95,7 +95,7 @@ func TestHelpService_GetCommand(t *testing.T) {
 	// Test existing command
 	cmdInfo, err := service.GetCommand("test")
 	assert.NoError(t, err)
-	assert.Equal(t, "test", cmdInfo.Name)
+	assert.Equal(t, "test", cmdInfo.Command)
 	assert.Equal(t, "Test command", cmdInfo.Description)
 	assert.Equal(t, "\\test [arg]", cmdInfo.Usage)
 	assert.Equal(t, neurotypes.ParseModeRaw, cmdInfo.ParseMode)
