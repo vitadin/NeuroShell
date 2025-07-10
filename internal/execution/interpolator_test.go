@@ -29,7 +29,7 @@ func TestCoreInterpolator_NewCoreInterpolator(t *testing.T) {
 // TestCoreInterpolator_NewCoreInterpolatorWithLimit tests custom limit creation.
 func TestCoreInterpolator_NewCoreInterpolatorWithLimit(t *testing.T) {
 	ctx := context.New()
-	
+
 	// Test with custom limit
 	interpolator := NewCoreInterpolatorWithLimit(ctx, 5)
 	if interpolator.GetMaxIterations() != 5 {
@@ -79,9 +79,9 @@ func TestCoreInterpolator_MaxIterBehavior(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up recursive variables: a -> b -> c -> "final"
-	ctx.SetVariable("a", "${b}")
-	ctx.SetVariable("b", "${c}")
-	ctx.SetVariable("c", "final")
+	_ = ctx.SetVariable("a", "${b}")
+	_ = ctx.SetVariable("b", "${c}")
+	_ = ctx.SetVariable("c", "final")
 
 	// Test with maxIter=1 (should only expand once)
 	interpolator.SetMaxIterations(1)
@@ -118,8 +118,8 @@ func TestCoreInterpolator_HasVariables(t *testing.T) {
 		{"${variable}", true},
 		{"prefix ${var} suffix", true},
 		{"${var1} and ${var2}", true},
-		{"$variable", false}, // Not in ${} format
-		{"${}", true},        // Empty variable name
+		{"$variable", false},  // Not in ${} format
+		{"${}", true},         // Empty variable name
 		{"$${escaped}", true}, // Still contains ${} pattern
 	}
 
@@ -137,8 +137,8 @@ func TestCoreInterpolator_InterpolateCommandLine(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up test variables
-	ctx.SetVariable("user", "Alice")
-	ctx.SetVariable("cmd", "\\echo")
+	_ = ctx.SetVariable("user", "Alice")
+	_ = ctx.SetVariable("cmd", "\\echo")
 
 	testCases := []struct {
 		input           string
@@ -201,8 +201,8 @@ func TestCoreInterpolator_ExpandVariables(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up test variables
-	ctx.SetVariable("name", "World")
-	ctx.SetVariable("greeting", "Hello")
+	_ = ctx.SetVariable("name", "World")
+	_ = ctx.SetVariable("greeting", "Hello")
 
 	testCases := []struct {
 		input    string
@@ -228,9 +228,9 @@ func TestCoreInterpolator_ExpandVariablesWithLimit(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up recursive variables
-	ctx.SetVariable("a", "${b}")
-	ctx.SetVariable("b", "${c}")
-	ctx.SetVariable("c", "final")
+	_ = ctx.SetVariable("a", "${b}")
+	_ = ctx.SetVariable("b", "${c}")
+	_ = ctx.SetVariable("c", "final")
 
 	// Test normal expansion within limit
 	result := interpolator.ExpandVariablesWithLimit("${a}", 5)
@@ -253,15 +253,14 @@ func TestCoreInterpolator_ExpandVariablesWithLimit(t *testing.T) {
 	}
 }
 
-
 // TestCoreInterpolator_InterpolateCommand tests command structure interpolation.
 func TestCoreInterpolator_InterpolateCommand(t *testing.T) {
 	ctx := context.New()
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up test variables
-	ctx.SetVariable("user", "Alice")
-	ctx.SetVariable("style", "red")
+	_ = ctx.SetVariable("user", "Alice")
+	_ = ctx.SetVariable("style", "red")
 
 	// Test nil command
 	result, err := interpolator.InterpolateCommand(nil)
@@ -316,9 +315,9 @@ func TestCoreInterpolator_NestedVariableNames(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Test case: ${a_${b_${c}}} where c="x", b_x="y", a_y="final"
-	ctx.SetVariable("c", "x")
-	ctx.SetVariable("b_x", "y") 
-	ctx.SetVariable("a_y", "final_value")
+	_ = ctx.SetVariable("c", "x")
+	_ = ctx.SetVariable("b_x", "y")
+	_ = ctx.SetVariable("a_y", "final_value")
 
 	testCases := []struct {
 		input    string
@@ -345,7 +344,7 @@ func TestCoreInterpolator_NestedVariableNames(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandVariables(tc.input)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'",
 				tc.desc, tc.input, result, tc.expected)
 		}
 	}
@@ -356,10 +355,10 @@ func TestCoreInterpolator_CompositeVariables(t *testing.T) {
 	ctx := context.New()
 	interpolator := NewCoreInterpolator(ctx)
 
-	ctx.SetVariable("a", "hello")
-	ctx.SetVariable("b", "world")
-	ctx.SetVariable("prefix", "pre")
-	ctx.SetVariable("suffix", "post")
+	_ = ctx.SetVariable("a", "hello")
+	_ = ctx.SetVariable("b", "world")
+	_ = ctx.SetVariable("prefix", "pre")
+	_ = ctx.SetVariable("suffix", "post")
 
 	testCases := []struct {
 		input    string
@@ -391,7 +390,7 @@ func TestCoreInterpolator_CompositeVariables(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandVariables(tc.input)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'",
 				tc.desc, tc.input, result, tc.expected)
 		}
 	}
@@ -403,14 +402,14 @@ func TestCoreInterpolator_ComplexNesting(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up variables for complex nesting
-	ctx.SetVariable("level1", "level2")
-	ctx.SetVariable("level2", "level3") 
-	ctx.SetVariable("level3", "deep_value")
-	ctx.SetVariable("x", "y")
-	ctx.SetVariable("var_y", "resolved")
-	ctx.SetVariable("a", "b")
-	ctx.SetVariable("c", "d")
-	ctx.SetVariable("b_d", "combined")
+	_ = ctx.SetVariable("level1", "level2")
+	_ = ctx.SetVariable("level2", "level3")
+	_ = ctx.SetVariable("level3", "deep_value")
+	_ = ctx.SetVariable("x", "y")
+	_ = ctx.SetVariable("var_y", "resolved")
+	_ = ctx.SetVariable("a", "b")
+	_ = ctx.SetVariable("c", "d")
+	_ = ctx.SetVariable("b_d", "combined")
 
 	testCases := []struct {
 		input    string
@@ -424,7 +423,7 @@ func TestCoreInterpolator_ComplexNesting(t *testing.T) {
 		},
 		{
 			input:    "${var_${x}}",
-			expected: "resolved", 
+			expected: "resolved",
 			desc:     "Variable name with nested suffix",
 		},
 		{
@@ -442,7 +441,7 @@ func TestCoreInterpolator_ComplexNesting(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandVariables(tc.input)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'",
 				tc.desc, tc.input, result, tc.expected)
 		}
 	}
@@ -453,8 +452,8 @@ func TestCoreInterpolator_UndefinedNestedVariables(t *testing.T) {
 	ctx := context.New()
 	interpolator := NewCoreInterpolator(ctx)
 
-	ctx.SetVariable("defined", "exists")
-	ctx.SetVariable("exists", "final")
+	_ = ctx.SetVariable("defined", "exists")
+	_ = ctx.SetVariable("exists", "final")
 
 	testCases := []struct {
 		input    string
@@ -486,7 +485,7 @@ func TestCoreInterpolator_UndefinedNestedVariables(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandVariables(tc.input)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'",
 				tc.desc, tc.input, result, tc.expected)
 		}
 	}
@@ -498,11 +497,11 @@ func TestCoreInterpolator_MixedNestedAndComposite(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Complex setup
-	ctx.SetVariable("type", "user")
-	ctx.SetVariable("id", "123")
-	ctx.SetVariable("user_123", "alice")
-	ctx.SetVariable("action", "login")
-	ctx.SetVariable("alice_login", "success")
+	_ = ctx.SetVariable("type", "user")
+	_ = ctx.SetVariable("id", "123")
+	_ = ctx.SetVariable("user_123", "alice")
+	_ = ctx.SetVariable("action", "login")
+	_ = ctx.SetVariable("alice_login", "success")
 
 	testCases := []struct {
 		input    string
@@ -516,7 +515,7 @@ func TestCoreInterpolator_MixedNestedAndComposite(t *testing.T) {
 		},
 		{
 			input:    "${${${type}_${id}}_${action}}",
-			expected: "success", 
+			expected: "success",
 			desc:     "Double nested with composite parts",
 		},
 		{
@@ -529,7 +528,7 @@ func TestCoreInterpolator_MixedNestedAndComposite(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandVariables(tc.input)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'",
 				tc.desc, tc.input, result, tc.expected)
 		}
 	}
@@ -540,7 +539,7 @@ func TestCoreInterpolator_EdgeCases(t *testing.T) {
 	ctx := context.New()
 	interpolator := NewCoreInterpolator(ctx)
 
-	ctx.SetVariable("var", "value")
+	_ = ctx.SetVariable("var", "value")
 
 	testCases := []struct {
 		input    string
@@ -577,7 +576,7 @@ func TestCoreInterpolator_EdgeCases(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandVariables(tc.input)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandVariables('%s') = '%s', expected '%s'",
 				tc.desc, tc.input, result, tc.expected)
 		}
 	}
@@ -650,7 +649,7 @@ func TestCoreInterpolator_CircularReferences(t *testing.T) {
 	for _, tc := range testCases {
 		// Set up variables
 		for name, value := range tc.variables {
-			ctx.SetVariable(name, value)
+			_ = ctx.SetVariable(name, value)
 		}
 
 		// The key test: ensure this doesn't hang or panic
@@ -664,7 +663,7 @@ func TestCoreInterpolator_CircularReferences(t *testing.T) {
 		// Wait for completion or timeout
 		select {
 		case result := <-done:
-			t.Logf("Test '%s': Input '%s' -> Output '%s' (completed successfully)", 
+			t.Logf("Test '%s': Input '%s' -> Output '%s' (completed successfully)",
 				tc.desc, tc.input, result)
 			// Test passed - no infinite loop
 		case <-make(chan struct{}):
@@ -674,7 +673,7 @@ func TestCoreInterpolator_CircularReferences(t *testing.T) {
 
 		// Clean up variables for next test
 		for name := range tc.variables {
-			ctx.SetVariable(name, "")
+			_ = ctx.SetVariable(name, "")
 		}
 	}
 }
@@ -685,13 +684,13 @@ func TestCoreInterpolator_IterationLimitBehavior(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up a circular reference
-	ctx.SetVariable("a", "${b}")
-	ctx.SetVariable("b", "${a}")
+	_ = ctx.SetVariable("a", "${b}")
+	_ = ctx.SetVariable("b", "${a}")
 
 	testCases := []struct {
-		limit    int
-		input    string
-		desc     string
+		limit int
+		input string
+		desc  string
 	}{
 		{
 			limit: 1,
@@ -712,7 +711,7 @@ func TestCoreInterpolator_IterationLimitBehavior(t *testing.T) {
 
 	for _, tc := range testCases {
 		result := interpolator.ExpandVariablesWithLimit(tc.input, tc.limit)
-		
+
 		// Key assertions:
 		// 1. Function should return (not hang)
 		// 2. Result should be a string (not panic)
@@ -726,7 +725,7 @@ func TestCoreInterpolator_IterationLimitBehavior(t *testing.T) {
 		// Test deterministic behavior - same input should give same output
 		result2 := interpolator.ExpandVariablesWithLimit(tc.input, tc.limit)
 		if result != result2 {
-			t.Errorf("Test '%s': Non-deterministic behavior - got '%s' then '%s'", 
+			t.Errorf("Test '%s': Non-deterministic behavior - got '%s' then '%s'",
 				tc.desc, result, result2)
 		}
 	}
@@ -738,14 +737,14 @@ func TestCoreInterpolator_MixedCircularAndValid(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Mix of valid and circular variables
-	ctx.SetVariable("valid", "good_value")
-	ctx.SetVariable("circ1", "${circ2}")
-	ctx.SetVariable("circ2", "${circ1}")
-	ctx.SetVariable("partial", "${valid}_${circ1}")
+	_ = ctx.SetVariable("valid", "good_value")
+	_ = ctx.SetVariable("circ1", "${circ2}")
+	_ = ctx.SetVariable("circ2", "${circ1}")
+	_ = ctx.SetVariable("partial", "${valid}_${circ1}")
 
 	testCases := []struct {
-		input    string
-		desc     string
+		input string
+		desc  string
 	}{
 		{
 			input: "${valid}",
@@ -768,7 +767,7 @@ func TestCoreInterpolator_MixedCircularAndValid(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandVariables(tc.input)
 		t.Logf("Test '%s': Input '%s' -> Output '%s'", tc.desc, tc.input, result)
-		
+
 		// Key test: function should return successfully
 		// We don't test exact output since circular behavior may vary,
 		// but we ensure it doesn't hang and produces some result
@@ -781,14 +780,14 @@ func TestCoreInterpolator_ExpandOnce(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up variables for testing
-	ctx.SetVariable("a", "value_a")
-	ctx.SetVariable("b", "value_b")
-	ctx.SetVariable("c", "x")
-	ctx.SetVariable("b_x", "y")
-	ctx.SetVariable("a_y", "final_value")
-	ctx.SetVariable("a_x", "resolved_a_x")
-	ctx.SetVariable("recursive", "${another}")
-	ctx.SetVariable("another", "deep_value")
+	_ = ctx.SetVariable("a", "value_a")
+	_ = ctx.SetVariable("b", "value_b")
+	_ = ctx.SetVariable("c", "x")
+	_ = ctx.SetVariable("b_x", "y")
+	_ = ctx.SetVariable("a_y", "final_value")
+	_ = ctx.SetVariable("a_x", "resolved_a_x")
+	_ = ctx.SetVariable("recursive", "${another}")
+	_ = ctx.SetVariable("another", "deep_value")
 
 	testCases := []struct {
 		input    string
@@ -860,7 +859,7 @@ func TestCoreInterpolator_ExpandOnce(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandOnce(tc.input)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandOnce('%s') = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandOnce('%s') = '%s', expected '%s'",
 				tc.desc, tc.input, result, tc.expected)
 		}
 	}
@@ -872,16 +871,16 @@ func TestCoreInterpolator_ExpandOnce_ExactTrace(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up variables to match the exact trace example
-	ctx.SetVariable("b", "x")
-	ctx.SetVariable("a_x", "resolved")
+	_ = ctx.SetVariable("b", "x")
+	_ = ctx.SetVariable("a_x", "resolved")
 
 	// Test the exact case from the trace: "xxx ${${a_${b}}_${b}}"
 	input := "xxx ${${a_${b}}_${b}}"
 	expected := "xxx ${${a_x}_x}"
-	
+
 	result := interpolator.ExpandOnce(input)
 	if result != expected {
-		t.Errorf("Exact trace test: ExpandOnce('%s') = '%s', expected '%s'", 
+		t.Errorf("Exact trace test: ExpandOnce('%s') = '%s', expected '%s'",
 			input, result, expected)
 	}
 
@@ -889,7 +888,7 @@ func TestCoreInterpolator_ExpandOnce_ExactTrace(t *testing.T) {
 	// 1. First ${b} (inside ${a_${b}}) expands to "x" → "xxx ${${a_x}_${b}}"
 	// 2. Second ${b} (rightmost) expands to "x" → "xxx ${${a_x}_x}"
 	// 3. The outer ${${a_x}_x} is not a complete variable, so it remains
-	
+
 	t.Logf("Trace verification:")
 	t.Logf("  Input:  %s", input)
 	t.Logf("  Output: %s", result)
@@ -902,17 +901,17 @@ func TestCoreInterpolator_ExpandWithLimit(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up variables for testing
-	ctx.SetVariable("recursive", "${another}")
-	ctx.SetVariable("another", "deep_value")
-	ctx.SetVariable("chain1", "${chain2}")
-	ctx.SetVariable("chain2", "${chain3}")
-	ctx.SetVariable("chain3", "final")
+	_ = ctx.SetVariable("recursive", "${another}")
+	_ = ctx.SetVariable("another", "deep_value")
+	_ = ctx.SetVariable("chain1", "${chain2}")
+	_ = ctx.SetVariable("chain2", "${chain3}")
+	_ = ctx.SetVariable("chain3", "final")
 
 	testCases := []struct {
-		input       string
-		limit       int
-		expected    string
-		desc        string
+		input    string
+		limit    int
+		expected string
+		desc     string
 	}{
 		{
 			input:    "${recursive}",
@@ -943,7 +942,7 @@ func TestCoreInterpolator_ExpandWithLimit(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandWithLimit(tc.input, tc.limit)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandWithLimit('%s', %d) = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandWithLimit('%s', %d) = '%s', expected '%s'",
 				tc.desc, tc.input, tc.limit, result, tc.expected)
 		}
 	}
@@ -955,9 +954,9 @@ func TestCoreInterpolator_ExpandOnceVsExpandWithLimit(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up nested variables: a -> b -> c -> "final"
-	ctx.SetVariable("a", "${b}")
-	ctx.SetVariable("b", "${c}")
-	ctx.SetVariable("c", "final")
+	_ = ctx.SetVariable("a", "${b}")
+	_ = ctx.SetVariable("b", "${c}")
+	_ = ctx.SetVariable("c", "final")
 
 	input := "${a}"
 
@@ -981,8 +980,8 @@ func TestCoreInterpolator_ExpandOnceVsExpandWithLimit(t *testing.T) {
 	t.Logf("  ExpandWithLimit(10): %s (full expansion)", limitResult)
 
 	// Test circular reference behavior
-	ctx.SetVariable("circular1", "${circular2}")
-	ctx.SetVariable("circular2", "${circular1}")
+	_ = ctx.SetVariable("circular1", "${circular2}")
+	_ = ctx.SetVariable("circular2", "${circular1}")
 
 	circularInput := "${circular1}"
 
@@ -1001,11 +1000,11 @@ func TestCoreInterpolator_ExpandWithStack(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up variables for testing
-	ctx.SetVariable("a", "value_a")
-	ctx.SetVariable("b", "value_b")
-	ctx.SetVariable("c", "x")
-	ctx.SetVariable("b_x", "y")
-	ctx.SetVariable("a_y", "final_value")
+	_ = ctx.SetVariable("a", "value_a")
+	_ = ctx.SetVariable("b", "value_b")
+	_ = ctx.SetVariable("c", "x")
+	_ = ctx.SetVariable("b_x", "y")
+	_ = ctx.SetVariable("a_y", "final_value")
 
 	testCases := []struct {
 		input    string
@@ -1067,7 +1066,7 @@ func TestCoreInterpolator_ExpandWithStack(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandWithStack(tc.input, 10)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandWithStack('%s') = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandWithStack('%s') = '%s', expected '%s'",
 				tc.desc, tc.input, result, tc.expected)
 		}
 	}
@@ -1113,18 +1112,18 @@ func TestCoreInterpolator_ExpandWithStack_CircularReferences(t *testing.T) {
 	for _, tc := range testCases {
 		// Set up variables
 		for name, value := range tc.variables {
-			ctx.SetVariable(name, value)
+			_ = ctx.SetVariable(name, value)
 		}
 
 		// Test that ExpandWithStack now safely handles circular references
 		// This should NOT hang and should return promptly
 		result := interpolator.ExpandWithStack(tc.input, 50)
-		t.Logf("Test '%s': ExpandWithStack (now safe) Input '%s' -> Output '%s'", 
+		t.Logf("Test '%s': ExpandWithStack (now safe) Input '%s' -> Output '%s'",
 			tc.desc, tc.input, result)
 
 		// Clean up variables for next test
 		for name := range tc.variables {
-			ctx.SetVariable(name, "")
+			_ = ctx.SetVariable(name, "")
 		}
 	}
 }
@@ -1135,16 +1134,16 @@ func TestCoreInterpolator_ExpandWithStack_IterationLimit(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up a long chain that would exceed reasonable limits if not protected
-	ctx.SetVariable("a", "${b}")
-	ctx.SetVariable("b", "${c}")
-	ctx.SetVariable("c", "${d}")
-	ctx.SetVariable("d", "${e}")
-	ctx.SetVariable("e", "${f}")
-	ctx.SetVariable("f", "${g}")
-	ctx.SetVariable("g", "${h}")
-	ctx.SetVariable("h", "${i}")
-	ctx.SetVariable("i", "${j}")
-	ctx.SetVariable("j", "final_value")
+	_ = ctx.SetVariable("a", "${b}")
+	_ = ctx.SetVariable("b", "${c}")
+	_ = ctx.SetVariable("c", "${d}")
+	_ = ctx.SetVariable("d", "${e}")
+	_ = ctx.SetVariable("e", "${f}")
+	_ = ctx.SetVariable("f", "${g}")
+	_ = ctx.SetVariable("g", "${h}")
+	_ = ctx.SetVariable("h", "${i}")
+	_ = ctx.SetVariable("i", "${j}")
+	_ = ctx.SetVariable("j", "final_value")
 
 	// This should work fine - not circular, just deep
 	result := interpolator.ExpandWithStack("${a}", 50)
@@ -1153,8 +1152,8 @@ func TestCoreInterpolator_ExpandWithStack_IterationLimit(t *testing.T) {
 	}
 
 	// Now test actual circular reference with timing
-	ctx.SetVariable("circular1", "${circular2}")
-	ctx.SetVariable("circular2", "${circular1}")
+	_ = ctx.SetVariable("circular1", "${circular2}")
+	_ = ctx.SetVariable("circular2", "${circular1}")
 
 	// This should complete quickly without hanging
 	start := time.Now()
@@ -1175,14 +1174,14 @@ func TestCoreInterpolator_ExpandWithStack_Complex(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Complex setup
-	ctx.SetVariable("type", "user")
-	ctx.SetVariable("id", "123")
-	ctx.SetVariable("user_123", "alice")
-	ctx.SetVariable("action", "login")
-	ctx.SetVariable("alice_login", "success")
-	ctx.SetVariable("level1", "level2")
-	ctx.SetVariable("level2", "level3")
-	ctx.SetVariable("level3", "deep_value")
+	_ = ctx.SetVariable("type", "user")
+	_ = ctx.SetVariable("id", "123")
+	_ = ctx.SetVariable("user_123", "alice")
+	_ = ctx.SetVariable("action", "login")
+	_ = ctx.SetVariable("alice_login", "success")
+	_ = ctx.SetVariable("level1", "level2")
+	_ = ctx.SetVariable("level2", "level3")
+	_ = ctx.SetVariable("level3", "deep_value")
 
 	testCases := []struct {
 		input    string
@@ -1214,7 +1213,7 @@ func TestCoreInterpolator_ExpandWithStack_Complex(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandWithStack(tc.input, 20)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandWithStack('%s') = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandWithStack('%s') = '%s', expected '%s'",
 				tc.desc, tc.input, result, tc.expected)
 		}
 	}
@@ -1225,8 +1224,8 @@ func TestCoreInterpolator_ExpandWithStack_EdgeCases(t *testing.T) {
 	ctx := context.New()
 	interpolator := NewCoreInterpolator(ctx)
 
-	ctx.SetVariable("var", "value")
-	ctx.SetVariable("nested", "var")
+	_ = ctx.SetVariable("var", "value")
+	_ = ctx.SetVariable("nested", "var")
 
 	testCases := []struct {
 		input    string
@@ -1268,7 +1267,7 @@ func TestCoreInterpolator_ExpandWithStack_EdgeCases(t *testing.T) {
 	for _, tc := range testCases {
 		result := interpolator.ExpandWithStack(tc.input, 10)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandWithStack('%s') = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandWithStack('%s') = '%s', expected '%s'",
 				tc.desc, tc.input, result, tc.expected)
 		}
 	}
@@ -1280,10 +1279,10 @@ func TestCoreInterpolator_ExpandWithStack_StackBehavior(t *testing.T) {
 	interpolator := NewCoreInterpolator(ctx)
 
 	// Set up variables to test stack behavior (innermost-first expansion)
-	ctx.SetVariable("a", "1")
-	ctx.SetVariable("b", "2")
-	ctx.SetVariable("c", "3")
-	ctx.SetVariable("expand_order", "test")
+	_ = ctx.SetVariable("a", "1")
+	_ = ctx.SetVariable("b", "2")
+	_ = ctx.SetVariable("c", "3")
+	_ = ctx.SetVariable("expand_order", "test")
 
 	testCases := []struct {
 		input    string
@@ -1295,9 +1294,9 @@ func TestCoreInterpolator_ExpandWithStack_StackBehavior(t *testing.T) {
 			input: "${a${b${c}}}",
 			desc:  "Stack should expand innermost first: c->b->a",
 			setup: func() {
-				ctx.SetVariable("c", "3")
-				ctx.SetVariable("b3", "2")
-				ctx.SetVariable("a2", "final")
+				_ = ctx.SetVariable("c", "3")
+				_ = ctx.SetVariable("b3", "2")
+				_ = ctx.SetVariable("a2", "final")
 			},
 			expected: "final",
 		},
@@ -1305,10 +1304,10 @@ func TestCoreInterpolator_ExpandWithStack_StackBehavior(t *testing.T) {
 			input: "${${a}${b}${c}}",
 			desc:  "Multiple nested variables in one name",
 			setup: func() {
-				ctx.SetVariable("a", "x")
-				ctx.SetVariable("b", "y")
-				ctx.SetVariable("c", "z")
-				ctx.SetVariable("xyz", "combined")
+				_ = ctx.SetVariable("a", "x")
+				_ = ctx.SetVariable("b", "y")
+				_ = ctx.SetVariable("c", "z")
+				_ = ctx.SetVariable("xyz", "combined")
 			},
 			expected: "combined",
 		},
@@ -1316,16 +1315,16 @@ func TestCoreInterpolator_ExpandWithStack_StackBehavior(t *testing.T) {
 
 	for _, tc := range testCases {
 		// Reset variables
-		ctx.SetVariable("a", "1")
-		ctx.SetVariable("b", "2") 
-		ctx.SetVariable("c", "3")
-		
+		_ = ctx.SetVariable("a", "1")
+		_ = ctx.SetVariable("b", "2")
+		_ = ctx.SetVariable("c", "3")
+
 		// Apply test-specific setup
 		tc.setup()
-		
+
 		result := interpolator.ExpandWithStack(tc.input, 15)
 		if result != tc.expected {
-			t.Errorf("Test '%s': ExpandWithStack('%s') = '%s', expected '%s'", 
+			t.Errorf("Test '%s': ExpandWithStack('%s') = '%s', expected '%s'",
 				tc.desc, tc.input, result, tc.expected)
 		}
 	}
