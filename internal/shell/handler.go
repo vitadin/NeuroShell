@@ -6,15 +6,14 @@ import (
 	"strings"
 
 	"github.com/abiosoft/ishell/v2"
-	"neuroshell/internal/commands"
 	_ "neuroshell/internal/commands/assert"  // Import assert commands (init functions)
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
 	_ "neuroshell/internal/commands/model"   // Import model commands (init functions)
 	_ "neuroshell/internal/commands/render"  // Import render commands (init functions)
 	_ "neuroshell/internal/commands/session" // Import session commands (init functions)
 	"neuroshell/internal/context"
+	"neuroshell/internal/execution"
 	"neuroshell/internal/logger"
-	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
 )
 
@@ -35,12 +34,8 @@ func ProcessInput(c *ishell.Context) {
 
 	logger.Debug("Processing user input", "input", rawInput)
 
-	// Parse input - interpolation will happen later at execution time
-	cmd := parser.ParseInput(rawInput)
-	logger.Debug("Parsed command", "name", cmd.Name, "message", cmd.Message, "options", cmd.Options)
-
-	// Execute the command
-	executeCommand(c, cmd)
+	// Execute the command using state machine (handles parsing, interpolation, execution)
+	executeCommand(c, rawInput)
 }
 
 // GetGlobalContext returns the global context instance for external access.
@@ -145,48 +140,29 @@ func InitializeServices(testMode bool) error {
 	return nil
 }
 
-func executeCommand(c *ishell.Context, cmd *parser.Command) {
-	logger.CommandExecution(cmd.Name, cmd.Options)
+func executeCommand(c *ishell.Context, rawInput string) {
+	logger.Debug("Executing command through state machine", "input", rawInput)
 
 	// Get the global context singleton
-	globalCtx := context.GetGlobalContext().(*context.NeuroContext)
+	globalCtx := GetGlobalContext()
 
 	// Set global context for service access
 	context.SetGlobalContext(globalCtx)
 
-	// Get interpolation service
-	interpolationService, err := services.GetGlobalRegistry().GetService("interpolation")
-	if err != nil {
-		logger.Error("Interpolation service not available", "error", err)
-		c.Printf("Error: interpolation service not available: %s\n", err.Error())
-		return
-	}
+	// Create state machine with default configuration
+	stateMachine := execution.NewStateMachineWithDefaults(globalCtx)
 
-	is := interpolationService.(*services.InterpolationService)
-
-	// Interpolate command components using service
-	interpolatedCmd, err := is.InterpolateCommand(cmd)
-	if err != nil {
-		logger.Error("Command interpolation failed", "command", cmd.Name, "error", err)
-		c.Printf("Error: interpolation failed: %s\n", err.Error())
-		return
-	}
-
-	logger.InterpolationStep(cmd.Message, interpolatedCmd.Message)
-
-	// Prepare input for execution
-	input := interpolatedCmd.Message
-
-	// Execute command using builtin registry
-	err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, input)
+	// Execute through state machine (handles complete pipeline)
+	err := stateMachine.Execute(rawInput)
 
 	if err != nil {
-		logger.Error("Command execution failed", "command", interpolatedCmd.Name, "error", err)
+		logger.Error("State machine execution failed", "input", rawInput, "error", err)
 		c.Printf("Error: %s\n", err.Error())
-		if cmd.Name != "help" {
+		// Check if this looks like a help command to avoid infinite loops
+		if !strings.Contains(strings.ToLower(rawInput), "help") {
 			c.Println("Type \\help for available commands")
 		}
 	} else {
-		logger.Debug("Command executed successfully", "command", interpolatedCmd.Name)
+		logger.Debug("State machine execution completed successfully", "input", rawInput)
 	}
 }
