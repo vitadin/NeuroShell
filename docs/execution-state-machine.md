@@ -30,7 +30,9 @@ const (
     StateInterpolating                      // Expanding variables/macros
     StateParsing                           // Parsing command structure  
     StateResolving                         // Finding command (builtin → stdlib → user)
-    StateExecuting                         // Running the resolved command
+    StateExecuting                         // Running builtin commands
+    StateScriptLoaded                      // Script content loaded, ready to process
+    StateScriptExecuting                   // Processing script lines natively
     StateCompleted                         // Execution finished (success)
     StateError                            // Execution failed
 )
@@ -64,8 +66,12 @@ StateReceived → StateInterpolating (if contains variables)
 StateReceived → StateParsing (if no variables)
 StateInterpolating → StateReceived (recursive: expanded line re-enters)
 StateParsing → StateResolving (command parsed successfully)
-StateResolving → StateExecuting (command found)
-StateExecuting → StateCompleted (success)
+StateResolving → StateExecuting (if builtin command found)
+StateResolving → StateScriptLoaded (if stdlib/user script found)
+StateExecuting → StateCompleted (builtin command success)
+StateScriptLoaded → StateScriptExecuting (script ready to process)
+StateScriptExecuting → StateReceived (recursive: each script line re-enters)
+StateScriptExecuting → StateCompleted (script finished)
 Any State → StateError (on failure)
 StateCompleted/StateError → StateReceived (for next execution)
 ```
@@ -153,6 +159,10 @@ func (sm *ExecutionStateMachine) ProcessCurrentState() error {
         return sm.processResolving()
     case StateExecuting:
         return sm.processExecuting()
+    case StateScriptLoaded:
+        return sm.processScriptLoaded()
+    case StateScriptExecuting:
+        return sm.processScriptExecuting()
     default:
         return fmt.Errorf("unknown state: %v", currentState)
     }
@@ -173,8 +183,23 @@ func (sm *ExecutionStateMachine) DetermineNextState() ExecutionState {
     case StateParsing:
         return StateResolving
     case StateResolving:
-        return StateExecuting
+        // Determine if builtin command or script
+        if sm.context.GetExecutionResolvedBuiltinCommand() != nil {
+            return StateExecuting
+        }
+        if sm.context.GetExecutionScriptContent() != "" {
+            return StateScriptLoaded
+        }
+        return StateError
     case StateExecuting:
+        return StateCompleted
+    case StateScriptLoaded:
+        return StateScriptExecuting
+    case StateScriptExecuting:
+        // Check if more script lines to process
+        if sm.context.HasMoreScriptLines() {
+            return StateReceived  // Recursive: next script line re-enters
+        }
         return StateCompleted
     default:
         return StateError
@@ -247,59 +272,204 @@ func (sm *ExecutionStateMachine) processResolving() error {
 }
 
 func (sm *ExecutionStateMachine) processExecuting() error {
-    resolvedCmd := sm.context.GetExecutionResolvedCommand()
+    builtinCmd := sm.context.GetExecutionResolvedBuiltinCommand()
     parsedCmd := sm.context.GetExecutionParsedCommand()
     input := sm.context.GetExecutionInput()
     
-    logger.Debug("State: Executing", "command", resolvedCmd.Name, "type", resolvedCmd.Type)
+    logger.Debug("State: Executing", "command", parsedCmd.Name, "type", "builtin")
     
     if sm.echoCommands {
         fmt.Printf("%%> %s\n", input)
     }
     
-    return resolvedCmd.Command.Execute(parsedCmd.Options, parsedCmd.Message)
+    return builtinCmd.Execute(parsedCmd.Options, parsedCmd.Message)
+}
+
+func (sm *ExecutionStateMachine) processScriptLoaded() error {
+    parsedCmd := sm.context.GetExecutionParsedCommand()
+    scriptContent := sm.context.GetExecutionScriptContent()
+    scriptType := sm.context.GetExecutionScriptType()
+    
+    logger.Debug("State: ScriptLoaded", "command", parsedCmd.Name, "type", scriptType.String())
+    
+    // Setup script parameters using the same system as ScriptCommand
+    err := sm.setupScriptParameters(parsedCmd.Options, parsedCmd.Message)
+    if err != nil {
+        return fmt.Errorf("failed to setup script parameters: %w", err)
+    }
+    
+    // Parse script content into executable lines
+    lines := sm.parseScriptIntoLines(scriptContent)
+    sm.context.SetExecutionScriptLines(lines)
+    sm.context.SetExecutionScriptCurrentLine(0)
+    
+    return nil
+}
+
+func (sm *ExecutionStateMachine) processScriptExecuting() error {
+    lines := sm.context.GetExecutionScriptLines()
+    currentLineIndex := sm.context.GetExecutionScriptCurrentLine()
+    parsedCmd := sm.context.GetExecutionParsedCommand()
+    
+    logger.Debug("State: ScriptExecuting", "script", parsedCmd.Name, "line", currentLineIndex+1, "total", len(lines))
+    
+    if currentLineIndex >= len(lines) {
+        // Script finished - cleanup parameters
+        err := sm.cleanupScriptParameters()
+        if err != nil {
+            logger.Error("Failed to cleanup script parameters", "error", err)
+        }
+        return nil  // Will transition to StateCompleted
+    }
+    
+    // Get current line to execute
+    line := lines[currentLineIndex]
+    line = strings.TrimSpace(line)
+    
+    // Skip empty lines and comments
+    if line == "" || strings.HasPrefix(line, "%%") {
+        sm.context.SetExecutionScriptCurrentLine(currentLineIndex + 1)
+        return nil  // Stay in StateScriptExecuting for next line
+    }
+    
+    if sm.echoCommands {
+        fmt.Printf("%%> %s\n", line)
+    }
+    
+    // Save current execution state for recursive call
+    savedState := sm.context.SaveExecutionState()
+    
+    // Execute script line through state machine recursively
+    // This line will go through: StateReceived → StateInterpolating → ... → StateCompleted
+    err := sm.Execute(line)
+    
+    // Restore execution state after recursive call
+    sm.context.RestoreExecutionState(savedState)
+    
+    if err != nil {
+        return fmt.Errorf("script line execution failed at line %d: %w", currentLineIndex+1, err)
+    }
+    
+    // Move to next line
+    sm.context.SetExecutionScriptCurrentLine(currentLineIndex + 1)
+    
+    return nil  // Stay in StateScriptExecuting for next line
 }
 ```
 
 ### Phase 3: Command Resolution Integration
 
-**Priority Resolution in State Machine**:
+**Native Script Resolution in State Machine**:
+
+The state machine now handles script resolution natively without creating ScriptCommand wrapper objects:
 
 ```go
-func (sm *ExecutionStateMachine) resolveCommand(name string) (*ResolvedCommand, error) {
-    // 1. Try builtin commands (highest priority)
-    if cmd, exists := commands.GetGlobalRegistry().Get(name); exists {
-        return &ResolvedCommand{
-            Name:    name,
-            Type:    CommandTypeBuiltin,
-            Source:  "builtin",
-            Command: cmd,
-        }, nil
+func (sm *ExecutionStateMachine) processResolving() error {
+    parsedCmd := sm.context.GetExecutionParsedCommand()
+    commandName := parsedCmd.Name
+    
+    logger.Debug("State: Resolving", "command", commandName)
+    
+    // Priority 1: Try builtin commands (highest priority)
+    if builtinCmd, exists := commands.GetGlobalRegistry().Get(commandName); exists {
+        sm.context.SetExecutionResolvedBuiltinCommand(builtinCmd)
+        logger.Debug("Resolved to builtin command", "command", commandName)
+        return nil  // Will transition to StateExecuting
     }
     
-    // 2. Try stdlib scripts (medium priority)
-    if scriptContent := sm.context.GetStdlibScript(name); scriptContent != "" {
-        scriptCmd := NewScriptCommand(name, scriptContent, CommandTypeStdlib)
-        return &ResolvedCommand{
-            Name:    name,
-            Type:    CommandTypeStdlib,
-            Source:  "stdlib",
-            Command: scriptCmd,
-        }, nil
+    // Priority 2: Try stdlib scripts (medium priority)
+    if scriptContent := sm.context.GetStdlibScript(commandName); scriptContent != "" {
+        sm.context.SetExecutionScriptContent(scriptContent)
+        sm.context.SetExecutionScriptType(CommandTypeStdlib)
+        logger.Debug("Resolved to stdlib script", "command", commandName)
+        return nil  // Will transition to StateScriptLoaded
     }
     
-    // 3. Try user scripts (lowest priority)
-    if scriptContent := sm.context.GetUserScript(name); scriptContent != "" {
-        scriptCmd := NewScriptCommand(name, scriptContent, CommandTypeUser)
-        return &ResolvedCommand{
-            Name:    name,
-            Type:    CommandTypeUser,
-            Source:  "user",
-            Command: scriptCmd,
-        }, nil
+    // Priority 3: Try user scripts (lowest priority)
+    if scriptContent := sm.context.GetUserScript(commandName); scriptContent != "" {
+        sm.context.SetExecutionScriptContent(scriptContent)
+        sm.context.SetExecutionScriptType(CommandTypeUser)
+        logger.Debug("Resolved to user script", "command", commandName)
+        return nil  // Will transition to StateScriptLoaded
     }
     
-    return nil, fmt.Errorf("command not found: %s", name)
+    return fmt.Errorf("command not found: %s", commandName)
+}
+
+// Helper methods for script handling
+func (sm *ExecutionStateMachine) parseScriptIntoLines(scriptContent string) []string {
+    var lines []string
+    scanner := bufio.NewScanner(strings.NewReader(scriptContent))
+    
+    for scanner.Scan() {
+        line := scanner.Text()
+        
+        // Handle multiline continuation with ...
+        if strings.HasSuffix(strings.TrimSpace(line), "...") {
+            // Accumulate multiline command
+            var multilineBuilder []string
+            multilineBuilder = append(multilineBuilder, line)
+            
+            // Continue reading lines until we find one that doesn't end with ...
+            for scanner.Scan() {
+                nextLine := scanner.Text()
+                multilineBuilder = append(multilineBuilder, nextLine)
+                
+                if !strings.HasSuffix(strings.TrimSpace(nextLine), "...") {
+                    break
+                }
+            }
+            
+            // Join and clean up multiline command
+            multilineCommand := strings.Join(multilineBuilder, "\n")
+            multilineCommand = strings.ReplaceAll(multilineCommand, "...\n", " ")
+            multilineCommand = strings.ReplaceAll(multilineCommand, "...", " ")
+            lines = append(lines, strings.TrimSpace(multilineCommand))
+        } else {
+            lines = append(lines, line)
+        }
+    }
+    
+    return lines
+}
+
+func (sm *ExecutionStateMachine) setupScriptParameters(args map[string]string, input string) error {
+    vs, err := services.GetGlobalVariableService()
+    if err != nil {
+        return fmt.Errorf("variable service not available: %w", err)
+    }
+    
+    parsedCmd := sm.context.GetExecutionParsedCommand()
+    
+    // Set standard script parameters (same as ScriptCommand)
+    vs.SetSystemVariable("_0", parsedCmd.Name)  // Command name
+    vs.SetSystemVariable("_1", input)           // Input parameter
+    vs.SetSystemVariable("_*", input)           // All positional args
+    
+    // Set named arguments as variables
+    var namedArgs []string
+    for key, value := range args {
+        vs.SetSystemVariable(key, value)
+        namedArgs = append(namedArgs, key+"="+value)
+    }
+    vs.SetSystemVariable("_@", strings.Join(namedArgs, " "))
+    
+    return nil
+}
+
+func (sm *ExecutionStateMachine) cleanupScriptParameters() error {
+    vs, err := services.GetGlobalVariableService()
+    if err != nil {
+        return fmt.Errorf("variable service not available: %w", err)
+    }
+    
+    // Clear standard script parameters
+    parameterNames := []string{"_0", "_1", "_*", "_@"}
+    for _, name := range parameterNames {
+        vs.SetSystemVariable(name, "")
+    }
+    
+    return nil
 }
 ```
 
@@ -447,11 +617,31 @@ func (ctx *NeuroContext) GetExecutionInput() string
 func (ctx *NeuroContext) SetExecutionParsedCommand(cmd *parser.Command)
 func (ctx *NeuroContext) GetExecutionParsedCommand() *parser.Command
 
-func (ctx *NeuroContext) SetExecutionResolvedCommand(resolved *ResolvedCommand)
-func (ctx *NeuroContext) GetExecutionResolvedCommand() *ResolvedCommand
-
 func (ctx *NeuroContext) SetExecutionError(err error)
 func (ctx *NeuroContext) GetExecutionError() error
+
+// Command resolution storage
+func (ctx *NeuroContext) SetExecutionResolvedBuiltinCommand(cmd neurotypes.Command)
+func (ctx *NeuroContext) GetExecutionResolvedBuiltinCommand() neurotypes.Command
+
+func (ctx *NeuroContext) SetExecutionScriptContent(content string)
+func (ctx *NeuroContext) GetExecutionScriptContent() string
+
+func (ctx *NeuroContext) SetExecutionScriptType(scriptType CommandType)
+func (ctx *NeuroContext) GetExecutionScriptType() CommandType
+
+// Script execution state
+func (ctx *NeuroContext) SetExecutionScriptLines(lines []string)
+func (ctx *NeuroContext) GetExecutionScriptLines() []string
+
+func (ctx *NeuroContext) SetExecutionScriptCurrentLine(line int)
+func (ctx *NeuroContext) GetExecutionScriptCurrentLine() int
+
+func (ctx *NeuroContext) HasMoreScriptLines() bool
+
+// Execution state save/restore for recursive calls
+func (ctx *NeuroContext) SaveExecutionState() ExecutionStateSnapshot
+func (ctx *NeuroContext) RestoreExecutionState(snapshot ExecutionStateSnapshot)
 
 // Recursion tracking
 func (ctx *NeuroContext) ResetExecutionRecursionDepth()
@@ -506,6 +696,158 @@ type NeuroContext struct {
 ### Deprecated/Removed:
 - `internal/services/interpolation_service.go` - Functionality moved to core
 - `internal/orchestration/script_executor.go` - Replaced by state machine
+
+## Script-to-Script Execution Flow
+
+The state machine design naturally handles scripts calling other scripts through its recursive execution model.
+
+### How Script Calls Work
+
+When a script calls another script, the state machine processes it through the same execution pipeline:
+
+#### 1. Initial Script Execution
+When a script is first executed, the state machine follows this path:
+```
+StateReceived → StateInterpolating → StateParsing → StateResolving → StateScriptLoaded → StateScriptExecuting
+```
+
+#### 2. Script Line Processing
+In `StateScriptExecuting`, each script line is processed individually:
+- The state machine gets the current script line (e.g., `\send Hello ${user}`)
+- It calls `sm.Execute(line)` **recursively** - the same state machine processes this line
+
+#### 3. When Script Line Contains Another Script Call
+If a script line calls another script (e.g., `\another-script param1`), here's what happens:
+
+```go
+// In processScriptExecuting()
+line := "\\another-script param1"  // Current script line
+
+// Save current execution state 
+savedState := sm.context.SaveExecutionState()
+
+// Execute script line through state machine recursively
+err := sm.Execute(line)  // This line re-enters the state machine
+```
+
+#### 4. Recursive State Machine Processing
+The recursive `sm.Execute(line)` call processes the script invocation:
+
+```
+StateReceived (line="\\another-script param1")
+    ↓
+StateInterpolating (expand any variables in parameters)
+    ↓  
+StateParsing (parse the command structure)
+    ↓
+StateResolving (find "another-script" - resolves to another script)
+    ↓
+StateScriptLoaded (loads content of "another-script")
+    ↓
+StateScriptExecuting (processes each line of "another-script")
+```
+
+#### 5. Nested Script Execution
+The nested script (`another-script`) now executes its lines:
+- Each line in `another-script` goes through the **same recursive process**
+- If `another-script` calls yet another script, it creates another level of recursion
+- Each recursive call has its own execution state stored in context
+
+#### 6. State Management During Recursion
+The key insight is how execution state is managed:
+
+```go
+type NeuroContext struct {
+    // Current execution state (for active execution)
+    executionState      ExecutionState
+    executionInput      string
+    executionParsedCmd  *parser.Command
+    // ... other current execution data
+    
+    // Stack of saved states for recursive calls
+    executionStateStack []ExecutionStateSnapshot
+}
+
+// Save state before recursive call
+savedState := sm.context.SaveExecutionState()
+
+// Restore state after recursive call completes
+sm.context.RestoreExecutionState(savedState)
+```
+
+#### 7. Complete Flow Example
+
+**Original Script (`main-script.neuro`):**
+```neuro
+\set[user="Alice"]
+\helper-script ${user}
+\echo Done with helper
+```
+
+**Helper Script (`helper-script.neuro`):**
+```neuro
+\echo Processing user: ${_1}
+\utility-script format
+\echo Helper complete
+```
+
+**Execution Flow:**
+1. **Main script starts**: `StateScriptExecuting` for `main-script`
+2. **Line 1**: `\set[user="Alice"]` → recursive execution → builtin command → completes
+3. **Line 2**: `\helper-script ${user}` → recursive execution begins
+   - Interpolates to `\helper-script Alice`
+   - Resolves to `helper-script.neuro`
+   - **Nested StateScriptExecuting** for `helper-script`
+4. **Helper Line 1**: `\echo Processing user: ${_1}` → recursive execution → builtin command
+5. **Helper Line 2**: `\utility-script format` → **Another recursive execution**
+   - Creates third level of nesting
+   - Executes `utility-script.neuro` completely
+   - Returns to helper script
+6. **Helper Line 3**: `\echo Helper complete` → completes helper script
+7. **Back to main script Line 3**: `\echo Done with helper` → completes main script
+
+#### 8. State Stack Management
+
+The context maintains a stack of execution states:
+
+```go
+// Before each recursive call
+func (ctx *NeuroContext) SaveExecutionState() ExecutionStateSnapshot {
+    snapshot := ExecutionStateSnapshot{
+        State:           ctx.executionState,
+        Input:          ctx.executionInput,
+        ParsedCmd:      ctx.executionParsedCmd,
+        ScriptLines:    ctx.executionScriptLines,
+        CurrentLine:    ctx.executionScriptCurrentLine,
+        RecursionDepth: ctx.executionRecursionDepth,
+    }
+    ctx.executionStateStack = append(ctx.executionStateStack, snapshot)
+    return snapshot
+}
+
+// After recursive call completes
+func (ctx *NeuroContext) RestoreExecutionState(snapshot ExecutionStateSnapshot) {
+    ctx.executionState = snapshot.State
+    ctx.executionInput = snapshot.Input
+    ctx.executionParsedCmd = snapshot.ParsedCmd
+    ctx.executionScriptLines = snapshot.ScriptLines
+    ctx.executionScriptCurrentLine = snapshot.CurrentLine
+    ctx.executionRecursionDepth = snapshot.RecursionDepth
+    // Pop from stack
+    ctx.executionStateStack = ctx.executionStateStack[:len(ctx.executionStateStack)-1]
+}
+```
+
+### Key Benefits of Recursive Script Design
+
+1. **Natural Recursion**: Scripts calling scripts is handled naturally through the same state machine
+2. **State Isolation**: Each recursive call has isolated execution state
+3. **Parameter Passing**: Script parameters (`${_0}`, `${_1}`, etc.) are set up properly for each script level
+4. **Error Propagation**: Errors in nested scripts properly bubble up to calling scripts
+5. **Unlimited Nesting**: Scripts can call scripts that call scripts (limited only by recursion limit)
+6. **Consistent Behavior**: All script executions follow the same state machine logic
+
+This design treats script execution as a **first-class operation** in the state machine, making script-to-script calls as natural as any other command execution.
 
 ## Future Extensions
 
