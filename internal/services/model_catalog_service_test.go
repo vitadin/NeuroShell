@@ -47,7 +47,6 @@ func TestModelCatalogService_Initialize(t *testing.T) {
 
 func TestModelCatalogService_GetModelCatalog(t *testing.T) {
 	service := NewModelCatalogService()
-	// ctx := testutils.NewMockContext()
 
 	// Test not initialized
 	t.Run("not initialized", func(t *testing.T) {
@@ -97,7 +96,6 @@ func TestModelCatalogService_GetModelCatalog(t *testing.T) {
 
 func TestModelCatalogService_GetModelCatalogByProvider(t *testing.T) {
 	service := NewModelCatalogService()
-	// ctx := testutils.NewMockContext()
 
 	// Test not initialized
 	t.Run("not initialized", func(t *testing.T) {
@@ -164,7 +162,6 @@ func TestModelCatalogService_GetModelCatalogByProvider(t *testing.T) {
 
 func TestModelCatalogService_SearchModelCatalog(t *testing.T) {
 	service := NewModelCatalogService()
-	// ctx := testutils.NewMockContext()
 
 	// Test not initialized (indirectly through GetModelCatalog)
 	t.Run("not initialized", func(t *testing.T) {
@@ -264,7 +261,6 @@ func TestModelCatalogService_GetSupportedProviders(t *testing.T) {
 
 func TestModelCatalogService_loadModelFile(t *testing.T) {
 	service := NewModelCatalogService()
-	// ctx := testutils.NewMockContext()
 	require.NoError(t, service.Initialize())
 
 	t.Run("load individual model file", func(t *testing.T) {
@@ -304,7 +300,6 @@ context_window: 1000
 
 func TestModelCatalogService_GetModelByID(t *testing.T) {
 	service := NewModelCatalogService()
-	// ctx := testutils.NewMockContext()
 	require.NoError(t, service.Initialize())
 
 	t.Run("get model by exact ID", func(t *testing.T) {
@@ -351,7 +346,6 @@ func TestModelCatalogService_GetModelByID(t *testing.T) {
 
 func TestModelCatalogService_validateUniqueIDs(t *testing.T) {
 	service := NewModelCatalogService()
-	// ctx := testutils.NewMockContext()
 	require.NoError(t, service.Initialize())
 
 	t.Run("unique IDs pass validation", func(t *testing.T) {
@@ -430,7 +424,6 @@ func TestModelCatalogService_normalizeID(t *testing.T) {
 func TestModelCatalogService_IDValidationIntegration(t *testing.T) {
 	// This test ensures that the actual embedded YAML files have unique IDs
 	service := NewModelCatalogService()
-	// ctx := testutils.NewMockContext()
 	require.NoError(t, service.Initialize())
 
 	t.Run("real catalog has unique IDs", func(t *testing.T) {

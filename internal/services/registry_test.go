@@ -149,8 +149,6 @@ func TestRegistry_GetService(t *testing.T) {
 }
 
 func TestRegistry_InitializeAll(t *testing.T) {
-	// ctx := testutils.NewMockContext()
-
 	tests := []struct {
 		name     string
 		services []neurotypes.Service
@@ -201,7 +199,6 @@ func TestRegistry_InitializeAll(t *testing.T) {
 				for _, service := range tt.services {
 					mockService := service.(*MockService)
 					assert.True(t, mockService.initializeCalled)
-					// assert.Equal(t, ctx, mockService.initializeContext)
 				}
 			}
 		})
@@ -210,7 +207,6 @@ func TestRegistry_InitializeAll(t *testing.T) {
 
 func TestRegistry_InitializeAll_WithError(t *testing.T) {
 	registry := NewRegistry()
-	// ctx := testutils.NewMockContext()
 
 	service1 := NewMockService("service1")
 	service2 := NewMockService("service2")
@@ -270,7 +266,6 @@ func TestRegistry_GetAllServices(t *testing.T) {
 // Test concurrent access
 func TestRegistry_ConcurrentAccess(t *testing.T) {
 	registry := NewRegistry()
-	// ctx := testutils.NewMockContext()
 
 	// Number of goroutines
 	numGoroutines := 10
@@ -334,7 +329,6 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 // Test real services
 func TestRegistry_RealServices(t *testing.T) {
 	registry := NewRegistry()
-	// ctx := testutils.NewMockContext()
 
 	// Register actual services
 	services := []neurotypes.Service{
