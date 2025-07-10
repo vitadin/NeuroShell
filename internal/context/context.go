@@ -26,13 +26,10 @@ var allowedGlobalVariables = []string{
 // It maintains variables, message history, execution queues, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
 	variables      map[string]string
-	variablesMutex sync.RWMutex // Protects variables map for concurrent access
 	history        []neurotypes.Message
 	sessionID      string
 	executionQueue []string
-	queueMutex     sync.Mutex // Protects executionQueue slice for concurrent access
 	scriptMetadata map[string]interface{}
-	scriptMutex    sync.RWMutex // Protects scriptMetadata map for concurrent access
 	testMode       bool
 
 	// Chat session storage
@@ -112,10 +109,8 @@ func (ctx *NeuroContext) GetVariable(name string) (string, error) {
 		return value, nil
 	}
 
-	// Handle user variables with read lock
-	ctx.variablesMutex.RLock()
+	// Handle user variables
 	value, ok := ctx.variables[name]
-	ctx.variablesMutex.RUnlock()
 
 	if ok {
 		return value, nil
@@ -146,9 +141,7 @@ func (ctx *NeuroContext) SetVariable(name string, value string) error {
 		}
 	}
 
-	ctx.variablesMutex.Lock()
 	ctx.variables[name] = value
-	ctx.variablesMutex.Unlock()
 	return nil
 }
 
@@ -165,9 +158,7 @@ func (ctx *NeuroContext) SetSystemVariable(name string, value string) error {
 		return fmt.Errorf("SetSystemVariable can only set system variables (prefixed with @, #, or _), got: %s", name)
 	}
 
-	ctx.variablesMutex.Lock()
 	ctx.variables[name] = value
-	ctx.variablesMutex.Unlock()
 	return nil
 }
 
@@ -233,9 +224,7 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		return fmt.Sprintf("%s/%s", os.Getenv("GOOS"), os.Getenv("GOARCH")), true
 	case "#session_id":
 		// Check if there's a stored chat session ID first
-		ctx.variablesMutex.RLock()
 		value, ok := ctx.variables["#session_id"]
-		ctx.variablesMutex.RUnlock()
 		if ok {
 			return value, true
 		}
@@ -243,9 +232,7 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		return ctx.sessionID, true
 	case "#message_count":
 		// Check if there's a stored session message count first
-		ctx.variablesMutex.RLock()
 		value, ok := ctx.variables["#message_count"]
-		ctx.variablesMutex.RUnlock()
 		if ok {
 			return value, true
 		}
@@ -258,27 +245,21 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		return "false", true
 	case "#session_name":
 		// Look for stored session name variable
-		ctx.variablesMutex.RLock()
 		value, ok := ctx.variables["#session_name"]
-		ctx.variablesMutex.RUnlock()
 		if ok {
 			return value, true
 		}
 		return "", false
 	case "#system_prompt":
 		// Look for stored system prompt variable
-		ctx.variablesMutex.RLock()
 		value, ok := ctx.variables["#system_prompt"]
-		ctx.variablesMutex.RUnlock()
 		if ok {
 			return value, true
 		}
 		return "", false
 	case "#session_created":
 		// Look for stored session creation time variable
-		ctx.variablesMutex.RLock()
 		value, ok := ctx.variables["#session_created"]
-		ctx.variablesMutex.RUnlock()
 		if ok {
 			return value, true
 		}
@@ -288,9 +269,7 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 	// Handle message history variables: ${1}, ${2}, etc.
 	if matched, _ := regexp.MatchString(`^\d+$`, name); matched {
 		// Check if the variable is stored in the regular variables map first
-		ctx.variablesMutex.RLock()
 		value, ok := ctx.variables[name]
-		ctx.variablesMutex.RUnlock()
 		if ok {
 			return value, true
 		}
@@ -378,16 +357,11 @@ func (ctx *NeuroContext) interpolateOnce(text string) string {
 
 // QueueCommand adds a command to the execution queue.
 func (ctx *NeuroContext) QueueCommand(command string) {
-	ctx.queueMutex.Lock()
 	ctx.executionQueue = append(ctx.executionQueue, command)
-	ctx.queueMutex.Unlock()
 }
 
 // DequeueCommand removes and returns the first command from the queue.
 func (ctx *NeuroContext) DequeueCommand() (string, bool) {
-	ctx.queueMutex.Lock()
-	defer ctx.queueMutex.Unlock()
-
 	if len(ctx.executionQueue) == 0 {
 		return "", false
 	}
@@ -399,23 +373,16 @@ func (ctx *NeuroContext) DequeueCommand() (string, bool) {
 
 // GetQueueSize returns the number of commands in the execution queue.
 func (ctx *NeuroContext) GetQueueSize() int {
-	ctx.queueMutex.Lock()
-	defer ctx.queueMutex.Unlock()
 	return len(ctx.executionQueue)
 }
 
 // ClearQueue removes all commands from the execution queue.
 func (ctx *NeuroContext) ClearQueue() {
-	ctx.queueMutex.Lock()
 	ctx.executionQueue = make([]string, 0)
-	ctx.queueMutex.Unlock()
 }
 
 // PeekQueue returns a copy of the execution queue without modifying it.
 func (ctx *NeuroContext) PeekQueue() []string {
-	ctx.queueMutex.Lock()
-	defer ctx.queueMutex.Unlock()
-
 	// Return a copy to prevent external modification
 	result := make([]string, len(ctx.executionQueue))
 	copy(result, ctx.executionQueue)
@@ -424,24 +391,18 @@ func (ctx *NeuroContext) PeekQueue() []string {
 
 // SetScriptMetadata stores metadata associated with script execution.
 func (ctx *NeuroContext) SetScriptMetadata(key string, value interface{}) {
-	ctx.scriptMutex.Lock()
 	ctx.scriptMetadata[key] = value
-	ctx.scriptMutex.Unlock()
 }
 
 // GetScriptMetadata retrieves metadata by key, returning the value and existence flag.
 func (ctx *NeuroContext) GetScriptMetadata(key string) (interface{}, bool) {
-	ctx.scriptMutex.RLock()
 	value, exists := ctx.scriptMetadata[key]
-	ctx.scriptMutex.RUnlock()
 	return value, exists
 }
 
 // ClearScriptMetadata removes all script metadata.
 func (ctx *NeuroContext) ClearScriptMetadata() {
-	ctx.scriptMutex.Lock()
 	ctx.scriptMetadata = make(map[string]interface{})
-	ctx.scriptMutex.Unlock()
 }
 
 // SetTestMode enables or disables test mode for deterministic behavior.

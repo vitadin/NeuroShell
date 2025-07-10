@@ -36,20 +36,20 @@ run: build
 # Run tests with coverage
 test: build test-all-units
     @echo "Running tests..."
-    EDITOR=echo go test -v -race -coverprofile=coverage.out ./...
+    EDITOR=echo go test -v -coverprofile=coverage.out ./...
     go tool cover -html=coverage.out -o coverage.html
     @echo "Coverage report generated: coverage.html"
 
 # Run unit tests only
 test-unit:
     @echo "Running unit tests..."
-    EDITOR=echo go test -v -race ./internal/services/... ./internal/testutils/...
+    EDITOR=echo go test -v ./internal/services/... ./internal/testutils/...
     @echo "Unit tests complete"
 
 # Run unit tests with coverage
 test-unit-coverage:
     @echo "Running unit tests with coverage..."
-    EDITOR=echo go test -v -race -coverprofile=unit-coverage.out ./internal/services/... ./internal/testutils/...
+    EDITOR=echo go test -v -coverprofile=unit-coverage.out ./internal/services/... ./internal/testutils/...
     go tool cover -html=unit-coverage.out -o unit-coverage.html
     go tool cover -func=unit-coverage.out
     @echo "Unit test coverage report generated: unit-coverage.html"
@@ -57,13 +57,13 @@ test-unit-coverage:
 # Run command tests only
 test-commands:
     @echo "Running command tests..."
-    EDITOR=echo go test -v -race ./internal/commands/...
+    EDITOR=echo go test -v ./internal/commands/...
     @echo "Command tests complete"
 
 # Run command tests with coverage
 test-commands-coverage:
     @echo "Running command tests with coverage..."
-    EDITOR=echo go test -v -race -coverprofile=commands-coverage.out ./internal/commands/...
+    EDITOR=echo go test -v -coverprofile=commands-coverage.out ./internal/commands/...
     go tool cover -html=commands-coverage.out -o commands-coverage.html
     go tool cover -func=commands-coverage.out
     @echo "Command test coverage report generated: commands-coverage.html"
@@ -71,13 +71,13 @@ test-commands-coverage:
 # Run parser tests only
 test-parser:
     @echo "Running parser tests..."
-    go test -v -race ./internal/parser/...
+    go test -v ./internal/parser/...
     @echo "Parser tests complete"
 
 # Run parser tests with coverage
 test-parser-coverage:
     @echo "Running parser tests with coverage..."
-    go test -v -race -coverprofile=parser-coverage.out ./internal/parser/...
+    go test -v -coverprofile=parser-coverage.out ./internal/parser/...
     go tool cover -html=parser-coverage.out -o parser-coverage.html
     go tool cover -func=parser-coverage.out
     @echo "Parser test coverage report generated: parser-coverage.html"
@@ -85,13 +85,13 @@ test-parser-coverage:
 # Run context tests only
 test-context:
     @echo "Running context tests..."
-    go test -v -race ./internal/context/...
+    go test -v ./internal/context/...
     @echo "Context tests complete"
 
 # Run context tests with coverage
 test-context-coverage:
     @echo "Running context tests with coverage..."
-    go test -v -race -coverprofile=context-coverage.out ./internal/context/...
+    go test -v -coverprofile=context-coverage.out ./internal/context/...
     go tool cover -html=context-coverage.out -o context-coverage.html
     go tool cover -func=context-coverage.out
     @echo "Context test coverage report generated: context-coverage.html"
@@ -99,27 +99,27 @@ test-context-coverage:
 # Run shell tests only
 test-shell:
     @echo "Running shell tests..."
-    go test -v -race ./internal/shell/...
+    go test -v ./internal/shell/...
     @echo "Shell tests complete"
 
 # Run shell tests with coverage
 test-shell-coverage:
     @echo "Running shell tests with coverage..."
-    go test -v -race -coverprofile=shell-coverage.out ./internal/shell/...
+    go test -v -coverprofile=shell-coverage.out ./internal/shell/...
     go tool cover -html=shell-coverage.out -o shell-coverage.html
     go tool cover -func=shell-coverage.out
     @echo "Shell test coverage report generated: shell-coverage.html"
 
 # Run all unit, command, parser, context, and shell tests
 test-all-units:
-    @echo "Running all unit, command, parser, context, and shell tests..."
-    EDITOR=echo go test -v -race ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/shell/... ./internal/stringprocessing/...
-    @echo "All unit, command, parser, context, and shell tests complete"
+    @echo "Running all unit, command, parser, context, execution, and shell tests..."
+    EDITOR=echo go test -v ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/execution/... ./internal/shell/... ./internal/stringprocessing/...
+    @echo "All unit, command, parser, context, execution, and shell tests complete"
 
 # Run all unit, command, parser, context, and shell tests with coverage
 test-all-units-coverage:
-    @echo "Running all unit, command, parser, context, and shell tests with coverage..."
-    EDITOR=echo go test -v -race -coverprofile=all-units-coverage.out ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/shell/... ./internal/stringprocessing/...
+    @echo "Running all unit, command, parser, context, execution, and shell tests with coverage..."
+    EDITOR=echo go test -v -coverprofile=all-units-coverage.out ./internal/services/... ./internal/testutils/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/execution/... ./internal/shell/... ./internal/stringprocessing/...
     go tool cover -html=all-units-coverage.out -o all-units-coverage.html
     go tool cover -func=all-units-coverage.out
     @echo "All unit test coverage report generated: all-units-coverage.html"
@@ -127,7 +127,7 @@ test-all-units-coverage:
 # Run benchmark tests
 test-bench:
     @echo "Running benchmark tests..."
-    go test -bench=. -benchmem ./internal/services/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/shell/...
+    go test -bench=. -benchmem ./internal/services/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/execution/... ./internal/shell/...
     @echo "Benchmark tests complete"
 
 # Check test coverage percentage

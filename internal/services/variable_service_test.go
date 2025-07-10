@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -399,44 +398,9 @@ func TestVariableService_SystemVariables(t *testing.T) {
 	}
 }
 
-func TestVariableService_ConcurrentAccess(t *testing.T) {
-	service := NewVariableService()
-	ctx := context.NewTestContext()
-
-	err := service.Initialize()
-	require.NoError(t, err)
-
-	// Setup shared global context to avoid race conditions
-	context.SetGlobalContext(ctx)
-	defer context.ResetGlobalContext()
-
-	// Test concurrent access
-	done := make(chan bool)
-
-	// Start multiple goroutines for concurrent access
-	for i := 0; i < 10; i++ {
-		go func(id int) {
-			// Set a variable
-			varName := fmt.Sprintf("var_%d", id)
-			varValue := fmt.Sprintf("value_%d", id)
-
-			err := service.Set(varName, varValue)
-			assert.NoError(t, err)
-
-			// Get the variable
-			value, err := service.Get(varName)
-			assert.NoError(t, err)
-			assert.Equal(t, varValue, value)
-
-			done <- true
-		}(i)
-	}
-
-	// Wait for all goroutines to complete
-	for i := 0; i < 10; i++ {
-		<-done
-	}
-}
+// TestVariableService_ConcurrentAccess has been removed as part of context mutex simplification.
+// NeuroShell now operates as a sequential, single-threaded shell where concurrent access
+// to variables is not an expected use case. See docs/context-mutex-simplification.md for details.
 
 func TestVariableService_SetSystemVariable(t *testing.T) {
 	tests := []struct {
