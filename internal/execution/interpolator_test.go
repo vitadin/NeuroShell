@@ -20,6 +20,89 @@ func TestCoreInterpolator_NewCoreInterpolator(t *testing.T) {
 	if interpolator.context != ctx {
 		t.Error("Expected context to be set correctly")
 	}
+
+	if interpolator.GetMaxIterations() != 10 {
+		t.Errorf("Expected default maxIter to be 10, got %d", interpolator.GetMaxIterations())
+	}
+}
+
+// TestCoreInterpolator_NewCoreInterpolatorWithLimit tests custom limit creation.
+func TestCoreInterpolator_NewCoreInterpolatorWithLimit(t *testing.T) {
+	ctx := context.New()
+	
+	// Test with custom limit
+	interpolator := NewCoreInterpolatorWithLimit(ctx, 5)
+	if interpolator.GetMaxIterations() != 5 {
+		t.Errorf("Expected maxIter to be 5, got %d", interpolator.GetMaxIterations())
+	}
+
+	// Test with zero limit (should default to 10)
+	interpolator = NewCoreInterpolatorWithLimit(ctx, 0)
+	if interpolator.GetMaxIterations() != 10 {
+		t.Errorf("Expected maxIter to default to 10 for zero input, got %d", interpolator.GetMaxIterations())
+	}
+
+	// Test with negative limit (should default to 10)
+	interpolator = NewCoreInterpolatorWithLimit(ctx, -5)
+	if interpolator.GetMaxIterations() != 10 {
+		t.Errorf("Expected maxIter to default to 10 for negative input, got %d", interpolator.GetMaxIterations())
+	}
+}
+
+// TestCoreInterpolator_SetMaxIterations tests iteration limit modification.
+func TestCoreInterpolator_SetMaxIterations(t *testing.T) {
+	ctx := context.New()
+	interpolator := NewCoreInterpolator(ctx)
+
+	// Test setting valid limit
+	interpolator.SetMaxIterations(15)
+	if interpolator.GetMaxIterations() != 15 {
+		t.Errorf("Expected maxIter to be 15, got %d", interpolator.GetMaxIterations())
+	}
+
+	// Test setting zero limit (should default to 10)
+	interpolator.SetMaxIterations(0)
+	if interpolator.GetMaxIterations() != 10 {
+		t.Errorf("Expected maxIter to default to 10 for zero input, got %d", interpolator.GetMaxIterations())
+	}
+
+	// Test setting negative limit (should default to 10)
+	interpolator.SetMaxIterations(-3)
+	if interpolator.GetMaxIterations() != 10 {
+		t.Errorf("Expected maxIter to default to 10 for negative input, got %d", interpolator.GetMaxIterations())
+	}
+}
+
+// TestCoreInterpolator_MaxIterBehavior tests that maxIter affects expansion behavior.
+func TestCoreInterpolator_MaxIterBehavior(t *testing.T) {
+	ctx := context.New()
+	interpolator := NewCoreInterpolator(ctx)
+
+	// Set up recursive variables: a -> b -> c -> "final"
+	ctx.SetVariable("a", "${b}")
+	ctx.SetVariable("b", "${c}")
+	ctx.SetVariable("c", "final")
+
+	// Test with maxIter=1 (should only expand once)
+	interpolator.SetMaxIterations(1)
+	result := interpolator.ExpandVariables("${a}")
+	if result != "${b}" {
+		t.Errorf("With maxIter=1, expected '${b}', got '%s'", result)
+	}
+
+	// Test with maxIter=2 (should expand twice)
+	interpolator.SetMaxIterations(2)
+	result = interpolator.ExpandVariables("${a}")
+	if result != "${c}" {
+		t.Errorf("With maxIter=2, expected '${c}', got '%s'", result)
+	}
+
+	// Test with maxIter=10 (should fully expand)
+	interpolator.SetMaxIterations(10)
+	result = interpolator.ExpandVariables("${a}")
+	if result != "final" {
+		t.Errorf("With maxIter=10, expected 'final', got '%s'", result)
+	}
 }
 
 // TestCoreInterpolator_HasVariables tests variable detection.

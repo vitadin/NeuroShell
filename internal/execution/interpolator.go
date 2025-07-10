@@ -14,13 +14,40 @@ import (
 type CoreInterpolator struct {
 	// Direct reference to the context for fast variable access
 	context *context.NeuroContext
+	// Maximum iterations for recursive expansion to prevent infinite loops
+	maxIter int
 }
 
-// NewCoreInterpolator creates a new CoreInterpolator with direct context access.
+// NewCoreInterpolator creates a new CoreInterpolator with direct context access and default settings.
 func NewCoreInterpolator(ctx *context.NeuroContext) *CoreInterpolator {
 	return &CoreInterpolator{
 		context: ctx,
+		maxIter: 10, // Default safe limit for recursive expansion
 	}
+}
+
+// NewCoreInterpolatorWithLimit creates a new CoreInterpolator with a custom iteration limit.
+func NewCoreInterpolatorWithLimit(ctx *context.NeuroContext, maxIter int) *CoreInterpolator {
+	if maxIter <= 0 {
+		maxIter = 10 // Ensure a safe default
+	}
+	return &CoreInterpolator{
+		context: ctx,
+		maxIter: maxIter,
+	}
+}
+
+// SetMaxIterations updates the maximum iteration limit for recursive expansion.
+func (ci *CoreInterpolator) SetMaxIterations(maxIter int) {
+	if maxIter <= 0 {
+		maxIter = 10 // Ensure a safe default
+	}
+	ci.maxIter = maxIter
+}
+
+// GetMaxIterations returns the current maximum iteration limit.
+func (ci *CoreInterpolator) GetMaxIterations() int {
+	return ci.maxIter
 }
 
 // HasVariables checks if the given text contains any variable references.
@@ -89,8 +116,9 @@ func (ci *CoreInterpolator) InterpolateCommand(cmd *parser.Command) (*parser.Com
 // It handles nested variables like ${a_${b_${c}}} by expanding innermost variables first.
 // If a variable doesn't exist, it's replaced with an empty string.
 // The process repeats recursively until no more variables are found.
+// Uses the interpolator's configured maxIter limit.
 func (ci *CoreInterpolator) ExpandVariables(text string) string {
-	return ci.ExpandWithLimit(text, 10)
+	return ci.ExpandWithLimit(text, ci.maxIter)
 }
 
 // ExpandOnce performs a single pass of stack-based variable expansion.
