@@ -90,64 +90,89 @@ func (ci *CoreInterpolator) InterpolateCommand(cmd *parser.Command) (*parser.Com
 // If a variable doesn't exist, it's replaced with an empty string.
 // The process repeats recursively until no more variables are found.
 func (ci *CoreInterpolator) ExpandVariables(text string) string {
-	maxIterations := 10 // Prevent infinite loops
-	
-	for i := 0; i < maxIterations; i++ {
-		if !ci.HasVariables(text) {
-			break
-		}
-		
-		before := text
-		text = ci.expandWithStack(text)
-		
-		// If no change occurred, break to prevent infinite loop
-		if text == before {
-			break
-		}
-		
-		logger.Debug("Variable expansion iteration", "iteration", i+1, "result", text)
-	}
-	
-	return text
+	return ci.ExpandWithLimit(text, 10)
 }
 
-// expandWithStack performs stack-based variable expansion to handle nested variables.
-// For ${a_${b_${c}}}, it expands ${c} first, then ${b_x}, then ${a_y}.
-// This correctly handles nested variable names where inner variables form part of outer variable names.
-func (ci *CoreInterpolator) expandWithStack(text string) string {
-	var stack []int // Stack of opening ${} positions
-	i := 0
+// ExpandOnce performs a single pass of stack-based variable expansion.
+// It expands all complete variables found in the input during one scan, but does not 
+// recursively expand the variable values themselves.
+//
+// Algorithm uses a stack to hold string fragments and a PENDING flag to track variable state:
+// - On "${": Push "${" to stack, set PENDING=true  
+// - On "}" with PENDING=true: Pop back to "${", extract variable name, expand it, set PENDING=false
+// - On "}" with PENDING=false: Treat as literal character
+// - Other characters: Push to stack as-is
+//
+// Examples:
+//   Input: "${a}" where a="hello" -> Output: "hello"
+//   Input: "${a}" where a="${b}" -> Output: "${b}" (value not recursively expanded)
+//   Input: "${a}_${b}" where a="x", b="y" -> Output: "x_y" (both variables expanded)
+//   Input: "${${a_${b}}_${b}}" where b="x" -> Output: "${${a_x}_x}" (only complete vars)
+//
+// This function provides fine-grained control over expansion depth.
+func (ci *CoreInterpolator) ExpandOnce(text string) string {
+	var stack []string
+	pending := false
 	
-	for i < len(text) {
+	for i := 0; i < len(text); i++ {
 		// Look for ${
 		if i < len(text)-1 && text[i] == '$' && text[i+1] == '{' {
-			// Push the position of the opening ${
-			stack = append(stack, i)
-			i += 2 // Skip past ${
-		} else if text[i] == '}' && len(stack) > 0 {
-			// Pop from stack to get the matching ${
-			openPos := stack[len(stack)-1]
-			stack = stack[:len(stack)-1]
+			stack = append(stack, "${")
+			pending = true
+			i++ // Skip the '{'
+		} else if text[i] == '}' && pending {
+			// Pop back to "${" marker to extract variable name
+			varName := ""
+			for len(stack) > 0 && stack[len(stack)-1] != "${" {
+				varName = stack[len(stack)-1] + varName
+				stack = stack[:len(stack)-1]
+			}
+			// Remove the "${" marker
+			if len(stack) > 0 {
+				stack = stack[:len(stack)-1]
+			}
 			
-			// Extract variable name between the matched ${ and }
-			varName := text[openPos+2 : i]
-			
-			// Get variable value (empty string if not found)
+			// Get variable value and push to stack
 			value := ci.getVariableValue(varName)
-			
-			// Replace the entire ${varName} with its value in the text
-			// This is the key insight: we rebuild the text with the expansion
-			newText := text[:openPos] + value + text[i+1:]
-			
-			// Restart parsing from the beginning with the new text
-			// This ensures we handle cascading expansions correctly
-			return ci.expandWithStack(newText)
+			stack = append(stack, value)
+			pending = false
 		} else {
-			i++
+			// Regular character or "}" when not pending
+			stack = append(stack, string(text[i]))
 		}
 	}
 	
-	// If we get here, no complete ${} pattern was found, return as-is
+	// Join all stack elements to form final result
+	return strings.Join(stack, "")
+}
+
+// ExpandWithLimit performs iterative variable expansion with a maximum iteration limit.
+// It calls ExpandOnce repeatedly until no more variables are found or the iteration limit is reached.
+// This provides protection against circular references while allowing full recursive expansion.
+//
+// Examples:
+//   Input: "${a}" where a="${b}", b="final" with limit=10 -> Output: "final"
+//   Input: "${a}" where a="${b}", b="${a}" with limit=10 -> Output: "${a}" or "${b}" (circular ref stopped)
+//
+// This function gives users control over how deep the expansion should go and provides
+// safety against infinite loops from circular variable references.
+func (ci *CoreInterpolator) ExpandWithLimit(text string, maxIterations int) string {
+	if maxIterations <= 0 {
+		maxIterations = 10 // Default safe limit
+	}
+	
+	for iteration := 0; iteration < maxIterations; iteration++ {
+		textBefore := text
+		text = ci.ExpandOnce(text)
+		
+		// If no change occurred, we're done (no more variables or circular reference)
+		if text == textBefore {
+			break
+		}
+		
+		logger.Debug("Variable expansion iteration", "iteration", iteration+1, "result", text)
+	}
+	
 	return text
 }
 
@@ -167,25 +192,11 @@ func (ci *CoreInterpolator) getVariableValue(varName string) string {
 // ExpandVariablesWithLimit performs variable expansion with a custom recursion limit.
 // This is useful for preventing infinite recursion in macro expansion.
 func (ci *CoreInterpolator) ExpandVariablesWithLimit(text string, maxIterations int) string {
-	if maxIterations <= 0 {
-		maxIterations = 10 // Default limit
-	}
-	
-	for i := 0; i < maxIterations; i++ {
-		if !ci.HasVariables(text) {
-			break
-		}
-		
-		before := text
-		text = ci.expandWithStack(text)
-		
-		// If no change occurred, break to prevent infinite loop
-		if text == before {
-			break
-		}
-		
-		logger.Debug("Variable expansion iteration", "iteration", i+1, "result", text)
-	}
-	
-	return text
+	return ci.ExpandWithLimit(text, maxIterations)
+}
+
+// ExpandWithStack is a backward compatibility wrapper around ExpandWithLimit.
+// Deprecated: Use ExpandOnce for single-pass expansion or ExpandWithLimit for iterative expansion.
+func (ci *CoreInterpolator) ExpandWithStack(text string, maxIterations int) string {
+	return ci.ExpandWithLimit(text, maxIterations)
 }
