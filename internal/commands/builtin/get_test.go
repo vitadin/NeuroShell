@@ -12,6 +12,7 @@ import (
 
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
+	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -282,7 +283,7 @@ func TestGetCommand_Execute_NonExistentVariable(t *testing.T) {
 	args := map[string]string{"nonexistent_var": ""}
 
 	// Capture output
-	output := captureOutput(func() {
+	output := stringprocessing.CaptureOutput(func() {
 		err := cmd.Execute(args, "")
 		assert.NoError(t, err) // Should not error
 	})

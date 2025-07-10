@@ -9,6 +9,7 @@ import (
 
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
+	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -26,7 +27,7 @@ func TestEchoCommand_Description(t *testing.T) {
 	cmd := &EchoCommand{}
 	desc := cmd.Description()
 	assert.NotEmpty(t, desc)
-	assert.Contains(t, strings.ToLower(desc), "expand")
+	assert.Contains(t, strings.ToLower(desc), "output")
 }
 
 func TestEchoCommand_Usage(t *testing.T) {
@@ -56,7 +57,7 @@ func TestEchoCommand_Execute_BasicFunctionality(t *testing.T) {
 		{
 			name:     "empty string",
 			input:    "",
-			expected: "", // Should return usage error
+			expected: "", // Should succeed and output empty
 		},
 		{
 			name:     "text with spaces",
@@ -72,93 +73,10 @@ func TestEchoCommand_Execute_BasicFunctionality(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.input == "" {
-				// Test empty input should return error
-				err := cmd.Execute(map[string]string{}, tt.input)
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), "Usage:")
-				return
-			}
-
 			// Capture stdout
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				err := cmd.Execute(map[string]string{}, tt.input)
-				assert.NoError(t, err)
-			})
-
-			// Remove trailing newline that echo adds
-			output = strings.TrimSuffix(output, "\n")
-			assert.Equal(t, tt.expected, output)
-
-			// Check that result is stored in ${_output}
-			value, err := ctx.GetVariable("_output")
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expected, value)
-		})
-	}
-}
-
-func TestEchoCommand_Execute_VariableInterpolation(t *testing.T) {
-	cmd := &EchoCommand{}
-	ctx := context.New()
-
-	// Setup test registry with variable service
-	setupEchoTestRegistry(t, ctx)
-
-	// Set up test variables
-	require.NoError(t, ctx.SetVariable("name", "Alice"))
-	require.NoError(t, ctx.SetVariable("greeting", "Hello"))
-	require.NoError(t, ctx.SetVariable("x", "1"))
-	require.NoError(t, ctx.SetSystemVariable("_testuser", "testuser"))
-
-	tests := []struct {
-		name     string
-		input    string
-		expected string
-	}{
-		{
-			name:     "single variable",
-			input:    "Hello ${name}",
-			expected: "Hello Alice",
-		},
-		{
-			name:     "multiple variables",
-			input:    "${greeting}, ${name}!",
-			expected: "Hello, Alice!",
-		},
-		{
-			name:     "system variable",
-			input:    "User: ${_testuser}",
-			expected: "User: testuser",
-		},
-		{
-			name:     "mixed variables and text",
-			input:    "${greeting} there, ${name}. Welcome to the system, ${_testuser}!",
-			expected: "Hello there, Alice. Welcome to the system, testuser!",
-		},
-		{
-			name:     "undefined variable",
-			input:    "Hello ${undefined}",
-			expected: "Hello ", // Undefined variables become empty strings
-		},
-		{
-			name:     "nested variables",
-			input:    "${${greeting}}",
-			expected: "", // ${greeting} -> "Hello", then ${Hello} -> empty (doesn't exist)
-		},
-		{
-			name:     "nested numeric variable",
-			input:    "this is ${${name}}",
-			expected: "this is ", // ${name} -> "Alice", then ${Alice} -> empty (doesn't exist)
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Capture stdout
-			output := captureOutput(func() {
-				err := cmd.Execute(map[string]string{}, tt.input)
-				assert.NoError(t, err)
+				assert.NoError(t, err) // Echo never returns errors
 			})
 
 			// Remove trailing newline that echo adds
@@ -180,9 +98,6 @@ func TestEchoCommand_Execute_ToOption(t *testing.T) {
 	// Setup test registry with variable service
 	setupEchoTestRegistry(t, ctx)
 
-	// Set up test variable
-	require.NoError(t, ctx.SetVariable("name", "Bob"))
-
 	tests := []struct {
 		name       string
 		args       map[string]string
@@ -193,7 +108,7 @@ func TestEchoCommand_Execute_ToOption(t *testing.T) {
 		{
 			name:       "store in custom variable",
 			args:       map[string]string{"to": "result"},
-			input:      "Hello ${name}",
+			input:      "Hello Bob",
 			expectedTo: "result",
 			expected:   "Hello Bob",
 		},
@@ -216,7 +131,7 @@ func TestEchoCommand_Execute_ToOption(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				err := cmd.Execute(tt.args, tt.input)
 				assert.NoError(t, err)
 			})
@@ -280,7 +195,7 @@ func TestEchoCommand_Execute_SilentOption(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				err := cmd.Execute(tt.args, tt.input)
 				assert.NoError(t, err)
 			})
@@ -315,10 +230,15 @@ func TestEchoCommand_Execute_InvalidSilentOption(t *testing.T) {
 	args := map[string]string{"silent": "invalid"}
 	input := "Test message"
 
-	err := cmd.Execute(args, input)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid value for silent option")
-	assert.Contains(t, err.Error(), "must be true or false")
+	// Capture stdout
+	output := stringprocessing.CaptureOutput(func() {
+		err := cmd.Execute(args, input)
+		assert.NoError(t, err) // Echo never returns errors, uses default value
+	})
+
+	// Should use default silent=false and output the message
+	output = strings.TrimSuffix(output, "\n")
+	assert.Equal(t, "Test message", output)
 }
 
 func TestEchoCommand_Execute_CombinedOptions(t *testing.T) {
@@ -328,19 +248,16 @@ func TestEchoCommand_Execute_CombinedOptions(t *testing.T) {
 	// Setup test registry with variable service
 	setupEchoTestRegistry(t, ctx)
 
-	// Set up test variable
-	require.NoError(t, ctx.SetVariable("user", "Charlie"))
-
-	// Test silent=true with custom to variable and variable interpolation
+	// Test silent=true with custom to variable (no interpolation - that's handled by state machine)
 	args := map[string]string{
 		"silent": "true",
 		"to":     "greeting_message",
 	}
-	input := "Welcome, ${user}! Today is a great day."
-	expected := "Welcome, Charlie! Today is a great day."
+	input := "Welcome, user! Today is a great day."
+	expected := "Welcome, user! Today is a great day."
 
 	// Capture stdout
-	output := captureOutput(func() {
+	output := stringprocessing.CaptureOutput(func() {
 		err := cmd.Execute(args, input)
 		assert.NoError(t, err)
 	})
@@ -413,7 +330,7 @@ func TestEchoCommand_Execute_NewlineHandling(t *testing.T) {
 			}
 
 			// Capture stdout
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				err := cmd.Execute(map[string]string{}, tt.input)
 				assert.NoError(t, err)
 			})
@@ -524,73 +441,7 @@ func TestEchoCommand_Execute_RawOption(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
-			output := captureOutput(func() {
-				err := cmd.Execute(tt.args, tt.input)
-				assert.NoError(t, err)
-			})
-
-			assert.Equal(t, tt.expectedOutput, output)
-
-			// Check that result is stored correctly in ${_output}
-			value, err := ctx.GetVariable("_output")
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expectedStored, value)
-		})
-	}
-}
-
-func TestEchoCommand_Execute_RawOptionWithVariableInterpolation(t *testing.T) {
-	cmd := &EchoCommand{}
-	ctx := context.New()
-
-	// Setup test registry with variable service
-	setupEchoTestRegistry(t, ctx)
-
-	// Set up test variables
-	require.NoError(t, ctx.SetVariable("text", "Hello\\nWorld"))
-	require.NoError(t, ctx.SetVariable("name", "Alice"))
-
-	tests := []struct {
-		name           string
-		args           map[string]string
-		input          string
-		expectedOutput string
-		expectedStored string
-	}{
-		{
-			name:           "raw true with variable interpolation",
-			args:           map[string]string{"raw": "true"},
-			input:          "Message: ${text}",
-			expectedOutput: "Message: Hello\\nWorld\n", // Variable expanded, then literal output
-			expectedStored: "Message: Hello\\nWorld",   // Stored without added newline
-		},
-		{
-			name:           "raw false with variable interpolation",
-			args:           map[string]string{"raw": "false"},
-			input:          "Message: ${text}",
-			expectedOutput: "Message: Hello\nWorld\n", // Variable expanded, then interpreted
-			expectedStored: "Message: Hello\nWorld",   // Stored without added newline
-		},
-		{
-			name:           "raw true with multiple variables",
-			args:           map[string]string{"raw": "true"},
-			input:          "Hello ${name}\\nWelcome to ${text}",
-			expectedOutput: "Hello Alice\\nWelcome to Hello\\nWorld\n", // All literal after expansion
-			expectedStored: "Hello Alice\\nWelcome to Hello\\nWorld",   // Stored without added newline
-		},
-		{
-			name:           "raw false with multiple variables",
-			args:           map[string]string{"raw": "false"},
-			input:          "Hello ${name}\\nWelcome to ${text}",
-			expectedOutput: "Hello Alice\nWelcome to Hello\nWorld\n", // All interpreted after expansion
-			expectedStored: "Hello Alice\nWelcome to Hello\nWorld",   // Stored without added newline
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Capture stdout
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				err := cmd.Execute(tt.args, tt.input)
 				assert.NoError(t, err)
 			})
@@ -662,7 +513,7 @@ func TestEchoCommand_Execute_RawOptionCombinations(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				err := cmd.Execute(tt.args, tt.input)
 				assert.NoError(t, err)
 			})
@@ -691,10 +542,15 @@ func TestEchoCommand_Execute_InvalidRawOption(t *testing.T) {
 	args := map[string]string{"raw": "invalid"}
 	input := "Test message"
 
-	err := cmd.Execute(args, input)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid value for raw option")
-	assert.Contains(t, err.Error(), "must be true or false")
+	// Capture stdout
+	output := stringprocessing.CaptureOutput(func() {
+		err := cmd.Execute(args, input)
+		assert.NoError(t, err) // Echo never returns errors, uses default value
+	})
+
+	// Should use default raw=false and output the message normally
+	output = strings.TrimSuffix(output, "\n")
+	assert.Equal(t, "Test message", output)
 }
 
 func TestEchoCommand_Execute_RawOptionEdgeCases(t *testing.T) {
@@ -743,7 +599,7 @@ func TestEchoCommand_Execute_RawOptionEdgeCases(t *testing.T) {
 			name:           "raw true - empty string",
 			args:           map[string]string{"raw": "true"},
 			input:          "",
-			expectedOutput: "", // Should return usage error, but we handle this in basic test
+			expectedOutput: "", // Empty input produces no output
 			expectedStored: "",
 		},
 		{
@@ -764,18 +620,10 @@ func TestEchoCommand_Execute_RawOptionEdgeCases(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.input == "" {
-				// Test empty input should return error
-				err := cmd.Execute(tt.args, tt.input)
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), "Usage:")
-				return
-			}
-
 			// Capture stdout
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				err := cmd.Execute(tt.args, tt.input)
-				assert.NoError(t, err)
+				assert.NoError(t, err) // Echo never returns errors
 			})
 
 			assert.Equal(t, tt.expectedOutput, output)
@@ -788,7 +636,7 @@ func TestEchoCommand_Execute_RawOptionEdgeCases(t *testing.T) {
 	}
 }
 
-// setupEchoTestRegistry sets up a test environment with variable and interpolation services
+// setupEchoTestRegistry sets up a test environment with variable service
 func setupEchoTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	// Create a new registry for testing
 	oldRegistry := services.GetGlobalRegistry()
@@ -799,10 +647,6 @@ func setupEchoTestRegistry(t *testing.T, ctx neurotypes.Context) {
 
 	// Register variable service
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
-	require.NoError(t, err)
-
-	// Register interpolation service
-	err = services.GetGlobalRegistry().RegisterService(services.NewInterpolationService())
 	require.NoError(t, err)
 
 	// Initialize services
@@ -816,7 +660,7 @@ func setupEchoTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	})
 }
 
-// captureOutput is defined in bash_test.go - using that implementation
+// CaptureOutput is now defined in stringprocessing package
 
 // Interface compliance check
 var _ neurotypes.Command = (*EchoCommand)(nil)

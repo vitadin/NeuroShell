@@ -2,7 +2,6 @@ package builtin
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"testing"
@@ -12,6 +11,7 @@ import (
 
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
+	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -72,7 +72,7 @@ func TestBashCommand_Execute_Success(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				err := cmd.Execute(nil, tt.input)
 				if tt.wantErr {
 					assert.Error(t, err)
@@ -126,7 +126,7 @@ func TestBashCommand_Execute_WithError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				err := cmd.Execute(nil, tt.input)
 				if tt.wantErr {
 					assert.Error(t, err)
@@ -233,7 +233,7 @@ func TestBashCommand_Execute_OutputFormatting(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				err := cmd.Execute(nil, tt.input)
 				if tt.checkNoError {
 					assert.NoError(t, err)
@@ -254,7 +254,7 @@ func TestBashCommand_Execute_VariablesSet(t *testing.T) {
 	setupBashTestRegistry(t, ctx)
 
 	// Execute a command
-	_ = captureOutput(func() {
+	_ = stringprocessing.CaptureOutput(func() {
 		err := cmd.Execute(nil, "echo test")
 		assert.NoError(t, err)
 	})
@@ -282,7 +282,7 @@ func TestBashCommand_Execute_FailedCommandVariables(t *testing.T) {
 	setupBashTestRegistry(t, ctx)
 
 	// Execute a failing command
-	_ = captureOutput(func() {
+	_ = stringprocessing.CaptureOutput(func() {
 		err := cmd.Execute(nil, "false")
 		assert.NoError(t, err) // Command itself should not error
 	})
@@ -361,7 +361,7 @@ func TestBashCommand_Execute_IntegrationWithRealCommands(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				err := cmd.Execute(nil, tt.command)
 				assert.NoError(t, err)
 			})
@@ -403,35 +403,7 @@ func setupBashTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	})
 }
 
-// captureOutput captures stdout during function execution
-func captureOutput(fn func()) string {
-	// Save original stdout
-	oldStdout := os.Stdout
-
-	// Create pipe
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	// Channel to receive output
-	outputChan := make(chan string)
-
-	// Start goroutine to read output
-	go func() {
-		defer close(outputChan)
-		output, _ := io.ReadAll(r)
-		outputChan <- string(output)
-	}()
-
-	// Execute function
-	fn()
-
-	// Restore stdout and close writer
-	_ = w.Close()
-	os.Stdout = oldStdout
-
-	// Return captured output
-	return <-outputChan
-}
+// CaptureOutput is now defined in stringprocessing package
 
 // mockWrongService is a mock service with wrong type for testing
 type mockWrongService struct{}

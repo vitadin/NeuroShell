@@ -10,6 +10,7 @@ import (
 
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
+	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -57,7 +58,7 @@ func TestVarsCommand_Execute_NoVariables(t *testing.T) {
 	setupVarsTestRegistry(t, ctx)
 
 	// Capture stdout
-	output := captureOutput(func() {
+	output := stringprocessing.CaptureOutput(func() {
 		err := cmd.Execute(map[string]string{}, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
@@ -88,7 +89,7 @@ func TestVarsCommand_Execute_WithUserVariables(t *testing.T) {
 	require.NoError(t, ctx.SetVariable("project", "NeuroShell"))
 
 	// Capture stdout
-	output := captureOutput(func() {
+	output := stringprocessing.CaptureOutput(func() {
 		err := cmd.Execute(map[string]string{}, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
@@ -121,7 +122,7 @@ func TestVarsCommand_Execute_TypeFilter_User(t *testing.T) {
 	args := map[string]string{"type": "user"}
 
 	// Capture stdout
-	output := captureOutput(func() {
+	output := stringprocessing.CaptureOutput(func() {
 		err := cmd.Execute(args, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
@@ -154,7 +155,7 @@ func TestVarsCommand_Execute_TypeFilter_System(t *testing.T) {
 	args := map[string]string{"type": "system"}
 
 	// Capture stdout
-	output := captureOutput(func() {
+	output := stringprocessing.CaptureOutput(func() {
 		err := cmd.Execute(args, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
@@ -188,7 +189,7 @@ func TestVarsCommand_Execute_PatternFilter(t *testing.T) {
 	args := map[string]string{"pattern": "^test_"}
 
 	// Capture stdout
-	output := captureOutput(func() {
+	output := stringprocessing.CaptureOutput(func() {
 		err := cmd.Execute(args, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
@@ -243,7 +244,7 @@ func TestVarsCommand_Execute_CombinedFilters(t *testing.T) {
 	}
 
 	// Capture stdout
-	output := captureOutput(func() {
+	output := stringprocessing.CaptureOutput(func() {
 		err := cmd.Execute(args, "")
 		if err != nil {
 			t.Errorf("VarsCommand.Execute() error = %v, want nil", err)
@@ -341,7 +342,7 @@ func TestVarsCommand_DisplayVariables_SmartTruncation(t *testing.T) {
 			}
 
 			// Capture stdout
-			output := captureOutput(func() {
+			output := stringprocessing.CaptureOutput(func() {
 				cmd.displayVariables(vars, plainTheme)
 			})
 

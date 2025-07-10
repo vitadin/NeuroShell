@@ -19,7 +19,7 @@ default:
     @echo "CI/CD Commands:"
     @echo "  check-ci          - Run all CI checks locally (mirrors CI pipeline)"
 
-# Build the main binary
+# Build the main binary (both normal and minimal)
 build: lint
     @echo "Building neurotest..."
     go build -o bin/neurotest ./cmd/neurotest
@@ -27,6 +27,12 @@ build: lint
     @echo "Building NeuroShell..."
     go build -o bin/neuro ./cmd/neuro
     @echo "Binary built at: bin/neuro"
+    @echo "Building minimal neurotest..."
+    go build -tags minimal -o bin/neurotest-minimal ./cmd/neurotest
+    @echo "Minimal binary built at: bin/neurotest-minimal"
+    @echo "Building minimal NeuroShell..."
+    go build -tags minimal -o bin/neuro-minimal ./cmd/neuro
+    @echo "Minimal binary built at: bin/neuro-minimal"
 
 # Build minimal binary (only echo command for state machine transition)
 build-minimal: lint

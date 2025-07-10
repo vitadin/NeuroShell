@@ -4,6 +4,8 @@
 package stringprocessing
 
 import (
+	"io"
+	"os"
 	"strings"
 )
 
@@ -83,4 +85,35 @@ func ProcessTextForMarkdown(text string, interpretEscapes bool) string {
 	}
 
 	return processedText
+}
+
+// CaptureOutput captures stdout during function execution for testing purposes.
+// This utility function redirects stdout to capture output from functions that write to it.
+func CaptureOutput(fn func()) string {
+	// Save original stdout
+	oldStdout := os.Stdout
+
+	// Create pipe
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	// Channel to receive output
+	outputChan := make(chan string)
+
+	// Start goroutine to read output
+	go func() {
+		defer close(outputChan)
+		output, _ := io.ReadAll(r)
+		outputChan <- string(output)
+	}()
+
+	// Execute function
+	fn()
+
+	// Restore stdout and close writer
+	_ = w.Close()
+	os.Stdout = oldStdout
+
+	// Return captured output
+	return <-outputChan
 }
