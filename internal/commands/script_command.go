@@ -265,15 +265,8 @@ func (sc *ScriptCommand) executeScriptContent() error {
 
 		logger.Debug("Command parsed", "script", sc.name, "line", lineNum, "command", cmd.Name, "message", cmd.Message)
 
-		// Execute the command using enhanced resolution (with fallback)
-		enhancedService := GetGlobalEnhancedCommandService()
-		if enhancedService == nil {
-			// Fallback to builtin registry if enhanced service is not available
-			err = GetGlobalRegistry().Execute(cmd.Name, cmd.Options, cmd.Message)
-		} else {
-			// Use enhanced command resolution
-			err = enhancedService.Execute(cmd.Name, cmd.Options, cmd.Message)
-		}
+		// Execute the command using builtin registry
+		err = GetGlobalRegistry().Execute(cmd.Name, cmd.Options, cmd.Message)
 
 		if err != nil {
 			return fmt.Errorf("command execution failed at line %d (%s): %w", lineNum, cmd.Name, err)

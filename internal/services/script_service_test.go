@@ -100,8 +100,6 @@ func TestScriptService_LoadScript(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			service := NewScriptService()
-			// ctx := testutils.NewMockContext()
-
 			// Initialize service
 			err := service.Initialize()
 			require.NoError(t, err)
@@ -130,8 +128,6 @@ func TestScriptService_LoadScript(t *testing.T) {
 
 func TestScriptService_LoadScript_FileNotFound(t *testing.T) {
 	service := NewScriptService()
-	// ctx := testutils.NewMockContext()
-
 	// Initialize service
 	err := service.Initialize()
 	require.NoError(t, err)
@@ -150,7 +146,6 @@ func TestScriptService_LoadScript_FileNotFound(t *testing.T) {
 
 func TestScriptService_LoadScript_NotInitialized(t *testing.T) {
 	service := NewScriptService()
-	// ctx := testutils.NewMockContext()
 	fileHelper := testutils.NewFileHelpers()
 
 	// Create a script file
@@ -170,8 +165,6 @@ func TestScriptService_LoadScript_NotInitialized(t *testing.T) {
 
 func TestScriptService_GetScriptMetadata(t *testing.T) {
 	service := NewScriptService()
-	// ctx := testutils.NewMockContext()
-
 	// Initialize service
 	err := service.Initialize()
 	require.NoError(t, err)
@@ -248,7 +241,6 @@ func TestScriptService_ScriptParsing(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			service := NewScriptService()
-			// ctx := testutils.NewMockContext()
 			fileHelper := testutils.NewFileHelpers()
 
 			// Initialize service
@@ -273,7 +265,6 @@ func TestScriptService_ScriptParsing(t *testing.T) {
 // Performance tests
 func BenchmarkScriptService_LoadScript_Small(b *testing.B) {
 	service := NewScriptService()
-	// ctx := testutils.NewMockContext()
 
 	err := service.Initialize()
 	require.NoError(b, err)
@@ -303,8 +294,6 @@ func BenchmarkScriptService_LoadScript_Small(b *testing.B) {
 
 func BenchmarkScriptService_LoadScript_Large(b *testing.B) {
 	service := NewScriptService()
-	// ctx := testutils.NewMockContext()
-
 	err := service.Initialize()
 	require.NoError(b, err)
 
@@ -334,7 +323,6 @@ func BenchmarkScriptService_LoadScript_Large(b *testing.B) {
 // Edge case tests
 func TestScriptService_EdgeCases(t *testing.T) {
 	service := NewScriptService()
-	// ctx := testutils.NewMockContext()
 	fileHelper := testutils.NewFileHelpers()
 
 	err := service.Initialize()
