@@ -437,6 +437,240 @@ func TestState_String(t *testing.T) {
 	}
 }
 
+// TestStateMachine_StdlibScriptResolution tests resolving stdlib scripts.
+func TestStateMachine_StdlibScriptResolution(t *testing.T) {
+	ctx := context.New()
+	sm := NewStateMachineWithDefaults(ctx)
+
+	// Test resolving an existing stdlib script
+	resolved, err := sm.resolveCommand("test-script")
+	if err != nil {
+		t.Fatalf("Expected to resolve stdlib script 'test-script', got error: %v", err)
+	}
+
+	if resolved.Name != "test-script" {
+		t.Errorf("Expected resolved command name to be 'test-script', got '%s'", resolved.Name)
+	}
+
+	if resolved.Type != CommandTypeStdlib {
+		t.Errorf("Expected resolved command type to be CommandTypeStdlib, got %s", resolved.Type.String())
+	}
+
+	if resolved.ScriptContent == "" {
+		t.Error("Expected resolved command to have script content")
+	}
+
+	if resolved.ScriptPath == "" {
+		t.Error("Expected resolved command to have script path")
+	}
+
+	// Test resolving another stdlib script
+	resolved, err = sm.resolveCommand("enhanced-echo")
+	if err != nil {
+		t.Fatalf("Expected to resolve stdlib script 'enhanced-echo', got error: %v", err)
+	}
+
+	if resolved.Type != CommandTypeStdlib {
+		t.Errorf("Expected resolved command type to be CommandTypeStdlib, got %s", resolved.Type.String())
+	}
+
+	// Test resolving non-existent script
+	_, err = sm.resolveCommand("non-existent-script")
+	if err == nil {
+		t.Error("Expected error when resolving non-existent script")
+	}
+}
+
+// TestStateMachine_StdlibScriptExecution tests executing stdlib scripts through state machine.
+func TestStateMachine_StdlibScriptExecution(t *testing.T) {
+	ctx := context.New()
+	sm := NewStateMachineWithDefaults(ctx)
+
+	// Test that stdlib script goes through the correct state transitions
+	// We'll test the state transitions without full execution due to missing builtin commands in test
+
+	// Start with a stdlib script
+	sm.initializeExecution("\\test-script Hello World")
+
+	// Should start in StateReceived
+	if sm.getCurrentState() != StateReceived {
+		t.Errorf("Expected initial state to be StateReceived, got %s", sm.getCurrentState().String())
+	}
+
+	// Process through the states
+	err := sm.ProcessCurrentState() // StateReceived
+	if err != nil {
+		t.Fatalf("StateReceived processing failed: %v", err)
+	}
+
+	// Move to next state (should be StateParsing since no variables)
+	sm.setState(sm.DetermineNextState())
+	if sm.getCurrentState() != StateParsing {
+		t.Errorf("Expected state to be StateParsing, got %s", sm.getCurrentState().String())
+	}
+
+	err = sm.ProcessCurrentState() // StateParsing
+	if err != nil {
+		t.Fatalf("StateParsing processing failed: %v", err)
+	}
+
+	// Move to next state (should be StateResolving)
+	sm.setState(sm.DetermineNextState())
+	if sm.getCurrentState() != StateResolving {
+		t.Errorf("Expected state to be StateResolving, got %s", sm.getCurrentState().String())
+	}
+
+	err = sm.ProcessCurrentState() // StateResolving
+	if err != nil {
+		t.Fatalf("StateResolving processing failed: %v", err)
+	}
+
+	// Verify that command was resolved as stdlib script
+	resolved := sm.getResolvedCommand()
+	if resolved == nil {
+		t.Fatal("Expected resolved command to be set")
+	}
+
+	if resolved.Type != CommandTypeStdlib {
+		t.Errorf("Expected resolved command type to be CommandTypeStdlib, got %s", resolved.Type.String())
+	}
+
+	// Move to next state (should be StateScriptLoaded)
+	sm.setState(sm.DetermineNextState())
+	if sm.getCurrentState() != StateScriptLoaded {
+		t.Errorf("Expected state to be StateScriptLoaded, got %s", sm.getCurrentState().String())
+	}
+}
+
+// TestStateMachine_ScriptParameterPassing tests script parameter setup and cleanup.
+func TestStateMachine_ScriptParameterPassing(t *testing.T) {
+	ctx := context.New()
+	sm := NewStateMachineWithDefaults(ctx)
+
+	// Test parameter setup
+	args := map[string]string{
+		"greeting": "Hello",
+		"style":    "bold",
+	}
+	input := "World"
+	commandName := "test-script"
+
+	err := sm.setupScriptParameters(args, input, commandName)
+	if err != nil {
+		t.Fatalf("Script parameter setup failed: %v", err)
+	}
+
+	// Verify standard parameters were set
+	if value, _ := ctx.GetVariable("_0"); value != commandName {
+		t.Errorf("Expected _0 to be '%s', got '%s'", commandName, value)
+	}
+
+	if value, _ := ctx.GetVariable("_1"); value != input {
+		t.Errorf("Expected _1 to be '%s', got '%s'", input, value)
+	}
+
+	if value, _ := ctx.GetVariable("_*"); value != input {
+		t.Errorf("Expected _* to be '%s', got '%s'", input, value)
+	}
+
+	// Verify named parameters were set
+	if value, _ := ctx.GetVariable("greeting"); value != "Hello" {
+		t.Errorf("Expected greeting to be 'Hello', got '%s'", value)
+	}
+
+	if value, _ := ctx.GetVariable("style"); value != "bold" {
+		t.Errorf("Expected style to be 'bold', got '%s'", value)
+	}
+
+	// Verify _@ contains named args
+	if value, _ := ctx.GetVariable("_@"); !strings.Contains(value, "greeting=Hello") {
+		t.Errorf("Expected _@ to contain 'greeting=Hello', got '%s'", value)
+	}
+
+	// Test parameter cleanup
+	err = sm.cleanupScriptParameters()
+	if err != nil {
+		t.Fatalf("Script parameter cleanup failed: %v", err)
+	}
+
+	// Verify standard parameters were cleared
+	if value, _ := ctx.GetVariable("_0"); value != "" {
+		t.Errorf("Expected _0 to be cleared, got '%s'", value)
+	}
+
+	if value, _ := ctx.GetVariable("_1"); value != "" {
+		t.Errorf("Expected _1 to be cleared, got '%s'", value)
+	}
+
+	// Note: Named parameters (greeting, style) are not automatically cleared by cleanupScriptParameters
+	// They remain in the context as user variables, which is correct behavior
+}
+
+// TestStateMachine_RecursiveStateStackManagement tests the state stack for script-to-script calls.
+func TestStateMachine_RecursiveStateStackManagement(t *testing.T) {
+	ctx := context.New()
+	sm := NewStateMachineWithDefaults(ctx)
+
+	// Simulate parent script state
+	sm.initializeExecution("\\test-script Hello")
+	sm.setState(StateScriptExecuting)
+	sm.setScriptLines([]string{"\\enhanced-echo World", "\\echo Done"})
+	sm.setCurrentScriptLine(0)
+
+	// Verify initial state
+	if len(sm.stateStack) != 0 {
+		t.Error("Expected empty state stack initially")
+	}
+
+	// Save state before recursive call (simulating processScriptExecuting)
+	savedState := sm.saveExecutionState()
+
+	// Verify state was saved to stack
+	if len(sm.stateStack) != 1 {
+		t.Errorf("Expected state stack length 1 after save, got %d", len(sm.stateStack))
+	}
+
+	// Simulate recursive call by setting up new execution state
+	sm.initializeExecution("\\enhanced-echo World")
+	sm.setState(StateScriptExecuting)
+	sm.setScriptLines([]string{"\\echo Enhanced output"})
+	sm.setCurrentScriptLine(0)
+
+	// Verify current state reflects the nested script
+	if sm.getExecutionInput() != "\\enhanced-echo World" {
+		t.Errorf("Expected nested script input, got '%s'", sm.getExecutionInput())
+	}
+
+	if sm.getCurrentScriptLine() != 0 {
+		t.Errorf("Expected nested script line 0, got %d", sm.getCurrentScriptLine())
+	}
+
+	// Simulate completion of nested script and restore parent state
+	sm.restoreExecutionState(savedState)
+
+	// Verify parent state was restored
+	if sm.getExecutionInput() != "\\test-script Hello" {
+		t.Errorf("Expected parent script input restored, got '%s'", sm.getExecutionInput())
+	}
+
+	if sm.getCurrentScriptLine() != 0 {
+		t.Errorf("Expected parent script line 0, got %d", sm.getCurrentScriptLine())
+	}
+
+	if len(sm.getScriptLines()) != 2 {
+		t.Errorf("Expected parent script to have 2 lines, got %d", len(sm.getScriptLines()))
+	}
+
+	if sm.getCurrentState() != StateScriptExecuting {
+		t.Errorf("Expected parent state StateScriptExecuting, got %s", sm.getCurrentState().String())
+	}
+
+	// Verify state stack is back to empty
+	if len(sm.stateStack) != 0 {
+		t.Errorf("Expected empty state stack after restore, got %d", len(sm.stateStack))
+	}
+}
+
 // TestCommandType_String tests string representation of command types.
 func TestCommandType_String(t *testing.T) {
 	types := map[CommandType]string{

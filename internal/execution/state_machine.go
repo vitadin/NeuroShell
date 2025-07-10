@@ -7,9 +7,9 @@ import (
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/context"
+	"neuroshell/internal/data/embedded"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/parser"
-	"neuroshell/internal/services"
 )
 
 // StateMachine implements the core state machine for NeuroShell command execution.
@@ -20,6 +20,8 @@ type StateMachine struct {
 	context *context.NeuroContext
 	// Integrated interpolation engine (not a separate service)
 	interpolator *CoreInterpolator
+	// Stdlib script loader for embedded scripts
+	stdlibLoader *embedded.StdlibLoader
 	// Configuration options
 	config Config
 	// State stack for recursive execution
@@ -42,6 +44,7 @@ func NewStateMachine(ctx *context.NeuroContext, config Config) *StateMachine {
 	return &StateMachine{
 		context:      ctx,
 		interpolator: NewCoreInterpolator(ctx),
+		stdlibLoader: embedded.NewStdlibLoader(),
 		config:       config,
 		stateStack:   make([]StateSnapshot, 0),
 	}
@@ -290,38 +293,34 @@ func (sm *StateMachine) parseScriptIntoLines(scriptContent string) []string {
 
 // setupScriptParameters sets up parameters for script execution.
 func (sm *StateMachine) setupScriptParameters(args map[string]string, input string, commandName string) error {
-	vs, err := services.GetGlobalVariableService()
-	if err != nil {
-		return fmt.Errorf("variable service not available: %w", err)
-	}
+	// Use the state machine's context directly for parameter setup
+	ctx := sm.context
 
 	// Set standard script parameters
-	_ = vs.SetSystemVariable("_0", commandName) // Command name
-	_ = vs.SetSystemVariable("_1", input)       // Input parameter
-	_ = vs.SetSystemVariable("_*", input)       // All positional args
+	_ = ctx.SetSystemVariable("_0", commandName) // Command name
+	_ = ctx.SetSystemVariable("_1", input)       // Input parameter
+	_ = ctx.SetSystemVariable("_*", input)       // All positional args
 
-	// Set named arguments as variables
+	// Set named arguments as variables (use regular SetVariable for user-defined names)
 	var namedArgs []string
 	for key, value := range args {
-		_ = vs.SetSystemVariable(key, value)
+		_ = ctx.SetVariable(key, value)
 		namedArgs = append(namedArgs, key+"="+value)
 	}
-	_ = vs.SetSystemVariable("_@", strings.Join(namedArgs, " "))
+	_ = ctx.SetSystemVariable("_@", strings.Join(namedArgs, " "))
 
 	return nil
 }
 
 // cleanupScriptParameters removes script parameters after execution.
 func (sm *StateMachine) cleanupScriptParameters() error {
-	vs, err := services.GetGlobalVariableService()
-	if err != nil {
-		return fmt.Errorf("variable service not available: %w", err)
-	}
+	// Use the state machine's context directly for parameter cleanup
+	ctx := sm.context
 
 	// Clear standard script parameters
 	parameterNames := []string{"_0", "_1", "_*", "_@"}
 	for _, name := range parameterNames {
-		_ = vs.SetSystemVariable(name, "")
+		_ = ctx.SetSystemVariable(name, "")
 	}
 
 	return nil
@@ -339,7 +338,19 @@ func (sm *StateMachine) resolveCommand(commandName string) (*ResolvedCommand, er
 	}
 
 	// Priority 2: Try stdlib scripts (medium priority)
-	// This will be implemented when we extend the context
+	if sm.stdlibLoader.ScriptExists(commandName) {
+		scriptContent, err := sm.stdlibLoader.LoadScript(commandName)
+		if err != nil {
+			logger.Error("Failed to load stdlib script", "command", commandName, "error", err)
+		} else {
+			return &ResolvedCommand{
+				Name:          commandName,
+				Type:          CommandTypeStdlib,
+				ScriptContent: scriptContent,
+				ScriptPath:    sm.stdlibLoader.GetScriptPath(commandName),
+			}, nil
+		}
+	}
 
 	// Priority 3: Try user scripts (lowest priority)
 	// This will be implemented when we extend the context
