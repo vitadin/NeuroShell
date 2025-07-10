@@ -4,7 +4,6 @@ import (
 	"sort"
 	"strings"
 
-	"neuroshell/internal/commands"
 	"neuroshell/internal/context"
 )
 
@@ -114,13 +113,21 @@ func (a *AutoCompleteService) getCommandCompletions(prefix string) []string {
 	// Remove the \ prefix for matching
 	commandPrefix := strings.TrimPrefix(prefix, "\\")
 
-	// Get all registered commands
-	registry := commands.GetGlobalRegistry()
-	allCommands := registry.GetAll()
+	// Get all registered commands from global context
+	globalCtx := context.GetGlobalContext()
+	if globalCtx == nil {
+		return []string{}
+	}
+
+	neuroCtx, ok := globalCtx.(*context.NeuroContext)
+	if !ok {
+		return []string{}
+	}
+
+	commandList := neuroCtx.GetRegisteredCommands()
 
 	var completions []string
-	for _, cmd := range allCommands {
-		cmdName := cmd.Name()
+	for _, cmdName := range commandList {
 		if strings.HasPrefix(cmdName, commandPrefix) {
 			completions = append(completions, "\\"+cmdName)
 		}
@@ -189,81 +196,41 @@ func (a *AutoCompleteService) getOptionCompletions(line string, _ int, currentWo
 		return make([]string, 0)
 	}
 
-	// Get the command from registry
-	registry := commands.GetGlobalRegistry()
-	command, exists := registry.Get(commandName)
+	// Check if the command exists in the global context
+	globalCtx := context.GetGlobalContext()
+	if globalCtx == nil {
+		return make([]string, 0)
+	}
+
+	neuroCtx, ok := globalCtx.(*context.NeuroContext)
+	if !ok {
+		return make([]string, 0)
+	}
+
+	// Get command help info from context
+	commandHelpInfo, exists := neuroCtx.GetCommandHelpInfo(commandName)
 	if !exists {
 		return make([]string, 0)
 	}
 
-	// Get the command's help info for options
-	helpInfo := command.HelpInfo()
-
+	// Get completions based on command options
 	var completions []string
+	for _, option := range commandHelpInfo.Options {
+		optionName := option.Name
 
-	// Check if we're completing an option name (no = in current word)
-	if !strings.Contains(currentWord, "=") {
-		// Complete option names
-		for _, option := range helpInfo.Options {
-			optionName := option.Name
-			if strings.HasPrefix(optionName, currentWord) {
-				if option.Type == "bool" {
-					// Boolean options don't need =
-					completions = append(completions, optionName)
-				} else {
-					// Add = for value options
-					completions = append(completions, optionName+"=")
-				}
-			}
-		}
-	} else {
-		// We're completing an option value
-		parts := strings.SplitN(currentWord, "=", 2)
-		if len(parts) == 2 {
-			optionName := parts[0]
-			valuePrefix := parts[1]
-
-			// Get context-specific completions for this option
-			contextCompletions := a.getOptionValueCompletions(commandName, optionName, valuePrefix)
-			for _, completion := range contextCompletions {
-				completions = append(completions, optionName+"="+completion)
+		// Check if this option matches the current word prefix
+		if strings.HasPrefix(optionName, currentWord) {
+			// For boolean options, add just the name
+			if option.Type == "bool" {
+				completions = append(completions, optionName)
+			} else {
+				// For other types, add name with = suffix
+				completions = append(completions, optionName+"=")
 			}
 		}
 	}
 
-	// Sort completions alphabetically
 	sort.Strings(completions)
-	return completions
-}
-
-// getOptionValueCompletions returns completions for specific option values.
-func (a *AutoCompleteService) getOptionValueCompletions(commandName, optionName, valuePrefix string) []string {
-	var completions []string
-
-	// Context-specific completions based on command and option
-	switch commandName {
-	case "session":
-		if optionName == "name" {
-			// Complete with existing session names
-			completions = a.getSessionNameCompletions(valuePrefix)
-		}
-	case "model":
-		if optionName == "name" {
-			// Complete with available model names
-			completions = a.getModelNameCompletions(valuePrefix)
-		}
-	case "render":
-		if optionName == "style" {
-			// Complete with available theme names
-			completions = a.getThemeNameCompletions(valuePrefix)
-		}
-	case "set":
-		if optionName == "name" {
-			// Complete with existing variable names
-			completions = a.getVariableNameCompletions(valuePrefix)
-		}
-	}
-
 	return completions
 }
 
@@ -301,99 +268,6 @@ func (a *AutoCompleteService) isInsideBrackets(line string, pos int) bool {
 
 	// We're inside brackets if the last [ is after the last ]
 	return lastBracketOpen > lastBracketClose
-}
-
-// getSessionNameCompletions returns completions for session names.
-func (a *AutoCompleteService) getSessionNameCompletions(prefix string) []string {
-	globalCtx := context.GetGlobalContext()
-	if globalCtx == nil {
-		return make([]string, 0)
-	}
-
-	_, ok := globalCtx.(*context.NeuroContext)
-	if !ok {
-		return make([]string, 0)
-	}
-
-	sessionNameToID := globalCtx.GetSessionNameToID()
-
-	var completions []string
-	for sessionName := range sessionNameToID {
-		if strings.HasPrefix(sessionName, prefix) {
-			completions = append(completions, sessionName)
-		}
-	}
-
-	sort.Strings(completions)
-	return completions
-}
-
-// getModelNameCompletions returns completions for model names.
-func (a *AutoCompleteService) getModelNameCompletions(prefix string) []string {
-	globalCtx := context.GetGlobalContext()
-	if globalCtx == nil {
-		return make([]string, 0)
-	}
-
-	_, ok := globalCtx.(*context.NeuroContext)
-	if !ok {
-		return make([]string, 0)
-	}
-
-	modelNameToID := globalCtx.GetModelNameToID()
-
-	var completions []string
-	for modelName := range modelNameToID {
-		if strings.HasPrefix(modelName, prefix) {
-			completions = append(completions, modelName)
-		}
-	}
-
-	sort.Strings(completions)
-	return completions
-}
-
-// getThemeNameCompletions returns completions for theme names.
-func (a *AutoCompleteService) getThemeNameCompletions(prefix string) []string {
-	themeService, err := GetGlobalThemeService()
-	if err != nil {
-		return make([]string, 0)
-	}
-
-	availableThemes := themeService.GetAvailableThemes()
-
-	var completions []string
-	for _, themeName := range availableThemes {
-		if strings.HasPrefix(themeName, prefix) {
-			completions = append(completions, themeName)
-		}
-	}
-
-	sort.Strings(completions)
-	return completions
-}
-
-// getVariableNameCompletions returns completions for variable names (without ${}).
-func (a *AutoCompleteService) getVariableNameCompletions(prefix string) []string {
-	variableService, err := GetGlobalVariableService()
-	if err != nil {
-		return make([]string, 0)
-	}
-
-	allVars, err := variableService.GetAllVariables()
-	if err != nil {
-		return make([]string, 0)
-	}
-
-	var completions []string
-	for varName := range allVars {
-		if strings.HasPrefix(varName, prefix) {
-			completions = append(completions, varName)
-		}
-	}
-
-	sort.Strings(completions)
-	return completions
 }
 
 func init() {

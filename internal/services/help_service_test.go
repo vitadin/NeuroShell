@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"neuroshell/internal/commands"
 	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
 )
@@ -48,10 +47,18 @@ func TestHelpService_Initialize(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, service.initialized)
 
-	// Verify commands were stored
-	assert.Len(t, service.commands, 2)
-	assert.Contains(t, service.commands, "test1")
-	assert.Contains(t, service.commands, "test2")
+	// Verify commands were stored in context
+	commands, err := service.GetAllCommands()
+	assert.NoError(t, err)
+	assert.Len(t, commands, 2)
+
+	// Check command names
+	commandNames := make([]string, len(commands))
+	for i, cmd := range commands {
+		commandNames[i] = cmd.Command
+	}
+	assert.Contains(t, commandNames, "test1")
+	assert.Contains(t, commandNames, "test2")
 }
 
 func TestHelpService_GetAllCommands(t *testing.T) {
@@ -68,9 +75,9 @@ func TestHelpService_GetAllCommands(t *testing.T) {
 	assert.Len(t, allCommands, 3)
 
 	// Verify they are sorted alphabetically
-	assert.Equal(t, "apple", allCommands[0].Name)
-	assert.Equal(t, "banana", allCommands[1].Name)
-	assert.Equal(t, "zebra", allCommands[2].Name)
+	assert.Equal(t, "apple", allCommands[0].Command)
+	assert.Equal(t, "banana", allCommands[1].Command)
+	assert.Equal(t, "zebra", allCommands[2].Command)
 }
 
 func TestHelpService_GetCommand(t *testing.T) {
@@ -88,7 +95,7 @@ func TestHelpService_GetCommand(t *testing.T) {
 	// Test existing command
 	cmdInfo, err := service.GetCommand("test")
 	assert.NoError(t, err)
-	assert.Equal(t, "test", cmdInfo.Name)
+	assert.Equal(t, "test", cmdInfo.Command)
 	assert.Equal(t, "Test command", cmdInfo.Description)
 	assert.Equal(t, "\\test [arg]", cmdInfo.Usage)
 	assert.Equal(t, neurotypes.ParseModeRaw, cmdInfo.ParseMode)
@@ -156,25 +163,6 @@ func TestHelpService_NotInitialized(t *testing.T) {
 	assert.False(t, service.IsValidCommand("test"))
 }
 
-func TestHelpService_ParseModeToString(t *testing.T) {
-	service := NewHelpService()
-
-	tests := []struct {
-		mode     neurotypes.ParseMode
-		expected string
-	}{
-		{neurotypes.ParseModeKeyValue, "KeyValue"},
-		{neurotypes.ParseModeRaw, "Raw"},
-		{neurotypes.ParseModeWithOptions, "WithOptions"},
-		{neurotypes.ParseMode(999), "Unknown"}, // Invalid mode
-	}
-
-	for _, tt := range tests {
-		result := service.parseModeToString(tt.mode)
-		assert.Equal(t, tt.expected, result)
-	}
-}
-
 func TestHelpService_EmptyCommandRegistry(t *testing.T) {
 	// Test with no commands
 	testCommands := []neurotypes.Command{}
@@ -238,25 +226,20 @@ func TestHelpService_SystemVariableStorage(t *testing.T) {
 // Helper functions
 
 func setupHelpServiceTest(t *testing.T, testCommands []neurotypes.Command) neurotypes.Context {
-	// Create test command registry
-	testCommandRegistry := commands.NewRegistry()
-
-	// Register test commands
-	for _, cmd := range testCommands {
-		err := testCommandRegistry.Register(cmd)
-		require.NoError(t, err)
-	}
-
-	// Temporarily replace global command registry using thread-safe functions
-	originalCommandRegistry := commands.GetGlobalRegistry()
-	commands.SetGlobalRegistry(testCommandRegistry)
-
-	t.Cleanup(func() {
-		commands.SetGlobalRegistry(originalCommandRegistry)
-	})
-
+	// Reset global context to clean state
 	neuroshellcontext.ResetGlobalContext()
 	ctx := neuroshellcontext.GetGlobalContext()
+
+	// Cast to concrete type to access RegisterCommandWithInfo
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
+	if !ok {
+		t.Fatal("Expected NeuroContext type")
+	}
+
+	// Register test commands directly with context
+	for _, cmd := range testCommands {
+		neuroCtx.RegisterCommandWithInfo(cmd)
+	}
 	ctx.SetTestMode(true)
 	return ctx
 }

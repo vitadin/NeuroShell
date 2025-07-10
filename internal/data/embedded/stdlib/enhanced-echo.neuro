@@ -1,0 +1,26 @@
+%% Description: Enhanced echo command with additional formatting options
+%% Usage: \enhanced-echo [style=color] [prefix=text] <message>
+%% Example: \enhanced-echo[style=blue,prefix=INFO] System ready - shows colored prefixed message
+%% Option: style - Text color (string, default: none)
+%% Option: prefix - Text prefix (string, default: none)
+%% Note: Demonstrates stdlib command with parameter processing and macro usage
+
+%% Enhanced echo command with formatting
+\set[_echo_commands="true"]
+
+%% Process parameters
+\set[message="${_1}"]
+\set[color="${style}"]
+\set[msg_prefix="${prefix}"]
+
+%% Build dynamic command based on parameters
+\set[base_cmd="\echo"]
+
+%% Add style if provided
+\set[styled_cmd="${color!=?${base_cmd}[style=${color}]:${base_cmd}}"]
+
+%% Add prefix to message if provided
+\set[final_message="${msg_prefix!=?${msg_prefix}: ${message}:${message}}"]
+
+%% Execute the dynamically built command
+${styled_cmd} ${final_message}

@@ -3,6 +3,7 @@
 package shell
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/abiosoft/ishell/v2"
@@ -134,6 +135,16 @@ func InitializeServices(testMode bool) error {
 		}
 	}
 
+	// Initialize enhanced command service for priority-based command resolution
+	// This is now managed within the commands package
+	enhancedCommandService := commands.NewEnhancedCommandService()
+	if err := enhancedCommandService.Initialize(); err != nil {
+		return fmt.Errorf("failed to initialize enhanced command service: %w", err)
+	}
+
+	// Set the global enhanced command service
+	commands.SetGlobalEnhancedCommandService(enhancedCommandService)
+
 	// Initialize all services
 	if err := services.GetGlobalRegistry().InitializeAll(); err != nil {
 		return err
@@ -175,8 +186,17 @@ func executeCommand(c *ishell.Context, cmd *parser.Command) {
 	// Prepare input for execution
 	input := interpolatedCmd.Message
 
-	// Execute command with interpolated values
-	err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, input)
+	// Execute command with enhanced resolution (with fallback to builtin registry)
+	enhancedService := commands.GetGlobalEnhancedCommandService()
+	if enhancedService == nil {
+		// Fallback to builtin registry if enhanced service is not available
+		logger.Debug("Enhanced command service not available, using builtin registry")
+		err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, input)
+	} else {
+		// Use enhanced command resolution
+		err = enhancedService.Execute(interpolatedCmd.Name, interpolatedCmd.Options, input)
+	}
+
 	if err != nil {
 		logger.Error("Command execution failed", "command", interpolatedCmd.Name, "error", err)
 		c.Printf("Error: %s\n", err.Error())

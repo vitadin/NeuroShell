@@ -50,8 +50,16 @@ func setupHelpTestEnvironment(t *testing.T, testCommands []neurotypes.Command) n
 	err = testServiceRegistry.RegisterService(themeService)
 	require.NoError(t, err)
 
-	// Create context and initialize services
+	// Create context and register test commands with it (needed for help service)
 	ctx := context.NewTestContext()
+	neuroCtx, ok := ctx.(*context.NeuroContext)
+	require.True(t, ok)
+
+	for _, cmd := range testCommands {
+		neuroCtx.RegisterCommandWithInfo(cmd)
+	}
+
+	// Initialize services after commands are registered
 	err = helpService.Initialize()
 	require.NoError(t, err)
 	err = themeService.Initialize()

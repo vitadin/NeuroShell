@@ -1,0 +1,24 @@
+%% Description: Test script command for validating enhanced command resolution
+%% Usage: \test-script [name=value] <message>
+%% Example: \test-script[greeting=Hello] World - demonstrates parameter passing
+%% Note: This is a test script to validate the enhanced command resolution system
+
+%% Test script demonstrating parameter usage
+\set[_echo_commands="true"]
+
+%% Show command parameters received from enhanced resolution
+\echo Command name: ${_0}
+\echo Input message: ${_1}
+\echo All positional args: ${_*}
+\echo All named args: ${_@}
+
+%% Test accessing named parameters
+\echo Greeting parameter: ${greeting}
+
+%% Test macro expansion within script
+\set[cmd="\echo"]
+${cmd} Macro expansion works in stdlib scripts!
+
+%% Test complex parameter usage
+\set[full_message="Command '${_0}' received: ${_1}"]
+\echo ${full_message}
