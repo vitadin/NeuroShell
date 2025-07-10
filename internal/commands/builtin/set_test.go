@@ -2,7 +2,6 @@ package builtin
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"testing"
 
@@ -11,6 +10,7 @@ import (
 
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
+	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -94,19 +94,10 @@ func TestSetCommand_Execute_BracketSyntax(t *testing.T) {
 			setupSetCommandTestRegistry(t)
 
 			// Capture stdout
-			originalStdout := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
-
-			err := cmd.Execute(tt.args, tt.input)
-
-			// Restore stdout
-			_ = w.Close()
-			os.Stdout = originalStdout
-
-			// Read captured output
-			output, _ := io.ReadAll(r)
-			outputStr := string(output)
+			var err error
+			outputStr := stringprocessing.CaptureOutput(func() {
+				err = cmd.Execute(tt.args, tt.input)
+			})
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -207,19 +198,10 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 			setupSetCommandTestRegistry(t)
 
 			// Capture stdout
-			originalStdout := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
-
-			err := cmd.Execute(tt.args, tt.input)
-
-			// Restore stdout
-			_ = w.Close()
-			os.Stdout = originalStdout
-
-			// Read captured output
-			output, _ := io.ReadAll(r)
-			outputStr := string(output)
+			var err error
+			outputStr := stringprocessing.CaptureOutput(func() {
+				err = cmd.Execute(tt.args, tt.input)
+			})
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -252,19 +234,10 @@ func TestSetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	input := "spacevar spacevalue"
 
 	// Capture stdout
-	originalStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	err := cmd.Execute(args, input)
-
-	// Restore stdout
-	_ = w.Close()
-	os.Stdout = originalStdout
-
-	// Read captured output
-	output, _ := io.ReadAll(r)
-	outputStr := string(output)
+	var err error
+	outputStr := stringprocessing.CaptureOutput(func() {
+		err = cmd.Execute(args, input)
+	})
 
 	assert.NoError(t, err)
 
@@ -343,19 +316,9 @@ func TestSetCommand_Execute_VariableOverwrite(t *testing.T) {
 	args := map[string]string{"existing": "newvalue"}
 
 	// Capture stdout
-	originalStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	err = cmd.Execute(args, "")
-
-	// Restore stdout
-	_ = w.Close()
-	os.Stdout = originalStdout
-
-	// Read captured output
-	output, _ := io.ReadAll(r)
-	outputStr := string(output)
+	outputStr := stringprocessing.CaptureOutput(func() {
+		err = cmd.Execute(args, "")
+	})
 
 	assert.NoError(t, err)
 
@@ -390,19 +353,10 @@ func TestSetCommand_Execute_SpecialVariableNames(t *testing.T) {
 			args := map[string]string{test.name: test.value}
 
 			// Capture stdout
-			originalStdout := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
-
-			err := cmd.Execute(args, "")
-
-			// Restore stdout
-			_ = w.Close()
-			os.Stdout = originalStdout
-
-			// Read captured output
-			output, _ := io.ReadAll(r)
-			outputStr := string(output)
+			var err error
+			outputStr := stringprocessing.CaptureOutput(func() {
+				err = cmd.Execute(args, "")
+			})
 
 			assert.NoError(t, err)
 
@@ -434,15 +388,10 @@ func TestSetCommand_Execute_LargeValues(t *testing.T) {
 	args := map[string]string{"large_var": largeValueStr}
 
 	// Capture stdout
-	originalStdout := os.Stdout
-	_, w, _ := os.Pipe()
-	os.Stdout = w
-
-	err := cmd.Execute(args, "")
-
-	// Restore stdout
-	_ = w.Close()
-	os.Stdout = originalStdout
+	var err error
+	_ = stringprocessing.CaptureOutput(func() {
+		err = cmd.Execute(args, "")
+	})
 
 	assert.NoError(t, err)
 
@@ -672,19 +621,10 @@ func TestSetCommand_Execute_WhitelistedGlobalVariables(t *testing.T) {
 			setupSetTestRegistry(t, ctx)
 
 			// Capture stdout
-			originalStdout := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
-
-			err := cmd.Execute(tt.args, tt.input)
-
-			// Restore stdout
-			_ = w.Close()
-			os.Stdout = originalStdout
-
-			// Read captured output
-			output, _ := io.ReadAll(r)
-			outputStr := string(output)
+			var err error
+			outputStr := stringprocessing.CaptureOutput(func() {
+				err = cmd.Execute(tt.args, tt.input)
+			})
 
 			if tt.wantErr {
 				assert.Error(t, err)
