@@ -15,5 +15,5 @@ package builtin
 // - Minimal build: `go build -tags minimal` (includes only essential commands)
 //
 // Each command file uses appropriate build tags:
-// - Essential commands (echo): No build tag (always included)
+// - Essential commands (echo, exit): No build tag (always included)
 // - Optional commands (set, get, etc.): `//go:build !minimal` (excluded in minimal builds)
