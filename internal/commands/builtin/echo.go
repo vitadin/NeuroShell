@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -198,8 +197,4 @@ func interpretEscapeSequences(s string) string {
 	return s
 }
 
-func init() {
-	if err := commands.GlobalRegistry.Register(&EchoCommand{}); err != nil {
-		panic(fmt.Sprintf("failed to register echo command: %v", err))
-	}
-}
+// Note: Registration moved to central init.go during state machine transition
