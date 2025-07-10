@@ -133,15 +133,8 @@ func ExecuteScriptLegacy(scriptPath string) error {
 		// Prepare input for execution
 		cmdInput := interpolatedCmd.Message
 
-		// Execute command through enhanced resolution (with fallback)
-		enhancedService := commands.GetGlobalEnhancedCommandService()
-		if enhancedService == nil {
-			// Fallback to builtin registry if enhanced service is not available
-			err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput)
-		} else {
-			// Use enhanced command resolution
-			err = enhancedService.Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput)
-		}
+		// Execute command using builtin registry
+		err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput)
 
 		if err != nil {
 			// Mark execution error and return
@@ -300,16 +293,9 @@ func ExecuteScriptWithMacros(scriptPath string) error {
 
 		logger.Debug("Command parsed", "line", lineNum, "command", cmd.Name, "message", cmd.Message)
 
-		// Execute the command using enhanced resolution (with fallback)
+		// Execute the command using builtin registry
 		// All variables should already be resolved by the command-level interpolation
-		enhancedService := commands.GetGlobalEnhancedCommandService()
-		if enhancedService == nil {
-			// Fallback to builtin registry if enhanced service is not available
-			err = commands.GetGlobalRegistry().Execute(cmd.Name, cmd.Options, cmd.Message)
-		} else {
-			// Use enhanced command resolution
-			err = enhancedService.Execute(cmd.Name, cmd.Options, cmd.Message)
-		}
+		err = commands.GetGlobalRegistry().Execute(cmd.Name, cmd.Options, cmd.Message)
 
 		if err != nil {
 			return fmt.Errorf("command execution failed at line %d (%s): %w", lineNum, cmd.Name, err)
@@ -410,16 +396,9 @@ func ExecuteScriptContentWithMacros(content, scriptName string) error {
 
 		logger.Debug("Command parsed", "script", scriptName, "line", lineNum, "command", cmd.Name, "message", cmd.Message)
 
-		// Execute the command using enhanced resolution (with fallback)
+		// Execute the command using builtin registry
 		// All variables should already be resolved by the command-level interpolation
-		enhancedService := commands.GetGlobalEnhancedCommandService()
-		if enhancedService == nil {
-			// Fallback to builtin registry if enhanced service is not available
-			err = commands.GetGlobalRegistry().Execute(cmd.Name, cmd.Options, cmd.Message)
-		} else {
-			// Use enhanced command resolution
-			err = enhancedService.Execute(cmd.Name, cmd.Options, cmd.Message)
-		}
+		err = commands.GetGlobalRegistry().Execute(cmd.Name, cmd.Options, cmd.Message)
 
 		if err != nil {
 			return fmt.Errorf("command execution failed at line %d (%s): %w", lineNum, cmd.Name, err)
