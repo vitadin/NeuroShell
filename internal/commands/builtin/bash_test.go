@@ -386,9 +386,6 @@ func setupBashTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
 	require.NoError(t, err)
 
-	err = services.GetGlobalRegistry().RegisterService(services.NewInterpolationService())
-	require.NoError(t, err)
-
 	err = services.GetGlobalRegistry().RegisterService(services.NewBashService())
 	require.NoError(t, err)
 

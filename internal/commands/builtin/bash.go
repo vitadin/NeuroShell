@@ -1,5 +1,3 @@
-//go:build !minimal
-
 package builtin
 
 import (
@@ -66,7 +64,7 @@ func (c *BashCommand) HelpInfo() neurotypes.HelpInfo {
 		},
 		Notes: []string{
 			"Commands are executed using bash -c for full shell capabilities",
-			"Variables are interpolated before execution",
+			"Variables are interpolated by the state machine before execution",
 			"Output is stored in ${_output}, errors in ${_error}, exit code in ${_status}",
 			"Supports pipes, redirection, and all bash features",
 			"Use quotes to protect special characters from shell expansion",
