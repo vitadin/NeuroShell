@@ -473,10 +473,6 @@ func setupVarsTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
 	require.NoError(t, err)
 
-	// Register interpolation service
-	err = services.GetGlobalRegistry().RegisterService(services.NewInterpolationService())
-	require.NoError(t, err)
-
 	// Register theme service
 	err = services.GetGlobalRegistry().RegisterService(services.NewThemeService())
 	require.NoError(t, err)
