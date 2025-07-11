@@ -1,0 +1,5 @@
+%% Test script for try command with failing file
+\echo "Before try with missing file"
+\nonexistent-file.neuro
+\echo "After try with missing file - should still execute"
+\echo "Try failing test completed"

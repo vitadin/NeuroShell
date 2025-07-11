@@ -10,12 +10,15 @@ import (
 
 // processScriptLoaded handles setup after a script has been loaded.
 func (sm *StateMachine) processScriptLoaded() error {
+	sm.logger.Debug("ProcessScriptLoaded starting")
 	resolved := sm.getResolvedCommand()
 	parsedCmd := sm.getParsedCommand()
 
 	if resolved == nil || (resolved.Type != neurotypes.CommandTypeStdlib && resolved.Type != neurotypes.CommandTypeUser) {
 		return fmt.Errorf("no script to load")
 	}
+
+	sm.logger.Debug("Script loaded", "type", resolved.Type.String(), "path", resolved.ScriptPath)
 
 	// Setup script parameters
 	err := sm.setupScriptParameters(parsedCmd.Options, parsedCmd.Message, parsedCmd.Name)
@@ -25,9 +28,11 @@ func (sm *StateMachine) processScriptLoaded() error {
 
 	// Parse script content into executable lines
 	lines := sm.parseScriptIntoLines(resolved.ScriptContent)
+	sm.logger.Debug("Script lines parsed", "line_count", len(lines))
 	sm.setScriptLines(lines)
 	sm.setCurrentScriptLine(0)
 
+	sm.logger.Debug("ProcessScriptLoaded completed")
 	return nil
 }
 
@@ -36,7 +41,10 @@ func (sm *StateMachine) processScriptExecuting() error {
 	lines := sm.getScriptLines()
 	currentLineIndex := sm.getCurrentScriptLine()
 
+	sm.logger.Debug("ProcessScriptExecuting", "line_index", currentLineIndex, "total_lines", len(lines))
+
 	if currentLineIndex >= len(lines) {
+		sm.logger.Debug("Script execution completed, cleaning up")
 		// Script finished - cleanup parameters
 		err := sm.cleanupScriptParameters()
 		if err != nil {
@@ -49,8 +57,11 @@ func (sm *StateMachine) processScriptExecuting() error {
 	line := lines[currentLineIndex]
 	line = strings.TrimSpace(line)
 
+	sm.logger.Debug("Processing script line", "line_index", currentLineIndex, "line", line)
+
 	// Skip empty lines and comments
 	if line == "" || strings.HasPrefix(line, "%%") {
+		sm.logger.Debug("Skipping empty/comment line", "line_index", currentLineIndex)
 		sm.setCurrentScriptLine(currentLineIndex + 1)
 		return nil // Stay in StateScriptExecuting for next line
 	}
@@ -60,12 +71,16 @@ func (sm *StateMachine) processScriptExecuting() error {
 		fmt.Printf("%%%%> %s\n", line)
 	}
 
+	sm.logger.Debug("Executing script line", "line_index", currentLineIndex, "line", line)
+
 	// Save current execution state for recursive call
 	savedState := sm.saveExecutionState()
 
 	// Execute script line through state machine recursively
 	// This line will go through: StateReceived → StateInterpolating → ... → StateCompleted
-	err := sm.Execute(line)
+	err := sm.ExecuteInternal(line)
+
+	sm.logger.Debug("Script line execution completed", "line_index", currentLineIndex, "error", err)
 
 	// Restore execution state after recursive call
 	sm.restoreExecutionState(savedState)
@@ -76,6 +91,7 @@ func (sm *StateMachine) processScriptExecuting() error {
 
 	// Move to next line
 	sm.setCurrentScriptLine(currentLineIndex + 1)
+	sm.logger.Debug("Moving to next script line", "next_line_index", currentLineIndex+1)
 
 	return nil // Stay in StateScriptExecuting for next line
 }

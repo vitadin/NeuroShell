@@ -123,7 +123,9 @@ func (sm *StateMachine) executeInternal() error {
 		sm.setState(nextState)
 
 		// Safety check to prevent infinite loops
-		if nextState == currentState {
+		// Special case: StateScriptExecuting can legitimately stay in the same state
+		// when processing multiple script lines
+		if nextState == currentState && currentState != neurotypes.StateScriptExecuting {
 			sm.logger.Error("Infinite loop detected", "state", currentState.String())
 			return fmt.Errorf("state machine stuck in state: %s", currentState.String())
 		}
@@ -175,7 +177,7 @@ func (sm *StateMachine) DetermineNextState() neurotypes.State {
 	case neurotypes.StateScriptExecuting:
 		// Check if more script lines to process
 		if sm.hasMoreScriptLines() {
-			return neurotypes.StateReceived // Recursive: next script line re-enters
+			return neurotypes.StateScriptExecuting // Stay in script execution to process next line
 		}
 		return neurotypes.StateCompleted
 	case neurotypes.StateTryCompleted:

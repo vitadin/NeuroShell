@@ -105,7 +105,6 @@ func setupTestEnvironment(t *testing.T) func() {
 	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendCommand{}))
 	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendSyncCommand{}))
 	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendStreamCommand{}))
-	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.RunCommand{}))
 	// Note: Bash command has been removed
 
 	// Initialize services
