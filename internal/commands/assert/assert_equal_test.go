@@ -1,7 +1,4 @@
-// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package assert
-
-/*
 
 import (
 	"testing"
@@ -34,8 +31,40 @@ func TestEqualCommand_Usage(t *testing.T) {
 	assert.Equal(t, "\\assert-equal[expect=expected_value, actual=actual_value]", cmd.Usage())
 }
 
+// setupAssertTestRegistry sets up a test registry with required services
+func setupAssertTestRegistry(t *testing.T, ctx *context.NeuroContext) func() {
+	// Save the original registry and context
+	originalRegistry := services.GetGlobalRegistry()
+	originalContext := context.GetGlobalContext()
+
+	// Create new test registry
+	testRegistry := services.NewRegistry()
+
+	// Create and register variable service
+	variableService := services.NewVariableService()
+	err := testRegistry.RegisterService(variableService)
+	require.NoError(t, err)
+
+	// Initialize all services
+	err = testRegistry.InitializeAll()
+	require.NoError(t, err)
+
+	// Set global registry and context for testing
+	services.SetGlobalRegistry(testRegistry)
+	context.SetGlobalContext(ctx)
+
+	// Return cleanup function
+	return func() {
+		services.SetGlobalRegistry(originalRegistry)
+		context.SetGlobalContext(originalContext)
+	}
+}
+
 func TestEqualCommand_Execute_MissingArguments(t *testing.T) {
 	cmd := &EqualCommand{}
+	ctx := context.New()
+	cleanup := setupAssertTestRegistry(t, ctx)
+	defer cleanup()
 
 	tests := []struct {
 		name string
@@ -69,195 +98,188 @@ func TestEqualCommand_Execute_MissingArguments(t *testing.T) {
 	}
 }
 
+func TestEqualCommand_Execute_EqualValues(t *testing.T) {
+	cmd := &EqualCommand{}
+	ctx := context.New()
+	cleanup := setupAssertTestRegistry(t, ctx)
+	defer cleanup()
+
+	args := map[string]string{
+		"expect": "test_value",
+		"actual": "test_value",
+	}
+
+	err := cmd.Execute(args, "")
+
+	assert.NoError(t, err)
+
+	// Check system variables are set correctly for passing assertion
+	status, err := ctx.GetVariable("_status")
+	assert.NoError(t, err)
+	assert.Equal(t, "0", status)
+
+	result, err := ctx.GetVariable("_assert_result")
+	assert.NoError(t, err)
+	assert.Equal(t, "PASS", result)
+
+	expected, err := ctx.GetVariable("_assert_expected")
+	assert.NoError(t, err)
+	assert.Equal(t, "test_value", expected)
+
+	actual, err := ctx.GetVariable("_assert_actual")
+	assert.NoError(t, err)
+	assert.Equal(t, "test_value", actual)
+}
+
+func TestEqualCommand_Execute_UnequalValues(t *testing.T) {
+	cmd := &EqualCommand{}
+	ctx := context.New()
+	cleanup := setupAssertTestRegistry(t, ctx)
+	defer cleanup()
+
+	args := map[string]string{
+		"expect": "expected_value",
+		"actual": "different_value",
+	}
+
+	err := cmd.Execute(args, "")
+
+	assert.NoError(t, err)
+
+	// Check system variables are set correctly for failing assertion
+	status, err := ctx.GetVariable("_status")
+	assert.NoError(t, err)
+	assert.Equal(t, "1", status)
+
+	result, err := ctx.GetVariable("_assert_result")
+	assert.NoError(t, err)
+	assert.Equal(t, "FAIL", result)
+
+	expected, err := ctx.GetVariable("_assert_expected")
+	assert.NoError(t, err)
+	assert.Equal(t, "expected_value", expected)
+
+	actual, err := ctx.GetVariable("_assert_actual")
+	assert.NoError(t, err)
+	assert.Equal(t, "different_value", actual)
+}
+
 func TestEqualCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	cmd := &EqualCommand{}
 
 	// Don't set up services to test service unavailability
-
 	args := map[string]string{
-		"expect": "hello",
-		"actual": "hello",
+		"expect": "value1",
+		"actual": "value2",
 	}
 
 	err := cmd.Execute(args, "")
 
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "interpolation service not available")
-}
-
-func TestEqualCommand_Execute_InterpolationWithUndefinedVariable(t *testing.T) {
-	cmd := &EqualCommand{}
-	ctx := context.New()
-
-	// Set up services for interpolation
-	setupTestServices(t, ctx)
-
-	// Use an undefined variable - interpolation will succeed but return empty string
-	args := map[string]string{
-		"expect": "${undefined_var}",
-		"actual": "hello",
-	}
-
-	err := cmd.Execute(args, "")
-
-	// Command should succeed but assertion should fail
-	assert.NoError(t, err)
-
-	// Check that the system variables were set correctly for a failed assertion
-	service, err := services.GetGlobalRegistry().GetService("variable")
-	assert.NoError(t, err)
-
-	variableService, ok := service.(*services.VariableService)
-	assert.True(t, ok)
-
-	result, _ := variableService.Get("_assert_result")
-	assert.Equal(t, "FAIL", result)
-
-	status, _ := variableService.Get("_status")
-	assert.Equal(t, "1", status)
-}
-
-func TestEqualCommand_Execute_WrongServiceType(t *testing.T) {
-	cmd := &EqualCommand{}
-
-	// Setup registry but register wrong service type under "interpolation" name
-	oldRegistry := services.GetGlobalRegistry()
-	services.SetGlobalRegistry(services.NewRegistry())
-
-	// Register a different service under "interpolation" name
-	err := services.GetGlobalRegistry().RegisterService(&mockWrongService{})
-	require.NoError(t, err)
-
-	t.Cleanup(func() {
-		services.SetGlobalRegistry(oldRegistry)
-	})
-
-	args := map[string]string{
-		"expect": "hello",
-		"actual": "hello",
-	}
-
-	err = cmd.Execute(args, "")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "incorrect type")
-}
-
-func TestEqualCommand_Execute_VariableServiceError(t *testing.T) {
-	cmd := &EqualCommand{}
-	ctx := context.New()
-
-	// Set up only interpolation service, missing variable service
-	oldRegistry := services.GetGlobalRegistry()
-	services.SetGlobalRegistry(services.NewRegistry())
-
-	// Set the test context as global context
-	context.SetGlobalContext(ctx)
-
-	// Register only interpolation service
-	interpolationService := services.NewInterpolationService()
-	err := services.GetGlobalRegistry().RegisterService(interpolationService)
-	require.NoError(t, err)
-	err = interpolationService.Initialize()
-	require.NoError(t, err)
-
-	t.Cleanup(func() {
-		services.SetGlobalRegistry(oldRegistry)
-		context.ResetGlobalContext()
-	})
-
-	args := map[string]string{
-		"expect": "hello",
-		"actual": "hello",
-	}
-
-	err = cmd.Execute(args, "")
-	assert.Error(t, err)
-	// Should fail because variable service is not available
 	assert.Contains(t, err.Error(), "variable service not available")
 }
 
-// Helper functions
+func TestEqualCommand_Execute_EdgeCases(t *testing.T) {
+	cmd := &EqualCommand{}
+	ctx := context.New()
+	cleanup := setupAssertTestRegistry(t, ctx)
+	defer cleanup()
 
-// setupTestServices sets up test services in the global registry
-func setupTestServices(t *testing.T, ctx neurotypes.Context) {
-	// Create a new registry for testing
-	oldRegistry := services.GetGlobalRegistry()
-	services.SetGlobalRegistry(services.NewRegistry())
+	tests := []struct {
+		name     string
+		expect   string
+		actual   string
+		wantPass bool
+	}{
+		{
+			name:     "empty strings equal",
+			expect:   "",
+			actual:   "",
+			wantPass: true,
+		},
+		{
+			name:     "whitespace differences",
+			expect:   "value",
+			actual:   " value ",
+			wantPass: false,
+		},
+		{
+			name:     "case sensitive comparison",
+			expect:   "Value",
+			actual:   "value",
+			wantPass: false,
+		},
+		{
+			name:     "numbers as strings",
+			expect:   "123",
+			actual:   "123",
+			wantPass: true,
+		},
+		{
+			name:     "special characters",
+			expect:   "test@#$%",
+			actual:   "test@#$%",
+			wantPass: true,
+		},
+	}
 
-	// Set the test context as global context
-	context.SetGlobalContext(ctx)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			args := map[string]string{
+				"expect": tt.expect,
+				"actual": tt.actual,
+			}
 
-	// Register InterpolationService
-	interpolationService := services.NewInterpolationService()
-	err := services.GetGlobalRegistry().RegisterService(interpolationService)
-	require.NoError(t, err)
-	err = interpolationService.Initialize()
-	require.NoError(t, err)
+			err := cmd.Execute(args, "")
+			assert.NoError(t, err)
 
-	// Register VariableService
-	variableService := services.NewVariableService()
-	err = services.GetGlobalRegistry().RegisterService(variableService)
-	require.NoError(t, err)
-	err = variableService.Initialize()
-	require.NoError(t, err)
-
-	// Cleanup function to restore original registry
-	t.Cleanup(func() {
-		services.SetGlobalRegistry(oldRegistry)
-		context.ResetGlobalContext()
-	})
+			// Check assertion result
+			result, err := ctx.GetVariable("_assert_result")
+			assert.NoError(t, err)
+			if tt.wantPass {
+				assert.Equal(t, "PASS", result)
+			} else {
+				assert.Equal(t, "FAIL", result)
+			}
+		})
+	}
 }
 
-// mockWrongService is a mock service with wrong type for testing
-type mockWrongService struct{}
+// BenchmarkEqualCommand_Execute benchmarks the execute method performance
+func BenchmarkEqualCommand_Execute(b *testing.B) {
+	cmd := &EqualCommand{}
+	ctx := context.New()
 
-func (m *mockWrongService) Name() string      { return "interpolation" }
-func (m *mockWrongService) Initialize() error { return nil }
+	// Set up test registry
+	testRegistry := services.NewRegistry()
+	variableService := services.NewVariableService()
+	err := testRegistry.RegisterService(variableService)
+	require.NoError(b, err)
+	err = testRegistry.InitializeAll()
+	require.NoError(b, err)
+
+	originalRegistry := services.GetGlobalRegistry()
+	originalContext := context.GetGlobalContext()
+	services.SetGlobalRegistry(testRegistry)
+	context.SetGlobalContext(ctx)
+
+	defer func() {
+		services.SetGlobalRegistry(originalRegistry)
+		context.SetGlobalContext(originalContext)
+	}()
+
+	args := map[string]string{
+		"expect": "benchvalue",
+		"actual": "benchvalue",
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = cmd.Execute(args, "")
+	}
+}
 
 // Interface compliance test
 func TestEqualCommand_InterfaceCompliance(_ *testing.T) {
 	var _ neurotypes.Command = (*EqualCommand)(nil)
 }
-
-// Benchmark tests
-func BenchmarkEqualCommand_Execute_ServiceError(b *testing.B) {
-	cmd := &EqualCommand{}
-
-	// Don't setup services to measure error handling overhead
-	args := map[string]string{
-		"expect": "benchvalue",
-		"actual": "benchvalue",
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "")
-	}
-}
-
-func BenchmarkEqualCommand_Execute_WithServices(b *testing.B) {
-	cmd := &EqualCommand{}
-	ctx := context.New()
-
-	// Setup services (will fail at interpolation but measures setup overhead)
-	services.SetGlobalRegistry(services.NewRegistry())
-	context.SetGlobalContext(ctx)
-	interpolationService := services.NewInterpolationService()
-	_ = services.GetGlobalRegistry().RegisterService(interpolationService)
-	_ = interpolationService.Initialize()
-
-	variableService := services.NewVariableService()
-	_ = services.GetGlobalRegistry().RegisterService(variableService)
-	_ = variableService.Initialize()
-
-	args := map[string]string{
-		"expect": "benchvalue",
-		"actual": "benchvalue",
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = cmd.Execute(args, "")
-	}
-}
-*/
