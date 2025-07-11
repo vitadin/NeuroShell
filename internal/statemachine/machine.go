@@ -41,8 +41,8 @@ type StateMachine struct {
 	resolvedCommand   *neurotypes.StateMachineResolvedCommand
 	scriptLines       []string
 	currentScriptLine int
-	tryMode           bool // Track when we're in try mode
-	tryCompleted      bool // Track when a try command completed successfully
+	// Try command execution state
+	tryTargetCommand string // Command to execute in try mode
 }
 
 // NewStateMachine creates a new state machine with the given context and configuration.
@@ -69,11 +69,39 @@ func NewStateMachineWithDefaults(ctx *context.NeuroContext) *StateMachine {
 // Execute is the main entry point for the state machine execution.
 // It processes the input through the complete state machine pipeline until completion or error.
 func (sm *StateMachine) Execute(input string) error {
-	// Initialize execution state in context
+	// Initialize execution state (full reset for main entry point)
 	sm.initializeExecution(input)
 
 	sm.logger.Info("Execute command", "input", input)
 
+	return sm.executeInternal()
+}
+
+// ExecuteInternal executes a command without resetting the global execution state.
+// This is used for nested execution (e.g., by try commands, script lines).
+func (sm *StateMachine) ExecuteInternal(input string) error {
+	// Save current execution state
+	snapshot := sm.saveExecutionState()
+
+	// Set up new execution context without full reset
+	sm.setState(neurotypes.StateReceived)
+	sm.setExecutionInput(input)
+	sm.setExecutionError(nil)
+	sm.clearCommandData() // Clear command-specific data but keep recursion/script state
+
+	sm.logger.Debug("ExecuteInternal command", "input", input)
+
+	// Run the state machine
+	err := sm.executeInternal()
+
+	// Restore execution state
+	sm.restoreExecutionState(snapshot)
+
+	return err
+}
+
+// executeInternal contains the core state machine loop used by both Execute and ExecuteInternal.
+func (sm *StateMachine) executeInternal() error {
 	// Main state machine loop
 	for {
 		currentState := sm.getCurrentState()
@@ -86,12 +114,6 @@ func (sm *StateMachine) Execute(input string) error {
 		// Process current state
 		if err := sm.ProcessCurrentState(); err != nil {
 			sm.setExecutionError(err)
-			// In try mode, errors go to StateTryError instead of StateError
-			if sm.tryMode {
-				sm.setState(neurotypes.StateTryError)
-				// Continue to next iteration to process StateTryError
-				continue
-			}
 			sm.setState(neurotypes.StateError)
 			break
 		}
@@ -107,27 +129,16 @@ func (sm *StateMachine) Execute(input string) error {
 		}
 	}
 
-	// Handle successful completion of try command
-	if sm.getCurrentState() == neurotypes.StateCompleted && sm.tryCompleted {
-		sm.tryCompleted = false
-		// Set success variables for try command
-		_ = sm.context.SetSystemVariable("_status", "0")
-		_ = sm.context.SetSystemVariable("_error", "")
-	}
-
-	// Return any execution error
-	// In try mode, StateTryError should return nil (success)
-	if sm.getCurrentState() == neurotypes.StateTryError {
-		return nil
-	}
 	return sm.getExecutionError()
 }
 
 // DetermineNextState determines the next state based on the current state and execution context.
+// Each state has a single, predictable next state with no conditional logic.
 func (sm *StateMachine) DetermineNextState() neurotypes.State {
 	currentState := sm.getCurrentState()
 	switch currentState {
 	case neurotypes.StateReceived:
+		// Check if we need variable interpolation
 		input := sm.getExecutionInput()
 		if sm.interpolator.HasVariables(input) {
 			return neurotypes.StateInterpolating
@@ -138,24 +149,27 @@ func (sm *StateMachine) DetermineNextState() neurotypes.State {
 	case neurotypes.StateParsing:
 		return neurotypes.StateResolving
 	case neurotypes.StateResolving:
-		// Handle try command recursive re-entry (like interpolation)
-		if sm.tryMode {
-			// Set flag to track that we're executing a try command
-			sm.tryCompleted = true
-			sm.tryMode = false
-			return neurotypes.StateReceived // Recursive re-entry with try target
+		// Next state is determined by what was resolved
+		resolved := sm.getResolvedCommand()
+		if resolved == nil {
+			return neurotypes.StateError
 		}
-
-		// Determine if builtin command or script
-		if sm.getResolvedBuiltinCommand() != nil {
+		switch resolved.Type {
+		case neurotypes.CommandTypeTry:
+			return neurotypes.StateTryResolving
+		case neurotypes.CommandTypeBuiltin:
 			return neurotypes.StateExecuting
-		}
-		if sm.getScriptContent() != "" {
+		case neurotypes.CommandTypeStdlib, neurotypes.CommandTypeUser:
 			return neurotypes.StateScriptLoaded
+		default:
+			return neurotypes.StateError
 		}
-		return neurotypes.StateError
+	case neurotypes.StateTryResolving:
+		return neurotypes.StateTryExecuting
 	case neurotypes.StateExecuting:
 		return neurotypes.StateCompleted
+	case neurotypes.StateTryExecuting:
+		return neurotypes.StateTryCompleted
 	case neurotypes.StateScriptLoaded:
 		return neurotypes.StateScriptExecuting
 	case neurotypes.StateScriptExecuting:
@@ -164,7 +178,7 @@ func (sm *StateMachine) DetermineNextState() neurotypes.State {
 			return neurotypes.StateReceived // Recursive: next script line re-enters
 		}
 		return neurotypes.StateCompleted
-	case neurotypes.StateTryError:
+	case neurotypes.StateTryCompleted:
 		return neurotypes.StateCompleted
 	default:
 		return neurotypes.StateError

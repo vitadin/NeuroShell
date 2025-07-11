@@ -39,20 +39,14 @@ func (sm *StateMachine) clearExecutionData() {
 	sm.resolvedCommand = nil
 	sm.scriptLines = nil
 	sm.currentScriptLine = 0
+	sm.tryTargetCommand = ""
 }
 
-func (sm *StateMachine) getResolvedBuiltinCommand() interface{} {
-	if sm.resolvedCommand != nil && sm.resolvedCommand.Type == neurotypes.CommandTypeBuiltin {
-		return sm.resolvedCommand.BuiltinCommand
-	}
-	return nil
-}
-
-func (sm *StateMachine) getScriptContent() string {
-	if sm.resolvedCommand != nil && (sm.resolvedCommand.Type == neurotypes.CommandTypeStdlib || sm.resolvedCommand.Type == neurotypes.CommandTypeUser) {
-		return sm.resolvedCommand.ScriptContent
-	}
-	return ""
+// clearCommandData clears command-specific data but preserves script and recursion state.
+func (sm *StateMachine) clearCommandData() {
+	sm.parsedCommand = nil
+	sm.resolvedCommand = nil
+	sm.tryTargetCommand = ""
 }
 
 func (sm *StateMachine) hasMoreScriptLines() bool {
@@ -135,4 +129,13 @@ func (sm *StateMachine) setCurrentScriptLine(line int) {
 
 func (sm *StateMachine) getCurrentScriptLine() int {
 	return sm.currentScriptLine
+}
+
+// Try command state management
+func (sm *StateMachine) setTryTargetCommand(command string) {
+	sm.tryTargetCommand = command
+}
+
+func (sm *StateMachine) getTryTargetCommand() string {
+	return sm.tryTargetCommand
 }

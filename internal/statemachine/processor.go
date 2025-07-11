@@ -26,8 +26,12 @@ func (sm *StateMachine) ProcessCurrentState() error {
 		return sm.processScriptLoaded()
 	case neurotypes.StateScriptExecuting:
 		return sm.processScriptExecuting()
-	case neurotypes.StateTryError:
-		return sm.processTryError()
+	case neurotypes.StateTryResolving:
+		return sm.processTryResolving()
+	case neurotypes.StateTryExecuting:
+		return sm.processTryExecuting()
+	case neurotypes.StateTryCompleted:
+		return sm.processTryCompleted()
 	default:
 		return fmt.Errorf("unknown state: %s", currentState.String())
 	}
@@ -90,27 +94,21 @@ func (sm *StateMachine) processResolving() error {
 		return fmt.Errorf("no parsed command available")
 	}
 
-	// Handle try command - similar to interpolation pattern
+	// Handle try command as a special case FIRST
 	if parsedCmd.Name == "try" {
-		targetCommand := strings.TrimSpace(parsedCmd.Message)
-		if targetCommand == "" {
-			// Empty try command - set success variables and complete
-			_ = sm.context.SetSystemVariable("_status", "0")
-			_ = sm.context.SetSystemVariable("_error", "")
-			return nil
+		// Create a special resolved command for try
+		resolved := &neurotypes.StateMachineResolvedCommand{
+			Name: "try",
+			Type: neurotypes.CommandTypeTry,
 		}
-
-		// Set try mode and new input (like interpolation does)
-		sm.tryMode = true
-		sm.setExecutionInput(targetCommand)
-
-		return nil // DetermineNextState will handle transition back to StateReceived
+		sm.setResolvedCommand(resolved)
+		return nil
 	}
 
 	// Priority-based resolution: builtin → stdlib → user
 	resolved, err := sm.resolveCommand(parsedCmd.Name)
 	if err != nil {
-		return fmt.Errorf("command not found: %s", parsedCmd.Name)
+		return err // Return the original error from resolver
 	}
 
 	sm.setResolvedCommand(resolved)
@@ -141,21 +139,98 @@ func (sm *StateMachine) processExecuting() error {
 	return nil
 }
 
-// processTryError handles errors in try mode by capturing them as variables.
-func (sm *StateMachine) processTryError() error {
-	// Set error variables from the execution error
-	err := sm.getExecutionError()
-
-	if err != nil {
-		_ = sm.context.SetSystemVariable("_status", "1")
-		_ = sm.context.SetSystemVariable("_error", err.Error())
-	} else {
-		_ = sm.context.SetSystemVariable("_status", "0")
-		_ = sm.context.SetSystemVariable("_error", "")
+// processTryResolving handles try command setup and target extraction.
+func (sm *StateMachine) processTryResolving() error {
+	parsedCmd := sm.getParsedCommand()
+	if parsedCmd == nil {
+		return fmt.Errorf("no parsed command available for try resolution")
 	}
 
-	// Reset try mode completely when handling error
-	sm.tryMode = false
+	// Extract target command from the try command message
+	targetCommand := strings.TrimSpace(parsedCmd.Message)
+	if targetCommand == "" {
+		// Empty try command - set success variables and mark as completed
+		_ = sm.context.SetSystemVariable("_status", "0")
+		_ = sm.context.SetSystemVariable("_error", "")
+		_ = sm.context.SetSystemVariable("_output", "")
+		return nil
+	}
 
+	// Store the target command for execution
+	sm.setTryTargetCommand(targetCommand)
+	return nil
+}
+
+// processTryExecuting executes the try target command with error capture.
+func (sm *StateMachine) processTryExecuting() error {
+	targetCommand := sm.getTryTargetCommand()
+	if targetCommand == "" {
+		return fmt.Errorf("no target command for try execution")
+	}
+
+	// Clear status variables before execution to ensure clean state
+	_ = sm.context.SetSystemVariable("_status", "")
+	_ = sm.context.SetSystemVariable("_error", "")
+
+	// Get the current _output value before execution to capture command output
+	previousOutput, _ := sm.context.GetVariable("_output")
+
+	// Execute the target command using internal execution (no global state reset)
+	err := sm.ExecuteInternal(targetCommand)
+
+	// Get the _output value after execution to see what the command produced
+	currentOutput, _ := sm.context.GetVariable("_output")
+
+	// Check what status variables were set by the command after execution
+	status, statusErr := sm.context.GetVariable("_status")
+	errorVar, errorErr := sm.context.GetVariable("_error")
+
+	if err != nil {
+		// Command execution failed at the state machine level
+		// Check if the command already set status variables (like bash does)
+		if statusErr != nil || status == "" {
+			// Command didn't set status variables, so it's a real execution failure
+			_ = sm.context.SetSystemVariable("_status", "1")
+
+			// Unwrap script executor error messages to get the original error
+			errorMsg := err.Error()
+			if strings.HasPrefix(errorMsg, "command execution failed") {
+				// Extract the original error message after the colon and space
+				if idx := strings.Index(errorMsg, ": "); idx != -1 {
+					errorMsg = errorMsg[idx+2:]
+				}
+			}
+			_ = sm.context.SetSystemVariable("_error", errorMsg)
+		}
+		// else: Command already set status/error variables (like bash), keep them
+	} else {
+		// Command executed successfully at the state machine level
+		// Check if it set status variables (like bash command exit codes)
+		if statusErr != nil || status == "" {
+			// Command didn't set status variables, so it succeeded
+			_ = sm.context.SetSystemVariable("_status", "0")
+		}
+		if errorErr != nil || errorVar == "" {
+			// Command didn't set error variable, so clear it for success
+			_ = sm.context.SetSystemVariable("_error", "")
+		}
+		// else: Command already set status/error variables, keep them
+	}
+
+	// Always update output if it changed
+	if currentOutput != previousOutput {
+		_ = sm.context.SetSystemVariable("_output", currentOutput)
+	}
+
+	// Try command never fails - it always captures errors
+	return nil
+}
+
+// processTryCompleted handles the completion of a try command.
+func (sm *StateMachine) processTryCompleted() error {
+	// Clean up try-specific state
+	sm.setTryTargetCommand("")
+
+	// Try command execution is complete - the variables are already set
 	return nil
 }

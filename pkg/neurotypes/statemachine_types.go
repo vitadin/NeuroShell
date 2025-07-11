@@ -14,18 +14,22 @@ const (
 	StateParsing
 	// StateResolving - Finding command in builtin registry, stdlib, or user scripts
 	StateResolving
+	// StateTryResolving - Handling try command setup and target extraction
+	StateTryResolving
 	// StateExecuting - Running builtin commands through the command registry
 	StateExecuting
+	// StateTryExecuting - Executing try target command with error capture
+	StateTryExecuting
 	// StateScriptLoaded - Script content loaded and ready for line-by-line processing
 	StateScriptLoaded
 	// StateScriptExecuting - Processing script lines through recursive state machine calls
 	StateScriptExecuting
+	// StateTryCompleted - Try command finished, set success/error variables
+	StateTryCompleted
 	// StateCompleted - Execution finished successfully
 	StateCompleted
 	// StateError - Execution failed with an error
 	StateError
-	// StateTryError - Execution failed in try mode, capture error as variables
-	StateTryError
 )
 
 // String returns a human-readable representation of the execution state.
@@ -39,18 +43,22 @@ func (s State) String() string {
 		return "Parsing"
 	case StateResolving:
 		return "Resolving"
+	case StateTryResolving:
+		return "TryResolving"
 	case StateExecuting:
 		return "Executing"
+	case StateTryExecuting:
+		return "TryExecuting"
 	case StateScriptLoaded:
 		return "ScriptLoaded"
 	case StateScriptExecuting:
 		return "ScriptExecuting"
+	case StateTryCompleted:
+		return "TryCompleted"
 	case StateCompleted:
 		return "Completed"
 	case StateError:
 		return "Error"
-	case StateTryError:
-		return "TryError"
 	default:
 		return "Unknown"
 	}

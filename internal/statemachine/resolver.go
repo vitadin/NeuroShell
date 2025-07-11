@@ -36,5 +36,5 @@ func (sm *StateMachine) resolveCommand(commandName string) (*neurotypes.StateMac
 	// Priority 3: Try user scripts (lowest priority)
 	// This will be implemented when we extend the context
 
-	return nil, fmt.Errorf("command not found: %s", commandName)
+	return nil, fmt.Errorf("unknown command: %s", commandName)
 }

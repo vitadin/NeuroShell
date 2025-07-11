@@ -9,11 +9,12 @@ import (
 	"os"
 	"strings"
 
-	"neuroshell/internal/commands"
 	_ "neuroshell/internal/commands/assert" // Import assert commands (init functions)
+	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
+	"neuroshell/internal/statemachine"
 )
 
 // ExecuteScript orchestrates the complete script execution workflow with enhanced macro support.
@@ -130,11 +131,14 @@ func ExecuteScriptLegacy(scriptPath string) error {
 			return fmt.Errorf("interpolation failed for command %d: %w", commandCount, err)
 		}
 
-		// Prepare input for execution
-		cmdInput := interpolatedCmd.Message
+		// Execute command using state machine (handles try commands and all other commands)
+		// Get global context for state machine execution
+		globalCtx := context.GetGlobalContext().(*context.NeuroContext)
+		sm := statemachine.NewStateMachineWithDefaults(globalCtx)
 
-		// Execute command using builtin registry
-		err = commands.GetGlobalRegistry().Execute(interpolatedCmd.Name, interpolatedCmd.Options, cmdInput)
+		// Reconstruct the command line for state machine execution
+		commandLine := interpolatedCmd.String()
+		err = sm.ExecuteInternal(commandLine)
 
 		if err != nil {
 			// Mark execution error and return
@@ -293,9 +297,13 @@ func ExecuteScriptWithMacros(scriptPath string) error {
 
 		logger.Debug("Command parsed", "line", lineNum, "command", cmd.Name, "message", cmd.Message)
 
-		// Execute the command using builtin registry
-		// All variables should already be resolved by the command-level interpolation
-		err = commands.GetGlobalRegistry().Execute(cmd.Name, cmd.Options, cmd.Message)
+		// Execute the command using state machine (handles try commands and all other commands)
+		// Get global context for state machine execution
+		globalCtx := context.GetGlobalContext().(*context.NeuroContext)
+		sm := statemachine.NewStateMachineWithDefaults(globalCtx)
+
+		// Execute the expanded command line through the state machine
+		err = sm.ExecuteInternal(expandedLine)
 
 		if err != nil {
 			return fmt.Errorf("command execution failed at line %d (%s): %w", lineNum, cmd.Name, err)
@@ -396,9 +404,13 @@ func ExecuteScriptContentWithMacros(content, scriptName string) error {
 
 		logger.Debug("Command parsed", "script", scriptName, "line", lineNum, "command", cmd.Name, "message", cmd.Message)
 
-		// Execute the command using builtin registry
-		// All variables should already be resolved by the command-level interpolation
-		err = commands.GetGlobalRegistry().Execute(cmd.Name, cmd.Options, cmd.Message)
+		// Execute the command using state machine (handles try commands and all other commands)
+		// Get global context for state machine execution
+		globalCtx := context.GetGlobalContext().(*context.NeuroContext)
+		sm := statemachine.NewStateMachineWithDefaults(globalCtx)
+
+		// Execute the expanded command line through the state machine
+		err = sm.ExecuteInternal(expandedLine)
 
 		if err != nil {
 			return fmt.Errorf("command execution failed at line %d (%s): %w", lineNum, cmd.Name, err)

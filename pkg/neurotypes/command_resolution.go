@@ -19,6 +19,10 @@ const (
 	// CommandTypeUser represents commands from user-defined scripts.
 	// These have the lowest priority and are resolved last.
 	CommandTypeUser
+
+	// CommandTypeTry represents the special try command that executes other commands
+	// with error capture. This is handled specially by the state machine.
+	CommandTypeTry
 )
 
 // String returns a human-readable string representation of the CommandType.
@@ -30,6 +34,8 @@ func (ct CommandType) String() string {
 		return "stdlib"
 	case CommandTypeUser:
 		return "user"
+	case CommandTypeTry:
+		return "try"
 	default:
 		return "unknown"
 	}
