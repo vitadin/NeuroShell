@@ -1,9 +1,6 @@
 // Package session provides session management commands for NeuroShell.
 // It includes commands for creating, managing, and interacting with chat sessions.
-// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package session
-
-/*
 
 import (
 	"fmt"
@@ -113,11 +110,7 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Get interpolation service for variable interpolation
-	interpolationService, err := services.GetGlobalInterpolationService()
-	if err != nil {
-		return fmt.Errorf("interpolation service not available: %w", err)
-	}
+	// Note: Variable interpolation is now handled by the state machine before commands execute
 
 	// Parse arguments - session name comes from input, not from options
 	sessionName := input
@@ -128,18 +121,7 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("session name is required\n\nUsage: %s", c.Usage())
 	}
 
-	// Interpolate variables in session name and system prompt
-	sessionName, err = interpolationService.InterpolateString(sessionName)
-	if err != nil {
-		return fmt.Errorf("failed to interpolate variables in session name: %w", err)
-	}
-
-	if systemPrompt != "" {
-		systemPrompt, err = interpolationService.InterpolateString(systemPrompt)
-		if err != nil {
-			return fmt.Errorf("failed to interpolate variables in system prompt: %w", err)
-		}
-	}
+	// Note: Variable interpolation for session name and system prompt is handled by state machine
 
 	// Create new session (no initial message support)
 	session, err := chatService.CreateSession(sessionName, systemPrompt, "")
@@ -187,8 +169,7 @@ func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, var
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&NewCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&NewCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-new command: %v", err))
 	}
 }
-*/

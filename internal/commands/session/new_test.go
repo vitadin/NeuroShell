@@ -1,7 +1,4 @@
-// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package session
-
-/*
 
 import (
 	"strings"
@@ -233,35 +230,7 @@ func TestNewCommand_Execute_DuplicateSessionNames(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestNewCommand_Execute_VariableInterpolation(t *testing.T) {
-	cmd := &NewCommand{}
-	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
-
-	// Set up test variables
-	require.NoError(t, ctx.SetVariable("session_prefix", "test"))
-	require.NoError(t, ctx.SetVariable("assistant_type", "code reviewer"))
-
-	// Create session with variable interpolation in session name and system prompt
-	args := map[string]string{
-		"system": "You are a ${assistant_type} for ${session_prefix} purposes",
-	}
-	input := "${session_prefix}_session"
-
-	err := cmd.Execute(args, input)
-	assert.NoError(t, err)
-
-	// Check that variables were interpolated
-	systemPrompt, err := ctx.GetVariable("#system_prompt")
-	assert.NoError(t, err)
-	assert.Contains(t, systemPrompt, "code reviewer")
-	assert.Contains(t, systemPrompt, "test purposes")
-
-	// Check that session name was interpolated
-	sessionName, err := ctx.GetVariable("#session_name")
-	assert.NoError(t, err)
-	assert.Equal(t, "test_session", sessionName)
-}
+// TestNewCommand_Execute_VariableInterpolation removed - interpolation is now handled by state machine
 
 func TestNewCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	cmd := &NewCommand{}
@@ -288,8 +257,7 @@ func setupSessionTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	err = services.GetGlobalRegistry().RegisterService(services.NewChatSessionService())
 	require.NoError(t, err)
 
-	err = services.GetGlobalRegistry().RegisterService(services.NewInterpolationService())
-	require.NoError(t, err)
+	// Note: InterpolationService removed - state machine handles interpolation
 
 	// Initialize services
 	err = services.GetGlobalRegistry().InitializeAll()
@@ -304,4 +272,3 @@ func setupSessionTestRegistry(t *testing.T, ctx neurotypes.Context) {
 
 // Interface compliance check
 var _ neurotypes.Command = (*NewCommand)(nil)
-*/
