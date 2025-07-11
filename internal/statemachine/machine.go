@@ -72,7 +72,7 @@ func (sm *StateMachine) Execute(input string) error {
 	// Initialize execution state (full reset for main entry point)
 	sm.initializeExecution(input)
 
-	sm.logger.Info("Execute command", "input", input)
+	sm.logger.Debug("Execute command", "input", input)
 
 	return sm.executeInternal()
 }
