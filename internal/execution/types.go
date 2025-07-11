@@ -30,6 +30,8 @@ const (
 	StateCompleted
 	// StateError - Execution failed with an error
 	StateError
+	// StateTryError - Execution failed in try mode, capture error as variables
+	StateTryError
 )
 
 // String returns a human-readable representation of the execution state.
@@ -53,6 +55,8 @@ func (s State) String() string {
 		return "Completed"
 	case StateError:
 		return "Error"
+	case StateTryError:
+		return "TryError"
 	default:
 		return "Unknown"
 	}

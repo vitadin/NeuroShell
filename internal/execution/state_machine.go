@@ -37,6 +37,8 @@ type StateMachine struct {
 	resolvedCommand   *ResolvedCommand
 	scriptLines       []string
 	currentScriptLine int
+	tryMode           bool // Track when we're in try mode
+	tryCompleted      bool // Track when a try command completed successfully
 }
 
 // NewStateMachine creates a new state machine with the given context and configuration.
@@ -76,6 +78,12 @@ func (sm *StateMachine) Execute(input string) error {
 		// Process current state
 		if err := sm.ProcessCurrentState(); err != nil {
 			sm.setExecutionError(err)
+			// In try mode, errors go to StateTryError instead of StateError
+			if sm.tryMode {
+				sm.setState(StateTryError)
+				// Continue to next iteration to process StateTryError
+				continue
+			}
 			sm.setState(StateError)
 			break
 		}
@@ -91,7 +99,19 @@ func (sm *StateMachine) Execute(input string) error {
 		}
 	}
 
+	// Handle successful completion of try command
+	if sm.getCurrentState() == StateCompleted && sm.tryCompleted {
+		sm.tryCompleted = false
+		// Set success variables for try command
+		_ = sm.context.SetSystemVariable("_status", "0")
+		_ = sm.context.SetSystemVariable("_error", "")
+	}
+
 	// Return any execution error
+	// In try mode, StateTryError should return nil (success)
+	if sm.getCurrentState() == StateTryError {
+		return nil
+	}
 	return sm.getExecutionError()
 }
 
@@ -113,6 +133,8 @@ func (sm *StateMachine) ProcessCurrentState() error {
 		return sm.processScriptLoaded()
 	case StateScriptExecuting:
 		return sm.processScriptExecuting()
+	case StateTryError:
+		return sm.processTryError()
 	default:
 		return fmt.Errorf("unknown state: %s", currentState.String())
 	}
@@ -133,6 +155,14 @@ func (sm *StateMachine) DetermineNextState() State {
 	case StateParsing:
 		return StateResolving
 	case StateResolving:
+		// Handle try command recursive re-entry (like interpolation)
+		if sm.tryMode {
+			// Set flag to track that we're executing a try command
+			sm.tryCompleted = true
+			sm.tryMode = false
+			return StateReceived // Recursive re-entry with try target
+		}
+
 		// Determine if builtin command or script
 		if sm.getResolvedBuiltinCommand() != nil {
 			return StateExecuting
@@ -150,6 +180,8 @@ func (sm *StateMachine) DetermineNextState() State {
 		if sm.hasMoreScriptLines() {
 			return StateReceived // Recursive: next script line re-enters
 		}
+		return StateCompleted
+	case StateTryError:
 		return StateCompleted
 	default:
 		return StateError
@@ -425,6 +457,25 @@ func (sm *StateMachine) processResolving() error {
 
 	logger.Debug("State: Resolving", "command", parsedCmd.Name)
 
+	// Handle try command - similar to interpolation pattern
+	if parsedCmd.Name == "try" {
+		targetCommand := strings.TrimSpace(parsedCmd.Message)
+		if targetCommand == "" {
+			// Empty try command - set success variables and complete
+			_ = sm.context.SetSystemVariable("_status", "0")
+			_ = sm.context.SetSystemVariable("_error", "")
+			logger.Debug("Empty try command - setting success variables")
+			return nil
+		}
+
+		// Set try mode and new input (like interpolation does)
+		sm.tryMode = true
+		sm.setExecutionInput(targetCommand)
+
+		logger.Debug("Try command detected - recursing", "target", targetCommand)
+		return nil // DetermineNextState will handle transition back to StateReceived
+	}
+
 	// Priority-based resolution: builtin → stdlib → user
 	resolved, err := sm.resolveCommand(parsedCmd.Name)
 	if err != nil {
@@ -460,6 +511,29 @@ func (sm *StateMachine) processExecuting() error {
 	}
 
 	logger.Debug("Builtin command executed successfully", "command", parsedCmd.Name)
+	return nil
+}
+
+// processTryError handles errors in try mode by capturing them as variables.
+func (sm *StateMachine) processTryError() error {
+	// Set error variables from the execution error
+	err := sm.getExecutionError()
+	logger.Debug("processTryError called", "error", err, "errorIsNil", err == nil)
+
+	if err != nil {
+		_ = sm.context.SetSystemVariable("_status", "1")
+		_ = sm.context.SetSystemVariable("_error", err.Error())
+		logger.Debug("Set error variables", "status", "1", "error", err.Error())
+	} else {
+		_ = sm.context.SetSystemVariable("_status", "0")
+		_ = sm.context.SetSystemVariable("_error", "")
+		logger.Debug("Set success variables", "status", "0", "error", "")
+	}
+
+	// Reset try mode completely when handling error
+	sm.tryMode = false
+
+	logger.Debug("Try error captured as variables", "error", err)
 	return nil
 }
 
