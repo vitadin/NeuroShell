@@ -563,7 +563,7 @@ func TestExecuteCommand_ServiceErrors(t *testing.T) {
 		}
 
 		mockCtx := NewMockIShellContext([]string{})
-		// Create raw input from command for testing  
+		// Create raw input from command for testing
 		rawInput := fmt.Sprintf("\\%s", cmd.Name)
 		if len(cmd.Options) > 0 {
 			options := []string{}
@@ -1028,7 +1028,7 @@ func BenchmarkExecuteCommand_DirectCall(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		mockCtx := NewMockIShellContext([]string{})
-		// Create raw input from command for testing  
+		// Create raw input from command for testing
 		rawInput := fmt.Sprintf("\\%s", cmd.Name)
 		if len(cmd.Options) > 0 {
 			options := []string{}
