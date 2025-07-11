@@ -197,7 +197,7 @@ func runShell(_ *cobra.Command, _ []string) {
 		logger.Fatal("Failed to initialize services", "error", err)
 	}
 
-	logger.Info("Services initialized successfully")
+	logger.Debug("Services initialized successfully")
 
 	// Create shell with custom readline configuration
 	cfg := createCustomReadlineConfig()
@@ -247,7 +247,7 @@ func runBatch(_ *cobra.Command, args []string) {
 		logger.Fatal("Script execution failed", "error", err)
 	}
 
-	logger.Info("Script executed successfully", "script", scriptPath)
+	logger.Debug("Script executed successfully", "script", scriptPath)
 }
 
 func validateScriptFile(scriptPath string) error {

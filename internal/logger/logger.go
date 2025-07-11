@@ -146,33 +146,33 @@ func NewStyledLogger(prefix string) *log.Logger {
 	// Create custom styles for component logger
 	styles := log.DefaultStyles()
 
-	// Custom level styling with component prefix
+	// Custom level styling without prefix (already added via log.Options)
 	styles.Levels[log.InfoLevel] = lipgloss.NewStyle().
-		SetString(prefix+"-INFO").
+		SetString("INFO").
 		Padding(0, 1, 0, 1).
 		Background(lipgloss.Color("33")). // Blue background
 		Foreground(lipgloss.Color("15"))  // White text
 
 	styles.Levels[log.ErrorLevel] = lipgloss.NewStyle().
-		SetString(prefix+"-ERROR").
+		SetString("ERROR").
 		Padding(0, 1, 0, 1).
 		Background(lipgloss.Color("196")). // Red background
 		Foreground(lipgloss.Color("15"))   // White text
 
 	styles.Levels[log.DebugLevel] = lipgloss.NewStyle().
-		SetString(prefix+"-DEBUG").
+		SetString("DEBUG").
 		Padding(0, 1, 0, 1).
 		Background(lipgloss.Color("240")). // Gray background
 		Foreground(lipgloss.Color("15"))   // White text
 
 	styles.Levels[log.WarnLevel] = lipgloss.NewStyle().
-		SetString(prefix+"-WARN").
+		SetString("WARN").
 		Padding(0, 1, 0, 1).
 		Background(lipgloss.Color("214")). // Orange background
 		Foreground(lipgloss.Color("15"))   // White text
 
 	styles.Levels[log.FatalLevel] = lipgloss.NewStyle().
-		SetString(prefix+"-FATAL").
+		SetString("FATAL").
 		Padding(0, 1, 0, 1).
 		Background(lipgloss.Color("88")). // Dark red background
 		Foreground(lipgloss.Color("15"))  // White text

@@ -133,7 +133,7 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
-	logger.Info("Services initialized")
+	logger.Debug("Services initialized")
 	return nil
 }
 
