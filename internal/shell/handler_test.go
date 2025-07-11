@@ -16,6 +16,7 @@ import (
 	"neuroshell/internal/context"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
+	"neuroshell/internal/statemachine"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -131,47 +132,32 @@ func testProcessInput(mockCtx *MockIShellContext) {
 		return
 	}
 
-	// Parse input
-	cmd := parser.ParseInput(rawInput)
-
-	// Execute the command using our test executeCommand
-	// TODO: Update for state machine - temporarily using basic execution
-	mockCtx.Printf("Command: %s, Message: %s", cmd.Name, cmd.Message)
+	// Execute the command using state machine (same as real handler)
+	testExecuteCommand(mockCtx, rawInput)
 }
 
-// testExecuteCommand is a wrapper for executeCommand that accepts our mock
-// TODO: Update for state machine - temporarily commented out for build compatibility
-/*
-func testExecuteCommand(mockCtx *MockIShellContext, cmd *parser.Command) {
-	// Get interpolation service
-	interpolationService, err := services.GlobalRegistry.GetService("interpolation")
-	if err != nil {
-		mockCtx.Printf("Error: interpolation service not available: %s\n", err.Error())
-		return
-	}
+// testExecuteCommand executes a command using state machine (same as real handler)
+func testExecuteCommand(mockCtx *MockIShellContext, rawInput string) {
+	// Get the global context singleton
+	globalCtx := GetGlobalContext()
 
-	is := interpolationService.(*services.InterpolationService)
+	// Set global context for service access
+	context.SetGlobalContext(globalCtx)
 
-	// Interpolate command components (new API without context)
-	interpolatedCmd, err := is.InterpolateCommand(cmd)
-	if err != nil {
-		mockCtx.Printf("Error: interpolation failed: %s\n", err.Error())
-		return
-	}
+	// Create state machine with default configuration
+	stateMachine := statemachine.NewStateMachineWithDefaults(globalCtx)
 
-	// Prepare input for execution
-	input := interpolatedCmd.Message
+	// Execute through state machine (handles complete pipeline)
+	err := stateMachine.Execute(rawInput)
 
-	// Execute command with interpolated values
-	err = commands.GlobalRegistry.Execute(interpolatedCmd.Name, interpolatedCmd.Options, input)
 	if err != nil {
 		mockCtx.Printf("Error: %s\n", err.Error())
-		if cmd.Name != "help" {
+		// Check if this looks like a help command to avoid infinite loops
+		if !strings.Contains(strings.ToLower(rawInput), "help") {
 			mockCtx.Println("Type \\help for available commands")
 		}
 	}
 }
-*/
 
 func TestProcessInput_EmptyArgs(t *testing.T) {
 	cleanup := setupTestEnvironment(t)
@@ -424,8 +410,23 @@ func TestExecuteCommand_BasicFlow(t *testing.T) {
 			tt.setup(t)
 
 			mockCtx := NewMockIShellContext([]string{})
-			// TODO: Update for state machine - temporarily using basic execution
-			mockCtx.Printf("Command: %s, Message: %s", tt.cmd.Name, tt.cmd.Message)
+			// Create raw input from command for testing
+			rawInput := fmt.Sprintf("\\%s", tt.cmd.Name)
+			if len(tt.cmd.Options) > 0 {
+				options := []string{}
+				for k, v := range tt.cmd.Options {
+					if v == "" {
+						options = append(options, k)
+					} else {
+						options = append(options, fmt.Sprintf("%s=%s", k, v))
+					}
+				}
+				rawInput = fmt.Sprintf("\\%s[%s]", tt.cmd.Name, strings.Join(options, ","))
+			}
+			if tt.cmd.Message != "" {
+				rawInput = fmt.Sprintf("%s %s", rawInput, tt.cmd.Message)
+			}
+			testExecuteCommand(mockCtx, rawInput)
 
 			output := mockCtx.GetOutput()
 			if tt.expectError {
@@ -473,8 +474,23 @@ func TestExecuteCommand_InterpolationFlow(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtx := NewMockIShellContext([]string{})
-			// TODO: Update for state machine - temporarily using basic execution
-			mockCtx.Printf("Command: %s, Message: %s", tt.cmd.Name, tt.cmd.Message)
+			// Create raw input from command for testing
+			rawInput := fmt.Sprintf("\\%s", tt.cmd.Name)
+			if len(tt.cmd.Options) > 0 {
+				options := []string{}
+				for k, v := range tt.cmd.Options {
+					if v == "" {
+						options = append(options, k)
+					} else {
+						options = append(options, fmt.Sprintf("%s=%s", k, v))
+					}
+				}
+				rawInput = fmt.Sprintf("\\%s[%s]", tt.cmd.Name, strings.Join(options, ","))
+			}
+			if tt.cmd.Message != "" {
+				rawInput = fmt.Sprintf("%s %s", rawInput, tt.cmd.Message)
+			}
+			testExecuteCommand(mockCtx, rawInput)
 
 			output := mockCtx.GetOutput()
 			assert.NotContains(t, output, "Error:", "Unexpected error output: %s", output)
@@ -505,8 +521,23 @@ func TestExecuteCommand_BashCommandSpecialHandling(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockCtx := NewMockIShellContext([]string{})
-			// TODO: Update for state machine - temporarily using basic execution
-			mockCtx.Printf("Command: %s, Message: %s", tt.cmd.Name, tt.cmd.Message)
+			// Create raw input from command for testing
+			rawInput := fmt.Sprintf("\\%s", tt.cmd.Name)
+			if len(tt.cmd.Options) > 0 {
+				options := []string{}
+				for k, v := range tt.cmd.Options {
+					if v == "" {
+						options = append(options, k)
+					} else {
+						options = append(options, fmt.Sprintf("%s=%s", k, v))
+					}
+				}
+				rawInput = fmt.Sprintf("\\%s[%s]", tt.cmd.Name, strings.Join(options, ","))
+			}
+			if tt.cmd.Message != "" {
+				rawInput = fmt.Sprintf("%s %s", rawInput, tt.cmd.Message)
+			}
+			testExecuteCommand(mockCtx, rawInput)
 
 			output := mockCtx.GetOutput()
 
@@ -532,11 +563,27 @@ func TestExecuteCommand_ServiceErrors(t *testing.T) {
 		}
 
 		mockCtx := NewMockIShellContext([]string{})
-		// TODO: Update for state machine - temporarily using basic execution
-		mockCtx.Printf("Command: %s, Message: %s", cmd.Name, cmd.Message)
+		// Create raw input from command for testing  
+		rawInput := fmt.Sprintf("\\%s", cmd.Name)
+		if len(cmd.Options) > 0 {
+			options := []string{}
+			for k, v := range cmd.Options {
+				if v == "" {
+					options = append(options, k)
+				} else {
+					options = append(options, fmt.Sprintf("%s=%s", k, v))
+				}
+			}
+			rawInput = fmt.Sprintf("\\%s[%s]", cmd.Name, strings.Join(options, ","))
+		}
+		if cmd.Message != "" {
+			rawInput = fmt.Sprintf("%s %s", rawInput, cmd.Message)
+		}
+		testExecuteCommand(mockCtx, rawInput)
 
 		output := mockCtx.GetOutput()
-		assert.Contains(t, output, "Error: interpolation service not available")
+		// With state machine, the error will be different since we don't use interpolation service directly
+		assert.Contains(t, output, "Error:")
 	})
 }
 
@@ -583,10 +630,10 @@ func TestInitializeServices_Success(t *testing.T) {
 
 			// Verify all services were registered
 			expectedServices := []string{
-				"script",
 				"variable",
 				"executor",
-				"interpolation",
+				"bash",
+				"help",
 			}
 
 			for _, serviceName := range expectedServices {
@@ -981,8 +1028,23 @@ func BenchmarkExecuteCommand_DirectCall(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		mockCtx := NewMockIShellContext([]string{})
-		// TODO: Update for state machine - temporarily using basic execution
-		mockCtx.Printf("Command: %s, Message: %s", cmd.Name, cmd.Message)
+		// Create raw input from command for testing  
+		rawInput := fmt.Sprintf("\\%s", cmd.Name)
+		if len(cmd.Options) > 0 {
+			options := []string{}
+			for k, v := range cmd.Options {
+				if v == "" {
+					options = append(options, k)
+				} else {
+					options = append(options, fmt.Sprintf("%s=%s", k, v))
+				}
+			}
+			rawInput = fmt.Sprintf("\\%s[%s]", cmd.Name, strings.Join(options, ","))
+		}
+		if cmd.Message != "" {
+			rawInput = fmt.Sprintf("%s %s", rawInput, cmd.Message)
+		}
+		testExecuteCommand(mockCtx, rawInput)
 	}
 }
 
