@@ -1,7 +1,4 @@
-// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package render
-
-/*
 
 import (
 	"testing"
@@ -151,44 +148,7 @@ func TestCommand_Execute_KeywordHighlighting(t *testing.T) {
 	}
 }
 
-func TestCommand_Execute_VariableInterpolation(t *testing.T) {
-	// Setup services
-	setupTestServices(t)
-	defer cleanupTestServices()
-
-	cmd := &Command{}
-	ctx := context.GetGlobalContext()
-
-	// Set up test variables
-	err := ctx.SetVariable("test_cmd", "\\session-new")
-	require.NoError(t, err)
-
-	tests := []struct {
-		name  string
-		args  map[string]string
-		input string
-	}{
-		{
-			name: "interpolated keywords",
-			args: map[string]string{
-				"keywords": "[${test_cmd}, \\get]",
-			},
-			input: "Use \\session-new and \\get commands",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, tt.input)
-			require.NoError(t, err)
-
-			// Check that result was stored
-			output, err := ctx.GetVariable("_output")
-			require.NoError(t, err)
-			assert.NotEmpty(t, output)
-		})
-	}
-}
+// TestCommand_Execute_VariableInterpolation removed - interpolation is now handled by state machine
 
 func TestCommand_Execute_OutputVariable(t *testing.T) {
 	// Setup services
@@ -415,23 +375,22 @@ func TestCommand_ThemeHandling(t *testing.T) {
 
 func setupTestServices(t *testing.T) {
 	// Reset global registry for testing
-	services.GlobalRegistry = services.NewRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
 
 	// Register required services
-	err := services.GlobalRegistry.RegisterService(services.NewThemeService())
+	err := services.GetGlobalRegistry().RegisterService(services.NewThemeService())
 	require.NoError(t, err)
 
-	err = services.GlobalRegistry.RegisterService(services.NewVariableService())
+	err = services.GetGlobalRegistry().RegisterService(services.NewVariableService())
 	require.NoError(t, err)
 
-	err = services.GlobalRegistry.RegisterService(services.NewInterpolationService())
-	require.NoError(t, err)
+	// Note: InterpolationService removed - state machine handles interpolation
 
 	// Initialize services
 	ctx := context.New()
 	// Set the test context as global context
 	context.SetGlobalContext(ctx)
-	err = services.GlobalRegistry.InitializeAll()
+	err = services.GetGlobalRegistry().InitializeAll()
 	require.NoError(t, err)
 }
 
@@ -439,4 +398,3 @@ func cleanupTestServices() {
 	// Reset global context
 	context.ResetGlobalContext()
 }
-*/

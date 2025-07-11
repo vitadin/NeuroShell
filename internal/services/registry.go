@@ -347,3 +347,12 @@ func GetGlobalLLMService() (neurotypes.LLMService, error) {
 func GetGlobalClientFactoryService() (*ClientFactoryService, error) {
 	return GetGlobalRegistry().GetClientFactoryService()
 }
+
+// GetGlobalMarkdownService returns the markdown service from the global registry.
+func GetGlobalMarkdownService() (*MarkdownService, error) {
+	service, err := GlobalRegistry.GetService("markdown")
+	if err != nil {
+		return nil, err
+	}
+	return service.(*MarkdownService), nil
+}
