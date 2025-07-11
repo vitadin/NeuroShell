@@ -1,6 +1,9 @@
 // Package session provides session management commands for NeuroShell.
 // It includes commands for creating, managing, and interacting with chat sessions.
+// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package session
+
+/*
 
 import (
 	"fmt"
@@ -38,10 +41,10 @@ Examples:
   \session-new debug                              %% Create session named "debug"
   \session-new[system=You are a code reviewer] code review  %% Named "code review" with custom system prompt
   \session-new "my project"                       %% Session name with quotes (auto-processed)
-  
+
 Options:
   system - System prompt for LLM context (optional, defaults to helpful assistant)
-  
+
 Note: Session name is required and taken from the input parameter.
       Use quotes if the name contains special characters.
       Initial messages can be added later with \send command.`
@@ -188,3 +191,4 @@ func init() {
 		panic(fmt.Sprintf("failed to register session-new command: %v", err))
 	}
 }
+*/

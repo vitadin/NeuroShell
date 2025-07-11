@@ -1,6 +1,9 @@
 // Package session provides session management commands for NeuroShell.
 // It includes commands for creating, managing, and interacting with chat sessions.
+// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package session
+
+/*
 
 import (
 	"fmt"
@@ -39,15 +42,15 @@ Examples:
   \session-delete abc123-uuid         %% Delete by session ID
   \session-delete[name=work]          %% Delete using name option
   \session-delete ${#session_id}      %% Delete current session by ID variable
-  
+
 Smart Search Priority:
   1. Exact session name match
-  2. Exact session ID match  
+  2. Exact session ID match
   3. Prefix matching (must be unique)
-  
+
 Options:
   name - Session name to delete (cannot combine with input parameter)
-  
+
 Error Handling:
   - Multiple prefix matches: Shows all matching session names
   - No matches: Indicates tried exact name, ID, and prefix search
@@ -244,3 +247,4 @@ func init() {
 		panic(fmt.Sprintf("failed to register session-delete command: %v", err))
 	}
 }
+*/

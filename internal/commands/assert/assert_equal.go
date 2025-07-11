@@ -1,11 +1,15 @@
 // Package assert provides assertion commands for testing and validation in NeuroShell.
 // This package contains commands that compare values and set system variables based on results.
+// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package assert
+
+/*
 
 import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -159,3 +163,4 @@ func init() {
 		panic(fmt.Sprintf("failed to register assert-equal command: %v", err))
 	}
 }
+*/

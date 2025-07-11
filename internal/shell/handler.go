@@ -49,9 +49,7 @@ func InitializeServices(testMode bool) error {
 	globalCtx.SetTestMode(testMode)
 
 	// Register all pure services
-	if err := services.GetGlobalRegistry().RegisterService(services.NewScriptService()); err != nil {
-		return err
-	}
+	// NOTE: ScriptService removed - script execution is now handled by state machine
 
 	if err := services.GetGlobalRegistry().RegisterService(services.NewVariableService()); err != nil {
 		return err
@@ -61,9 +59,7 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
-	if err := services.GetGlobalRegistry().RegisterService(services.NewInterpolationService()); err != nil {
-		return err
-	}
+	// NOTE: InterpolationService removed - interpolation is now embedded in state machine
 
 	if err := services.GetGlobalRegistry().RegisterService(services.NewBashService()); err != nil {
 		return err

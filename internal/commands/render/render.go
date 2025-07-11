@@ -1,4 +1,8 @@
+// Package render provides rendering commands for NeuroShell.
+// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package render
+
+/*
 
 import (
 	"fmt"
@@ -341,3 +345,4 @@ func init() {
 		panic(fmt.Sprintf("failed to register render command: %v", err))
 	}
 }
+*/

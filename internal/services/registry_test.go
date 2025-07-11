@@ -333,9 +333,7 @@ func TestRegistry_RealServices(t *testing.T) {
 	// Register actual services
 	services := []neurotypes.Service{
 		NewVariableService(),
-		NewScriptService(),
 		NewExecutorService(),
-		NewInterpolationService(),
 		NewEditorService(),
 	}
 

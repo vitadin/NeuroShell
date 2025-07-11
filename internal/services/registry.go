@@ -101,21 +101,6 @@ func (r *Registry) GetVariableService() (*VariableService, error) {
 	return variableService, nil
 }
 
-// GetInterpolationService retrieves the interpolation service with proper type casting.
-func (r *Registry) GetInterpolationService() (*InterpolationService, error) {
-	service, err := r.GetService("interpolation")
-	if err != nil {
-		return nil, err
-	}
-
-	interpolationService, ok := service.(*InterpolationService)
-	if !ok {
-		return nil, fmt.Errorf("interpolation service has incorrect type")
-	}
-
-	return interpolationService, nil
-}
-
 // GetThemeService retrieves the theme service with proper type casting.
 func (r *Registry) GetThemeService() (*ThemeService, error) {
 	service, err := r.GetService("theme")
@@ -306,11 +291,6 @@ func SetGlobalRegistry(registry *Registry) {
 // GetGlobalVariableService returns the variable service from the global registry.
 func GetGlobalVariableService() (*VariableService, error) {
 	return GetGlobalRegistry().GetVariableService()
-}
-
-// GetGlobalInterpolationService returns the interpolation service from the global registry.
-func GetGlobalInterpolationService() (*InterpolationService, error) {
-	return GetGlobalRegistry().GetInterpolationService()
 }
 
 // GetGlobalThemeService returns the theme service from the global registry.

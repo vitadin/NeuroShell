@@ -1,6 +1,9 @@
 // Package render provides markdown and general rendering commands for NeuroShell.
 // It includes commands for rendering markdown content to ANSI terminal output.
+// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package render
+
+/*
 
 import (
 	"fmt"
@@ -149,3 +152,4 @@ func init() {
 		panic(fmt.Sprintf("failed to register render-markdown command: %v", err))
 	}
 }
+*/

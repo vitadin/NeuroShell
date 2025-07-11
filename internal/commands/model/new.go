@@ -1,6 +1,9 @@
 // Package model provides model management commands for NeuroShell.
 // It includes commands for creating, managing, and interacting with LLM model configurations.
+// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package model
+
+/*
 
 import (
 	"fmt"
@@ -41,13 +44,13 @@ Examples:
   \model-new[provider=openai, base_model=gpt-4] my-gpt4                  %% Create OpenAI GPT-4 model (manual)
   \model-new[provider=anthropic, base_model=claude-3-sonnet] claude-work %% Create Anthropic Claude model (manual)
   \model-new[catalog_id=CO4, max_tokens=4000] analysis-opus              %% Create Claude Opus 4 with custom max tokens
-  
+
 Required Options (choose one):
   Option A: catalog_id - Short model ID from catalog (e.g., CS4, O3, CO37) - auto-populates provider and base_model
   Option B: provider + base_model - Manual specification
     provider - LLM provider name (e.g., openai, anthropic, local)
     base_model - Provider's model identifier (e.g., gpt-4, claude-3-sonnet, llama-2)
-  
+
 Optional Parameters:
   temperature - Controls randomness (0.0-1.0, default varies by provider)
   max_tokens - Maximum tokens to generate (positive integer)
@@ -56,7 +59,7 @@ Optional Parameters:
   presence_penalty - Presence penalty (-2.0 to 2.0)
   frequency_penalty - Frequency penalty (-2.0 to 2.0)
   description - Human-readable description of the model configuration
-  
+
 Note: Model name is required and taken from the input parameter.
       Model names must be unique and cannot contain spaces.
       Use \model-catalog to see available catalog IDs.
@@ -406,3 +409,4 @@ func init() {
 		panic(fmt.Sprintf("failed to register model-new command: %v", err))
 	}
 }
+*/
