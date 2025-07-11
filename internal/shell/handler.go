@@ -28,11 +28,8 @@ func ProcessInput(c *ishell.Context) {
 
 	// Skip comment lines (same logic as script service)
 	if strings.HasPrefix(rawInput, "%%") {
-		logger.Debug("Skipping comment line", "input", rawInput)
 		return
 	}
-
-	logger.Debug("Processing user input", "input", rawInput)
 
 	// Execute the command using state machine (handles parsing, interpolation, execution)
 	executeCommand(c, rawInput)
@@ -136,12 +133,11 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
-	logger.Info("All services initialized successfully")
+	logger.Info("Services initialized")
 	return nil
 }
 
 func executeCommand(c *ishell.Context, rawInput string) {
-	logger.Debug("Executing command through state machine", "input", rawInput)
 
 	// Get the global context singleton
 	globalCtx := GetGlobalContext()
@@ -156,13 +152,11 @@ func executeCommand(c *ishell.Context, rawInput string) {
 	err := stateMachine.Execute(rawInput)
 
 	if err != nil {
-		logger.Error("State machine execution failed", "input", rawInput, "error", err)
+		logger.Error("Command failed", "command", rawInput, "error", err)
 		c.Printf("Error: %s\n", err.Error())
 		// Check if this looks like a help command to avoid infinite loops
 		if !strings.Contains(strings.ToLower(rawInput), "help") {
 			c.Println("Type \\help for available commands")
 		}
-	} else {
-		logger.Debug("State machine execution completed successfully", "input", rawInput)
 	}
 }

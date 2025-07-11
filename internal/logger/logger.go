@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 )
 
@@ -137,4 +138,67 @@ func VariableOperation(operation string, key string, value string) {
 // InterpolationStep logs variable interpolation steps for debugging.
 func InterpolationStep(text string, result string) {
 	Debug("Variable interpolation", "input", text, "output", result)
+}
+
+// NewStyledLogger creates a new logger with custom styles and prefix for component-specific logging.
+// The prefix parameter is used to create a component-specific logger (e.g., "StateMachine", "Parser", etc.)
+func NewStyledLogger(prefix string) *log.Logger {
+	// Create custom styles for component logger
+	styles := log.DefaultStyles()
+
+	// Custom level styling with component prefix
+	styles.Levels[log.InfoLevel] = lipgloss.NewStyle().
+		SetString(prefix+"-INFO").
+		Padding(0, 1, 0, 1).
+		Background(lipgloss.Color("33")). // Blue background
+		Foreground(lipgloss.Color("15"))  // White text
+
+	styles.Levels[log.ErrorLevel] = lipgloss.NewStyle().
+		SetString(prefix+"-ERROR").
+		Padding(0, 1, 0, 1).
+		Background(lipgloss.Color("196")). // Red background
+		Foreground(lipgloss.Color("15"))   // White text
+
+	styles.Levels[log.DebugLevel] = lipgloss.NewStyle().
+		SetString(prefix+"-DEBUG").
+		Padding(0, 1, 0, 1).
+		Background(lipgloss.Color("240")). // Gray background
+		Foreground(lipgloss.Color("15"))   // White text
+
+	styles.Levels[log.WarnLevel] = lipgloss.NewStyle().
+		SetString(prefix+"-WARN").
+		Padding(0, 1, 0, 1).
+		Background(lipgloss.Color("214")). // Orange background
+		Foreground(lipgloss.Color("15"))   // White text
+
+	styles.Levels[log.FatalLevel] = lipgloss.NewStyle().
+		SetString(prefix+"-FATAL").
+		Padding(0, 1, 0, 1).
+		Background(lipgloss.Color("88")). // Dark red background
+		Foreground(lipgloss.Color("15"))  // White text
+
+	// Custom key styling for common component keys
+	styles.Keys["state"] = lipgloss.NewStyle().Foreground(lipgloss.Color("99"))     // Purple
+	styles.Keys["input"] = lipgloss.NewStyle().Foreground(lipgloss.Color("39"))     // Blue
+	styles.Keys["depth"] = lipgloss.NewStyle().Foreground(lipgloss.Color("214"))    // Orange
+	styles.Keys["error"] = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))    // Red
+	styles.Keys["command"] = lipgloss.NewStyle().Foreground(lipgloss.Color("46"))   // Green
+	styles.Keys["component"] = lipgloss.NewStyle().Foreground(lipgloss.Color("51")) // Cyan
+
+	// Custom value styling
+	styles.Values["state"] = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("99"))
+	styles.Values["error"] = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("196"))
+
+	// Create logger with same output destination as global logger
+	componentLogger := log.NewWithOptions(os.Stderr, log.Options{
+		Prefix: prefix + " ",
+	})
+
+	// Apply custom styles
+	componentLogger.SetStyles(styles)
+
+	// Match the global logger's level
+	componentLogger.SetLevel(Logger.GetLevel())
+
+	return componentLogger
 }

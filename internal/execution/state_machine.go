@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/context"
 	"neuroshell/internal/data/embedded"
@@ -26,6 +27,8 @@ type StateMachine struct {
 	config Config
 	// State stack for recursive execution
 	stateStack []StateSnapshot
+	// Custom styled logger for State Machine operations
+	logger *log.Logger
 
 	// Internal execution state (Phase 1 implementation)
 	// These will be moved to context in Phase 2
@@ -43,13 +46,18 @@ type StateMachine struct {
 
 // NewStateMachine creates a new state machine with the given context and configuration.
 func NewStateMachine(ctx *context.NeuroContext, config Config) *StateMachine {
-	return &StateMachine{
+	sm := &StateMachine{
 		context:      ctx,
 		interpolator: NewCoreInterpolator(ctx),
 		stdlibLoader: embedded.NewStdlibLoader(),
 		config:       config,
 		stateStack:   make([]StateSnapshot, 0),
 	}
+
+	// Initialize custom styled logger
+	sm.logger = logger.NewStyledLogger("StateMachine")
+
+	return sm
 }
 
 // NewStateMachineWithDefaults creates a new state machine with default configuration.
@@ -63,12 +71,11 @@ func (sm *StateMachine) Execute(input string) error {
 	// Initialize execution state in context
 	sm.initializeExecution(input)
 
-	logger.Debug("State machine execution started", "input", input)
+	sm.logger.Info("Execute command", "input", input)
 
 	// Main state machine loop
 	for {
 		currentState := sm.getCurrentState()
-		logger.Debug("State machine processing", "state", currentState.String())
 
 		// Check for terminal states
 		if currentState == StateCompleted || currentState == StateError {
@@ -94,7 +101,7 @@ func (sm *StateMachine) Execute(input string) error {
 
 		// Safety check to prevent infinite loops
 		if nextState == currentState {
-			logger.Error("State machine stuck in infinite loop", "state", currentState.String())
+			sm.logger.Error("Infinite loop detected", "state", currentState.String())
 			return fmt.Errorf("state machine stuck in state: %s", currentState.String())
 		}
 	}
@@ -205,7 +212,6 @@ func (sm *StateMachine) getCurrentState() State {
 
 func (sm *StateMachine) setState(state State) {
 	sm.currentState = state
-	logger.Debug("State transition", "new_state", state.String())
 }
 
 func (sm *StateMachine) getExecutionInput() string {
@@ -373,7 +379,7 @@ func (sm *StateMachine) resolveCommand(commandName string) (*ResolvedCommand, er
 	if sm.stdlibLoader.ScriptExists(commandName) {
 		scriptContent, err := sm.stdlibLoader.LoadScript(commandName)
 		if err != nil {
-			logger.Error("Failed to load stdlib script", "command", commandName, "error", err)
+			sm.logger.Error("Failed to load stdlib script", "command", commandName, "error", err)
 		} else {
 			return &ResolvedCommand{
 				Name:          commandName,
@@ -395,39 +401,35 @@ func (sm *StateMachine) resolveCommand(commandName string) (*ResolvedCommand, er
 // processReceived handles the initial state when a command is received.
 func (sm *StateMachine) processReceived() error {
 	input := sm.getExecutionInput()
-	logger.Debug("State: Received", "input", input)
 
-	// Log the input for debugging purposes
 	if input == "" {
 		return fmt.Errorf("empty input received")
 	}
 
-	// This state primarily serves as entry point and logging
-	// The actual processing decision is made in DetermineNextState
+	// Entry point - processing logic is in DetermineNextState
 	return nil
 }
 
 // processInterpolating handles variable and macro expansion.
 func (sm *StateMachine) processInterpolating() error {
 	input := sm.getExecutionInput()
-	logger.Debug("State: Interpolating", "input", input)
 
 	expanded, hasVariables, err := sm.interpolator.InterpolateCommandLine(input)
 	if err != nil {
-		return fmt.Errorf("interpolation failed: %w", err)
+		return fmt.Errorf("variable expansion failed: %w", err)
 	}
 
 	if hasVariables {
 		// Check recursion limit
 		recursionDepth := sm.getRecursionDepth()
 		if recursionDepth >= sm.config.RecursionLimit {
-			return fmt.Errorf("recursion limit exceeded (%d)", sm.config.RecursionLimit)
+			return fmt.Errorf("variable expansion nested too deeply (limit: %d)", sm.config.RecursionLimit)
 		}
 
 		// Increment recursion depth and set up for recursive re-entry
 		sm.incrementRecursionDepth()
 		sm.setExecutionInput(expanded)
-		logger.Debug("Macro expansion - recursive re-entry", "original", input, "expanded", expanded, "depth", recursionDepth+1)
+		sm.logger.Debug("Variable expansion", "depth", recursionDepth+1)
 	}
 
 	return nil
@@ -436,7 +438,6 @@ func (sm *StateMachine) processInterpolating() error {
 // processParsing handles command structure parsing.
 func (sm *StateMachine) processParsing() error {
 	input := sm.getExecutionInput()
-	logger.Debug("State: Parsing", "input", input)
 
 	cmd := parser.ParseInput(input)
 	if cmd == nil {
@@ -444,7 +445,6 @@ func (sm *StateMachine) processParsing() error {
 	}
 
 	sm.setParsedCommand(cmd)
-	logger.Debug("Command parsed successfully", "name", cmd.Name, "message", cmd.Message)
 	return nil
 }
 
@@ -455,8 +455,6 @@ func (sm *StateMachine) processResolving() error {
 		return fmt.Errorf("no parsed command available")
 	}
 
-	logger.Debug("State: Resolving", "command", parsedCmd.Name)
-
 	// Handle try command - similar to interpolation pattern
 	if parsedCmd.Name == "try" {
 		targetCommand := strings.TrimSpace(parsedCmd.Message)
@@ -464,7 +462,6 @@ func (sm *StateMachine) processResolving() error {
 			// Empty try command - set success variables and complete
 			_ = sm.context.SetSystemVariable("_status", "0")
 			_ = sm.context.SetSystemVariable("_error", "")
-			logger.Debug("Empty try command - setting success variables")
 			return nil
 		}
 
@@ -472,7 +469,6 @@ func (sm *StateMachine) processResolving() error {
 		sm.tryMode = true
 		sm.setExecutionInput(targetCommand)
 
-		logger.Debug("Try command detected - recursing", "target", targetCommand)
 		return nil // DetermineNextState will handle transition back to StateReceived
 	}
 
@@ -483,7 +479,6 @@ func (sm *StateMachine) processResolving() error {
 	}
 
 	sm.setResolvedCommand(resolved)
-	logger.Debug("Command resolved successfully", "command", parsedCmd.Name, "type", resolved.Type.String())
 	return nil
 }
 
@@ -497,8 +492,6 @@ func (sm *StateMachine) processExecuting() error {
 		return fmt.Errorf("no builtin command to execute")
 	}
 
-	logger.Debug("State: Executing", "command", parsedCmd.Name, "type", "builtin")
-
 	// Output command line with %%> prefix if echo_commands is enabled
 	if sm.config.EchoCommands {
 		fmt.Printf("%%%%> %s\n", input)
@@ -507,10 +500,9 @@ func (sm *StateMachine) processExecuting() error {
 	// Execute the builtin command
 	err := resolved.BuiltinCommand.Execute(parsedCmd.Options, parsedCmd.Message)
 	if err != nil {
-		return fmt.Errorf("builtin command execution failed: %w", err)
+		return fmt.Errorf("command execution failed: %w", err)
 	}
 
-	logger.Debug("Builtin command executed successfully", "command", parsedCmd.Name)
 	return nil
 }
 
@@ -518,22 +510,18 @@ func (sm *StateMachine) processExecuting() error {
 func (sm *StateMachine) processTryError() error {
 	// Set error variables from the execution error
 	err := sm.getExecutionError()
-	logger.Debug("processTryError called", "error", err, "errorIsNil", err == nil)
 
 	if err != nil {
 		_ = sm.context.SetSystemVariable("_status", "1")
 		_ = sm.context.SetSystemVariable("_error", err.Error())
-		logger.Debug("Set error variables", "status", "1", "error", err.Error())
 	} else {
 		_ = sm.context.SetSystemVariable("_status", "0")
 		_ = sm.context.SetSystemVariable("_error", "")
-		logger.Debug("Set success variables", "status", "0", "error", "")
 	}
 
 	// Reset try mode completely when handling error
 	sm.tryMode = false
 
-	logger.Debug("Try error captured as variables", "error", err)
 	return nil
 }
 
@@ -546,8 +534,6 @@ func (sm *StateMachine) processScriptLoaded() error {
 		return fmt.Errorf("no script to load")
 	}
 
-	logger.Debug("State: ScriptLoaded", "command", parsedCmd.Name, "type", resolved.Type.String())
-
 	// Setup script parameters
 	err := sm.setupScriptParameters(parsedCmd.Options, parsedCmd.Message, parsedCmd.Name)
 	if err != nil {
@@ -559,7 +545,6 @@ func (sm *StateMachine) processScriptLoaded() error {
 	sm.setScriptLines(lines)
 	sm.setCurrentScriptLine(0)
 
-	logger.Debug("Script loaded and parsed", "command", parsedCmd.Name, "lines", len(lines))
 	return nil
 }
 
@@ -567,17 +552,13 @@ func (sm *StateMachine) processScriptLoaded() error {
 func (sm *StateMachine) processScriptExecuting() error {
 	lines := sm.getScriptLines()
 	currentLineIndex := sm.getCurrentScriptLine()
-	parsedCmd := sm.getParsedCommand()
-
-	logger.Debug("State: ScriptExecuting", "script", parsedCmd.Name, "line", currentLineIndex+1, "total", len(lines))
 
 	if currentLineIndex >= len(lines) {
 		// Script finished - cleanup parameters
 		err := sm.cleanupScriptParameters()
 		if err != nil {
-			logger.Error("Failed to cleanup script parameters", "error", err)
+			sm.logger.Error("Failed to cleanup script parameters", "error", err)
 		}
-		logger.Debug("Script execution completed", "script", parsedCmd.Name)
 		return nil // Will transition to StateCompleted
 	}
 
@@ -607,13 +588,12 @@ func (sm *StateMachine) processScriptExecuting() error {
 	sm.restoreExecutionState(savedState)
 
 	if err != nil {
-		return fmt.Errorf("script line execution failed at line %d: %w", currentLineIndex+1, err)
+		return fmt.Errorf("script failed at line %d: %w", currentLineIndex+1, err)
 	}
 
 	// Move to next line
 	sm.setCurrentScriptLine(currentLineIndex + 1)
 
-	logger.Debug("Script line executed successfully", "script", parsedCmd.Name, "line", currentLineIndex+1)
 	return nil // Stay in StateScriptExecuting for next line
 }
 
