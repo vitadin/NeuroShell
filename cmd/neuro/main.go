@@ -17,9 +17,9 @@ import (
 	_ "neuroshell/internal/commands/session" // Import session commands (init functions)
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
-	"neuroshell/internal/orchestration"
 	"neuroshell/internal/services"
 	"neuroshell/internal/shell"
+	"neuroshell/internal/statemachine"
 )
 
 var (
@@ -268,6 +268,10 @@ func executeBatchScript(scriptPath string, ctx *context.NeuroContext) error {
 	// Set global context for services to use
 	context.SetGlobalContext(ctx)
 
-	// Execute the script using centralized execution logic
-	return orchestration.ExecuteScript(scriptPath)
+	// Execute script using state machine
+	logger.Debug("Executing script via state machine", "script", scriptPath)
+	sm := statemachine.NewStateMachineWithDefaults(ctx)
+	// Add backslash prefix so state machine recognizes it as a file path command
+	commandInput := "\\" + scriptPath
+	return sm.Execute(commandInput)
 }

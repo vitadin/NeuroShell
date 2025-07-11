@@ -1,5 +1,0 @@
-%% Test script for try command with file paths
-\echo "Before try command"
-\try \test-file-path.neuro
-\echo "After try command - should execute"
-\echo "Try test completed"

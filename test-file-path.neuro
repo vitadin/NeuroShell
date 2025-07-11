@@ -1,4 +1,0 @@
-%% Test script for file path resolution
-\echo "File path resolution test - SUCCESS!"
-\set[test_var="file_path_works"]
-\echo "Variable from file: ${test_var}"
