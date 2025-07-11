@@ -19,7 +19,7 @@ default:
     @echo "CI/CD Commands:"
     @echo "  check-ci          - Run all CI checks locally (mirrors CI pipeline)"
 
-# Build the main binary (both normal and minimal)
+# Build the main binaries
 build: lint
     @echo "Building neurotest..."
     go build -o bin/neurotest ./cmd/neurotest
@@ -27,31 +27,13 @@ build: lint
     @echo "Building NeuroShell..."
     go build -o bin/neuro ./cmd/neuro
     @echo "Binary built at: bin/neuro"
-    @echo "Building minimal neurotest..."
-    go build -tags minimal -o bin/neurotest-minimal ./cmd/neurotest
-    @echo "Minimal binary built at: bin/neurotest-minimal"
-    @echo "Building minimal NeuroShell..."
-    go build -tags minimal -o bin/neuro-minimal ./cmd/neuro
-    @echo "Minimal binary built at: bin/neuro-minimal"
 
-# Build minimal binary (only echo command for state machine transition)
-build-minimal: lint
-    @echo "Building minimal neurotest..."
-    go build -tags minimal -o bin/neurotest-minimal ./cmd/neurotest
-    @echo "Minimal binary built at: bin/neurotest-minimal"
-    @echo "Building minimal NeuroShell..."
-    go build -tags minimal -o bin/neuro-minimal ./cmd/neuro
-    @echo "Minimal binary built at: bin/neuro-minimal"
 
 # Run the application
 run: build
     @echo "Running NeuroShell..."
     NEURO_LOG_LEVEL=debug ./bin/neuro
 
-# Run minimal application (only echo command)
-run-minimal: build-minimal
-    @echo "Running minimal NeuroShell..."
-    NEURO_LOG_LEVEL=debug ./bin/neuro-minimal
 
 # Run tests with coverage
 test: build test-all-units
@@ -143,20 +125,6 @@ test-all-units:
         ./internal/stringprocessing/...
     # ./internal/commands/... # Commented out during state machine transition
     @echo "All unit, command, parser, context, execution, and shell tests complete"
-
-# Test minimal build (only echo command)
-test-minimal:
-    @echo "Running minimal build tests..."
-    EDITOR=echo go test -tags minimal -v \
-        ./internal/services/... \
-        ./internal/testutils/... \
-        ./internal/parser/... \
-        ./internal/context/... \
-        ./internal/statemachine/... \
-        ./internal/shell/... \
-        ./internal/stringprocessing/... \
-        ./internal/commands/builtin/
-    @echo "Minimal build tests complete"
 
 # Run all unit, command, parser, context, and shell tests with coverage
 test-all-units-coverage:
