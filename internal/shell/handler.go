@@ -12,9 +12,9 @@ import (
 	_ "neuroshell/internal/commands/render"  // Import render commands (init functions)
 	_ "neuroshell/internal/commands/session" // Import session commands (init functions)
 	"neuroshell/internal/context"
-	"neuroshell/internal/execution"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
+	"neuroshell/internal/statemachine"
 )
 
 // ProcessInput handles user input from the interactive shell and executes commands.
@@ -146,7 +146,7 @@ func executeCommand(c *ishell.Context, rawInput string) {
 	context.SetGlobalContext(globalCtx)
 
 	// Create state machine with default configuration
-	stateMachine := execution.NewStateMachineWithDefaults(globalCtx)
+	stateMachine := statemachine.NewStateMachineWithDefaults(globalCtx)
 
 	// Execute through state machine (handles complete pipeline)
 	err := stateMachine.Execute(rawInput)

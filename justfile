@@ -138,7 +138,7 @@ test-all-units:
         ./internal/testutils/... \
         ./internal/parser/... \
         ./internal/context/... \
-        ./internal/execution/... \
+        ./internal/statemachine/... \
         ./internal/shell/... \
         ./internal/stringprocessing/...
     # ./internal/commands/... # Commented out during state machine transition
@@ -152,7 +152,7 @@ test-minimal:
         ./internal/testutils/... \
         ./internal/parser/... \
         ./internal/context/... \
-        ./internal/execution/... \
+        ./internal/statemachine/... \
         ./internal/shell/... \
         ./internal/stringprocessing/... \
         ./internal/commands/builtin/
@@ -166,7 +166,7 @@ test-all-units-coverage:
         ./internal/testutils/... \
         ./internal/parser/... \
         ./internal/context/... \
-        ./internal/execution/... \
+        ./internal/statemachine/... \
         ./internal/shell/... \
         ./internal/stringprocessing/...
     # ./internal/commands/... # Commented out during state machine transition
@@ -177,7 +177,7 @@ test-all-units-coverage:
 # Run benchmark tests
 test-bench:
     @echo "Running benchmark tests..."
-    go test -bench=. -benchmem ./internal/services/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/execution/... ./internal/shell/...
+    go test -bench=. -benchmem ./internal/services/... ./internal/commands/... ./internal/parser/... ./internal/context/... ./internal/statemachine/... ./internal/shell/...
     @echo "Benchmark tests complete"
 
 # Check test coverage percentage
