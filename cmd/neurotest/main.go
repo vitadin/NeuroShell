@@ -227,9 +227,7 @@ func runTest(_ *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("FAIL: %s\n", testName)
-	if verbose {
-		showDetailedDiff(expected, actual, testName)
-	}
+	showDetailedDiff(expected, actual, testName)
 	return fmt.Errorf("test failed: output mismatch")
 }
 
