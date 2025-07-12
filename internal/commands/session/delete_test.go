@@ -1,7 +1,4 @@
-// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package session
-
-/*
 
 import (
 	"strings"
@@ -168,29 +165,7 @@ func TestDeleteCommand_Execute_SessionNotFound(t *testing.T) {
 	assert.Contains(t, err.Error(), "no session found")
 }
 
-func TestDeleteCommand_Execute_VariableInterpolation(t *testing.T) {
-	cmd := &DeleteCommand{}
-	ctx := context.New()
-	setupSessionTestRegistry(t, ctx)
-
-	// Create a session
-	createCmd := &NewCommand{}
-	err := createCmd.Execute(map[string]string{}, "var_test")
-	require.NoError(t, err)
-
-	// Set up test variable
-	require.NoError(t, ctx.SetVariable("session_to_delete", "var_test"))
-
-	// Delete using variable interpolation
-	err = cmd.Execute(map[string]string{"name": "${session_to_delete}"}, "")
-	assert.NoError(t, err)
-
-	// Verify deletion
-	output, err := ctx.GetVariable("_output")
-	assert.NoError(t, err)
-	assert.Contains(t, output, "Deleted session")
-	assert.Contains(t, output, "var_test")
-}
+// TestDeleteCommand_Execute_VariableInterpolation removed - interpolation is now handled by state machine
 
 func TestDeleteCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	cmd := &DeleteCommand{}
@@ -323,4 +298,3 @@ func TestDeleteCommand_Execute_PriorityOfArguments(t *testing.T) {
 
 // Interface compliance check
 var _ neurotypes.Command = (*DeleteCommand)(nil)
-*/

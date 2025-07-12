@@ -1,9 +1,6 @@
 // Package session provides session management commands for NeuroShell.
 // It includes commands for creating, managing, and interacting with chat sessions.
-// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package session
-
-/*
 
 import (
 	"fmt"
@@ -127,11 +124,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Get interpolation service for variable interpolation
-	interpolationService, err := services.GetGlobalInterpolationService()
-	if err != nil {
-		return fmt.Errorf("interpolation service not available: %w", err)
-	}
+	// Note: Variable interpolation is now handled by the state machine before commands execute
 
 	// Validate arguments - cannot specify both name option and input
 	nameOption := args["name"]
@@ -150,11 +143,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("session name or ID is required\n\nUsage: %s", c.Usage())
 	}
 
-	// Interpolate variables in session identifier
-	sessionIdentifier, err = interpolationService.InterpolateString(sessionIdentifier)
-	if err != nil {
-		return fmt.Errorf("failed to interpolate variables in session identifier: %w", err)
-	}
+	// Note: Variable interpolation for session identifier is handled by state machine
 
 	// Use smart search to find the session
 	session, err := chatService.FindSessionByPrefix(sessionIdentifier)
@@ -243,8 +232,7 @@ func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *ser
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&DeleteCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&DeleteCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-delete command: %v", err))
 	}
 }
-*/
