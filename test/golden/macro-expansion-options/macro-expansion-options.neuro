@@ -1,5 +1,5 @@
 %% Macro expansion with command options test
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 
 %% Test 1: Command with single option expansion
 \set[silent_echo="\echo[silent=true]"]

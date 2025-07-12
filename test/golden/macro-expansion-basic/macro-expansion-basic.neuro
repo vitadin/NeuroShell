@@ -1,5 +1,5 @@
 %% Basic command-level macro expansion test
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 
 %% Test 1: Basic command expansion
 \set[cmd="\echo"]
