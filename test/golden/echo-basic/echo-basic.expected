@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \echo Simple text output
 Simple text output
 %%> \echo[to=custom_var] Stored in variable

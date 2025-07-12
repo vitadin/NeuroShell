@@ -1,5 +1,5 @@
 %% Basic echo command functionality test
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% Tests core echo features: simple output, variable storage, silent mode
 
 %% Test simple text output
