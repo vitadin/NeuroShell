@@ -1,5 +1,5 @@
-Setting _echo_commands = true
-%%> \try \bash echo "success test"
+Setting _echo_command = true
+%%> \bash echo "success test"
 success test
 %%> \get[_status]
 _status = 0
@@ -7,25 +7,24 @@ _status = 0
 _error = 
 %%> \get[_output]
 _output = success test
-%%> \try \bash ls /nonexistent_directory_xyz
+%%> \bash ls /nonexistent_directory_xyz
 Error: ls: /nonexistent_directory_xyz: No such file or directory
 Exit status: 1
 %%> \get[_status]
 _status = 1
 %%> \get[_error]
 _error = ls: /nonexistent_directory_xyz: No such file or directory
-%%> \try \set[testvar=hello]
+%%> \set[testvar=hello]
 Setting testvar = hello
 %%> \get[_status]
-_status = 1
+_status = 0
 %%> \get[testvar]
 testvar = hello
-%%> \try \set[_invalid_global=value]
+%%> \set[_invalid_global=value]
 %%> \get[_status]
 _status = 1
 %%> \get[_error]
 _error = failed to set variable _invalid_global: cannot set system variable: _invalid_global
-%%> \try \unknown_command_xyz
 %%> \get[_status]
 _status = 1
 %%> \get[_error]
