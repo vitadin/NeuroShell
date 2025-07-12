@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \render[theme=default, style=bold] This is bold text with default theme
 This is bold text with default theme
 %%> \get[_output]
