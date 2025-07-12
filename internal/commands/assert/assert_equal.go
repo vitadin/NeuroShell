@@ -134,7 +134,7 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&EqualCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&EqualCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register assert-equal command: %v", err))
 	}
 }
