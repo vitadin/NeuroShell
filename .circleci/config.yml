@@ -90,7 +90,7 @@ jobs:
           name: "CI Step 5: Run end-to-end tests"
           command: |
             source $BASH_ENV
-            just test-e2e || true
+            just test-e2e
           when: always
       
       # Save Go modules cache
