@@ -1,5 +1,5 @@
 %% Echo command combined options test
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% Tests various combinations of echo command options
 
 %% Test raw + silent + custom variable
