@@ -1,14 +1,16 @@
-Setting _echo_commands = true
-%%> \set[message="Hello World"]
+Setting _echo_command = true
+%%> "\\set[message=\"Hello World\"]"
 Setting message = Hello World
-%%> \get[message]
+%%> "\\get[message]"
 message = Hello World
-%%> \echo This is an important message  that needs to be on multiple lines  for better readability
-This is an important message  that needs to be on multiple lines  for better readability
-%%> \set[greeting="Hello"]
+%%> "\\echo This is an important message\nthat needs to be on multiple lines\nfor better readability"
+This is an important message
+that needs to be on multiple lines
+for better readability
+%%> "\\set[greeting=\"Hello\"]"
 Setting greeting = Hello
-%%> \set[name="World"]
+%%> "\\set[name=\"World\"]"
 Setting name = World
-%%> \echo ${greeting}  ${name} from multiline
-%%> [expanded] \echo Hello  World from multiline
-Hello  World from multiline
+%%> "\\echo Hello\nWorld from multiline"
+Hello
+World from multiline

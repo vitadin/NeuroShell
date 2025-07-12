@@ -1,17 +1,17 @@
 Setting _echo_command = true
-%%> \set[expected_value="hello"]
+%%> "\\set[expected_value=\"hello\"]"
 Setting expected_value = hello
-%%> \set[actual_value="world"]
+%%> "\\set[actual_value=\"world\"]"
 Setting actual_value = world
-%%> \assert-equal[expect="hello", actual="world"]
+%%> "\\assert-equal[expect=\"hello\", actual=\"world\"]"
 ✗ Assertion failed: values are not equal
   Expected: hello
   Actual:   world
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 1
-%%> \get[_assert_result]
+%%> "\\get[_assert_result]"
 _assert_result = FAIL
-%%> \get[_assert_expected]
+%%> "\\get[_assert_expected]"
 _assert_expected = hello
-%%> \get[_assert_actual]
+%%> "\\get[_assert_actual]"
 _assert_actual = world

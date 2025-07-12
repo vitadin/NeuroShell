@@ -1,31 +1,31 @@
 Setting _echo_command = true
-%%> \bash echo "success test"
+%%> "\\bash echo \"success test\""
 success test
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 0
-%%> \get[_error]
+%%> "\\get[_error]"
 _error = 
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = success test
-%%> \bash ls /nonexistent_directory_xyz
+%%> "\\bash ls /nonexistent_directory_xyz"
 Error: ls: /nonexistent_directory_xyz: No such file or directory
 Exit status: 1
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 1
-%%> \get[_error]
+%%> "\\get[_error]"
 _error = ls: /nonexistent_directory_xyz: No such file or directory
-%%> \set[testvar=hello]
+%%> "\\set[testvar=hello]"
 Setting testvar = hello
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 0
-%%> \get[testvar]
+%%> "\\get[testvar]"
 testvar = hello
-%%> \set[_invalid_global=value]
-%%> \get[_status]
+%%> "\\set[_invalid_global=value]"
+%%> "\\get[_status]"
 _status = 1
-%%> \get[_error]
+%%> "\\get[_error]"
 _error = failed to set variable _invalid_global: cannot set system variable: _invalid_global
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 1
-%%> \get[_error]
+%%> "\\get[_error]"
 _error = unknown command: unknown_command_xyz

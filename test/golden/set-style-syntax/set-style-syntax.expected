@@ -1,41 +1,41 @@
 Setting _echo_command = true
-%%> \set[_style="classic"]
+%%> "\\set[_style=\"classic\"]"
 Setting _style = classic
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = classic
-%%> \set[_style=minimal]
+%%> "\\set[_style=minimal]"
 Setting _style = minimal
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = minimal
-%%> \set[_style=""]
+%%> "\\set[_style=\"\"]"
 Setting _style = 
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = 
-%%> \set _style modern
+%%> "\\set _style modern"
 Setting _style = modern
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = modern
-%%> \set _style "theme with spaces"
+%%> "\\set _style \"theme with spaces\""
 Setting _style = "theme with spaces"
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = "theme with spaces"
-%%> \set _style compact-dark
+%%> "\\set _style compact-dark"
 Setting _style = compact-dark
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = compact-dark
-%%> \set[_style="bracket-set"]
+%%> "\\set[_style=\"bracket-set\"]"
 Setting _style = bracket-set
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = bracket-set
-%%> \set _style space-set
+%%> "\\set _style space-set"
 Setting _style = space-set
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = space-set
-%%> \set   _style   whitespace-test
+%%> "\\set   _style   whitespace-test"
 Setting _style = whitespace-test
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = whitespace-test
-%%> \set[_style="final-value"]
+%%> "\\set[_style=\"final-value\"]"
 Setting _style = final-value
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = final-value

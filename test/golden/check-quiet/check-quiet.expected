@@ -1,8 +1,8 @@
 Setting _echo_command = true
-%%> \check[quiet=true]
-%%> \echo Status: success
+%%> "\\check[quiet=true]"
+%%> "\\echo Status: success"
 Status: success
-%%> \echo Total services: 13
+%%> "\\echo Total services: 13"
 Total services: 13
-%%> \echo Failed count: 0
+%%> "\\echo Failed count: 0"
 Failed count: 0

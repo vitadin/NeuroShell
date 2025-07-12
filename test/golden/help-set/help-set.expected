@@ -1,5 +1,5 @@
 Setting _echo_command = true
-%%> \help[set]
+%%> "\\help[set]"
 Command: set
 Description: Set a variable
 Usage: \set[var=value] or \set var value

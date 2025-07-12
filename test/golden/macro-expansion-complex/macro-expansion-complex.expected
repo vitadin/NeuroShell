@@ -1,65 +1,65 @@
 Setting _echo_command = true
-%%> \set[cmd="\echo"]
+%%> "\\set[cmd=\"\\echo\"]"
 Setting cmd = \echo
-%%> \set[prefix="Hello"]
+%%> "\\set[prefix=\"Hello\"]"
 Setting prefix = Hello
-%%> \set[suffix="World"]
+%%> "\\set[suffix=\"World\"]"
 Setting suffix = World
-%%> \set[message="Hello, World!"]
+%%> "\\set[message=\"Hello, World!\"]"
 Setting message = Hello, World!
-%%> \echo Message: Hello, World!
+%%> "\\echo Message: Hello, World!"
 Message: Hello, World!
-%%> \set[base="\echo"]
+%%> "\\set[base=\"\\echo\"]"
 Setting base = \echo
-%%> \set[echocmd="\echo"]
+%%> "\\set[echocmd=\"\\echo\"]"
 Setting echocmd = \echo
-%%> \echo Using echo command
+%%> "\\echo Using echo command"
 Using echo command
-%%> \set[setcmd="\set"]
+%%> "\\set[setcmd=\"\\set\"]"
 Setting setcmd = \set
-%%> \set[result="Complex result"]
+%%> "\\set[result=\"Complex result\"]"
 Setting result = Complex result
-%%> \get[result]
+%%> "\\get[result]"
 result = Complex result
-%%> \set[style="red"]
+%%> "\\set[style=\"red\"]"
 Setting style = red
-%%> \set[target="styled_output"]
+%%> "\\set[target=\"styled_output\"]"
 Setting target = styled_output
-%%> \set[styled_echo="\echo[style=red,to=styled_output]"]
+%%> "\\set[styled_echo=\"\\echo[style=red,to=styled_output]\"]"
 Setting styled_echo = \echo[style=red,to=styled_output]
-%%> \echo[style=red,to=styled_output] This should be styled
+%%> "\\echo[style=red,to=styled_output] This should be styled"
 This should be styled
-%%> \get[styled_output]
+%%> "\\get[styled_output]"
 styled_output = This should be styled
-%%> \set[command_name="\echo"]
+%%> "\\set[command_name=\"\\echo\"]"
 Setting command_name = \echo
-%%> \set[option_raw="raw=true"]
+%%> "\\set[option_raw=\"raw=true\"]"
 Setting option_raw = raw=true
-%%> \set[option_to="to=dynamic_result"]
+%%> "\\set[option_to=\"to=dynamic_result\"]"
 Setting option_to = to=dynamic_result
-%%> \set[full_command="\echo[raw=true,to=dynamic_result]"]
+%%> "\\set[full_command=\"\\echo[raw=true,to=dynamic_result]\"]"
 Setting full_command = \echo[raw=true,to=dynamic_result]
-%%> \echo[raw=true,to=dynamic_result] Dynamic command building
+%%> "\\echo[raw=true,to=dynamic_result] Dynamic command building"
 Dynamic command building
-%%> \get[dynamic_result]
+%%> "\\get[dynamic_result]"
 dynamic_result = Dynamic command building
-%%> \set[set_intermediate="\set[temp=intermediate]"]
+%%> "\\set[set_intermediate=\"\\set[temp=intermediate]\"]"
 Setting set_intermediate = \set[temp=intermediate]
-%%> \set[temp=intermediate]
+%%> "\\set[temp=intermediate]"
 Setting temp = intermediate
-%%> \get[temp]
+%%> "\\get[temp]"
 temp = intermediate
-%%> \set[debug_cmd="\echo[style=yellow]"]
+%%> "\\set[debug_cmd=\"\\echo[style=yellow]\"]"
 Setting debug_cmd = \echo[style=yellow]
-%%> \set[current_cmd="\echo[style=yellow]"]
+%%> "\\set[current_cmd=\"\\echo[style=yellow]\"]"
 Setting current_cmd = \echo[style=yellow]
-%%> \echo[style=yellow] Debug mode active
+%%> "\\echo[style=yellow] Debug mode active"
 Debug mode active
-%%> \set[target_var="template_result"]
+%%> "\\set[target_var=\"template_result\"]"
 Setting target_var = template_result
-%%> \set[template_cmd="\echo[to=template_result]"]
+%%> "\\set[template_cmd=\"\\echo[to=template_result]\"]"
 Setting template_cmd = \echo[to=template_result]
-%%> \echo[to=template_result] Template expansion works
+%%> "\\echo[to=template_result] Template expansion works"
 Template expansion works
-%%> \get[template_result]
+%%> "\\get[template_result]"
 template_result = Template expansion works

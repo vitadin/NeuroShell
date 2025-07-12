@@ -1,23 +1,23 @@
 Setting _echo_command = true
-%%> \set[model_provider="openai"]
+%%> "\\set[model_provider=\"openai\"]"
 Setting model_provider = openai
-%%> \set[model_base="gpt-3.5-turbo"]
+%%> "\\set[model_base=\"gpt-3.5-turbo\"]"
 Setting model_base = gpt-3.5-turbo
-%%> \set[model_name="test-model"]
+%%> "\\set[model_name=\"test-model\"]"
 Setting model_name = test-model
-%%> \set[temp_setting="0.7"]
+%%> "\\set[temp_setting=\"0.7\"]"
 Setting temp_setting = 0.7
-%%> \model-new[provider="openai", base_model="gpt-3.5-turbo", temperature="0.7"] test-model
+%%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\", temperature=\"0.7\"] test-model"
 Created model 'test-model' (ID: 00000001, Provider: openai, Base: gpt-3.5-turbo)
-%%> \get[#model_id]
+%%> "\\get[#model_id]"
 #model_id = 00000001-0000-4000-8000-000000000001
-%%> \get[#model_name]
+%%> "\\get[#model_name]"
 #model_name = test-model
-%%> \get[#model_provider]
+%%> "\\get[#model_provider]"
 #model_provider = openai
-%%> \get[#model_base]
+%%> "\\get[#model_base]"
 #model_base = gpt-3.5-turbo
-%%> \get[#model_param_count]
+%%> "\\get[#model_param_count]"
 #model_param_count = 1
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = Created model 'test-model' (ID: 00000001, Provider: openai, Base: gpt-3.5-turbo)

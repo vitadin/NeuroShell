@@ -1,5 +1,5 @@
 Setting _echo_command = true
-%%> \model-catalog[search=o3]
+%%> "\\model-catalog[search=o3]"
 Model Catalog - Search: 'o3' (2 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
@@ -24,7 +24,7 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
-%%> \model-catalog[search=claude]
+%%> "\\model-catalog[search=claude]"
 Model Catalog - Search: 'claude' (4 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
@@ -63,7 +63,7 @@ Anthropic Models:
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2025-03-01
     Description: High intelligence and balanced performance
-%%> \model-catalog[search=coding]
+%%> "\\model-catalog[search=coding]"
 Model Catalog - Search: 'coding' (2 models):
 Openai Models:
   [O3] O3 (o3)

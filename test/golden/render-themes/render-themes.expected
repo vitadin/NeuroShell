@@ -1,17 +1,17 @@
 Setting _echo_command = true
-%%> \render[theme=default, style=bold] This is bold text with default theme
+%%> "\\render[theme=default, style=bold] This is bold text with default theme"
 This is bold text with default theme
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = This is bold text with default theme
-%%> \render[theme=dark, style=italic] This is italic text with dark theme
+%%> "\\render[theme=dark, style=italic] This is italic text with dark theme"
 This is italic text with dark theme
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = This is italic text with dark theme
-%%> \render[style=success] This is a success message
+%%> "\\render[style=success] This is a success message"
 This is a success message
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = This is a success message
-%%> \render[style=error] This is an error message
+%%> "\\render[style=error] This is an error message"
 This is an error message
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = This is an error message

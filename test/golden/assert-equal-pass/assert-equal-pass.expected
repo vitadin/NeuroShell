@@ -1,14 +1,14 @@
 Setting _echo_command = true
-%%> \set[test_value="hello world"]
+%%> "\\set[test_value=\"hello world\"]"
 Setting test_value = hello world
-%%> \assert-equal[expect="hello world", actual="hello world"]
+%%> "\\assert-equal[expect=\"hello world\", actual=\"hello world\"]"
 ✓ Assertion passed: values are equal
   Value: hello world
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 0
-%%> \get[_assert_result]
+%%> "\\get[_assert_result]"
 _assert_result = PASS
-%%> \get[_assert_expected]
+%%> "\\get[_assert_expected]"
 _assert_expected = hello world
-%%> \get[_assert_actual]
+%%> "\\get[_assert_actual]"
 _assert_actual = hello world

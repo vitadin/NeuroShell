@@ -1,5 +1,5 @@
 Setting _echo_command = true
-%%> \model-catalog[sort=name]
+%%> "\\model-catalog[sort=name]"
 Model Catalog (6 models):
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
@@ -61,7 +61,7 @@ Model Catalog (6 models):
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
-%%> \model-catalog[sort=provider]
+%%> "\\model-catalog[sort=provider]"
 Model Catalog (6 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)

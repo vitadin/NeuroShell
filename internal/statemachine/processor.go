@@ -127,7 +127,7 @@ func (sm *StateMachine) processExecuting() error {
 
 	// Output command line with %%> prefix if echo_commands is enabled
 	if sm.config.EchoCommands {
-		fmt.Printf("%%%%> %s\n", input)
+		fmt.Printf("%%%%> %q\n", input)
 	}
 
 	// Execute the builtin command

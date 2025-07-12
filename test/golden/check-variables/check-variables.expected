@@ -1,20 +1,8 @@
 Setting _echo_command = true
-%%> \check[quiet=true]
-%%> \echo Status: success
+%%> "\\check[quiet=true]"
+%%> "\\echo Status: success"
 Status: success
-%%> \echo Output: [OK] autocomplete - available/initialized
-[OK] bash - available/initialized
-[OK] chat_session - available/initialized
-[OK] client_factory - available/initialized
-[OK] editor - available/initialized
-[OK] executor - available/initialized
-[OK] help - available/initialized
-[OK] llm - available/initialized
-[OK] markdown - available/initialized
-[OK] model - available/initialized
-[OK] model_catalog - available/initialized
-[OK] theme - available/initialized
-[OK] variable - available/initialized
+%%> "\\echo Output: [OK] autocomplete - available/initialized\n[OK] bash - available/initialized\n[OK] chat_session - available/initialized\n[OK] client_factory - available/initialized\n[OK] editor - available/initialized\n[OK] executor - available/initialized\n[OK] help - available/initialized\n[OK] llm - available/initialized\n[OK] markdown - available/initialized\n[OK] model - available/initialized\n[OK] model_catalog - available/initialized\n[OK] theme - available/initialized\n[OK] variable - available/initialized"
 Output: [OK] autocomplete - available/initialized
 [OK] bash - available/initialized
 [OK] chat_session - available/initialized
@@ -28,14 +16,14 @@ Output: [OK] autocomplete - available/initialized
 [OK] model_catalog - available/initialized
 [OK] theme - available/initialized
 [OK] variable - available/initialized
-%%> \echo Failed services: 
+%%> "\\echo Failed services: "
 Failed services:
-%%> \echo Total services: 13
+%%> "\\echo Total services: 13"
 Total services: 13
-%%> \echo Failed count: 0
+%%> "\\echo Failed count: 0"
 Failed count: 0
-%%> \check[service=bash, quiet=true]
-%%> \echo Bash check status: success
+%%> "\\check[service=bash, quiet=true]"
+%%> "\\echo Bash check status: success"
 Bash check status: success
-%%> \echo Bash total services: 1
+%%> "\\echo Bash total services: 1"
 Bash total services: 1

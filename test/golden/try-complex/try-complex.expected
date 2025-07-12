@@ -1,55 +1,55 @@
 Setting _echo_command = true
-%%> \set[test_file=/tmp/nonexistent_test_file]
+%%> "\\set[test_file=/tmp/nonexistent_test_file]"
 Setting test_file = /tmp/nonexistent_test_file
-%%> \set[test_var=hello]
+%%> "\\set[test_var=hello]"
 Setting test_var = hello
-%%> \bash echo "Testing hello"
+%%> "\\bash echo \"Testing hello\""
 Testing hello
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 0
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = Testing hello
-%%> \bash cat /tmp/nonexistent_test_file
+%%> "\\bash cat /tmp/nonexistent_test_file"
 Error: cat: /tmp/nonexistent_test_file: No such file or directory
 Exit status: 1
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 1
-%%> \get[_error]
+%%> "\\get[_error]"
 _error = cat: /tmp/nonexistent_test_file: No such file or directory
-%%> \set[base_value=world]
+%%> "\\set[base_value=world]"
 Setting base_value = world
-%%> \set[combined=hello_world]
+%%> "\\set[combined=hello_world]"
 Setting combined = hello_world
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 0
-%%> \get[combined]
+%%> "\\get[combined]"
 combined = hello_world
-%%> \bash echo "test" | grep "test"
+%%> "\\bash echo \"test\" | grep \"test\""
 test
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 0
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = test
-%%> \bash echo "test" | grep "notfound" | wc -l
+%%> "\\bash echo \"test\" | grep \"notfound\" | wc -l"
        0
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 0
-%%> \set[before_try=preserved]
+%%> "\\set[before_try=preserved]"
 Setting before_try = preserved
-%%> \set[_invalid=fail]
-%%> \get[before_try]
+%%> "\\set[_invalid=fail]"
+%%> "\\get[before_try]"
 before_try = preserved
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 1
-%%> \set[seq1=first]
+%%> "\\set[seq1=first]"
 Setting seq1 = first
-%%> \set[seq2=second]
+%%> "\\set[seq2=second]"
 Setting seq2 = second
-%%> \bash echo "sequence test"
+%%> "\\bash echo \"sequence test\""
 sequence test
-%%> \get[seq1]
+%%> "\\get[seq1]"
 seq1 = first
-%%> \get[seq2]
+%%> "\\get[seq2]"
 seq2 = second
-%%> \get[_status]
+%%> "\\get[_status]"
 _status = 0

@@ -1,35 +1,35 @@
 Setting _echo_command = true
-%%> \set[theme_base="dark"]
+%%> "\\set[theme_base=\"dark\"]"
 Setting theme_base = dark
-%%> \set[variant="compact"]
+%%> "\\set[variant=\"compact\"]"
 Setting variant = compact
-%%> \set[suffix="v2"]
+%%> "\\set[suffix=\"v2\"]"
 Setting suffix = v2
-%%> \set[_style="dark-compact-v2"]
+%%> "\\set[_style=\"dark-compact-v2\"]"
 Setting _style = dark-compact-v2
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = dark-compact-v2
-%%> \set[description="Current theme is dark-compact-v2"]
+%%> "\\set[description=\"Current theme is dark-compact-v2\"]"
 Setting description = Current theme is dark-compact-v2
-%%> \get[description]
+%%> "\\get[description]"
 description = Current theme is dark-compact-v2
-%%> \set[user_pref="advanced"]
+%%> "\\set[user_pref=\"advanced\"]"
 Setting user_pref = advanced
-%%> \set[_style="dark-advanced-theme"]
+%%> "\\set[_style=\"dark-advanced-theme\"]"
 Setting _style = dark-advanced-theme
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = dark-advanced-theme
-%%> \set[theme_name="modern"]
+%%> "\\set[theme_name=\"modern\"]"
 Setting theme_name = modern
-%%> \set[style_template="modern-style"]
+%%> "\\set[style_template=\"modern-style\"]"
 Setting style_template = modern-style
-%%> \set[_style="modern-style"]
+%%> "\\set[_style=\"modern-style\"]"
 Setting _style = modern-style
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = modern-style
-%%> \get[theme_base]
+%%> "\\get[theme_base]"
 theme_base = dark
-%%> \get[variant]
+%%> "\\get[variant]"
 variant = compact
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = modern-style

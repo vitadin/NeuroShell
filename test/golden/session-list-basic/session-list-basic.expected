@@ -1,11 +1,11 @@
 Setting _echo_command = true
-%%> \session-new first_session
+%%> "\\session-new first_session"
 Created session 'first_session' (ID: 00000001)
-%%> \session-new second_session
+%%> "\\session-new second_session"
 Created session 'second_session' (ID: 00000002)
-%%> \session-new third_session
+%%> "\\session-new third_session"
 Created session 'third_session' (ID: 00000003)
-%%> \session-list
+%%> "\\session-list"
 Sessions (3 total):
   third_session    (ID: 00000003, active, 0 messages, created: 2025-01-01)
   second_session    (ID: 00000002, 0 messages, created: 2025-01-01)

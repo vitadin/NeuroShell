@@ -1,37 +1,37 @@
 Setting _echo_command = true
-%%> \set[cmd="\echo"]
+%%> "\\set[cmd=\"\\echo\"]"
 Setting cmd = \echo
-%%> \echo Hello World
+%%> "\\echo Hello World"
 Hello World
-%%> \set[greeting="Hello"]
+%%> "\\set[greeting=\"Hello\"]"
 Setting greeting = Hello
-%%> \set[name="Claude"]
+%%> "\\set[name=\"Claude\"]"
 Setting name = Claude
-%%> \echo Hello, Claude!
+%%> "\\echo Hello, Claude!"
 Hello, Claude!
-%%> \set[getcmd="\get"]
+%%> "\\set[getcmd=\"\\get\"]"
 Setting getcmd = \get
-%%> \get[greeting]
+%%> "\\get[greeting]"
 greeting = Hello
-%%> \set[setcmd="\set"]
+%%> "\\set[setcmd=\"\\set\"]"
 Setting setcmd = \set
-%%> \set[result="Success"]
+%%> "\\set[result=\"Success\"]"
 Setting result = Success
-%%> \get[result]
+%%> "\\get[result]"
 result = Success
-%%> \set[echocmd="\echo"]
+%%> "\\set[echocmd=\"\\echo\"]"
 Setting echocmd = \echo
-%%> \echo[to=output] Testing macro expansion
+%%> "\\echo[to=output] Testing macro expansion"
 Testing macro expansion
-%%> \get[output]
+%%> "\\get[output]"
 output = Testing macro expansion
-%%> \set[full_echo_cmd="\echo[style=green]"]
+%%> "\\set[full_echo_cmd=\"\\echo[style=green]\"]"
 Setting full_echo_cmd = \echo[style=green]
-%%> \echo[style=green] This should be green
+%%> "\\echo[style=green] This should be green"
 This should be green
-%%> \set[complex_cmd="\echo[raw=true,to=complex_result]"]
+%%> "\\set[complex_cmd=\"\\echo[raw=true,to=complex_result]\"]"
 Setting complex_cmd = \echo[raw=true,to=complex_result]
-%%> \echo[raw=true,to=complex_result] Raw\nOutput\tTest
+%%> "\\echo[raw=true,to=complex_result] Raw\\nOutput\\tTest"
 Raw\nOutput\tTest
-%%> \get[complex_result]
+%%> "\\get[complex_result]"
 complex_result = Raw\nOutput\tTest

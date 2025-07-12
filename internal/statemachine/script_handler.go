@@ -120,9 +120,32 @@ func (sm *StateMachine) parseScriptIntoLines(scriptContent string) []string {
 
 			// Join and clean up multiline command
 			multilineCommand := strings.Join(multilineBuilder, "\n")
-			multilineCommand = strings.ReplaceAll(multilineCommand, "...\n", " ")
-			multilineCommand = strings.ReplaceAll(multilineCommand, "...", " ")
-			lines = append(lines, strings.TrimSpace(multilineCommand))
+
+			// Process each line to remove ... continuation markers while preserving newlines
+			commandLines := strings.Split(multilineCommand, "\n")
+			var processedLines []string
+
+			for _, line := range commandLines {
+				// Remove trailing ... and any whitespace after it
+				trimmed := strings.TrimRightFunc(line, func(r rune) bool {
+					return r == ' ' || r == '\t'
+				})
+				if strings.HasSuffix(trimmed, "...") {
+					// Remove the ... marker
+					cleaned := strings.TrimSuffix(trimmed, "...")
+					// Remove any trailing whitespace that was before the ...
+					cleaned = strings.TrimRightFunc(cleaned, func(r rune) bool {
+						return r == ' ' || r == '\t'
+					})
+					processedLines = append(processedLines, cleaned)
+				} else {
+					processedLines = append(processedLines, line)
+				}
+			}
+
+			// Join back with newlines to preserve multiline structure
+			multilineCommand = strings.Join(processedLines, "\n")
+			lines = append(lines, multilineCommand)
 		} else {
 			lines = append(lines, line)
 		}

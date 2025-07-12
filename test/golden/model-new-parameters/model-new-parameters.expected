@@ -1,17 +1,17 @@
 Setting _echo_command = true
-%%> \model-new[provider="anthropic", base_model="claude-3-sonnet", temperature="0.8", max_tokens="2000", description="Advanced model for creative tasks"] creative-claude
+%%> "\\model-new[provider=\"anthropic\", base_model=\"claude-3-sonnet\", temperature=\"0.8\", max_tokens=\"2000\", description=\"Advanced model for creative tasks\"] creative-claude"
 Created model 'creative-claude' (ID: 00000001, Provider: anthropic, Base: claude-3-sonnet)
-%%> \get[#model_id]
+%%> "\\get[#model_id]"
 #model_id = 00000001-0000-4000-8000-000000000001
-%%> \get[#model_name]
+%%> "\\get[#model_name]"
 #model_name = creative-claude
-%%> \get[#model_provider]
+%%> "\\get[#model_provider]"
 #model_provider = anthropic
-%%> \get[#model_base]
+%%> "\\get[#model_base]"
 #model_base = claude-3-sonnet
-%%> \get[#model_param_count]
+%%> "\\get[#model_param_count]"
 #model_param_count = 2
-%%> \get[#model_description]
+%%> "\\get[#model_description]"
 #model_description = Advanced model for creative tasks
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = Created model 'creative-claude' (ID: 00000001, Provider: anthropic, Base: claude-3-sonnet)

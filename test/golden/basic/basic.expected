@@ -1,9 +1,9 @@
 Setting _echo_command = true
-%%> \set[name="test"]
+%%> "\\set[name=\"test\"]"
 Setting name = test
-%%> \set[status="working"]
+%%> "\\set[status=\"working\"]"
 Setting status = working
-%%> \get[name]
+%%> "\\get[name]"
 name = test
-%%> \get[status]
+%%> "\\get[status]"
 status = working

@@ -1,5 +1,11 @@
-Setting _echo_commands = true
-%%> first line  second line  third line  final line
-This is a mocking reply message for the sending message: first line  second line  third line  final line
-%%> \echo This is line one  and line two  and line three  ending here
-This is line one  and line two  and line three  ending here
+Setting _echo_command = true
+%%> "\\echo first line\nsecond line\nthird line\nfinal line"
+first line
+second line
+third line
+final line
+%%> "\\echo This is line one\nand line two\nand line three\nending here"
+This is line one
+and line two
+and line three
+ending here

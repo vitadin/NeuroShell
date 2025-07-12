@@ -1,11 +1,11 @@
 %% Natural ellipsis preservation test
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% Tests that natural ... in text is preserved
 
-I think... this works
-Also this... works fine
+\echo I think... this works
+\echo Also this... works fine
 \echo Natural ellipsis like this... should be kept intact
 
 %% Test natural ellipsis in middle of text
-Some text... with ellipsis... in multiple places
+\echo Some text... with ellipsis... in multiple places
 \echo Testing multiple... natural ellipsis... patterns

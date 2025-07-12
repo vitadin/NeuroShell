@@ -1,7 +1,10 @@
-Setting _echo_commands = true
-%%> I think  but wait  there is more to say
-This is a mocking reply message for the sending message: I think  but wait  there is more to say
-%%> \echo This message has natural  ellipsis and also  continues on next line
-This message has natural  ellipsis and also  continues on next line
-%%> Processing data  please wait  operation complete
-This is a mocking reply message for the sending message: Processing data  please wait  operation complete
+Setting _echo_command = true
+%%> "\\echo I think... but wait\nthere is more to say"
+I think... but wait
+there is more to say
+%%> "\\echo This message has natural... ellipsis and also\ncontinues on next line"
+This message has natural... ellipsis and also
+continues on next line
+%%> "\\echo Processing data... please wait\noperation complete"
+Processing data... please wait
+operation complete

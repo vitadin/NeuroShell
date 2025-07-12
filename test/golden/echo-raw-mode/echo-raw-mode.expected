@@ -1,27 +1,27 @@
 Setting _echo_command = true
-%%> \echo[raw=false] Line 1\nLine 2\tTabbed
+%%> "\\echo[raw=false] Line 1\\nLine 2\\tTabbed"
 Line 1
 Line 2	Tabbed
-%%> \echo[raw=true] Line 1\nLine 2\tTabbed
+%%> "\\echo[raw=true] Line 1\\nLine 2\\tTabbed"
 Line 1\nLine 2\tTabbed
-%%> \echo[raw=true,to=literal] Raw\n\tescapes
+%%> "\\echo[raw=true,to=literal] Raw\\n\\tescapes"
 Raw\n\tescapes
-%%> \get[literal]
+%%> "\\get[literal]"
 literal = Raw\n\tescapes
-%%> \echo[raw=false,to=interpreted] Interpreted\n\tescapes
+%%> "\\echo[raw=false,to=interpreted] Interpreted\\n\\tescapes"
 Interpreted
 	escapes
-%%> \get[interpreted]
+%%> "\\get[interpreted]"
 interpreted = Interpreted
 	escapes
-%%> \echo[raw=true] Multiple escapes: \n\t\r\\\"\'
+%%> "\\echo[raw=true] Multiple escapes: \\n\\t\\r\\\\\\\"\\'"
 Multiple escapes: \n\t\r\\\"\'
-%%> \echo[raw=false] Multiple escapes: \n\t\r\\\"\'
+%%> "\\echo[raw=false] Multiple escapes: \\n\\t\\r\\\\\\\"\\'"
 Multiple escapes: 
 	\"'
-%%> \echo Default mode: \n\t\r
+%%> "\\echo Default mode: \\n\\t\\r"
 Default mode: 
-%%> \echo[raw=true] Quotes: \"Hello\" and \'World\'
+%%> "\\echo[raw=true] Quotes: \\\"Hello\\\" and \\'World\\'"
 Quotes: \"Hello\" and \'World\'
-%%> \echo[raw=false] Quotes: \"Hello\" and \'World\'
+%%> "\\echo[raw=false] Quotes: \\\"Hello\\\" and \\'World\\'"
 Quotes: "Hello" and 'World'
