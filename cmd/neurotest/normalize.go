@@ -31,6 +31,46 @@ func NewNormalizationEngine() *NormalizationEngine {
 
 // initBuiltinPatterns initializes the built-in normalization patterns
 func (ne *NormalizationEngine) initBuiltinPatterns() {
+	// IMPORTANT: Platform-specific patterns must come FIRST to avoid conflicts with generic patterns
+	// Platform-specific ls error message patterns
+	// Linux: "ls: cannot access '/path': No such file or directory"
+	// macOS: "ls: /path: No such file or directory"
+	lsErrorLinuxPattern := regexp.MustCompile(`ls: cannot access '([^']+)': No such file or directory`)
+	lsErrorMacOSPattern := regexp.MustCompile(`ls: ([^:]+): No such file or directory`)
+
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "LS_ERROR_LINUX",
+		Pattern: lsErrorLinuxPattern,
+		MinLen:  10,
+		MaxLen:  200,
+	})
+
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "LS_ERROR_MACOS",
+		Pattern: lsErrorMacOSPattern,
+		MinLen:  10,
+		MaxLen:  200,
+	})
+
+	// Exit status normalization for ls commands (macOS=1, Linux=2)
+	exitStatusPattern := regexp.MustCompile(`Exit status: [12]`)
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "EXIT_STATUS_LS",
+		Pattern: exitStatusPattern,
+		MinLen:  12,
+		MaxLen:  15,
+	})
+
+	// Status variable normalization for ls commands (_status = 1 or 2)
+	statusVarPattern := regexp.MustCompile(`_status = [12]`)
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "STATUS_VAR_LS",
+		Pattern: statusVarPattern,
+		MinLen:  10,
+		MaxLen:  12,
+	})
+
+	// Generic patterns come after platform-specific ones
 	// UUID pattern (for session IDs, etc.)
 	uuidPattern := regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`)
 
@@ -79,44 +119,6 @@ func (ne *NormalizationEngine) initBuiltinPatterns() {
 		Pattern: userPattern,
 		MinLen:  5,
 		MaxLen:  100,
-	})
-
-	// Platform-specific ls error message patterns
-	// Linux: "ls: cannot access '/path': No such file or directory"
-	// macOS: "ls: /path: No such file or directory"
-	lsErrorLinuxPattern := regexp.MustCompile(`ls: cannot access '([^']+)': No such file or directory`)
-	lsErrorMacOSPattern := regexp.MustCompile(`ls: ([^:]+): No such file or directory`)
-
-	ne.patterns = append(ne.patterns, NormalizationPattern{
-		Name:    "LS_ERROR_LINUX",
-		Pattern: lsErrorLinuxPattern,
-		MinLen:  10,
-		MaxLen:  200,
-	})
-
-	ne.patterns = append(ne.patterns, NormalizationPattern{
-		Name:    "LS_ERROR_MACOS",
-		Pattern: lsErrorMacOSPattern,
-		MinLen:  10,
-		MaxLen:  200,
-	})
-
-	// Exit status normalization for ls commands (macOS=1, Linux=2)
-	exitStatusPattern := regexp.MustCompile(`Exit status: [12]`)
-	ne.patterns = append(ne.patterns, NormalizationPattern{
-		Name:    "EXIT_STATUS_LS",
-		Pattern: exitStatusPattern,
-		MinLen:  12,
-		MaxLen:  15,
-	})
-
-	// Status variable normalization for ls commands (_status = 1 or 2)
-	statusVarPattern := regexp.MustCompile(`_status = [12]`)
-	ne.patterns = append(ne.patterns, NormalizationPattern{
-		Name:    "STATUS_VAR_LS",
-		Pattern: statusVarPattern,
-		MinLen:  10,
-		MaxLen:  12,
 	})
 }
 
