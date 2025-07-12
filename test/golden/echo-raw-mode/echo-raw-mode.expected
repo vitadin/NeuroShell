@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \echo[raw=false] Line 1\nLine 2\tTabbed
 Line 1
 Line 2	Tabbed
