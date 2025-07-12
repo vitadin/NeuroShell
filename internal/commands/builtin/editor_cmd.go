@@ -131,7 +131,7 @@ func (e *EditorCommand) Execute(args map[string]string, _ string) error {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&EditorCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&EditorCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register editor command: %v", err))
 	}
 }
