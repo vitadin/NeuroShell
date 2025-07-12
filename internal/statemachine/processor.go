@@ -148,6 +148,10 @@ func (sm *StateMachine) processTryResolving() error {
 
 	// Extract target command from the try command message
 	targetCommand := strings.TrimSpace(parsedCmd.Message)
+
+	// Always store the target command (even if empty)
+	sm.setTryTargetCommand(targetCommand)
+
 	if targetCommand == "" {
 		// Empty try command - set success variables and mark as completed
 		_ = sm.context.SetSystemVariable("_status", "0")
@@ -156,8 +160,6 @@ func (sm *StateMachine) processTryResolving() error {
 		return nil
 	}
 
-	// Store the target command for execution
-	sm.setTryTargetCommand(targetCommand)
 	return nil
 }
 
@@ -165,7 +167,11 @@ func (sm *StateMachine) processTryResolving() error {
 func (sm *StateMachine) processTryExecuting() error {
 	targetCommand := sm.getTryTargetCommand()
 	if targetCommand == "" {
-		return fmt.Errorf("no target command for try execution")
+		// Empty try command - set success variables
+		_ = sm.context.SetSystemVariable("_status", "0")
+		_ = sm.context.SetSystemVariable("_error", "")
+		_ = sm.context.SetSystemVariable("_output", "")
+		return nil
 	}
 
 	// Clear status variables before execution to ensure clean state
