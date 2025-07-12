@@ -1,9 +1,6 @@
 // Package model provides model management commands for NeuroShell.
 // It includes commands for creating, managing, and interacting with LLM model configurations.
-// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package model
-
-/*
 
 import (
 	"fmt"
@@ -192,11 +189,7 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Get interpolation service for variable interpolation
-	interpolationService, err := services.GetGlobalInterpolationService()
-	if err != nil {
-		return fmt.Errorf("interpolation service not available: %w", err)
-	}
+	// Note: Variable interpolation is now handled by the state machine before commands execute
 
 	// Get model catalog service for catalog_id support
 	modelCatalogService, err := services.GetGlobalModelCatalogService()
@@ -240,21 +233,7 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to auto-populate provider/base_model from catalog_id '%s'", catalogID)
 	}
 
-	// Interpolate variables in all string parameters
-	modelName, err = interpolationService.InterpolateString(modelName)
-	if err != nil {
-		return fmt.Errorf("failed to interpolate variables in model name: %w", err)
-	}
-
-	provider, err = interpolationService.InterpolateString(provider)
-	if err != nil {
-		return fmt.Errorf("failed to interpolate variables in provider: %w", err)
-	}
-
-	baseModel, err = interpolationService.InterpolateString(baseModel)
-	if err != nil {
-		return fmt.Errorf("failed to interpolate variables in base_model: %w", err)
-	}
+	// Note: Variable interpolation for model name, provider, and base_model is handled by state machine
 
 	// Parse optional parameters
 	parameters := make(map[string]any)
@@ -262,10 +241,8 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 
 	// Handle description separately
 	if desc, exists := args["description"]; exists {
-		description, err = interpolationService.InterpolateString(desc)
-		if err != nil {
-			return fmt.Errorf("failed to interpolate variables in description: %w", err)
-		}
+		description = desc
+		// Note: Variable interpolation for description is handled by state machine
 	}
 
 	// Parse numeric parameters
@@ -405,8 +382,7 @@ func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variabl
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&NewCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&NewCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register model-new command: %v", err))
 	}
 }
-*/
