@@ -18,7 +18,7 @@ import (
 var allowedGlobalVariables = []string{
 	"_style",
 	"_reply_way",
-	"_echo_commands",
+	"_echo_command",
 	"_render_markdown",
 }
 

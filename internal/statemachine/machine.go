@@ -69,6 +69,9 @@ func NewStateMachineWithDefaults(ctx *context.NeuroContext) *StateMachine {
 // Execute is the main entry point for the state machine execution.
 // It processes the input through the complete state machine pipeline until completion or error.
 func (sm *StateMachine) Execute(input string) error {
+	// Update echo configuration based on _echo_commands variable
+	sm.updateEchoConfig()
+
 	// Initialize execution state (full reset for main entry point)
 	sm.initializeExecution(input)
 
@@ -80,6 +83,9 @@ func (sm *StateMachine) Execute(input string) error {
 // ExecuteInternal executes a command without resetting the global execution state.
 // This is used for nested execution (e.g., by try commands, script lines).
 func (sm *StateMachine) ExecuteInternal(input string) error {
+	// Update echo configuration based on _echo_commands variable
+	sm.updateEchoConfig()
+
 	// Save current execution state
 	snapshot := sm.saveExecutionState()
 
@@ -185,6 +191,29 @@ func (sm *StateMachine) DetermineNextState() neurotypes.State {
 	default:
 		return neurotypes.StateError
 	}
+}
+
+// updateEchoConfig updates the echo configuration based on the _echo_command variable.
+// This allows users to dynamically control command echoing via \set[_echo_command="true"].
+func (sm *StateMachine) updateEchoConfig() {
+	if sm.context == nil {
+		return
+	}
+
+	echoCommandVar, err := sm.context.GetVariable("_echo_command")
+	if err != nil {
+		// Variable not set or error retrieving it, keep current config
+		return
+	}
+
+	// Check for truthy values
+	switch echoCommandVar {
+	case "true", "1", "yes":
+		sm.config.EchoCommands = true
+	case "false", "0", "no", "":
+		sm.config.EchoCommands = false
+	}
+	// For any other values, keep the current setting unchanged
 }
 
 // initializeExecution sets up the initial state for execution.
