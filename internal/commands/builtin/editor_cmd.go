@@ -1,5 +1,3 @@
-//go:build !minimal
-
 package builtin
 
 import (
@@ -36,19 +34,23 @@ func (e *EditorCommand) Description() string {
 
 // Usage returns the usage information for the editor command.
 func (e *EditorCommand) Usage() string {
-	return `\editor - Open external editor for input composition
+	return `\editor [initial_text] - Open external editor for input composition
 
 Opens your configured external editor (from $EDITOR or auto-detected) to compose
 a multi-line input. When you save and exit the editor, the content will be
 stored in the ${_output} variable.
 
+If initial_text is provided, the editor will open with that text as starting content.
+
 The editor preference can be configured with:
   \set[@editor="your-preferred-editor"]
 
 Examples:
-  \editor                    - Open editor and store content in ${_output}
-  \send ${_output}          - Send the editor content
-  \set[@editor="code --wait"] - Configure VS Code as editor
+  \editor                              - Open empty editor
+  \editor Write a blog post about AI  - Open editor with initial text
+  \editor Draft email to customer     - Start with prompt text
+  \send ${_output}                    - Send the editor content
+  \set[@editor="code --wait"]         - Configure VS Code as editor
   
 After editing, you can use the content with:
   \send ${_output}          - Send the editor content to LLM
@@ -61,20 +63,24 @@ func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     e.Name(),
 		Description: e.Description(),
-		Usage:       "\\editor",
+		Usage:       "\\editor [initial_text]",
 		ParseMode:   e.ParseMode(),
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\editor",
-				Description: "Open external editor for composing multi-line input",
+				Description: "Open empty editor for composing multi-line input",
+			},
+			{
+				Command:     "\\editor Write a detailed analysis",
+				Description: "Open editor with initial text as starting content",
+			},
+			{
+				Command:     "\\editor Draft email to customer",
+				Description: "Start editing with prompt text pre-filled",
 			},
 			{
 				Command:     "\\set[@editor=\"code --wait\"]",
 				Description: "Configure VS Code as your preferred editor",
-			},
-			{
-				Command:     "\\editor",
-				Description: "Edit content, then use with \\send ${_output}",
 			},
 			{
 				Command:     "\\set[myvar=\"${_output}\"]",
@@ -82,7 +88,8 @@ func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 		},
 		Notes: []string{
-			"Editor opens with ${_output} content, or a default template if empty",
+			"If initial_text is provided, editor opens with that text as starting content",
+			"Without initial text, editor opens empty - use \\editor ${_output} to edit existing content",
 			"Content is stored in ${_output} variable when editor is saved and closed",
 			"Editor preference: 1) ${@editor} variable, 2) $EDITOR env var, 3) auto-detect",
 			"Supports vim, nano, code, subl, atom, and other common editors",
@@ -92,8 +99,9 @@ func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
 }
 
 // Execute opens the external editor and stores the resulting content in ${_output}.
-func (e *EditorCommand) Execute(args map[string]string, _ string) error {
-	logger.Debug("Executing editor command", "args", args)
+// If input text is provided, it will be used as initial content in the editor.
+func (e *EditorCommand) Execute(args map[string]string, input string) error {
+	logger.Debug("Executing editor command", "args", args, "input", input)
 
 	// Get the editor service
 	es, err := services.GetGlobalEditorService()
@@ -101,8 +109,13 @@ func (e *EditorCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("editor service not available: %w", err)
 	}
 
-	// Open the editor and get content
-	content, err := es.OpenEditor()
+	// Open the editor with or without initial content
+	var content string
+	if input != "" {
+		content, err = es.OpenEditorWithContent(input)
+	} else {
+		content, err = es.OpenEditor()
+	}
 	if err != nil {
 		return fmt.Errorf("editor operation failed: %w", err)
 	}
