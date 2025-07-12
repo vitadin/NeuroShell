@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \model-catalog[sort=name]
 Model Catalog (6 models):
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)

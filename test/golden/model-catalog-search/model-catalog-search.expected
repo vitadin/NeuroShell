@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \model-catalog[search=o3]
 Model Catalog - Search: 'o3' (2 models):
 Anthropic Models:

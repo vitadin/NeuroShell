@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \model-catalog
 Model Catalog (6 models):
 Anthropic Models:

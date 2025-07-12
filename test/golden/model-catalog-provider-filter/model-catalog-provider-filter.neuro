@@ -1,5 +1,5 @@
 %% Provider filtering test
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% Tests filtering models by provider
 \model-catalog[provider=openai]
 \model-catalog[provider=anthropic]

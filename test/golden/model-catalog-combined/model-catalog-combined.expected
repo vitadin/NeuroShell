@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \model-catalog[provider=openai, sort=name]
 Model Catalog (Openai) (2 models):
   [O3] O3 (o3)

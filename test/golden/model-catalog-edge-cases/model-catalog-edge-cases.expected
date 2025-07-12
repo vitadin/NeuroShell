@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \model-catalog[search=nonexistentmodel123]
 No models found matching 'nonexistentmodel123'.
 %%> \model-catalog[provider=openai, search=claude]
