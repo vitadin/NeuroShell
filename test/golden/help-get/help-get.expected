@@ -1,5 +1,5 @@
-Setting _echo_commands = true
-%%> \help[get]
+Setting _echo_command = true
+%%> "\\help[get]"
 Command: get
 Description: Get a variable
 Usage: \get[var] or \get var

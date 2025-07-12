@@ -10,8 +10,8 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-// EchoCommand implements the \echo command for expanding variables and outputting text.
-// It provides variable interpolation and flexible output options within the NeuroShell environment.
+// EchoCommand implements the \echo command for outputting text.
+// It provides flexible output options within the NeuroShell environment.
 type EchoCommand struct{}
 
 // Name returns the command name "echo" for registration and lookup.
@@ -26,7 +26,7 @@ func (c *EchoCommand) ParseMode() neurotypes.ParseMode {
 
 // Description returns a brief description of what the echo command does.
 func (c *EchoCommand) Description() string {
-	return "Expand variables and output text with optional raw mode"
+	return "Output text with optional raw mode and variable storage"
 }
 
 // Usage returns the syntax and usage examples for the echo command.
@@ -67,7 +67,7 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\echo Hello, World!",
-				Description: "Simple text output with variable interpolation",
+				Description: "Simple text output",
 			},
 			{
 				Command:     "\\echo[raw=true] Line 1\\nLine 2",
@@ -87,91 +87,72 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 		},
 		Notes: []string{
-			"All variables (${var}) are interpolated before output",
 			"When raw=true, escape sequences like \\n are shown literally",
 			"When raw=false, escape sequences are interpreted (\\n becomes newline)",
 			"Result is always stored in the specified variable (default: _output)",
 			"Use silent=true to suppress console output while still storing result",
+			"Variable interpolation is handled by the state machine before echo executes",
 		},
 	}
 }
 
-// Execute expands variables in the input message and outputs or stores the result.
+// Execute outputs the input message and stores the result.
+// Variable interpolation is handled by the state machine before this function is called.
 // Options:
 //   - to: store result in specified variable (default: ${_output})
 //   - silent: suppress console output (default: false)
 //   - raw: output string literals without interpreting escape sequences (default: false)
 func (c *EchoCommand) Execute(args map[string]string, input string) error {
-	if input == "" {
-		return fmt.Errorf("Usage: %s", c.Usage())
-	}
-
-	// Get interpolation service
-	interpolationService, err := services.GetGlobalInterpolationService()
-	if err != nil {
-		return fmt.Errorf("interpolation service not available: %w", err)
-	}
-
-	// Interpolate variables in the input message
-	expandedMessage, err := interpolationService.InterpolateString(input)
-	if err != nil {
-		return fmt.Errorf("failed to interpolate variables: %w", err)
-	}
-
-	// Parse options
+	// Parse options with tolerant defaults (never error)
 	targetVar := args["to"]
 	if targetVar == "" {
 		targetVar = "_output" // Default to system output variable
 	}
 
-	silentStr := args["silent"]
+	// Parse silent option with tolerant default
 	silent := false
-	if silentStr != "" {
-		silent, err = strconv.ParseBool(silentStr)
-		if err != nil {
-			return fmt.Errorf("invalid value for silent option: %s (must be true or false)", silentStr)
+	if silentStr := args["silent"]; silentStr != "" {
+		if parsedSilent, err := strconv.ParseBool(silentStr); err == nil {
+			silent = parsedSilent
 		}
+		// If parsing fails, silent remains false (tolerant default)
 	}
 
-	rawStr := args["raw"]
+	// Parse raw option with tolerant default
 	raw := false
-	if rawStr != "" {
-		raw, err = strconv.ParseBool(rawStr)
-		if err != nil {
-			return fmt.Errorf("invalid value for raw option: %s (must be true or false)", rawStr)
+	if rawStr := args["raw"]; rawStr != "" {
+		if parsedRaw, err := strconv.ParseBool(rawStr); err == nil {
+			raw = parsedRaw
 		}
+		// If parsing fails, raw remains false (tolerant default)
 	}
 
 	// Determine what to store and what to display
+	// Note: input comes pre-interpolated from state machine
 	var displayMessage string
 	var storeMessage string
 
 	if raw {
 		// Raw mode: display and store without interpreting escape sequences
-		displayMessage = expandedMessage
-		storeMessage = expandedMessage
+		displayMessage = input
+		storeMessage = input
 	} else {
 		// Normal mode: interpret escape sequences for display, store interpreted version
-		displayMessage = interpretEscapeSequences(expandedMessage)
+		displayMessage = interpretEscapeSequences(input)
 		storeMessage = displayMessage
 	}
 
-	// Get variable service
-	variableService, err := services.GetGlobalVariableService()
-	if err != nil {
-		return fmt.Errorf("variable service not available: %w", err)
-	}
-
-	// Store result in target variable
-	if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
-		// Store in system variable (only for specific system variables)
-		err = variableService.SetSystemVariable(targetVar, storeMessage)
-	} else {
-		// Store in user variable (including custom variables with _ prefix)
-		err = variableService.Set(targetVar, storeMessage)
-	}
-	if err != nil {
-		return fmt.Errorf("failed to store result in variable '%s': %w", targetVar, err)
+	// Get variable service - if not available, continue without storing (graceful degradation)
+	if variableService, err := services.GetGlobalVariableService(); err == nil {
+		// Store result in target variable
+		if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
+			// Store in system variable (only for specific system variables)
+			_ = variableService.SetSystemVariable(targetVar, storeMessage)
+		} else {
+			// Store in user variable (including custom variables with _ prefix)
+			_ = variableService.Set(targetVar, storeMessage)
+		}
+		// Ignore storage errors to ensure echo never fails
 	}
 
 	// Output to console unless silent mode is enabled
@@ -183,6 +164,7 @@ func (c *EchoCommand) Execute(args map[string]string, input string) error {
 		}
 	}
 
+	// Echo command never returns errors - it always succeeds
 	return nil
 }
 
@@ -199,7 +181,7 @@ func interpretEscapeSequences(s string) string {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&EchoCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&EchoCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register echo command: %v", err))
 	}
 }

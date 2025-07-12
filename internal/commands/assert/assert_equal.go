@@ -74,17 +74,18 @@ func (c *EqualCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 		},
 		Notes: []string{
-			"Values are compared as strings after variable interpolation",
-			"Sets ${_assert_result} to 'pass' or 'fail' based on comparison",
-			"Sets ${_assert_expected} and ${_assert_actual} with interpolated values",
+			"Values are compared as strings after variable interpolation by state machine",
+			"Sets ${_assert_result} to 'PASS' or 'FAIL' based on comparison",
+			"Sets ${_assert_expected} and ${_assert_actual} with compared values",
 			"Updates ${_status} to '0' (pass) or '1' (fail) for script automation",
 			"Useful for testing and validation in .neuro scripts",
-			"Supports whitespace and case-sensitive comparison",
+			"Supports whitespace and case-sensitive string comparison",
 		},
 	}
 }
 
-// Execute compares two values for equality with variable interpolation support.
+// Execute compares two values for equality.
+// Values are pre-interpolated by the state machine before this method is called.
 // It sets system variables _status, _assert_result, _assert_expected, and _assert_actual.
 func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 
@@ -96,30 +97,8 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("Usage: %s", c.Usage())
 	}
 
-	// Get interpolation service from global registry
-	service, err := services.GetGlobalRegistry().GetService("interpolation")
-	if err != nil {
-		return fmt.Errorf("interpolation service not available: %w", err)
-	}
-
-	interpolationService, ok := service.(*services.InterpolationService)
-	if !ok {
-		return fmt.Errorf("interpolation service has incorrect type")
-	}
-
-	// Interpolate both expected and actual values
-	interpolatedExpected, err := interpolationService.InterpolateString(expected)
-	if err != nil {
-		return fmt.Errorf("failed to interpolate expected value: %w", err)
-	}
-
-	interpolatedActual, err := interpolationService.InterpolateString(actual)
-	if err != nil {
-		return fmt.Errorf("failed to interpolate actual value: %w", err)
-	}
-
-	// Compare the interpolated values
-	isEqual := interpolatedExpected == interpolatedActual
+	// Compare the values (already interpolated by state machine)
+	isEqual := expected == actual
 
 	// Get variable service to set system variables
 	variableService, err := services.GetGlobalVariableService()
@@ -132,30 +111,30 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 		// Assertion passed
 		_ = variableService.SetSystemVariable("_status", "0")
 		_ = variableService.SetSystemVariable("_assert_result", "PASS")
-		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected)
-		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual)
+		_ = variableService.SetSystemVariable("_assert_expected", expected)
+		_ = variableService.SetSystemVariable("_assert_actual", actual)
 
 		// Output success message
 		fmt.Printf("✓ Assertion passed: values are equal\n")
-		fmt.Printf("  Value: %s\n", interpolatedExpected)
+		fmt.Printf("  Value: %s\n", expected)
 	} else {
 		// Assertion failed
 		_ = variableService.SetSystemVariable("_status", "1")
 		_ = variableService.SetSystemVariable("_assert_result", "FAIL")
-		_ = variableService.SetSystemVariable("_assert_expected", interpolatedExpected)
-		_ = variableService.SetSystemVariable("_assert_actual", interpolatedActual)
+		_ = variableService.SetSystemVariable("_assert_expected", expected)
+		_ = variableService.SetSystemVariable("_assert_actual", actual)
 
 		// Output failure message with diff-style information
 		fmt.Printf("✗ Assertion failed: values are not equal\n")
-		fmt.Printf("  Expected: %s\n", interpolatedExpected)
-		fmt.Printf("  Actual:   %s\n", interpolatedActual)
+		fmt.Printf("  Expected: %s\n", expected)
+		fmt.Printf("  Actual:   %s\n", actual)
 	}
 
 	return nil
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&EqualCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&EqualCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register assert-equal command: %v", err))
 	}
 }

@@ -1,5 +1,5 @@
-Setting _echo_commands = true
-%%> \render[keywords=[\get, \set, \vars]] Use \get to retrieve values, \set to store them, and \vars to list all variables
+Setting _echo_command = true
+%%> "\\render[keywords=[\\get, \\set, \\vars]] Use \\get to retrieve values, \\set to store them, and \\vars to list all variables"
 Use \get to retrieve values, \set to store them, and \vars to list all variables
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = Use \get to retrieve values, \set to store them, and \vars to list all variables

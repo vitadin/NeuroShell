@@ -1,5 +1,5 @@
 %% Test _style variable default initialization
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% This test verifies _style is initialized to empty string by default
 
 %% Check initial value of _style (should be empty)

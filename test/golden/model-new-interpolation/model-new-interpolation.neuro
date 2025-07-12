@@ -1,5 +1,5 @@
 %% Test model creation with variable interpolation
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 \set[model_provider="openai"]
 \set[model_base="gpt-3.5-turbo"]
 \set[model_name="test-model"]

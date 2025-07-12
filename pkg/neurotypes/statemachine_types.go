@@ -1,12 +1,6 @@
-// Package execution provides the core state machine infrastructure for NeuroShell command execution.
-// It implements a unified execution pipeline that handles builtin commands, stdlib scripts,
-// and user scripts through a well-defined state machine with integrated interpolation.
-package execution
-
-import (
-	"neuroshell/internal/parser"
-	"neuroshell/pkg/neurotypes"
-)
+// Package neurotypes defines core data types and interfaces for the NeuroShell state machine.
+// This package contains fundamental types used throughout the state machine execution pipeline.
+package neurotypes
 
 // State represents the current state of command execution in the state machine.
 type State int
@@ -20,12 +14,18 @@ const (
 	StateParsing
 	// StateResolving - Finding command in builtin registry, stdlib, or user scripts
 	StateResolving
+	// StateTryResolving - Handling try command setup and target extraction
+	StateTryResolving
 	// StateExecuting - Running builtin commands through the command registry
 	StateExecuting
+	// StateTryExecuting - Executing try target command with error capture
+	StateTryExecuting
 	// StateScriptLoaded - Script content loaded and ready for line-by-line processing
 	StateScriptLoaded
 	// StateScriptExecuting - Processing script lines through recursive state machine calls
 	StateScriptExecuting
+	// StateTryCompleted - Try command finished, set success/error variables
+	StateTryCompleted
 	// StateCompleted - Execution finished successfully
 	StateCompleted
 	// StateError - Execution failed with an error
@@ -43,12 +43,18 @@ func (s State) String() string {
 		return "Parsing"
 	case StateResolving:
 		return "Resolving"
+	case StateTryResolving:
+		return "TryResolving"
 	case StateExecuting:
 		return "Executing"
+	case StateTryExecuting:
+		return "TryExecuting"
 	case StateScriptLoaded:
 		return "ScriptLoaded"
 	case StateScriptExecuting:
 		return "ScriptExecuting"
+	case StateTryCompleted:
+		return "TryCompleted"
 	case StateCompleted:
 		return "Completed"
 	case StateError:
@@ -58,40 +64,15 @@ func (s State) String() string {
 	}
 }
 
-// CommandType represents the type of command being executed.
-type CommandType int
-
-const (
-	// CommandTypeBuiltin - Go-implemented command in the registry (highest priority)
-	CommandTypeBuiltin CommandType = iota
-	// CommandTypeStdlib - Embedded .neuro script in the binary (medium priority)
-	CommandTypeStdlib
-	// CommandTypeUser - User-defined .neuro script (lowest priority)
-	CommandTypeUser
-)
-
-// String returns a human-readable representation of the command type.
-func (ct CommandType) String() string {
-	switch ct {
-	case CommandTypeBuiltin:
-		return "Builtin"
-	case CommandTypeStdlib:
-		return "Stdlib"
-	case CommandTypeUser:
-		return "User"
-	default:
-		return "Unknown"
-	}
-}
-
-// ResolvedCommand represents a command that has been resolved through the priority system.
-type ResolvedCommand struct {
+// StateMachineResolvedCommand represents a command that has been resolved through the priority system.
+// This is specific to the state machine's needs and extends the base ResolvedCommand concept.
+type StateMachineResolvedCommand struct {
 	// Name of the command
 	Name string
 	// Type indicates whether this is a builtin, stdlib, or user command
 	Type CommandType
 	// BuiltinCommand is populated for builtin commands
-	BuiltinCommand neurotypes.Command
+	BuiltinCommand Command
 	// ScriptContent is populated for stdlib and user scripts
 	ScriptContent string
 	// ScriptPath is the path to the script file (for user scripts)
@@ -106,10 +87,10 @@ type StateSnapshot struct {
 	State State
 	// Input being processed
 	Input string
-	// Parsed command structure
-	ParsedCommand *parser.Command
+	// Parsed command structure (using interface{} to avoid import cycle)
+	ParsedCommand interface{}
 	// Resolved command information
-	ResolvedCommand *ResolvedCommand
+	ResolvedCommand *StateMachineResolvedCommand
 	// Script execution state
 	ScriptLines []string
 	CurrentLine int
@@ -119,8 +100,8 @@ type StateSnapshot struct {
 	Error error
 }
 
-// Config holds configuration options for the state machine.
-type Config struct {
+// StateMachineConfig holds configuration options for the state machine.
+type StateMachineConfig struct {
 	// EchoCommands controls whether to output command lines with %%> prefix
 	EchoCommands bool
 	// MacroExpansion enables command-level macro expansion
@@ -129,9 +110,9 @@ type Config struct {
 	RecursionLimit int
 }
 
-// DefaultConfig returns sensible default configuration for the state machine.
-func DefaultConfig() Config {
-	return Config{
+// DefaultStateMachineConfig returns sensible default configuration for the state machine.
+func DefaultStateMachineConfig() StateMachineConfig {
+	return StateMachineConfig{
 		EchoCommands:   false,
 		MacroExpansion: true,
 		RecursionLimit: 50,

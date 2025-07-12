@@ -2,7 +2,6 @@ package builtin
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"testing"
@@ -13,6 +12,7 @@ import (
 	"neuroshell/internal/commands"
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
+	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -112,19 +112,10 @@ func TestHelpCommand_Execute(t *testing.T) {
 	cmd := &HelpCommand{}
 
 	// Capture stdout
-	originalStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	err := cmd.Execute(map[string]string{}, "")
-
-	// Restore stdout
-	_ = w.Close()
-	os.Stdout = originalStdout
-
-	// Read captured output
-	output, _ := io.ReadAll(r)
-	outputStr := string(output)
+	var err error
+	outputStr := stringprocessing.CaptureOutput(func() {
+		err = cmd.Execute(map[string]string{}, "")
+	})
 
 	assert.NoError(t, err)
 
@@ -160,19 +151,10 @@ func TestHelpCommand_Execute_AlphabeticalOrder(t *testing.T) {
 	cmd := &HelpCommand{}
 
 	// Capture stdout
-	originalStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	err := cmd.Execute(map[string]string{}, "")
-
-	// Restore stdout
-	_ = w.Close()
-	os.Stdout = originalStdout
-
-	// Read captured output
-	output, _ := io.ReadAll(r)
-	outputStr := string(output)
+	var err error
+	outputStr := stringprocessing.CaptureOutput(func() {
+		err = cmd.Execute(map[string]string{}, "")
+	})
 
 	assert.NoError(t, err)
 
@@ -194,19 +176,10 @@ func TestHelpCommand_Execute_EmptyRegistry(t *testing.T) {
 	cmd := &HelpCommand{}
 
 	// Capture stdout
-	originalStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	err := cmd.Execute(map[string]string{}, "")
-
-	// Restore stdout
-	_ = w.Close()
-	os.Stdout = originalStdout
-
-	// Read captured output
-	output, _ := io.ReadAll(r)
-	outputStr := string(output)
+	var err error
+	outputStr := stringprocessing.CaptureOutput(func() {
+		err = cmd.Execute(map[string]string{}, "")
+	})
 
 	assert.NoError(t, err)
 
@@ -229,19 +202,10 @@ func TestHelpCommand_Execute_WithArgs(t *testing.T) {
 	args := map[string]string{"test": ""}
 
 	// Capture stdout
-	originalStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	err := cmd.Execute(args, "")
-
-	// Restore stdout
-	_ = w.Close()
-	os.Stdout = originalStdout
-
-	// Read captured output
-	output, _ := io.ReadAll(r)
-	outputStr := string(output)
+	var err error
+	outputStr := stringprocessing.CaptureOutput(func() {
+		err = cmd.Execute(args, "")
+	})
 
 	assert.NoError(t, err)
 	// Should show specific command help
@@ -263,19 +227,10 @@ func TestHelpCommand_Execute_WithInput(t *testing.T) {
 	input := "test"
 
 	// Capture stdout
-	originalStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	err := cmd.Execute(map[string]string{}, input)
-
-	// Restore stdout
-	_ = w.Close()
-	os.Stdout = originalStdout
-
-	// Read captured output
-	output, _ := io.ReadAll(r)
-	outputStr := string(output)
+	var err error
+	outputStr := stringprocessing.CaptureOutput(func() {
+		err = cmd.Execute(map[string]string{}, input)
+	})
 
 	assert.NoError(t, err)
 	// Should show specific command help
@@ -308,19 +263,10 @@ func TestHelpCommand_Execute_FormatConsistency(t *testing.T) {
 	cmd := &HelpCommand{}
 
 	// Capture stdout
-	originalStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	err := cmd.Execute(map[string]string{}, "")
-
-	// Restore stdout
-	_ = w.Close()
-	os.Stdout = originalStdout
-
-	// Read captured output
-	output, _ := io.ReadAll(r)
-	outputStr := string(output)
+	var err error
+	outputStr := stringprocessing.CaptureOutput(func() {
+		err = cmd.Execute(map[string]string{}, "")
+	})
 
 	assert.NoError(t, err)
 
@@ -342,19 +288,10 @@ func TestHelpCommand_Execute_StaticContent(t *testing.T) {
 	cmd := &HelpCommand{}
 
 	// Capture stdout
-	originalStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	err := cmd.Execute(map[string]string{}, "")
-
-	// Restore stdout
-	_ = w.Close()
-	os.Stdout = originalStdout
-
-	// Read captured output
-	output, _ := io.ReadAll(r)
-	outputStr := string(output)
+	var err error
+	outputStr := stringprocessing.CaptureOutput(func() {
+		err = cmd.Execute(map[string]string{}, "")
+	})
 
 	assert.NoError(t, err)
 
@@ -436,19 +373,10 @@ func TestHelpCommand_Execute_SpecificCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Capture stdout
-			originalStdout := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
-
-			err := cmd.Execute(tt.args, "")
-
-			// Restore stdout
-			_ = w.Close()
-			os.Stdout = originalStdout
-
-			// Read captured output
-			output, _ := io.ReadAll(r)
-			outputStr := string(output)
+			var err error
+			outputStr := stringprocessing.CaptureOutput(func() {
+				err = cmd.Execute(tt.args, "")
+			})
 
 			if tt.shouldError {
 				assert.Error(t, err)
@@ -545,19 +473,12 @@ func TestHelpCommand_Execute_StyleVariable(t *testing.T) {
 			cmd := &HelpCommand{}
 
 			// Capture stdout
-			originalStdout := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
+			var execErr error
+			outputStr := stringprocessing.CaptureOutput(func() {
+				execErr = cmd.Execute(map[string]string{}, "")
+			})
 
-			err = cmd.Execute(map[string]string{}, "")
-
-			// Restore stdout
-			_ = w.Close()
-			os.Stdout = originalStdout
-
-			// Read captured output
-			output, _ := io.ReadAll(r)
-			outputStr := string(output)
+			err = execErr
 
 			assert.NoError(t, err)
 
@@ -619,20 +540,13 @@ func TestHelpCommand_Execute_StyleVariable_SpecificCommand(t *testing.T) {
 			cmd := &HelpCommand{}
 
 			// Capture stdout
-			originalStdout := os.Stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
+			var execErr error
+			outputStr := stringprocessing.CaptureOutput(func() {
+				// Request help for specific command
+				execErr = cmd.Execute(map[string]string{"bash": ""}, "")
+			})
 
-			// Request help for specific command
-			err = cmd.Execute(map[string]string{"bash": ""}, "")
-
-			// Restore stdout
-			_ = w.Close()
-			os.Stdout = originalStdout
-
-			// Read captured output
-			output, _ := io.ReadAll(r)
-			outputStr := string(output)
+			err = execErr
 
 			assert.NoError(t, err)
 

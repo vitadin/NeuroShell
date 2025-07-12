@@ -1,7 +1,7 @@
-Setting _echo_commands = true
-%%> \model-catalog[search=nonexistentmodel123]
+Setting _echo_command = true
+%%> "\\model-catalog[search=nonexistentmodel123]"
 No models found matching 'nonexistentmodel123'.
-%%> \model-catalog[provider=openai, search=claude]
+%%> "\\model-catalog[provider=openai, search=claude]"
 No models found from openai matching 'claude'.
-%%> \model-catalog[provider=anthropic, search=gpt]
+%%> "\\model-catalog[provider=anthropic, search=gpt]"
 No models found from anthropic matching 'gpt'.

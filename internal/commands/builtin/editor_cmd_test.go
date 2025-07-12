@@ -393,3 +393,149 @@ func TestEditorCommand_ConcurrentExecution(t *testing.T) {
 		assert.Contains(t, err.Error(), "editor service not available")
 	}
 }
+
+func TestEditorCommand_Execute_WithInitialContent(t *testing.T) {
+	cmd := &EditorCommand{}
+
+	// Set up mock editor environment for fast testing
+	helper := testutils.SetupMockEditor()
+	defer helper.Cleanup()
+
+	// Set up complete service registry
+	registry := services.NewRegistry()
+
+	editorService := services.NewEditorService()
+	err := registry.RegisterService(editorService)
+	require.NoError(t, err)
+	err = editorService.Initialize()
+	require.NoError(t, err)
+	defer func() { _ = editorService.Cleanup() }()
+
+	variableService := services.NewVariableService()
+	err = registry.RegisterService(variableService)
+	require.NoError(t, err)
+	err = variableService.Initialize()
+	require.NoError(t, err)
+
+	services.SetGlobalRegistry(registry)
+	defer func() {
+		services.SetGlobalRegistry(services.NewRegistry())
+	}()
+
+	// Test with initial content
+	initialText := "Write a blog post about AI"
+	err = cmd.Execute(map[string]string{}, initialText)
+
+	// Should handle the initial content without panicking
+	if err != nil {
+		t.Logf("Execute with initial content failed (may be expected in test environment): %v", err)
+		// Verify the error mentions editor operation, not argument parsing
+		assert.Contains(t, err.Error(), "editor operation failed")
+	} else {
+		t.Logf("Editor command with initial content executed successfully")
+	}
+}
+
+func TestEditorCommand_Execute_EmptyVsInitialContent(t *testing.T) {
+	cmd := &EditorCommand{}
+
+	// Set up mock editor environment
+	helper := testutils.SetupMockEditor()
+	defer helper.Cleanup()
+
+	// Set up complete service registry
+	registry := services.NewRegistry()
+
+	editorService := services.NewEditorService()
+	err := registry.RegisterService(editorService)
+	require.NoError(t, err)
+	err = editorService.Initialize()
+	require.NoError(t, err)
+	defer func() { _ = editorService.Cleanup() }()
+
+	variableService := services.NewVariableService()
+	err = registry.RegisterService(variableService)
+	require.NoError(t, err)
+	err = variableService.Initialize()
+	require.NoError(t, err)
+
+	services.SetGlobalRegistry(registry)
+	defer func() {
+		services.SetGlobalRegistry(services.NewRegistry())
+	}()
+
+	// Test empty input
+	err1 := cmd.Execute(map[string]string{}, "")
+
+	// Test with content
+	err2 := cmd.Execute(map[string]string{}, "Hello world")
+
+	// Both should be handled without panicking
+	// Behavior should be consistent (both may fail due to mock environment)
+	if err1 != nil {
+		t.Logf("Empty editor execute failed (expected in test env): %v", err1)
+	}
+	if err2 != nil {
+		t.Logf("Content editor execute failed (expected in test env): %v", err2)
+	}
+
+	// Verify neither panicked or had argument parsing issues
+	assert.NotContains(t, fmt.Sprintf("%v", err1), "panic")
+	assert.NotContains(t, fmt.Sprintf("%v", err2), "panic")
+}
+
+func TestEditorCommand_Execute_VariousInitialContent(t *testing.T) {
+	cmd := &EditorCommand{}
+
+	// Set up minimal registry (will fail at service level, but we test argument handling)
+	registry := services.NewRegistry()
+	services.SetGlobalRegistry(registry)
+	defer func() {
+		services.SetGlobalRegistry(services.NewRegistry())
+	}()
+
+	testCases := []struct {
+		name    string
+		input   string
+		wantErr bool
+	}{
+		{
+			name:    "empty input",
+			input:   "",
+			wantErr: true, // Service not available
+		},
+		{
+			name:    "simple text",
+			input:   "Hello",
+			wantErr: true, // Service not available
+		},
+		{
+			name:    "multi-word text",
+			input:   "Write a blog post",
+			wantErr: true, // Service not available
+		},
+		{
+			name:    "text with special characters",
+			input:   "Hello! How are you? (fine)",
+			wantErr: true, // Service not available
+		},
+		{
+			name:    "whitespace only",
+			input:   "   ",
+			wantErr: true, // Service not available
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := cmd.Execute(map[string]string{}, tc.input)
+
+			if tc.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "editor service not available")
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

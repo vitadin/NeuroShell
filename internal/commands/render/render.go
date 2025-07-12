@@ -1,3 +1,4 @@
+// Package render provides rendering commands for NeuroShell.
 package render
 
 import (
@@ -197,17 +198,7 @@ func (c *Command) renderText(text string, args map[string]string, theme *service
 	// Apply keyword highlighting first if specified
 	if keywordsStr, exists := args["keywords"]; exists {
 		keywords := parser.ParseArrayValue(keywordsStr)
-
-		// Interpolate variables in keywords
-		interpolationService, err := services.GetGlobalInterpolationService()
-		if err == nil {
-			for i, keyword := range keywords {
-				if interpolated, err := interpolationService.InterpolateString(keyword); err == nil {
-					keywords[i] = interpolated
-				}
-			}
-		}
-
+		// Note: Variable interpolation is now handled by the state machine before commands execute
 		result = c.highlightKeywords(result, keywords, theme)
 	}
 
@@ -337,7 +328,7 @@ func (c *Command) applyGlobalStyling(text string, args map[string]string, theme 
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&Command{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&Command{}); err != nil {
 		panic(fmt.Sprintf("failed to register render command: %v", err))
 	}
 }

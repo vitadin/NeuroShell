@@ -1,5 +1,5 @@
 %% Backtick interpolation test
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% Verifies that variable interpolation works correctly with backticks
 
 %% Set up base variables with backticks

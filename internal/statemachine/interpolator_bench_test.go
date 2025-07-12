@@ -1,4 +1,4 @@
-package execution
+package statemachine
 
 import (
 	"fmt"

@@ -1,15 +1,12 @@
 package builtin
 
 import (
-	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"neuroshell/internal/context"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -63,8 +60,8 @@ func TestExitCommand_Execute(t *testing.T) {
 		assert.NoError(t, err, "Expected successful exit (code 0)")
 	}
 
-	// Check that "Goodbye!" was printed
-	assert.Contains(t, outputStr, "Goodbye!", "Expected 'Goodbye!' message in output")
+	// Exit command should not print any message - it just exits silently
+	// We just verify that the subprocess exited cleanly
 }
 
 // TestExitCommand_Execute_WithArgs tests that args are ignored
@@ -95,7 +92,8 @@ func TestExitCommand_Execute_WithArgs(t *testing.T) {
 		assert.NoError(t, err, "Expected successful exit (code 0)")
 	}
 
-	assert.Contains(t, outputStr, "Goodbye!", "Expected 'Goodbye!' message in output")
+	// Exit command should not print any message - it just exits silently
+	// We just verify that the subprocess exited cleanly with code 0
 }
 
 // TestExitCommand_Execute_WithInput tests that input is ignored
@@ -125,57 +123,31 @@ func TestExitCommand_Execute_WithInput(t *testing.T) {
 		assert.NoError(t, err, "Expected successful exit (code 0)")
 	}
 
-	assert.Contains(t, outputStr, "Goodbye!", "Expected 'Goodbye!' message in output")
+	// Exit command should not print any message - it just exits silently
+	// We just verify that the subprocess exited cleanly with code 0
 }
 
-// TestExitCommand_Execute_MessageOnly tests that the goodbye message is printed
-// This test captures stdout before the exit occurs by mocking the execution
+// TestExitCommand_Execute_MessageOnly tests the basic metadata without calling os.Exit
+// Since the exit command doesn't print any messages, we just test interface compliance
 func TestExitCommand_Execute_MessageOnly(t *testing.T) {
 	// We can't easily test the full Execute method due to os.Exit,
-	// but we can test the logic leading up to it by using a wrapper
+	// but we can test the command interface methods
 
-	// Create a testable version that doesn't call os.Exit
-	testableExitCommand := &struct {
-		*ExitCommand
-		exitCalled bool
-		exitCode   int
-	}{
-		ExitCommand: &ExitCommand{},
-	}
+	cmd := &ExitCommand{}
 
-	// Override Execute to capture the behavior without calling os.Exit
-	executeFunc := func(_ map[string]string, _ string, _ neurotypes.Context) error {
-		// Capture stdout
-		originalStdout := os.Stdout
-		r, w, _ := os.Pipe()
-		os.Stdout = w
+	// Test that all interface methods work correctly
+	assert.Equal(t, "exit", cmd.Name())
+	assert.Equal(t, "Exit the shell", cmd.Description())
+	assert.Equal(t, "\\exit", cmd.Usage())
+	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 
-		// Execute the part that prints the message
-		fmt.Println("Goodbye!")
-
-		// Restore stdout and read output
-		_ = w.Close()
-		os.Stdout = originalStdout
-		output, _ := io.ReadAll(r)
-		outputStr := string(output)
-
-		// Verify the message was printed
-		assert.Contains(t, outputStr, "Goodbye!")
-
-		// Mark that exit would have been called
-		testableExitCommand.exitCalled = true
-		testableExitCommand.exitCode = 0
-
-		return nil
-	}
-
-	ctx := context.NewTestContext()
-
-	// Test the execution logic
-	err := executeFunc(map[string]string{}, "", ctx)
-	assert.NoError(t, err)
-	assert.True(t, testableExitCommand.exitCalled)
-	assert.Equal(t, 0, testableExitCommand.exitCode)
+	// Test HelpInfo
+	helpInfo := cmd.HelpInfo()
+	assert.Equal(t, "exit", helpInfo.Command)
+	assert.Equal(t, "Exit the shell", helpInfo.Description)
+	assert.Equal(t, "\\exit", helpInfo.Usage)
+	assert.NotEmpty(t, helpInfo.Examples)
+	assert.NotEmpty(t, helpInfo.Notes)
 }
 
 // BenchmarkExitCommand tests the performance characteristics of the exit command

@@ -1,12 +1,11 @@
-Setting _echo_commands = true
-%%> \set[greeting="Hello"]
+Setting _echo_command = true
+%%> "\\set[greeting=\"Hello\"]"
 Setting greeting = Hello
-%%> \set[name="World"]
+%%> "\\set[name=\"World\"]"
 Setting name = World
-%%> \set[message="${greeting}, ${name}!"]
-%%> [expanded] \set[message="Hello, World!"]
+%%> "\\set[message=\"Hello, World!\"]"
 Setting message = Hello, World!
-%%> \get[message]
+%%> "\\get[message]"
 message = Hello, World!
-%%> \get[#test_mode]
+%%> "\\get[#test_mode]"
 #test_mode = true

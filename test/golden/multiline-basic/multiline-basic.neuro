@@ -1,8 +1,8 @@
 %% Basic multiline continuation test
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% Tests fundamental ... continuation functionality
 
-hello world ...
+\echo hello world ...
 this is continued
 
 %% Test with \echo command

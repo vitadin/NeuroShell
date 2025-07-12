@@ -41,13 +41,13 @@ Examples:
   \model-new[provider=openai, base_model=gpt-4] my-gpt4                  %% Create OpenAI GPT-4 model (manual)
   \model-new[provider=anthropic, base_model=claude-3-sonnet] claude-work %% Create Anthropic Claude model (manual)
   \model-new[catalog_id=CO4, max_tokens=4000] analysis-opus              %% Create Claude Opus 4 with custom max tokens
-  
+
 Required Options (choose one):
   Option A: catalog_id - Short model ID from catalog (e.g., CS4, O3, CO37) - auto-populates provider and base_model
   Option B: provider + base_model - Manual specification
     provider - LLM provider name (e.g., openai, anthropic, local)
     base_model - Provider's model identifier (e.g., gpt-4, claude-3-sonnet, llama-2)
-  
+
 Optional Parameters:
   temperature - Controls randomness (0.0-1.0, default varies by provider)
   max_tokens - Maximum tokens to generate (positive integer)
@@ -56,7 +56,7 @@ Optional Parameters:
   presence_penalty - Presence penalty (-2.0 to 2.0)
   frequency_penalty - Frequency penalty (-2.0 to 2.0)
   description - Human-readable description of the model configuration
-  
+
 Note: Model name is required and taken from the input parameter.
       Model names must be unique and cannot contain spaces.
       Use \model-catalog to see available catalog IDs.
@@ -189,11 +189,7 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Get interpolation service for variable interpolation
-	interpolationService, err := services.GetGlobalInterpolationService()
-	if err != nil {
-		return fmt.Errorf("interpolation service not available: %w", err)
-	}
+	// Note: Variable interpolation is now handled by the state machine before commands execute
 
 	// Get model catalog service for catalog_id support
 	modelCatalogService, err := services.GetGlobalModelCatalogService()
@@ -237,21 +233,7 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to auto-populate provider/base_model from catalog_id '%s'", catalogID)
 	}
 
-	// Interpolate variables in all string parameters
-	modelName, err = interpolationService.InterpolateString(modelName)
-	if err != nil {
-		return fmt.Errorf("failed to interpolate variables in model name: %w", err)
-	}
-
-	provider, err = interpolationService.InterpolateString(provider)
-	if err != nil {
-		return fmt.Errorf("failed to interpolate variables in provider: %w", err)
-	}
-
-	baseModel, err = interpolationService.InterpolateString(baseModel)
-	if err != nil {
-		return fmt.Errorf("failed to interpolate variables in base_model: %w", err)
-	}
+	// Note: Variable interpolation for model name, provider, and base_model is handled by state machine
 
 	// Parse optional parameters
 	parameters := make(map[string]any)
@@ -259,10 +241,8 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 
 	// Handle description separately
 	if desc, exists := args["description"]; exists {
-		description, err = interpolationService.InterpolateString(desc)
-		if err != nil {
-			return fmt.Errorf("failed to interpolate variables in description: %w", err)
-		}
+		description = desc
+		// Note: Variable interpolation for description is handled by state machine
 	}
 
 	// Parse numeric parameters
@@ -402,7 +382,7 @@ func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variabl
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&NewCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&NewCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register model-new command: %v", err))
 	}
 }

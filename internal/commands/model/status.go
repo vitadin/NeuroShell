@@ -130,11 +130,7 @@ func (c *StatusCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Get interpolation service for variable interpolation
-	interpolationService, err := services.GetGlobalInterpolationService()
-	if err != nil {
-		return fmt.Errorf("interpolation service not available: %w", err)
-	}
+	// Note: Variable interpolation is now handled by the state machine before commands execute
 
 	// Get all models
 	models, err := modelService.ListModelsWithGlobalContext()
@@ -142,24 +138,10 @@ func (c *StatusCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("failed to list models: %w", err)
 	}
 
-	// Parse and interpolate filter criteria
+	// Parse filter criteria (variable interpolation handled by state machine)
 	nameFilter := args["name"]
 	providerFilter := args["provider"]
 	sortBy := args["sort"]
-
-	if nameFilter != "" {
-		nameFilter, err = interpolationService.InterpolateString(nameFilter)
-		if err != nil {
-			return fmt.Errorf("failed to interpolate variables in name filter: %w", err)
-		}
-	}
-
-	if providerFilter != "" {
-		providerFilter, err = interpolationService.InterpolateString(providerFilter)
-		if err != nil {
-			return fmt.Errorf("failed to interpolate variables in provider filter: %w", err)
-		}
-	}
 
 	if sortBy == "" {
 		sortBy = "name" // Default sort
@@ -368,7 +350,7 @@ func (c *StatusCommand) updateStatusVariables(allModels map[string]*neurotypes.M
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&StatusCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&StatusCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register model-status command: %v", err))
 	}
 }

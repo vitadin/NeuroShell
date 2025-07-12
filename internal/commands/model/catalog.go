@@ -45,12 +45,12 @@ Examples:
   \model-catalog[search=CS4]                  %% Search by model ID (case-insensitive)
   \model-catalog[provider=openai,sort=name]   %% OpenAI models sorted by name
   \model-catalog[search=claude,sort=name]     %% Search for Claude models, sorted by name
-  
+
 Options:
   provider - Filter by provider: openai, anthropic, all (default: all)
   sort     - Sort order: name (alphabetical), provider (by provider then name)
   search   - Search query to filter models by ID, name, display name, or description
-  
+
 Note: Options can be combined. Default sort is by provider.
       Model catalog is stored in ${_output} variable.
       Shows model ID, display name, provider, capabilities, and context window.
@@ -526,7 +526,7 @@ func (c *CatalogCommand) getThemeObject() *services.Theme {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&CatalogCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&CatalogCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register model-catalog command: %v", err))
 	}
 }

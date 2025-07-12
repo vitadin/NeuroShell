@@ -1,21 +1,20 @@
-Setting _echo_commands = true
-%%> \set[cmd1="\\session-new"]
+Setting _echo_command = true
+%%> "\\set[cmd1=\"\\\\session-new\"]"
 Setting cmd1 = \\session-new
-%%> \set[cmd2="\\session-list"]
+%%> "\\set[cmd2=\"\\\\session-list\"]"
 Setting cmd2 = \\session-list
-%%> \render[keywords=[${cmd1}, ${cmd2}, \\help], theme=dark, style=bold, to=styled_output] Commands: ${cmd1}, ${cmd2}, and \\help are essential for session management
-%%> [expanded] \render[keywords=[\\session-new, \\session-list, \\help], theme=dark, style=bold, to=styled_output] Commands: \\session-new, \\session-list, and \\help are essential for session management
+%%> "\\render[keywords=[\\\\session-new, \\\\session-list, \\\\help], theme=dark, style=bold, to=styled_output] Commands: \\\\session-new, \\\\session-list, and \\\\help are essential for session management"
 Commands: \\session-new, \\session-list, and \\help are essential for session management
-%%> \get[styled_output]
+%%> "\\get[styled_output]"
 styled_output = Commands: \\session-new, \\session-list, and \\help are essential for session management
-%%> \render[keywords=[ \\get , \\set ], style=highlight] Spaces in array: \\get and \\set
+%%> "\\render[keywords=[ \\\\get , \\\\set ], style=highlight] Spaces in array: \\\\get and \\\\set"
 Spaces in array: \\get and \\set
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = Spaces in array: \\get and \\set
-%%> \render[keywords=["\\bash", '\\echo'], color=#ff0000] Quoted keywords: \\bash and \\echo commands
+%%> "\\render[keywords=[\"\\\\bash\", '\\\\echo'], color=#ff0000] Quoted keywords: \\\\bash and \\\\echo commands"
 Quoted keywords: \\bash and \\echo commands
-%%> \get[_output]
+%%> "\\get[_output]"
 _output = Quoted keywords: \\bash and \\echo commands
-%%> \render[keywords=[\\vars], silent=true] This should not appear in output but be stored
-%%> \get[_output]
+%%> "\\render[keywords=[\\\\vars], silent=true] This should not appear in output but be stored"
+%%> "\\get[_output]"
 _output = This should not appear in output but be stored

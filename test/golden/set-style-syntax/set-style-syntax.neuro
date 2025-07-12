@@ -1,5 +1,5 @@
 %% Test _style variable with different syntax variations
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% This test verifies _style works with both bracket and space syntax
 
 %% Test bracket syntax variations

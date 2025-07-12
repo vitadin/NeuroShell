@@ -1,20 +1,19 @@
-Setting _echo_commands = true
-%%> \set[code="`hello`"]
+Setting _echo_command = true
+%%> "\\set[code=\"`hello`\"]"
 Setting code = `hello`
-%%> \set[inline="Use `code` for inline"]
+%%> "\\set[inline=\"Use `code` for inline\"]"
 Setting inline = Use `code` for inline
-%%> \set[mixed="Mix 'quotes' and `backticks`"]
+%%> "\\set[mixed=\"Mix 'quotes' and `backticks`\"]"
 Setting mixed = Mix 'quotes' and `backticks`
-%%> \get[code]
+%%> "\\get[code]"
 code = `hello`
-%%> \get[inline]
+%%> "\\get[inline]"
 inline = Use `code` for inline
-%%> \get[mixed]
+%%> "\\get[mixed]"
 mixed = Mix 'quotes' and `backticks`
-%%> \set[greeting="Hello"]
+%%> "\\set[greeting=\"Hello\"]"
 Setting greeting = Hello
-%%> \set[with_backticks="Say `${greeting}` loudly"]
-%%> [expanded] \set[with_backticks="Say `Hello` loudly"]
+%%> "\\set[with_backticks=\"Say `Hello` loudly\"]"
 Setting with_backticks = Say `Hello` loudly
-%%> \get[with_backticks]
+%%> "\\get[with_backticks]"
 with_backticks = Say `Hello` loudly

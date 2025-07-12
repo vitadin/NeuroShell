@@ -1,6 +1,6 @@
-Setting _echo_commands = true
-%%> \session-new debug_session
+Setting _echo_command = true
+%%> "\\session-new debug_session"
 Created session 'debug_session' (ID: 00000001)
-%%> \session-list
+%%> "\\session-list"
 Sessions (1 total):
   debug_session    (ID: 00000001, active, 0 messages, created: 2025-01-01)

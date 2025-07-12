@@ -210,7 +210,7 @@ type Command interface {
 
 ### Code Review
 ```neuro
-\run[file="templates/code_review.neuro"]
+\templates/code_review.neuro
 \bash[git diff main > ${_output}]
 \send Review these changes: ${_output}
 \extract[pattern="LGTM|Needs work", from="${1}", to="decision"]

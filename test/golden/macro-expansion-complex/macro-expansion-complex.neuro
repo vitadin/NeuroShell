@@ -1,5 +1,5 @@
 %% Complex nested macro expansion test
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 
 %% Test 1: Command with variable parameters
 \set[cmd="\echo"]

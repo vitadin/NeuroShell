@@ -430,11 +430,11 @@ func TestCheckCommand_generateOutput(t *testing.T) {
 	if !strings.Contains(output, "service3") {
 		t.Error("Output should contain 'service3'")
 	}
-	if !strings.Contains(output, "✓") {
-		t.Error("Output should contain success checkmark")
+	if !strings.Contains(output, "[OK]") {
+		t.Error("Output should contain success indicator")
 	}
-	if !strings.Contains(output, "✗") {
-		t.Error("Output should contain failure cross")
+	if !strings.Contains(output, "[FAIL]") {
+		t.Error("Output should contain failure indicator")
 	}
 	if !strings.Contains(output, "not found") {
 		t.Error("Output should contain error message")

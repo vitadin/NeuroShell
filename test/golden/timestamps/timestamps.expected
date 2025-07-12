@@ -1,7 +1,7 @@
-Setting _echo_commands = true
-%%> \session-new[system="You are a helpful assistant"] test_session
+Setting _echo_command = true
+%%> "\\session-new[system=\"You are a helpful assistant\"] test_session"
 Created session 'test_session' (ID: 00000001)
-%%> \get[#session_id]
+%%> "\\get[#session_id]"
 #session_id = 00000001-0000-4000-8000-000000000001
-%%> \get[#session_name]
+%%> "\\get[#session_name]"
 #session_name = test_session

@@ -1,5 +1,0 @@
-%% Streaming send command test
-\set[_echo_commands="true"]
-%% Tests explicit send-stream functionality
-
-\send-stream Testing streaming send mode

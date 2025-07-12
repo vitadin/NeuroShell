@@ -1,29 +1,29 @@
-Setting _echo_commands = true
-%%> \set[_style="dark-theme!@#$%"]
+Setting _echo_command = true
+%%> "\\set[_style=\"dark-theme!@#$%\"]"
 Setting _style = dark-theme!@#$%
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = dark-theme!@#$%
-%%> \set[_style="theme with spaces"]
+%%> "\\set[_style=\"theme with spaces\"]"
 Setting _style = theme with spaces
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = theme with spaces
-%%> \set[_style="darк-théme-🌙"]
+%%> "\\set[_style=\"darк-théme-🌙\"]"
 Setting _style = darк-théme-🌙
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = darк-théme-🌙
-%%> \set[_style="this-is-a-very-long-style-name-with-lots-of-characters-and-dashes-and-underscores_and_numbers123"]
+%%> "\\set[_style=\"this-is-a-very-long-style-name-with-lots-of-characters-and-dashes-and-underscores_and_numbers123\"]"
 Setting _style = this-is-a-very-long-style-name-with-lots-of-characters-and-dashes-and-underscores_and_numbers123
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = this-is-a-very-long-style-name-with-lots-of-characters-and-dashes-and-underscores_and_numbers123
-%%> \set[_style="line1\nline2\nline3"]
+%%> "\\set[_style=\"line1\\nline2\\nline3\"]"
 Setting _style = line1\nline2\nline3
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = line1\nline2\nline3
-%%> \set[_style="\"quoted-style\""]
+%%> "\\set[_style=\"\\\"quoted-style\\\"\"]"
 Setting _style = \"quoted-style\"
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = \"quoted-style\"
-%%> \set[_style="simple"]
+%%> "\\set[_style=\"simple\"]"
 Setting _style = simple
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = simple

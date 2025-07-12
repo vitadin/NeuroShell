@@ -1,29 +1,29 @@
-Setting _echo_commands = true
-%%> \set[inline_code="Use `console.log()` for debugging"]
+Setting _echo_command = true
+%%> "\\set[inline_code=\"Use `console.log()` for debugging\"]"
 Setting inline_code = Use `console.log()` for debugging
-%%> \set[function_ref="Call the `getData()` function"]
+%%> "\\set[function_ref=\"Call the `getData()` function\"]"
 Setting function_ref = Call the `getData()` function
-%%> \set[code_block="```\nfunction hello() {\n  console.log('world');\n}\n```"]
+%%> "\\set[code_block=\"```\\nfunction hello() {\\n  console.log('world');\\n}\\n```\"]"
 Setting code_block = ```\nfunction hello() {\n  console.log('world');\n}\n```
-%%> \set[bash_block="```bash\nls -la\ngrep pattern file.txt\n```"]
+%%> "\\set[bash_block=\"```bash\\nls -la\\ngrep pattern file.txt\\n```\"]"
 Setting bash_block = ```bash\nls -la\ngrep pattern file.txt\n```
-%%> \set[nested="Inside `code` we can have ```blocks```"]
+%%> "\\set[nested=\"Inside `code` we can have ```blocks```\"]"
 Setting nested = Inside `code` we can have ```blocks```
-%%> \set[complex="Mix `inline`, ```blocks```, and 'quotes'"]
+%%> "\\set[complex=\"Mix `inline`, ```blocks```, and 'quotes'\"]"
 Setting complex = Mix `inline`, ```blocks```, and 'quotes'
-%%> \set[readme="# README\n\nInstall with `npm install`\n\n```javascript\nconst app = require('app');\n```"]
+%%> "\\set[readme=\"# README\\n\\nInstall with `npm install`\\n\\n```javascript\\nconst app = require('app');\\n```\"]"
 Setting readme = # README\n\nInstall with `npm install`\n\n```javascript\nconst app = require('app');\n```
-%%> \get[inline_code]
+%%> "\\get[inline_code]"
 inline_code = Use `console.log()` for debugging
-%%> \get[function_ref]
+%%> "\\get[function_ref]"
 function_ref = Call the `getData()` function
-%%> \get[code_block]
+%%> "\\get[code_block]"
 code_block = ```\nfunction hello() {\n  console.log('world');\n}\n```
-%%> \get[bash_block]
+%%> "\\get[bash_block]"
 bash_block = ```bash\nls -la\ngrep pattern file.txt\n```
-%%> \get[nested]
+%%> "\\get[nested]"
 nested = Inside `code` we can have ```blocks```
-%%> \get[complex]
+%%> "\\get[complex]"
 complex = Mix `inline`, ```blocks```, and 'quotes'
-%%> \get[readme]
+%%> "\\get[readme]"
 readme = # README\n\nInstall with `npm install`\n\n```javascript\nconst app = require('app');\n```

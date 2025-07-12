@@ -1,5 +1,5 @@
 %% Test model creation with parameters
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 \model-new[provider="anthropic", base_model="claude-3-sonnet", temperature="0.8", max_tokens="2000", description="Advanced model for creative tasks"] creative-claude
 \get[#model_id]
 \get[#model_name]

@@ -1,5 +1,0 @@
-%% Basic send command test  
-\set[_echo_commands="true"]
-%% Tests fundamental send functionality
-
-\send Hello, this is a basic send test

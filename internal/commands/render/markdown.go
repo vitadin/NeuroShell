@@ -111,13 +111,10 @@ func (c *MarkdownCommand) Execute(args map[string]string, input string) error {
 	}
 
 	// Get markdown service
-	markdownService, err := services.GetGlobalRegistry().GetService("markdown")
+	mdService, err := services.GetGlobalMarkdownService()
 	if err != nil {
 		return fmt.Errorf("markdown service not available: %w", err)
 	}
-
-	// Cast to MarkdownService
-	mdService := markdownService.(*services.MarkdownService)
 
 	// Render the markdown content using theme integration with configurable escape processing
 	// Note: raw=true means DON'T interpret escapes, so we pass !raw to interpretEscapes
@@ -145,7 +142,7 @@ func (c *MarkdownCommand) Execute(args map[string]string, input string) error {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&MarkdownCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&MarkdownCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register render-markdown command: %v", err))
 	}
 }

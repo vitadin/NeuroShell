@@ -1,5 +1,5 @@
 %% Test nested \try commands to verify proper error handling
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% This test covers \try \try scenarios and complex error propagation
 
 %% Test successful nested try

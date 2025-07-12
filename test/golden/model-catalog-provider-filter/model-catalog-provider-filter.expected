@@ -1,5 +1,5 @@
-Setting _echo_commands = true
-%%> \model-catalog[provider=openai]
+Setting _echo_command = true
+%%> "\\model-catalog[provider=openai]"
 Model Catalog (Openai) (2 models):
   [O3] O3 (o3)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -23,7 +23,7 @@ Model Catalog (Openai) (2 models):
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
-%%> \model-catalog[provider=anthropic]
+%%> "\\model-catalog[provider=anthropic]"
 Model Catalog (Anthropic) (4 models):
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Context: 200,000 tokens (max output: 4,096 tokens)
@@ -57,7 +57,7 @@ Model Catalog (Anthropic) (4 models):
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2025-03-01
     Description: High intelligence and balanced performance
-%%> \model-catalog[provider=all]
+%%> "\\model-catalog[provider=all]"
 Model Catalog (6 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)

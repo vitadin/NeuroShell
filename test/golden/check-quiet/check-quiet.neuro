@@ -1,5 +1,5 @@
 %% Test check command quiet mode
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% This test verifies that \check[quiet=true] doesn't produce console output
 %% but still sets the result variables
 \check[quiet=true]

@@ -41,11 +41,11 @@ Examples:
   \session-list[sort=updated]             %% List sessions sorted by last update (newest first)
   \session-list[filter=active]            %% Show only the active session
   \session-list[sort=name,filter=active]  %% Show active session only, sorted by name
-  
+
 Options:
   sort   - Sort order: name (alphabetical), created (newest first), updated (newest first)
   filter - Filter criteria: active (only active session), all (default)
-  
+
 Note: Options can be combined. Default sort is by creation time (newest first).
       Session list is stored in ${_output} variable.`
 }
@@ -256,7 +256,7 @@ func (c *ListCommand) formatSessionList(sessions []*neurotypes.ChatSession) stri
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&ListCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&ListCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-list command: %v", err))
 	}
 }

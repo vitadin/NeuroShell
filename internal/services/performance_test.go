@@ -6,7 +6,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"neuroshell/internal/context"
-	"neuroshell/internal/parser"
 )
 
 // Comprehensive performance tests for service operations
@@ -22,26 +21,10 @@ func BenchmarkServiceInitialization(b *testing.B) {
 		}
 	})
 
-	b.Run("ScriptService", func(b *testing.B) {
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			service := NewScriptService()
-			_ = service.Initialize()
-		}
-	})
-
 	b.Run("ExecutorService", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			service := NewExecutorService()
-			_ = service.Initialize()
-		}
-	})
-
-	b.Run("InterpolationService", func(b *testing.B) {
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			service := NewInterpolationService()
 			_ = service.Initialize()
 		}
 	})
@@ -160,86 +143,6 @@ func BenchmarkExecutorService_CommandParsing(b *testing.B) {
 	}
 }
 
-// BenchmarkInterpolationService_ComplexStrings tests interpolation with complex patterns
-func BenchmarkInterpolationService_ComplexStrings(b *testing.B) {
-	service := NewInterpolationService()
-
-	err := service.Initialize()
-	require.NoError(b, err)
-
-	testStrings := []string{
-		"Simple: ${var}",
-		"Multiple: ${var1} ${var2} ${var3}",
-		"System: ${@user} ${@pwd} ${#session_id}",
-		"Complex: ${prefix}${middle}${suffix}",
-		"Very long string with ${many} ${different} ${variables} ${scattered} ${throughout} ${the} ${text} ${to} ${test} ${performance}",
-		"Nested-like: ${var_${type}_${id}}",
-		"Mixed: Regular text ${var1} more text ${var2} final text",
-		"Unicode: 测试 ${chinese_var} 中文 ${unicode} 字符",
-		"Special chars: ${var} !@#$%^&*()_+-=[]{}|;':\",./<>?",
-		"Empty vars: ${} ${empty} ${blank}",
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		str := testStrings[i%len(testStrings)]
-		// Setup global context for each test iteration
-		ctx := context.NewTestContext()
-		context.SetGlobalContext(ctx)
-		defer context.ResetGlobalContext()
-
-		_, _ = service.InterpolateString(str)
-	}
-}
-
-// BenchmarkInterpolationService_CommandStructures tests command interpolation
-func BenchmarkInterpolationService_CommandStructures(b *testing.B) {
-	service := NewInterpolationService()
-
-	err := service.Initialize()
-	require.NoError(b, err)
-
-	commands := []*parser.Command{
-		{
-			Name:    "set",
-			Message: "Simple ${var}",
-			Options: map[string]string{"key": "${value}"},
-		},
-		{
-			Name:    "send",
-			Message: "Complex message with ${multiple} ${variables} ${here}",
-			Options: map[string]string{
-				"model":       "${ai_model}",
-				"temperature": "${temp}",
-				"system":      "${system_prompt}",
-				"max_tokens":  "${tokens}",
-			},
-		},
-		{
-			Name:           "complex",
-			Message:        "${greeting}, ${name}! Today is ${@date} and you're in ${@pwd}",
-			BracketContent: "arg1=${val1}, arg2=${val2}, arg3=${val3}",
-			Options: map[string]string{
-				"option1": "${nested_${type}_value}",
-				"option2": "${prefix}${middle}${suffix}",
-				"option3": "Static value",
-				"option4": "${@user}_${#session_id}",
-			},
-		},
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		cmd := commands[i%len(commands)]
-		// Setup global context for each test iteration
-		ctx := context.NewTestContext()
-		context.SetGlobalContext(ctx)
-		defer context.ResetGlobalContext()
-
-		_, _ = service.InterpolateCommand(cmd)
-	}
-}
-
 // BenchmarkConcurrentServiceUsage tests concurrent service operations
 func BenchmarkConcurrentServiceUsage(b *testing.B) {
 	b.Run("VariableService_Concurrent", func(b *testing.B) {
@@ -306,15 +209,11 @@ func BenchmarkMemoryUsage(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
 			vs := NewVariableService()
-			ss := NewScriptService()
 			es := NewExecutorService()
-			is := NewInterpolationService()
 
 			// Prevent optimization
 			_ = vs.Name()
-			_ = ss.Name()
 			_ = es.Name()
-			_ = is.Name()
 		}
 	})
 

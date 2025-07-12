@@ -1,57 +1,51 @@
-Setting _echo_commands = true
-%%> \get[_style]
+Setting _echo_command = true
+%%> "\\get[_style]"
 _style = 
-%%> \set[_style="dark"]
+%%> "\\set[_style=\"dark\"]"
 Setting _style = dark
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = dark
-%%> \set[theme="light"]
+%%> "\\set[theme=\"light\"]"
 Setting theme = light
-%%> \set[mode="compact"]
+%%> "\\set[mode=\"compact\"]"
 Setting mode = compact
-%%> \set[_style="${theme}-${mode}"]
-%%> [expanded] \set[_style="light-compact"]
+%%> "\\set[_style=\"light-compact\"]"
 Setting _style = light-compact
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = light-compact
-%%> \set[current_theme="Theme: ${_style}"]
-%%> [expanded] \set[current_theme="Theme: light-compact"]
+%%> "\\set[current_theme=\"Theme: light-compact\"]"
 Setting current_theme = Theme: light-compact
-%%> \get[current_theme]
+%%> "\\get[current_theme]"
 current_theme = Theme: light-compact
-%%> \set[base="material"]
+%%> "\\set[base=\"material\"]"
 Setting base = material
-%%> \set[variant="design"]
+%%> "\\set[variant=\"design\"]"
 Setting variant = design
-%%> \set[version="v3"]
+%%> "\\set[version=\"v3\"]"
 Setting version = v3
-%%> \set[_style="${base}-${variant}-${version}"]
-%%> [expanded] \set[_style="material-design-v3"]
+%%> "\\set[_style=\"material-design-v3\"]"
 Setting _style = material-design-v3
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = material-design-v3
-%%> \set _style ${base}-minimal
-%%> [expanded] \set _style material-minimal
+%%> "\\set _style material-minimal"
 Setting _style = material-minimal
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = material-minimal
-%%> \set[_style="${theme}-${mode}-${version}"]
-%%> [expanded] \set[_style="light-compact-v3"]
+%%> "\\set[_style=\"light-compact-v3\"]"
 Setting _style = light-compact-v3
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = light-compact-v3
-%%> \set _style modern
+%%> "\\set _style modern"
 Setting _style = modern
-%%> \set[_style="${_style}-enhanced"]
-%%> [expanded] \set[_style="modern-enhanced"]
+%%> "\\set[_style=\"modern-enhanced\"]"
 Setting _style = modern-enhanced
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = modern-enhanced
-%%> \get[theme]
+%%> "\\get[theme]"
 theme = light
-%%> \get[mode]
+%%> "\\get[mode]"
 mode = compact
-%%> \get[base]
+%%> "\\get[base]"
 base = material
-%%> \get[_style]
+%%> "\\get[_style]"
 _style = modern-enhanced

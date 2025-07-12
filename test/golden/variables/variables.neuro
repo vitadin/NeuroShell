@@ -1,5 +1,5 @@
 %% Variables and interpolation test
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 \set[greeting="Hello"]
 \set[name="World"]
 \set[message="${greeting}, ${name}!"]

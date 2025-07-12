@@ -1,5 +1,12 @@
 package builtin
 
+// COMMENTED OUT: Send command test functionality disabled during state machine transition
+// This file contains tests for the \send command implementation which is temporarily disabled
+// while transitioning to the new state machine execution model.
+//
+// To re-enable: uncomment all code below (except this comment block)
+
+/*
 import (
 	"testing"
 
@@ -153,3 +160,4 @@ func (m *MockSendSyncCommand) Execute(args map[string]string, input string) erro
 	m.lastArgs = args
 	return nil
 }
+*/

@@ -101,21 +101,6 @@ func (r *Registry) GetVariableService() (*VariableService, error) {
 	return variableService, nil
 }
 
-// GetInterpolationService retrieves the interpolation service with proper type casting.
-func (r *Registry) GetInterpolationService() (*InterpolationService, error) {
-	service, err := r.GetService("interpolation")
-	if err != nil {
-		return nil, err
-	}
-
-	interpolationService, ok := service.(*InterpolationService)
-	if !ok {
-		return nil, fmt.Errorf("interpolation service has incorrect type")
-	}
-
-	return interpolationService, nil
-}
-
 // GetThemeService retrieves the theme service with proper type casting.
 func (r *Registry) GetThemeService() (*ThemeService, error) {
 	service, err := r.GetService("theme")
@@ -308,11 +293,6 @@ func GetGlobalVariableService() (*VariableService, error) {
 	return GetGlobalRegistry().GetVariableService()
 }
 
-// GetGlobalInterpolationService returns the interpolation service from the global registry.
-func GetGlobalInterpolationService() (*InterpolationService, error) {
-	return GetGlobalRegistry().GetInterpolationService()
-}
-
 // GetGlobalThemeService returns the theme service from the global registry.
 func GetGlobalThemeService() (*ThemeService, error) {
 	return GetGlobalRegistry().GetThemeService()
@@ -366,4 +346,13 @@ func GetGlobalLLMService() (neurotypes.LLMService, error) {
 // GetGlobalClientFactoryService returns the client factory service from the global registry.
 func GetGlobalClientFactoryService() (*ClientFactoryService, error) {
 	return GetGlobalRegistry().GetClientFactoryService()
+}
+
+// GetGlobalMarkdownService returns the markdown service from the global registry.
+func GetGlobalMarkdownService() (*MarkdownService, error) {
+	service, err := GlobalRegistry.GetService("markdown")
+	if err != nil {
+		return nil, err
+	}
+	return service.(*MarkdownService), nil
 }

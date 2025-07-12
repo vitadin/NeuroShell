@@ -444,40 +444,7 @@ func TestNewCommand_Execute_DuplicateModelNames(t *testing.T) {
 	assert.Contains(t, err.Error(), "model name 'duplicate-test' already exists")
 }
 
-func TestNewCommand_Execute_VariableInterpolation(t *testing.T) {
-	cmd := &NewCommand{}
-	ctx := context.New()
-	setupModelTestRegistry(t, ctx)
-
-	// Set up test variables
-	require.NoError(t, ctx.SetVariable("model_prefix", "test"))
-	require.NoError(t, ctx.SetVariable("provider_name", "openai"))
-	require.NoError(t, ctx.SetVariable("model_desc", "Test model for experiments"))
-
-	// Create model with variable interpolation
-	args := map[string]string{
-		"provider":    "${provider_name}",
-		"base_model":  "gpt-4",
-		"description": "${model_desc}",
-	}
-	input := "${model_prefix}-model"
-
-	err := cmd.Execute(args, input)
-	assert.NoError(t, err)
-
-	// Check that variables were interpolated
-	modelName, err := ctx.GetVariable("#model_name")
-	assert.NoError(t, err)
-	assert.Equal(t, "test-model", modelName)
-
-	modelProvider, err := ctx.GetVariable("#model_provider")
-	assert.NoError(t, err)
-	assert.Equal(t, "openai", modelProvider)
-
-	modelDesc, err := ctx.GetVariable("#model_description")
-	assert.NoError(t, err)
-	assert.Equal(t, "Test model for experiments", modelDesc)
-}
+// TestNewCommand_Execute_VariableInterpolation removed - interpolation is now handled by state machine
 
 func TestNewCommand_Execute_CustomParameters(t *testing.T) {
 	cmd := &NewCommand{}
@@ -610,39 +577,6 @@ func TestNewCommand_Execute_EdgeCases(t *testing.T) {
 			}
 		})
 	}
-}
-
-// setupModelTestRegistry sets up a test environment with required services
-func setupModelTestRegistry(t *testing.T, ctx neurotypes.Context) {
-	// Create a new registry for testing
-	oldRegistry := services.GetGlobalRegistry()
-	services.SetGlobalRegistry(services.NewRegistry())
-
-	// Set the test context as global context
-	context.SetGlobalContext(ctx)
-
-	// Register required services
-	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
-	require.NoError(t, err)
-
-	err = services.GetGlobalRegistry().RegisterService(services.NewInterpolationService())
-	require.NoError(t, err)
-
-	err = services.GetGlobalRegistry().RegisterService(services.NewModelService())
-	require.NoError(t, err)
-
-	err = services.GetGlobalRegistry().RegisterService(services.NewModelCatalogService())
-	require.NoError(t, err)
-
-	// Initialize services
-	err = services.GetGlobalRegistry().InitializeAll()
-	require.NoError(t, err)
-
-	// Cleanup function to restore original registry
-	t.Cleanup(func() {
-		services.SetGlobalRegistry(oldRegistry)
-		context.ResetGlobalContext()
-	})
 }
 
 func TestNewCommand_Execute_CatalogID(t *testing.T) {
@@ -906,6 +840,38 @@ func TestNewCommand_Execute_CatalogIDEdgeCases(t *testing.T) {
 			}
 		})
 	}
+}
+
+// setupModelTestRegistry sets up a test environment with required services for model commands
+func setupModelTestRegistry(t *testing.T, ctx neurotypes.Context) {
+	// Create a new registry for testing
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
+
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
+
+	// Register required services
+	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().RegisterService(services.NewModelService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().RegisterService(services.NewModelCatalogService())
+	require.NoError(t, err)
+
+	// Note: InterpolationService removed - state machine handles interpolation
+
+	// Initialize services
+	err = services.GetGlobalRegistry().InitializeAll()
+	require.NoError(t, err)
+
+	// Cleanup function to restore original registry
+	t.Cleanup(func() {
+		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
+	})
 }
 
 // Interface compliance check
