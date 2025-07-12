@@ -49,6 +49,9 @@ type NeuroContext struct {
 	registeredCommands map[string]bool                 // Track registered command names for autocomplete
 	commandHelpInfo    map[string]*neurotypes.HelpInfo // Store detailed help info for autocomplete and help system
 	commandMutex       sync.RWMutex                    // Protects registeredCommands and commandHelpInfo maps
+
+	// Script metadata protection
+	scriptMutex sync.RWMutex // Protects scriptMetadata map
 }
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
@@ -391,17 +394,23 @@ func (ctx *NeuroContext) PeekQueue() []string {
 
 // SetScriptMetadata stores metadata associated with script execution.
 func (ctx *NeuroContext) SetScriptMetadata(key string, value interface{}) {
+	ctx.scriptMutex.Lock()
+	defer ctx.scriptMutex.Unlock()
 	ctx.scriptMetadata[key] = value
 }
 
 // GetScriptMetadata retrieves metadata by key, returning the value and existence flag.
 func (ctx *NeuroContext) GetScriptMetadata(key string) (interface{}, bool) {
+	ctx.scriptMutex.RLock()
+	defer ctx.scriptMutex.RUnlock()
 	value, exists := ctx.scriptMetadata[key]
 	return value, exists
 }
 
 // ClearScriptMetadata removes all script metadata.
 func (ctx *NeuroContext) ClearScriptMetadata() {
+	ctx.scriptMutex.Lock()
+	defer ctx.scriptMutex.Unlock()
 	ctx.scriptMetadata = make(map[string]interface{})
 }
 

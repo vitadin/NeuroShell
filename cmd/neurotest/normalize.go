@@ -80,6 +80,44 @@ func (ne *NormalizationEngine) initBuiltinPatterns() {
 		MinLen:  5,
 		MaxLen:  100,
 	})
+
+	// Platform-specific ls error message patterns
+	// Linux: "ls: cannot access '/path': No such file or directory"
+	// macOS: "ls: /path: No such file or directory"
+	lsErrorLinuxPattern := regexp.MustCompile(`ls: cannot access '([^']+)': No such file or directory`)
+	lsErrorMacOSPattern := regexp.MustCompile(`ls: ([^:]+): No such file or directory`)
+
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "LS_ERROR_LINUX",
+		Pattern: lsErrorLinuxPattern,
+		MinLen:  10,
+		MaxLen:  200,
+	})
+
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "LS_ERROR_MACOS",
+		Pattern: lsErrorMacOSPattern,
+		MinLen:  10,
+		MaxLen:  200,
+	})
+
+	// Exit status normalization for ls commands (macOS=1, Linux=2)
+	exitStatusPattern := regexp.MustCompile(`Exit status: [12]`)
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "EXIT_STATUS_LS",
+		Pattern: exitStatusPattern,
+		MinLen:  12,
+		MaxLen:  15,
+	})
+
+	// Status variable normalization for ls commands (_status = 1 or 2)
+	statusVarPattern := regexp.MustCompile(`_status = [12]`)
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "STATUS_VAR_LS",
+		Pattern: statusVarPattern,
+		MinLen:  10,
+		MaxLen:  12,
+	})
 }
 
 // NormalizeOutput normalizes output by replacing known patterns with placeholders
@@ -91,6 +129,10 @@ func (ne *NormalizationEngine) NormalizeOutput(output string) string {
 		normalized = pattern.Pattern.ReplaceAllStringFunc(normalized, func(match string) string {
 			// Check if match length is within expected range
 			if len(match) >= pattern.MinLen && len(match) <= pattern.MaxLen {
+				// Special handling for ls error patterns - normalize both to same form
+				if pattern.Name == "LS_ERROR_LINUX" || pattern.Name == "LS_ERROR_MACOS" {
+					return "{{LS_ERROR}}"
+				}
 				return fmt.Sprintf("{{%s}}", pattern.Name)
 			}
 			return match
@@ -169,6 +211,16 @@ func (ne *NormalizationEngine) MatchLineWithPlaceholders(expected, actual string
 			placeholderRegex = `(?:[A-Za-z]:\\|/)[^\s<>"]*.{0,500}`
 		case "USER":
 			placeholderRegex = `/Users/[^/\s]+|/home/[^/\s]+|C:\\Users\\[^\\s]+`
+		case "LS_ERROR_LINUX":
+			placeholderRegex = `ls: cannot access '([^']+)': No such file or directory`
+		case "LS_ERROR_MACOS":
+			placeholderRegex = `ls: ([^:]+): No such file or directory`
+		case "LS_ERROR":
+			placeholderRegex = `ls: (cannot access '([^']+)'|([^:]+)): No such file or directory`
+		case "EXIT_STATUS_LS":
+			placeholderRegex = `Exit status: [12]`
+		case "STATUS_VAR_LS":
+			placeholderRegex = `_status = [12]`
 		case "PLACEHOLDER":
 			placeholderRegex = fmt.Sprintf(`.{%d,%d}`, minLen, maxLen)
 		default:
