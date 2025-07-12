@@ -1,7 +1,12 @@
-//go:build !minimal
-
 package builtin
 
+// COMMENTED OUT: Send command functionality disabled during state machine transition
+// This file contains the \send command implementation which is temporarily disabled
+// while transitioning to the new state machine execution model.
+//
+// To re-enable: uncomment all code below (except this comment block)
+
+/*
 import (
 	"fmt"
 
@@ -265,3 +270,4 @@ func init() {
 		panic(fmt.Sprintf("failed to register send command: %v", err))
 	}
 }
+*/

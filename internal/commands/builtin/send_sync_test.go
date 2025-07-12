@@ -1,5 +1,12 @@
 package builtin
 
+// COMMENTED OUT: Send-sync command test functionality disabled during state machine transition
+// This file contains tests for the \send-sync command implementation which is temporarily disabled
+// while transitioning to the new state machine execution model.
+//
+// To re-enable: uncomment all code below (except this comment block)
+
+/*
 import (
 	"testing"
 
@@ -234,3 +241,4 @@ func TestSendSyncCommand_Execute_ServiceErrors(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to get variable service")
 }
+*/

@@ -103,9 +103,10 @@ func setupTestEnvironment(t *testing.T) func() {
 	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.GetCommand{}))
 	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.HelpCommand{}))
 	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.ExitCommand{}))
-	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendCommand{}))
-	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendSyncCommand{}))
-	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendStreamCommand{}))
+	// Send commands commented out during state machine transition
+	// require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendCommand{}))
+	// require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendSyncCommand{}))
+	// require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendStreamCommand{}))
 	// Note: Bash command has been removed
 
 	// Initialize services
@@ -231,12 +232,13 @@ func TestProcessInput_ValidCommands(t *testing.T) {
 			expectError: false,
 			setup:       func(_ *testing.T) {},
 		},
-		{
-			name:        "plain text auto-send",
-			rawArgs:     []string{"hello", "world"},
-			expectError: false, // send command is implemented and working
-			setup:       func(_ *testing.T) {},
-		},
+		// COMMENTED OUT: Send command disabled during state machine transition
+		// {
+		//	name:        "plain text auto-send",
+		//	rawArgs:     []string{"hello", "world"},
+		//	expectError: false, // send command is implemented and working
+		//	setup:       func(_ *testing.T) {},
+		// },
 	}
 
 	for _, tt := range tests {
@@ -287,12 +289,13 @@ func TestProcessInput_CommandParsing(t *testing.T) {
 			expectedCmd:     "get",
 			expectedMessage: "var",
 		},
-		{
-			name:            "auto-send plain text",
-			rawArgs:         []string{"just", "plain", "text"},
-			expectedCmd:     "send",
-			expectedMessage: "just plain text",
-		},
+		// COMMENTED OUT: Send command disabled during state machine transition
+		// {
+		//	name:            "auto-send plain text",
+		//	rawArgs:         []string{"just", "plain", "text"},
+		//	expectedCmd:     "send",
+		//	expectedMessage: "just plain text",
+		// },
 	}
 
 	for _, tt := range tests {

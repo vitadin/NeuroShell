@@ -30,9 +30,10 @@ func setupTestEnvironment(t *testing.T) func() {
 	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.GetCommand{}))
 	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.HelpCommand{}))
 	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.ExitCommand{}))
-	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendCommand{}))
-	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendSyncCommand{}))
-	require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendStreamCommand{}))
+	// Send commands commented out during state machine transition
+	// require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendCommand{}))
+	// require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendSyncCommand{}))
+	// require.NoError(t, commands.GetGlobalRegistry().Register(&builtin.SendStreamCommand{}))
 
 	// Initialize services
 	if err := services.GetGlobalRegistry().RegisterService(services.NewVariableService()); err != nil {
