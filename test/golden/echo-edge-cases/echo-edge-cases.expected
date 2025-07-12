@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \echo[raw=true] Unicode: 世界\nEmoji: 🌍
 Unicode: 世界\nEmoji: 🌍
 %%> \echo[raw=false] Unicode: 世界\nEmoji: 🌍
@@ -24,7 +24,6 @@ Leading and trailing spaces   \n\t
 %%> \echo[raw=false]    Leading and trailing spaces   \n\t
 Leading and trailing spaces   
 %%> \echo[raw=true] Shell chars: $PATH ${HOME} `command` $(subshell)
-%%> [expanded] \echo[raw=true] Shell chars: $PATH  `command` $(subshell)
 Shell chars: $PATH  `command` $(subshell)
 %%> \echo[raw=true] Backslashes: \\ \\\\ \\n \\t \\r
 Backslashes: \\ \\\\ \\n \\t \\r
