@@ -1,5 +1,5 @@
 %% Test session list with sort by name
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% Create sessions in reverse alphabetical order, then sort by name
 
 %% Create sessions in reverse alphabetical order

@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \session-new test_session
 Created session 'test_session' (ID: 00000001)
 %%> \session-list

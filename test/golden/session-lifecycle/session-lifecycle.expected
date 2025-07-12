@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \session-new[system="You are a test assistant"] lifecycle_test
 Created session 'lifecycle_test' (ID: 00000001)
 %%> \get[#session_name]
@@ -15,8 +15,7 @@ Deleted session 'lifecycle_test' (ID: 00000001)
 Created session 'id_test' (ID: 00000002)
 %%> \get[#session_id]
 #session_id = 00000002-0000-4000-8000-000000000002
-%%> \session-delete ${#session_id}
-%%> [expanded] \session-delete 00000002-0000-4000-8000-000000000002
+%%> \session-delete 00000002-0000-4000-8000-000000000002
 Deleted session 'id_test' (ID: 00000002)
 %%> \get[#session_name]
 #session_name = 

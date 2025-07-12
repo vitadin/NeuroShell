@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \session-new zebra_session
 Created session 'zebra_session' (ID: 00000001)
 %%> \session-new alpha_session
