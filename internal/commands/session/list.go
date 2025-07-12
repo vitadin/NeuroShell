@@ -1,9 +1,6 @@
 // Package session provides session management commands for NeuroShell.
 // It includes commands for creating, managing, and interacting with chat sessions.
-// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package session
-
-/*
 
 import (
 	"fmt"
@@ -259,8 +256,7 @@ func (c *ListCommand) formatSessionList(sessions []*neurotypes.ChatSession) stri
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&ListCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&ListCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-list command: %v", err))
 	}
 }
-*/
