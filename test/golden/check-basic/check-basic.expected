@@ -1,20 +1,18 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \check
 Service Status Check:
 ====================
-  ✓ autocomplete         - available/initialized
-  ✓ bash                 - available/initialized
-  ✓ chat_session         - available/initialized
-  ✓ client_factory       - available/initialized
-  ✓ editor               - available/initialized
-  ✓ executor             - available/initialized
-  ✓ help                 - available/initialized
-  ✓ interpolation        - available/initialized
-  ✓ llm                  - available/initialized
-  ✓ markdown             - available/initialized
-  ✓ model                - available/initialized
-  ✓ model_catalog        - available/initialized
-  ✓ script               - available/initialized
-  ✓ theme                - available/initialized
-  ✓ variable             - available/initialized
-Summary: 15/15 services healthy
+  [OK] autocomplete         - available/initialized
+  [OK] bash                 - available/initialized
+  [OK] chat_session         - available/initialized
+  [OK] client_factory       - available/initialized
+  [OK] editor               - available/initialized
+  [OK] executor             - available/initialized
+  [OK] help                 - available/initialized
+  [OK] llm                  - available/initialized
+  [OK] markdown             - available/initialized
+  [OK] model                - available/initialized
+  [OK] model_catalog        - available/initialized
+  [OK] theme                - available/initialized
+  [OK] variable             - available/initialized
+Summary: 13/13 services healthy

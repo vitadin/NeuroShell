@@ -90,8 +90,8 @@ func (c *CheckCommand) HelpInfo() neurotypes.HelpInfo {
 		Notes: []string{
 			"Sets result variables: ${_check_status}, ${_check_output}, ${_check_failed_services}",
 			"Also sets: ${_check_total_services}, ${_check_failed_count}",
-			"Available services: variable, help, bash, render, editor, script, executor, interpolation, chat_session",
-			"Service status: ✓ available/initialized, ✗ not available/not initialized",
+			"Available services: variable, help, bash, render, editor, script, executor, chat_session",
+			"Service status: [OK] available/initialized, [FAIL] not available/not initialized",
 		},
 	}
 }
@@ -263,9 +263,9 @@ func (c *CheckCommand) generateOutput(results []ServiceCheckResult) string {
 	var output strings.Builder
 
 	for _, result := range results {
-		status := "✓"
+		status := "[OK]"
 		if !result.Available || !result.Initialized {
-			status = "✗"
+			status = "[FAIL]"
 		}
 
 		statusDesc := "available/initialized"
@@ -297,11 +297,11 @@ func (c *CheckCommand) displayResults(results []ServiceCheckResult) {
 
 	successCount := 0
 	for _, result := range results {
-		status := "✓"
+		status := "[OK]"
 		statusDesc := "available/initialized"
 
 		if !result.Available || !result.Initialized {
-			status = "✗"
+			status = "[FAIL]"
 			if !result.Available {
 				statusDesc = "not available"
 			} else if !result.Initialized {
@@ -327,7 +327,7 @@ func (c *CheckCommand) displayResults(results []ServiceCheckResult) {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&CheckCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&CheckCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register check command: %v", err))
 	}
 }

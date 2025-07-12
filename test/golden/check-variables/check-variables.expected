@@ -1,52 +1,41 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \check[quiet=true]
-%%> \echo Status: ${_check_status}
-%%> [expanded] \echo Status: success
+%%> \echo Status: success
 Status: success
-%%> \echo Output: ${_check_output}
-%%> [expanded] \echo Output: ✓ autocomplete - available/initialized
-✓ bash - available/initialized
-✓ chat_session - available/initialized
-✓ client_factory - available/initialized
-✓ editor - available/initialized
-✓ executor - available/initialized
-✓ help - available/initialized
-✓ interpolation - available/initialized
-✓ llm - available/initialized
-✓ markdown - available/initialized
-✓ model - available/initialized
-✓ model_catalog - available/initialized
-✓ script - available/initialized
-✓ theme - available/initialized
-✓ variable - available/initialized
-Output: ✓ autocomplete - available/initialized
-✓ bash - available/initialized
-✓ chat_session - available/initialized
-✓ client_factory - available/initialized
-✓ editor - available/initialized
-✓ executor - available/initialized
-✓ help - available/initialized
-✓ interpolation - available/initialized
-✓ llm - available/initialized
-✓ markdown - available/initialized
-✓ model - available/initialized
-✓ model_catalog - available/initialized
-✓ script - available/initialized
-✓ theme - available/initialized
-✓ variable - available/initialized
-%%> \echo Failed services: ${_check_failed_services}
-%%> [expanded] \echo Failed services: 
+%%> \echo Output: [OK] autocomplete - available/initialized
+[OK] bash - available/initialized
+[OK] chat_session - available/initialized
+[OK] client_factory - available/initialized
+[OK] editor - available/initialized
+[OK] executor - available/initialized
+[OK] help - available/initialized
+[OK] llm - available/initialized
+[OK] markdown - available/initialized
+[OK] model - available/initialized
+[OK] model_catalog - available/initialized
+[OK] theme - available/initialized
+[OK] variable - available/initialized
+Output: [OK] autocomplete - available/initialized
+[OK] bash - available/initialized
+[OK] chat_session - available/initialized
+[OK] client_factory - available/initialized
+[OK] editor - available/initialized
+[OK] executor - available/initialized
+[OK] help - available/initialized
+[OK] llm - available/initialized
+[OK] markdown - available/initialized
+[OK] model - available/initialized
+[OK] model_catalog - available/initialized
+[OK] theme - available/initialized
+[OK] variable - available/initialized
+%%> \echo Failed services: 
 Failed services:
-%%> \echo Total services: ${_check_total_services}
-%%> [expanded] \echo Total services: 15
-Total services: 15
-%%> \echo Failed count: ${_check_failed_count}
-%%> [expanded] \echo Failed count: 0
+%%> \echo Total services: 13
+Total services: 13
+%%> \echo Failed count: 0
 Failed count: 0
 %%> \check[service=bash, quiet=true]
-%%> \echo Bash check status: ${_check_status}
-%%> [expanded] \echo Bash check status: success
+%%> \echo Bash check status: success
 Bash check status: success
-%%> \echo Bash total services: ${_check_total_services}
-%%> [expanded] \echo Bash total services: 1
+%%> \echo Bash total services: 1
 Bash total services: 1

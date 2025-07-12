@@ -1,13 +1,11 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \check[service=nonexistent_service]
 Service Status Check:
 ====================
-  ✗ nonexistent_service  - not available (service nonexistent_service not found)
+  [FAIL] nonexistent_service  - not available (service nonexistent_service not found)
 Summary: 0/1 services healthy
 Some services are not available or not initialized.
-%%> \echo Check status: ${_check_status}
-%%> [expanded] \echo Check status: failed
+%%> \echo Check status: failed
 Check status: failed
-%%> \echo Failed services: ${_check_failed_services}
-%%> [expanded] \echo Failed services: nonexistent_service
+%%> \echo Failed services: nonexistent_service
 Failed services: nonexistent_service

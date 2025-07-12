@@ -1,5 +1,5 @@
 %% Test check command error handling
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% This test verifies that \check handles nonexistent services gracefully
 \check[service=nonexistent_service]
 \echo Check status: ${_check_status}
