@@ -417,7 +417,7 @@ func (c *HelpCommand) getHelpService() (*services.HelpService, error) {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&HelpCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&HelpCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register help command: %v", err))
 	}
 }

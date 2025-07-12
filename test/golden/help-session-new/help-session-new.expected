@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \help[session-new]
 Command: session-new
 Description: Create new chat session for LLM interactions
