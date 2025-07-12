@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \set[inline_code="Use `console.log()` for debugging"]
 Setting inline_code = Use `console.log()` for debugging
 %%> \set[function_ref="Call the `getData()` function"]

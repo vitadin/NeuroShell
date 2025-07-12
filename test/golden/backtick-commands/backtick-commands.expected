@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \set[message_with_code="Here's some code: `function test() { return true; }`"]
 Setting message_with_code = Here's some code: `function test() { return true; }`
 %%> \get[message_with_code]

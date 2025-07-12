@@ -1,5 +1,5 @@
 %% Backtick edge cases test
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% Verifies that complex and edge case scenarios with backticks work correctly
 
 %% Test multiple consecutive backticks

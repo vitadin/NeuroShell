@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \set[multiple_backticks="Use `` for empty code or ``` for blocks"]
 Setting multiple_backticks = Use `` for empty code or ``` for blocks
 %%> \set[many_backticks="```````"]
