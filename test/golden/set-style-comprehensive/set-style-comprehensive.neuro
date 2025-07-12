@@ -1,5 +1,5 @@
 %% Comprehensive test for _style variable with interpolation
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% This test verifies _style works with various scenarios and interpolation
 
 %% Test default initialization (should be empty)

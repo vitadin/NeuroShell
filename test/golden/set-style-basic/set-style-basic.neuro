@@ -1,5 +1,5 @@
 %% Test basic _style variable setting with \set command
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 %% This test verifies that users can set the whitelisted global variable _style
 
 %% Test setting _style with different values

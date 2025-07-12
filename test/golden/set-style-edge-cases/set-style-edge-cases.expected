@@ -1,4 +1,4 @@
-Setting _echo_commands = true
+Setting _echo_command = true
 %%> \set[_style="dark-theme!@#$%"]
 Setting _style = dark-theme!@#$%
 %%> \get[_style]
