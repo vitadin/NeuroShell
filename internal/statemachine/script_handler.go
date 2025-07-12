@@ -66,10 +66,8 @@ func (sm *StateMachine) processScriptExecuting() error {
 		return nil // Stay in StateScriptExecuting for next line
 	}
 
-	// Output command line with %%> prefix if echo_commands is enabled
-	if sm.config.EchoCommands {
-		fmt.Printf("%%%%> %s\n", line)
-	}
+	// Update echo configuration before each script line execution
+	sm.updateEchoConfig()
 
 	sm.logger.Debug("Executing script line", "line_index", currentLineIndex, "line", line)
 

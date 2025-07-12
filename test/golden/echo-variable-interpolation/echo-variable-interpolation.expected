@@ -5,35 +5,35 @@ Setting greeting = Hello
 Setting name = World
 %%> \set[text_with_escapes="Line1\nLine2"]
 Setting text_with_escapes = Line1\nLine2
-%%> \echo ${greeting}, ${name}!
+%%> \echo Hello, World!
 Hello, World!
-%%> \echo[raw=true] Message: ${text_with_escapes}
+%%> \echo[raw=true] Message: Line1\nLine2
 Message: Line1\nLine2
-%%> \echo[raw=false] Message: ${text_with_escapes}
+%%> \echo[raw=false] Message: Line1\nLine2
 Message: Line1
 Line2
-%%> \echo[raw=true] ${greeting}\n${name}\tGreeting
+%%> \echo[raw=true] Hello\nWorld\tGreeting
 Hello\nWorld\tGreeting
-%%> \echo[raw=false] ${greeting}\n${name}\tGreeting
+%%> \echo[raw=false] Hello\nWorld\tGreeting
 Hello
 World	Greeting
-%%> \echo[raw=true,to=raw_result] Result: ${greeting}\n${name}
+%%> \echo[raw=true,to=raw_result] Result: Hello\nWorld
 Result: Hello\nWorld
 %%> \get[raw_result]
 raw_result = Result: Hello\nWorld
-%%> \echo[raw=false,to=interpreted_result] Result: ${greeting}\n${name}
+%%> \echo[raw=false,to=interpreted_result] Result: Hello\nWorld
 Result: Hello
 World
 %%> \get[interpreted_result]
 interpreted_result = Result: Hello
 World
-%%> \echo System info: User=, TestMode=${#test_mode}
+%%> \echo System info: User=, TestMode=true
 System info: User=, TestMode=true
-%%> \echo[raw=true] Undefined: ${undefined_var}\nDefined: ${name}
+%%> \echo[raw=true] Undefined: \nDefined: World
 Undefined: \nDefined: World
-%%> \set[complex="Value with ${greeting} and escapes\n"]
+%%> \set[complex="Value with Hello and escapes\n"]
 Setting complex = Value with Hello and escapes\n
-%%> \echo[raw=true] Complex: ${complex}
+%%> \echo[raw=true] Complex: Value with Hello and escapes\n
 Complex: Value with Hello and escapes\n
-%%> \echo[raw=false] Complex: ${complex}
+%%> \echo[raw=false] Complex: Value with Hello and escapes\n
 Complex: Value with Hello and escapes

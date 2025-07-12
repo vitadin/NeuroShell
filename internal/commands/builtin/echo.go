@@ -181,7 +181,7 @@ func interpretEscapeSequences(s string) string {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&EchoCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&EchoCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register echo command: %v", err))
 	}
 }

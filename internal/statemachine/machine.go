@@ -83,7 +83,7 @@ func (sm *StateMachine) Execute(input string) error {
 // ExecuteInternal executes a command without resetting the global execution state.
 // This is used for nested execution (e.g., by try commands, script lines).
 func (sm *StateMachine) ExecuteInternal(input string) error {
-	// Update echo configuration based on _echo_commands variable
+	// Update echo configuration based on _echo_command variable (applies to all execution modes)
 	sm.updateEchoConfig()
 
 	// Save current execution state
