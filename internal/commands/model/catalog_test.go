@@ -1,7 +1,4 @@
-// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package model
-
-/*
 
 import (
 	"strings"
@@ -446,4 +443,3 @@ func TestCatalogCommand_toTitle(t *testing.T) {
 		})
 	}
 }
-*/

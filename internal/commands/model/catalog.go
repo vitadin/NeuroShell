@@ -1,9 +1,6 @@
 // Package model provides model management commands for NeuroShell.
 // It includes commands for creating, managing, and interacting with LLM model configurations.
-// TODO: Integrate into state machine - temporarily commented out for build compatibility
 package model
-
-/*
 
 import (
 	"fmt"
@@ -529,8 +526,7 @@ func (c *CatalogCommand) getThemeObject() *services.Theme {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&CatalogCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&CatalogCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register model-catalog command: %v", err))
 	}
 }
-*/
