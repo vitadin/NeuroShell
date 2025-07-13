@@ -1,0 +1,43 @@
+%% Cat command line ranges test
+\set[_echo_command="true"]
+%% Tests various line range scenarios with start and lines options
+
+%% Test first few lines (start=1, lines=3)
+\cat[path=test/fixtures/multiline.txt, start=1, lines=3, to=first_three]
+\get[first_three]
+
+%% Test middle range (start=4, lines=3)
+\cat[path=test/fixtures/multiline.txt, start=4, lines=3, to=middle_three]
+\get[middle_three]
+
+%% Test last few lines (start=8, lines=3)
+\cat[path=test/fixtures/multiline.txt, start=8, lines=3, to=last_three]
+\get[last_three]
+
+%% Test single line extraction (start=5, lines=1)
+\cat[path=test/fixtures/multiline.txt, start=5, lines=1, to=single_line]
+\get[single_line]
+
+%% Test exact file length (start=1, lines=10)
+\cat[path=test/fixtures/multiline.txt, start=1, lines=10, to=exact_length]
+\get[exact_length]
+
+%% Test beyond file length (start=1, lines=20)
+\cat[path=test/fixtures/multiline.txt, start=1, lines=20, to=beyond_length]
+\get[beyond_length]
+
+%% Test start at last line (start=10, lines=5)
+\cat[path=test/fixtures/multiline.txt, start=10, lines=5, to=from_last]
+\get[from_last]
+
+%% Test start beyond file (start=15, lines=3)
+\cat[path=test/fixtures/multiline.txt, start=15, lines=3, to=beyond_start]
+\get[beyond_start]
+
+%% Test zero lines (edge case - should be treated as no limit)
+\cat[path=test/fixtures/simple.txt, lines=0, to=zero_lines]
+\get[zero_lines]
+
+%% Test negative start (should default to 1)
+\cat[path=test/fixtures/simple.txt, start=-1, lines=2, to=negative_start]
+\get[negative_start]

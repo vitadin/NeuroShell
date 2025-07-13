@@ -1,0 +1,38 @@
+%% Cat command combined options test
+\set[_echo_command="true"]
+%% Tests various combinations of cat command options
+
+%% Test silent + custom variable
+\cat[path=test/fixtures/simple.txt, silent=true, to=test1]
+\get[test1]
+
+%% Test silent + lines + custom variable
+\cat[path=test/fixtures/multiline.txt, silent=true, lines=3, to=test2]
+\get[test2]
+
+%% Test start + lines + custom variable
+\cat[path=test/fixtures/multiline.txt, start=3, lines=2, to=test3]
+\get[test3]
+
+%% Test silent + start + lines (all options together)
+\cat[path=test/fixtures/multiline.txt, silent=true, start=2, lines=3, to=test4]
+\get[test4]
+
+%% Test normal output + start + lines (verbose mode)
+\cat[path=test/fixtures/multiline.txt, start=5, lines=2, to=test5]
+\get[test5]
+
+%% Test with start + lines where range exceeds file
+\cat[path=test/fixtures/simple.txt, start=3, lines=5, to=test6]
+\get[test6]
+
+%% Test silent + start beyond file (should result in empty)
+\cat[path=test/fixtures/simple.txt, silent=true, start=10, to=test7]
+\get[test7]
+
+%% Test all options with different target variable names
+\cat[path=test/fixtures/multiline.txt, silent=true, start=1, lines=1, to=first_line]
+\get[first_line]
+
+\cat[path=test/fixtures/multiline.txt, silent=true, start=10, lines=1, to=last_line]
+\get[last_line]

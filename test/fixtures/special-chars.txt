@@ -1,0 +1,5 @@
+Special characters: !@#$%^&*()_+-=
+Unicode: 🚀 ✨ 🌟 💫 ⭐
+Quotes: "double" and 'single'
+Backslashes: \n \t \r \\
+Tab separated	values	here
