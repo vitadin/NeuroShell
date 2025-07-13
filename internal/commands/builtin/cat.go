@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -231,7 +233,14 @@ func (c *CatCommand) Execute(args map[string]string, input string) error {
 
 	// Output to console unless silent mode is enabled
 	if !silent {
-		fmt.Print(displayContent)
+		// Check if this is a .neuro file and render accordingly
+		if strings.ToLower(filepath.Ext(filePath)) == ".neuro" {
+			themeObj := c.getThemeObject()
+			styledContent := c.renderNeuroScript(displayContent, themeObj)
+			fmt.Print(styledContent)
+		} else {
+			fmt.Print(displayContent)
+		}
 		// Ensure output ends with newline if it doesn't already
 		if len(displayContent) > 0 && displayContent[len(displayContent)-1] != '\n' {
 			fmt.Println()
@@ -311,6 +320,107 @@ func (c *CatCommand) isTextFile(content []byte) bool {
 	}
 
 	return true
+}
+
+// renderNeuroScript applies custom syntax highlighting to Neuro script content
+func (c *CatCommand) renderNeuroScript(content string, theme *services.Theme) string {
+	lines := strings.Split(content, "\n")
+	var styledLines []string
+
+	for _, line := range lines {
+		styledLine := c.styleNeuroScriptLine(line, theme)
+		styledLines = append(styledLines, styledLine)
+	}
+
+	return strings.Join(styledLines, "\n")
+}
+
+// styleNeuroScriptLine applies styling to a single line based on Neuro script syntax
+func (c *CatCommand) styleNeuroScriptLine(line string, theme *services.Theme) string {
+	trimmed := strings.TrimSpace(line)
+
+	// Handle auto-generated comments (%%> prefix)
+	if strings.HasPrefix(trimmed, "%%>") {
+		// Style the entire line as auto-generated comment with special highlighting
+		return theme.Warning.Render(line)
+	}
+
+	// Handle regular comments (%% prefix)
+	if strings.HasPrefix(trimmed, "%%") {
+		// Style the entire line as regular comment
+		return theme.Info.Render(line)
+	}
+
+	// Handle commands (\command[options] message)
+	if strings.HasPrefix(trimmed, "\\") {
+		return c.styleNeuroCommand(line, theme)
+	}
+
+	// For non-command lines, apply variable highlighting only
+	return c.highlightVariables(line, theme)
+}
+
+// styleNeuroCommand applies syntax highlighting to Neuro commands
+func (c *CatCommand) styleNeuroCommand(line string, theme *services.Theme) string {
+	// Parse command syntax: \command[options] message
+	commandPattern := regexp.MustCompile(`^(\s*)(\\[a-zA-Z_][a-zA-Z0-9_-]*)(\[[^\]]*\])?(.*)$`)
+	matches := commandPattern.FindStringSubmatch(line)
+
+	if len(matches) != 5 {
+		// If regex doesn't match, fall back to basic variable highlighting
+		return c.highlightVariables(line, theme)
+	}
+
+	indent := matches[1]
+	command := matches[2]
+	options := matches[3]
+	message := matches[4]
+
+	result := indent
+
+	// Style the command part
+	result += theme.Command.Render(command)
+
+	// Style the options part if present
+	if options != "" {
+		result += theme.Highlight.Render(options)
+	}
+
+	// Style the message part with variable highlighting
+	if message != "" {
+		result += c.highlightVariables(message, theme)
+	}
+
+	return result
+}
+
+// highlightVariables applies variable highlighting to text (similar to help.go)
+func (c *CatCommand) highlightVariables(text string, theme *services.Theme) string {
+	// Highlight variables: ${variable_name}
+	variablePattern := regexp.MustCompile(`\$\{[^}]+\}`)
+	return variablePattern.ReplaceAllStringFunc(text, func(match string) string {
+		return theme.Variable.Render(match)
+	})
+}
+
+// getThemeObject retrieves the theme object based on the _style variable
+func (c *CatCommand) getThemeObject() *services.Theme {
+	// Get _style variable for theme selection
+	styleValue := ""
+	if variableService, err := services.GetGlobalVariableService(); err == nil {
+		if value, err := variableService.Get("_style"); err == nil {
+			styleValue = value
+		}
+	}
+
+	// Get theme service and theme object (always returns valid theme)
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// This should rarely happen, but we need to return something
+		panic(fmt.Sprintf("theme service not available: %v", err))
+	}
+
+	return themeService.GetThemeByName(styleValue)
 }
 
 func init() {
