@@ -4,13 +4,13 @@ import "neuroshell/internal/context"
 
 // QueueService provides command queuing functionality for the state machine
 type QueueService struct {
-	context *context.NeuroContext
+	initialized bool
 }
 
 // NewQueueService creates a new queue service instance
-func NewQueueService(ctx *context.NeuroContext) *QueueService {
+func NewQueueService() *QueueService {
 	return &QueueService{
-		context: ctx,
+		initialized: false,
 	}
 }
 
@@ -21,38 +21,62 @@ func (qs *QueueService) Name() string {
 
 // Initialize initializes the queue service
 func (qs *QueueService) Initialize() error {
-	// Queue service is stateless and uses context directly
+	qs.initialized = true
 	return nil
 }
 
 // QueueCommand adds a single command to the execution queue
 func (qs *QueueService) QueueCommand(command string) {
-	qs.context.QueueCommand(command)
+	if !qs.initialized {
+		return
+	}
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
+	ctx.QueueCommand(command)
 }
 
 // QueueCommands adds multiple commands to the execution queue
 func (qs *QueueService) QueueCommands(commands []string) {
+	if !qs.initialized {
+		return
+	}
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
 	for _, cmd := range commands {
-		qs.context.QueueCommand(cmd)
+		ctx.QueueCommand(cmd)
 	}
 }
 
 // GetQueueSize returns the number of commands in the execution queue
 func (qs *QueueService) GetQueueSize() int {
-	return qs.context.GetQueueSize()
+	if !qs.initialized {
+		return 0
+	}
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
+	return ctx.GetQueueSize()
 }
 
 // ClearQueue removes all commands from the execution queue
 func (qs *QueueService) ClearQueue() {
-	qs.context.ClearQueue()
+	if !qs.initialized {
+		return
+	}
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
+	ctx.ClearQueue()
 }
 
 // DequeueCommand removes and returns the next command from the queue
 func (qs *QueueService) DequeueCommand() (string, bool) {
-	return qs.context.DequeueCommand()
+	if !qs.initialized {
+		return "", false
+	}
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
+	return ctx.DequeueCommand()
 }
 
 // PeekQueue returns a copy of the execution queue without modifying it
 func (qs *QueueService) PeekQueue() []string {
-	return qs.context.PeekQueue()
+	if !qs.initialized {
+		return []string{}
+	}
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
+	return ctx.PeekQueue()
 }

@@ -56,7 +56,7 @@ func InitializeServices(testMode bool) error {
 	}
 
 	// Register QueueService for command queuing
-	if err := services.GetGlobalRegistry().RegisterService(services.NewQueueService(globalCtx)); err != nil {
+	if err := services.GetGlobalRegistry().RegisterService(services.NewQueueService()); err != nil {
 		return err
 	}
 

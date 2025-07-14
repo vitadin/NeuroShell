@@ -9,17 +9,18 @@ import (
 )
 
 func TestNewQueueService(t *testing.T) {
-	neuroCtx := context.NewTestContext()
-	concreteCtx := neuroCtx.(*context.NeuroContext)
-	service := NewQueueService(concreteCtx)
+	service := NewQueueService()
 	assert.NotNil(t, service)
 	assert.Equal(t, "queue", service.Name())
 }
 
 func TestQueueService_Initialize(t *testing.T) {
+	// Setup global context
 	neuroCtx := context.NewTestContext()
 	concreteCtx := neuroCtx.(*context.NeuroContext)
-	service := NewQueueService(concreteCtx)
+	context.SetGlobalContext(concreteCtx)
+
+	service := NewQueueService()
 
 	// Initialize service
 	err := service.Initialize()
@@ -27,9 +28,12 @@ func TestQueueService_Initialize(t *testing.T) {
 }
 
 func TestQueueService_QueueCommand(t *testing.T) {
+	// Setup global context
 	neuroCtx := context.NewTestContext()
 	concreteCtx := neuroCtx.(*context.NeuroContext)
-	service := NewQueueService(concreteCtx)
+	context.SetGlobalContext(concreteCtx)
+
+	service := NewQueueService()
 
 	// Initialize service
 	err := service.Initialize()
@@ -45,9 +49,12 @@ func TestQueueService_QueueCommand(t *testing.T) {
 }
 
 func TestQueueService_QueueCommands(t *testing.T) {
+	// Setup global context
 	neuroCtx := context.NewTestContext()
 	concreteCtx := neuroCtx.(*context.NeuroContext)
-	service := NewQueueService(concreteCtx)
+	context.SetGlobalContext(concreteCtx)
+
+	service := NewQueueService()
 
 	// Initialize service
 	err := service.Initialize()
@@ -69,9 +76,12 @@ func TestQueueService_QueueCommands(t *testing.T) {
 }
 
 func TestQueueService_GetQueueSize(t *testing.T) {
+	// Setup global context
 	neuroCtx := context.NewTestContext()
 	concreteCtx := neuroCtx.(*context.NeuroContext)
-	service := NewQueueService(concreteCtx)
+	context.SetGlobalContext(concreteCtx)
+
+	service := NewQueueService()
 
 	// Initialize service
 	err := service.Initialize()
@@ -91,9 +101,12 @@ func TestQueueService_GetQueueSize(t *testing.T) {
 }
 
 func TestQueueService_ClearQueue(t *testing.T) {
+	// Setup global context
 	neuroCtx := context.NewTestContext()
 	concreteCtx := neuroCtx.(*context.NeuroContext)
-	service := NewQueueService(concreteCtx)
+	context.SetGlobalContext(concreteCtx)
+
+	service := NewQueueService()
 
 	// Initialize service
 	err := service.Initialize()
@@ -114,9 +127,12 @@ func TestQueueService_ClearQueue(t *testing.T) {
 }
 
 func TestQueueService_DequeueCommand(t *testing.T) {
+	// Setup global context
 	neuroCtx := context.NewTestContext()
 	concreteCtx := neuroCtx.(*context.NeuroContext)
-	service := NewQueueService(concreteCtx)
+	context.SetGlobalContext(concreteCtx)
+
+	service := NewQueueService()
 
 	// Initialize service
 	err := service.Initialize()
@@ -139,9 +155,12 @@ func TestQueueService_DequeueCommand(t *testing.T) {
 }
 
 func TestQueueService_PeekQueue(t *testing.T) {
+	// Setup global context
 	neuroCtx := context.NewTestContext()
 	concreteCtx := neuroCtx.(*context.NeuroContext)
-	service := NewQueueService(concreteCtx)
+	context.SetGlobalContext(concreteCtx)
+
+	service := NewQueueService()
 
 	// Initialize service
 	err := service.Initialize()
@@ -164,9 +183,12 @@ func TestQueueService_PeekQueue(t *testing.T) {
 }
 
 func TestQueueService_EmptyQueueOperations(t *testing.T) {
+	// Setup global context
 	neuroCtx := context.NewTestContext()
 	concreteCtx := neuroCtx.(*context.NeuroContext)
-	service := NewQueueService(concreteCtx)
+	context.SetGlobalContext(concreteCtx)
+
+	service := NewQueueService()
 
 	// Initialize service
 	err := service.Initialize()
@@ -183,9 +205,12 @@ func TestQueueService_EmptyQueueOperations(t *testing.T) {
 }
 
 func TestQueueService_LargeQueue(t *testing.T) {
+	// Setup global context
 	neuroCtx := context.NewTestContext()
 	concreteCtx := neuroCtx.(*context.NeuroContext)
-	service := NewQueueService(concreteCtx)
+	context.SetGlobalContext(concreteCtx)
+
+	service := NewQueueService()
 
 	// Initialize service
 	err := service.Initialize()
