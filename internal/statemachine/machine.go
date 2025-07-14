@@ -72,12 +72,11 @@ func (sm *StateMachine) Execute(input string) error {
 	// Update echo configuration based on _echo_commands variable
 	sm.updateEchoConfig()
 
-	// Initialize execution state (full reset for main entry point)
-	sm.initializeExecution(input)
+	// Queue the input command for processing
+	sm.context.QueueCommand(input)
 
-	sm.logger.Debug("Execute command", "input", input)
-
-	return sm.executeInternal()
+	// Process all queued commands
+	return sm.processQueue()
 }
 
 // ExecuteInternal executes a command without resetting the global execution state.
@@ -104,6 +103,26 @@ func (sm *StateMachine) ExecuteInternal(input string) error {
 	sm.restoreExecutionState(snapshot)
 
 	return err
+}
+
+// processQueue handles the unified queue processing
+func (sm *StateMachine) processQueue() error {
+	for {
+		command, hasMore := sm.context.DequeueCommand()
+		if !hasMore {
+			return nil // All commands processed
+		}
+
+		if err := sm.executeSingleCommand(command); err != nil {
+			return err
+		}
+	}
+}
+
+// executeSingleCommand processes one command through the state machine
+func (sm *StateMachine) executeSingleCommand(command string) error {
+	sm.initializeExecution(command)
+	return sm.executeInternal()
 }
 
 // executeInternal contains the core state machine loop used by both Execute and ExecuteInternal.
