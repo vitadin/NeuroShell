@@ -657,12 +657,12 @@ func TestInitializeServices_RegistrationFailure(t *testing.T) {
 	services.SetGlobalRegistry(services.NewRegistry())
 
 	// Register a service first
-	scriptService := services.NewScriptService()
-	err := services.GetGlobalRegistry().RegisterService(scriptService)
+	variableService := services.NewVariableService()
+	err := services.GetGlobalRegistry().RegisterService(variableService)
 	require.NoError(t, err)
 
 	// Try to register the same service again - should fail
-	err = services.GetGlobalRegistry().RegisterService(scriptService)
+	err = services.GetGlobalRegistry().RegisterService(variableService)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "already registered")
 }
