@@ -348,6 +348,26 @@ func GetGlobalClientFactoryService() (*ClientFactoryService, error) {
 	return GetGlobalRegistry().GetClientFactoryService()
 }
 
+// GetQueueService retrieves the queue service with proper type casting.
+func (r *Registry) GetQueueService() (*QueueService, error) {
+	service, err := r.GetService("queue")
+	if err != nil {
+		return nil, err
+	}
+
+	queueService, ok := service.(*QueueService)
+	if !ok {
+		return nil, fmt.Errorf("queue service has incorrect type")
+	}
+
+	return queueService, nil
+}
+
+// GetGlobalQueueService returns the queue service from the global registry.
+func GetGlobalQueueService() (*QueueService, error) {
+	return GetGlobalRegistry().GetQueueService()
+}
+
 // GetGlobalMarkdownService returns the markdown service from the global registry.
 func GetGlobalMarkdownService() (*MarkdownService, error) {
 	service, err := GlobalRegistry.GetService("markdown")
