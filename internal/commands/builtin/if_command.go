@@ -85,9 +85,9 @@ func (c *IfCommand) HelpInfo() neurotypes.HelpInfo {
 //
 // The command after \if is only executed if the condition evaluates to true.
 func (c *IfCommand) Execute(args map[string]string, input string) error {
-	// Get required condition
-	condition := args["condition"]
-	if condition == "" {
+	// Get condition parameter
+	condition, exists := args["condition"]
+	if !exists {
 		return fmt.Errorf("condition parameter is required")
 	}
 
@@ -110,39 +110,12 @@ func (c *IfCommand) Execute(args map[string]string, input string) error {
 }
 
 // evaluateCondition evaluates a boolean expression string
+// Note: Variable interpolation (${var}) is handled by the state machine before this command executes,
+// so the condition parameter already contains the expanded variable values.
 func (c *IfCommand) evaluateCondition(condition string) bool {
-	// Trim whitespace
-	condition = strings.TrimSpace(condition)
-
-	// Handle empty condition
-	if condition == "" {
-		return false
-	}
-
-	// Check if it's a variable reference
-	if strings.HasPrefix(condition, "${") && strings.HasSuffix(condition, "}") {
-		// Extract variable name
-		varName := condition[2 : len(condition)-1]
-
-		// Get variable service to check variable existence
-		if variableService, err := services.GetGlobalVariableService(); err == nil {
-			value, _ := variableService.Get(varName)
-			return c.isTruthy(value)
-		}
-		return false
-	}
-
-	// Check if it's a system variable reference
-	if strings.HasPrefix(condition, "@") || strings.HasPrefix(condition, "#") {
-		if variableService, err := services.GetGlobalVariableService(); err == nil {
-			value, _ := variableService.Get(condition)
-			return c.isTruthy(value)
-		}
-		return false
-	}
-
-	// Direct boolean evaluation
-	return c.isTruthy(condition)
+	// Trim whitespace and evaluate directly
+	// Variables have already been interpolated by the state machine
+	return c.isTruthy(strings.TrimSpace(condition))
 }
 
 // isTruthy determines if a string represents a truthy value

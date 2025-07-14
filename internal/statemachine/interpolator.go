@@ -5,7 +5,6 @@ import (
 
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
-	"neuroshell/internal/parser"
 )
 
 // CoreInterpolator handles variable interpolation and macro expansion directly within the state machine.
@@ -86,31 +85,6 @@ func (ci *CoreInterpolator) InterpolateCommandLine(line string) (string, bool, e
 	}
 
 	return expanded, hasVariables, nil
-}
-
-// InterpolateCommand interpolates all parts of a parsed command structure.
-// This is used for parameter-level interpolation after the command has been parsed.
-func (ci *CoreInterpolator) InterpolateCommand(cmd *parser.Command) (*parser.Command, error) {
-	if cmd == nil {
-		return nil, nil
-	}
-
-	// Create new command with interpolated values
-	interpolatedCmd := &parser.Command{
-		Name:           cmd.Name, // Don't interpolate command name
-		Message:        ci.ExpandVariables(cmd.Message),
-		BracketContent: ci.ExpandVariables(cmd.BracketContent),
-		Options:        make(map[string]string),
-		ParseMode:      cmd.ParseMode,
-		OriginalText:   cmd.OriginalText,
-	}
-
-	// Interpolate option values
-	for key, value := range cmd.Options {
-		interpolatedCmd.Options[key] = ci.ExpandVariables(value)
-	}
-
-	return interpolatedCmd, nil
 }
 
 // ExpandVariables performs recursive variable expansion using a stack-based algorithm.

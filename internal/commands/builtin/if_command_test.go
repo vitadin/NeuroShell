@@ -195,11 +195,10 @@ func TestIfCommand_Execute_VariableCondition(t *testing.T) {
 	_ = services.GetGlobalRegistry().RegisterService(queueService)
 	_ = services.GetGlobalRegistry().InitializeAll()
 
-	// Set a variable
-	_ = varService.Set("debug_mode", "true")
-
 	cmd := &IfCommand{}
-	args := map[string]string{"condition": "${debug_mode}"}
+	// Note: In real execution, the state machine would have already expanded ${debug_mode} to "true"
+	// This test simulates that the \if command receives the pre-expanded value
+	args := map[string]string{"condition": "true"}
 
 	err := cmd.Execute(args, "\\set[var=test_value]")
 	assert.NoError(t, err)
@@ -209,7 +208,7 @@ func TestIfCommand_Execute_VariableCondition(t *testing.T) {
 	assert.Equal(t, 1, queueSize)
 }
 
-func TestIfCommand_Execute_SystemVariableCondition(t *testing.T) {
+func TestIfCommand_Execute_InterpolatedSystemVariable(t *testing.T) {
 	// Setup test context
 	ctx := context.NewTestContext()
 	concreteCtx := ctx.(*context.NeuroContext)
@@ -224,12 +223,14 @@ func TestIfCommand_Execute_SystemVariableCondition(t *testing.T) {
 	_ = services.GetGlobalRegistry().InitializeAll()
 
 	cmd := &IfCommand{}
-	args := map[string]string{"condition": "#test_mode"}
+	// Note: In real execution, the state machine would have already expanded ${#test_mode} to "true"
+	// This test simulates that the \if command receives the pre-expanded value
+	args := map[string]string{"condition": "true"}
 
 	err := cmd.Execute(args, "\\set[var=test_value]")
 	assert.NoError(t, err)
 
-	// Check if command was queued (test_mode should be true in test context)
+	// Check if command was queued (interpolated value should be truthy)
 	queueSize := concreteCtx.GetQueueSize()
 	assert.Equal(t, 1, queueSize)
 }
@@ -289,7 +290,7 @@ func TestIfCommand_Execute_MissingServices(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestIfCommand_Execute_ComplexCondition(t *testing.T) {
+func TestIfCommand_Execute_InterpolatedConditions(t *testing.T) {
 	// Setup test context
 	ctx := context.NewTestContext()
 	concreteCtx := ctx.(*context.NeuroContext)
@@ -303,15 +304,10 @@ func TestIfCommand_Execute_ComplexCondition(t *testing.T) {
 	_ = services.GetGlobalRegistry().RegisterService(queueService)
 	_ = services.GetGlobalRegistry().InitializeAll()
 
-	// Set variables
-	_ = varService.Set("flag1", "true")
-	_ = varService.Set("flag2", "false")
-	_ = varService.Set("empty_var", "")
-
 	cmd := &IfCommand{}
 
-	// Test with true variable
-	args := map[string]string{"condition": "${flag1}"}
+	// Test with truthy condition (state machine would have expanded ${flag1} to "true")
+	args := map[string]string{"condition": "true"}
 	err := cmd.Execute(args, "\\set[var1=value1]")
 	assert.NoError(t, err)
 	assert.Equal(t, 1, concreteCtx.GetQueueSize())
@@ -319,8 +315,8 @@ func TestIfCommand_Execute_ComplexCondition(t *testing.T) {
 	// Clear queue
 	concreteCtx.ClearQueue()
 
-	// Test with false variable
-	args = map[string]string{"condition": "${flag2}"}
+	// Test with falsy condition (state machine would have expanded ${flag2} to "false")
+	args = map[string]string{"condition": "false"}
 	err = cmd.Execute(args, "\\set[var2=value2]")
 	assert.NoError(t, err)
 	assert.Equal(t, 0, concreteCtx.GetQueueSize())
@@ -328,8 +324,8 @@ func TestIfCommand_Execute_ComplexCondition(t *testing.T) {
 	// Clear queue
 	concreteCtx.ClearQueue()
 
-	// Test with empty variable
-	args = map[string]string{"condition": "${empty_var}"}
+	// Test with empty condition (state machine would have expanded ${empty_var} to "")
+	args = map[string]string{"condition": ""}
 	err = cmd.Execute(args, "\\set[var3=value3]")
 	assert.NoError(t, err)
 	assert.Equal(t, 0, concreteCtx.GetQueueSize())
