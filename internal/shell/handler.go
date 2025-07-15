@@ -60,6 +60,11 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
+	// Register StackService for stack-based execution
+	if err := services.GetGlobalRegistry().RegisterService(services.NewStackService()); err != nil {
+		return err
+	}
+
 	if err := services.GetGlobalRegistry().RegisterService(services.NewExecutorService()); err != nil {
 		return err
 	}

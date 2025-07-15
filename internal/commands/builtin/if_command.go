@@ -99,10 +99,10 @@ func (c *IfCommand) Execute(args map[string]string, input string) error {
 		_ = variableService.SetSystemVariable("#if_result", strconv.FormatBool(result))
 	}
 
-	// If condition is true, queue the command for execution
+	// If condition is true, push the command to the stack for execution
 	if result && strings.TrimSpace(input) != "" {
-		if queueService, err := services.GetGlobalQueueService(); err == nil {
-			queueService.QueueCommand(input)
+		if stackService, err := services.GetGlobalStackService(); err == nil {
+			stackService.PushCommand(input)
 		}
 	}
 

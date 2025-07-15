@@ -22,6 +22,13 @@ var allowedGlobalVariables = []string{
 	"_render_markdown",
 }
 
+// TryBlockContext represents the context for a try block with error boundaries
+type TryBlockContext struct {
+	ID            string // Unique identifier for this try block
+	StartDepth    int    // Stack depth when try block started
+	ErrorCaptured bool   // Whether an error has been captured
+}
+
 // NeuroContext implements the neurotypes.Context interface providing session state management.
 // It maintains variables, message history, execution queues, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
@@ -31,6 +38,12 @@ type NeuroContext struct {
 	executionQueue []string
 	scriptMetadata map[string]interface{}
 	testMode       bool
+
+	// Stack-based execution support
+	executionStack  []string          // Execution stack (LIFO order)
+	tryBlocks       []TryBlockContext // Try block management
+	currentTryDepth int               // Current try block depth
+	stackMutex      sync.RWMutex      // Protects executionStack and tryBlocks
 
 	// Chat session storage
 	chatSessions    map[string]*neurotypes.ChatSession // Session storage by ID
@@ -63,6 +76,11 @@ func New() *NeuroContext {
 		executionQueue: make([]string, 0),
 		scriptMetadata: make(map[string]interface{}),
 		testMode:       false,
+
+		// Initialize stack-based execution support
+		executionStack:  make([]string, 0),
+		tryBlocks:       make([]TryBlockContext, 0),
+		currentTryDepth: 0,
 
 		// Initialize chat session storage
 		chatSessions:    make(map[string]*neurotypes.ChatSession),
@@ -634,4 +652,159 @@ func (ctx *NeuroContext) GetAllCommandHelpInfo() map[string]*neurotypes.HelpInfo
 		result[name] = info
 	}
 	return result
+}
+
+// Stack operations for stack-based execution engine
+
+// PushCommand adds a single command to the execution stack
+func (ctx *NeuroContext) PushCommand(command string) {
+	ctx.stackMutex.Lock()
+	defer ctx.stackMutex.Unlock()
+	ctx.executionStack = append(ctx.executionStack, command)
+}
+
+// PushCommands adds multiple commands to the execution stack
+func (ctx *NeuroContext) PushCommands(commands []string) {
+	ctx.stackMutex.Lock()
+	defer ctx.stackMutex.Unlock()
+	ctx.executionStack = append(ctx.executionStack, commands...)
+}
+
+// PopCommand removes and returns the last command from the stack (LIFO)
+func (ctx *NeuroContext) PopCommand() (string, bool) {
+	ctx.stackMutex.Lock()
+	defer ctx.stackMutex.Unlock()
+
+	if len(ctx.executionStack) == 0 {
+		return "", false
+	}
+
+	lastIndex := len(ctx.executionStack) - 1
+	command := ctx.executionStack[lastIndex]
+	ctx.executionStack = ctx.executionStack[:lastIndex]
+	return command, true
+}
+
+// PeekCommand returns the next command without removing it from the stack
+func (ctx *NeuroContext) PeekCommand() (string, bool) {
+	ctx.stackMutex.RLock()
+	defer ctx.stackMutex.RUnlock()
+
+	if len(ctx.executionStack) == 0 {
+		return "", false
+	}
+
+	return ctx.executionStack[len(ctx.executionStack)-1], true
+}
+
+// ClearStack removes all commands from the execution stack
+func (ctx *NeuroContext) ClearStack() {
+	ctx.stackMutex.Lock()
+	defer ctx.stackMutex.Unlock()
+	ctx.executionStack = make([]string, 0)
+}
+
+// GetStackSize returns the number of commands in the execution stack
+func (ctx *NeuroContext) GetStackSize() int {
+	ctx.stackMutex.RLock()
+	defer ctx.stackMutex.RUnlock()
+	return len(ctx.executionStack)
+}
+
+// IsStackEmpty returns true if the stack is empty
+func (ctx *NeuroContext) IsStackEmpty() bool {
+	ctx.stackMutex.RLock()
+	defer ctx.stackMutex.RUnlock()
+	return len(ctx.executionStack) == 0
+}
+
+// PeekStack returns a copy of the execution stack without modifying it
+// Returns the stack in reverse order (top to bottom, LIFO order)
+func (ctx *NeuroContext) PeekStack() []string {
+	ctx.stackMutex.RLock()
+	defer ctx.stackMutex.RUnlock()
+
+	result := make([]string, len(ctx.executionStack))
+	// Copy in reverse order to show stack from top to bottom
+	for i, cmd := range ctx.executionStack {
+		result[len(ctx.executionStack)-1-i] = cmd
+	}
+	return result
+}
+
+// Try block support methods
+
+// PushErrorBoundary pushes error boundary markers for try blocks
+func (ctx *NeuroContext) PushErrorBoundary(tryID string) {
+	ctx.stackMutex.Lock()
+	defer ctx.stackMutex.Unlock()
+
+	// Create try block context
+	tryBlock := TryBlockContext{
+		ID:            tryID,
+		StartDepth:    len(ctx.executionStack),
+		ErrorCaptured: false,
+	}
+
+	ctx.tryBlocks = append(ctx.tryBlocks, tryBlock)
+	ctx.currentTryDepth++
+}
+
+// PopErrorBoundary removes the most recent try block context
+func (ctx *NeuroContext) PopErrorBoundary() {
+	ctx.stackMutex.Lock()
+	defer ctx.stackMutex.Unlock()
+
+	if len(ctx.tryBlocks) > 0 {
+		ctx.tryBlocks = ctx.tryBlocks[:len(ctx.tryBlocks)-1]
+		ctx.currentTryDepth--
+	}
+}
+
+// IsInTryBlock returns true if currently inside a try block
+func (ctx *NeuroContext) IsInTryBlock() bool {
+	ctx.stackMutex.RLock()
+	defer ctx.stackMutex.RUnlock()
+	return len(ctx.tryBlocks) > 0
+}
+
+// GetCurrentTryID returns the ID of the current try block
+func (ctx *NeuroContext) GetCurrentTryID() string {
+	ctx.stackMutex.RLock()
+	defer ctx.stackMutex.RUnlock()
+
+	if len(ctx.tryBlocks) == 0 {
+		return ""
+	}
+
+	return ctx.tryBlocks[len(ctx.tryBlocks)-1].ID
+}
+
+// GetCurrentTryDepth returns the current try block depth
+func (ctx *NeuroContext) GetCurrentTryDepth() int {
+	ctx.stackMutex.RLock()
+	defer ctx.stackMutex.RUnlock()
+	return ctx.currentTryDepth
+}
+
+// SetTryErrorCaptured marks the current try block as having captured an error
+func (ctx *NeuroContext) SetTryErrorCaptured() {
+	ctx.stackMutex.Lock()
+	defer ctx.stackMutex.Unlock()
+
+	if len(ctx.tryBlocks) > 0 {
+		ctx.tryBlocks[len(ctx.tryBlocks)-1].ErrorCaptured = true
+	}
+}
+
+// IsTryErrorCaptured returns true if the current try block has captured an error
+func (ctx *NeuroContext) IsTryErrorCaptured() bool {
+	ctx.stackMutex.RLock()
+	defer ctx.stackMutex.RUnlock()
+
+	if len(ctx.tryBlocks) == 0 {
+		return false
+	}
+
+	return ctx.tryBlocks[len(ctx.tryBlocks)-1].ErrorCaptured
 }
