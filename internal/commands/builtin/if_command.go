@@ -44,7 +44,7 @@ func (c *IfCommand) HelpInfo() neurotypes.HelpInfo {
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "condition",
-				Description: "Boolean expression to evaluate (true/false, variable existence, etc.)",
+				Description: "Expression to evaluate for truthiness (see condition evaluation rules below)",
 				Required:    true,
 				Type:        "string",
 			},
@@ -52,27 +52,45 @@ func (c *IfCommand) HelpInfo() neurotypes.HelpInfo {
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\if[condition=true] \\set[var=value]",
-				Description: "Execute command when condition is true",
+				Description: "Execute when condition is explicitly true",
+			},
+			{
+				Command:     "\\if[condition=false] \\echo This won't run",
+				Description: "Command not executed when condition is explicitly false",
+			},
+			{
+				Command:     "\\if[condition=hello] \\echo Any text is truthy",
+				Description: "Non-empty strings (including 'hello') are truthy",
+			},
+			{
+				Command:     "\\if[condition=\"\"] \\echo Empty string",
+				Description: "Empty strings are falsy - this won't execute",
 			},
 			{
 				Command:     "\\if[condition=${@user}] \\echo Hello ${@user}",
-				Description: "Execute command if user variable exists and is truthy",
+				Description: "Execute if user variable exists and is non-empty",
 			},
 			{
 				Command:     "\\if[condition=${debug_mode}] \\echo Debug enabled",
-				Description: "Execute command if debug_mode variable is true",
+				Description: "Execute if debug_mode variable contains truthy value",
 			},
 			{
-				Command:     "\\if[condition=${#test_mode}] \\echo Running in test mode",
-				Description: "Execute command if test_mode system variable is true",
+				Command:     "\\if[condition=1] \\echo Numeric true",
+				Description: "Number 1 is explicitly truthy",
+			},
+			{
+				Command:     "\\if[condition=0] \\echo This won't run",
+				Description: "Number 0 is explicitly falsy",
 			},
 		},
 		Notes: []string{
-			"Conditions are evaluated as boolean: true, 1, yes, on, enabled are truthy",
-			"Empty strings, false, 0, no, off, disabled are falsy",
-			"Variable existence is checked - non-empty variables are truthy",
-			"System variables can be used in conditions",
-			"The command after \\if is only executed if the condition is true",
+			"CONDITION EVALUATION RULES (case-insensitive):",
+			"  Explicitly TRUTHY: 'true', '1', 'yes', 'on', 'enabled'",
+			"  Explicitly FALSY: 'false', '0', 'no', 'off', 'disabled'",
+			"  Empty strings: FALSY (\"\" or undefined variables)",
+			"  Any other non-empty string: TRUTHY (including Unicode like '🌟✨')",
+			"Variables are interpolated before evaluation - ${var} becomes var's value",
+			"The command after \\if is only executed if the condition is truthy",
 			"Result of condition evaluation is stored in #if_result system variable",
 		},
 	}
