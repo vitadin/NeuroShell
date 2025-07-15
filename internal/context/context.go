@@ -20,6 +20,7 @@ var allowedGlobalVariables = []string{
 	"_reply_way",
 	"_echo_command",
 	"_render_markdown",
+	"_default_command",
 }
 
 // TryBlockContext represents the context for a try block with error boundaries
@@ -63,6 +64,9 @@ type NeuroContext struct {
 	commandHelpInfo    map[string]*neurotypes.HelpInfo // Store detailed help info for autocomplete and help system
 	commandMutex       sync.RWMutex                    // Protects registeredCommands and commandHelpInfo maps
 
+	// Default command configuration
+	defaultCommand string // Command to use when input doesn't start with \\
+
 	// Script metadata protection
 	scriptMutex sync.RWMutex // Protects scriptMetadata map
 }
@@ -98,6 +102,9 @@ func New() *NeuroContext {
 		// Initialize command registry information
 		registeredCommands: make(map[string]bool),
 		commandHelpInfo:    make(map[string]*neurotypes.HelpInfo),
+
+		// Initialize default command
+		defaultCommand: "echo", // Default to echo for development convenience
 	}
 
 	// Generate initial session ID (will be deterministic if test mode is set later)
@@ -105,6 +112,7 @@ func New() *NeuroContext {
 
 	// Initialize whitelisted global variables with default values
 	_ = ctx.SetSystemVariable("_style", "")
+	_ = ctx.SetSystemVariable("_default_command", "echo")
 
 	return ctx
 }
@@ -807,4 +815,19 @@ func (ctx *NeuroContext) IsTryErrorCaptured() bool {
 	}
 
 	return ctx.tryBlocks[len(ctx.tryBlocks)-1].ErrorCaptured
+}
+
+// GetDefaultCommand returns the default command to use when input doesn't start with \\
+func (ctx *NeuroContext) GetDefaultCommand() string {
+	// Check if _default_command variable overrides the default
+	if override, exists := ctx.getSystemVariable("_default_command"); exists && override != "" {
+		return override
+	}
+	return ctx.defaultCommand
+}
+
+// SetDefaultCommand sets the default command to use when input doesn't start with \\
+func (ctx *NeuroContext) SetDefaultCommand(command string) {
+	ctx.defaultCommand = command
+	_ = ctx.SetSystemVariable("_default_command", command)
 }

@@ -98,7 +98,7 @@ func (sp *StateProcessor) interpolateVariables(input string) (string, error) {
 // parseCommand handles command structure parsing.
 // This preserves the existing parsing logic from processParsing.
 func (sp *StateProcessor) parseCommand(input string) (*parser.Command, error) {
-	cmd := parser.ParseInput(input)
+	cmd := parser.ParseInputWithContext(input, sp.context)
 	if cmd == nil {
 		return nil, fmt.Errorf("failed to parse command: %s", input)
 	}

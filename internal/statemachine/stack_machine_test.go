@@ -90,18 +90,17 @@ func TestStackMachine_Execute_SimpleCommand(t *testing.T) {
 	assert.Equal(t, 0, ctx.GetStackSize())
 }
 
-func TestStackMachine_Execute_EmptyInput_ExpectsSendCommand(t *testing.T) {
+func TestStackMachine_Execute_EmptyInput_ExpectsEchoCommand(t *testing.T) {
 	ctx, err := setupStackTestEnvironment()
 	require.NoError(t, err)
 
 	config := neurotypes.DefaultStateMachineConfig()
 	sm := NewStackMachine(ctx, config)
 
-	// Execute empty command - this will be interpreted as \send with empty message
-	// Since \send is not implemented yet, this should fail
+	// Execute empty command - this will be interpreted as \echo with empty message
+	// Since \echo is implemented, this should succeed
 	err = sm.Execute("")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "unknown command")
+	assert.NoError(t, err)
 
 	// Stack should be empty
 	assert.Equal(t, 0, ctx.GetStackSize())
