@@ -106,7 +106,7 @@ func TestBashCommand_Execute_WithError(t *testing.T) {
 		{
 			name:     "command that fails",
 			input:    "false",
-			wantErr:  false, // Command executes successfully, but bash command fails
+			wantErr:  true, // Command should return error for non-zero exit codes
 			contains: []string{"Exit status: 1"},
 		},
 		{
@@ -118,7 +118,7 @@ func TestBashCommand_Execute_WithError(t *testing.T) {
 		{
 			name:     "nonexistent command",
 			input:    "nonexistentcommand123",
-			wantErr:  false,
+			wantErr:  true, // Command should return error for non-zero exit codes
 			contains: []string{"Error:", "command not found", "Exit status:"},
 		},
 	}
@@ -284,7 +284,7 @@ func TestBashCommand_Execute_FailedCommandVariables(t *testing.T) {
 	// Execute a failing command
 	_ = stringprocessing.CaptureOutput(func() {
 		err := cmd.Execute(nil, "false")
-		assert.NoError(t, err) // Command itself should not error
+		assert.Error(t, err) // Command should return error for non-zero exit codes
 	})
 
 	// Verify system variables are set for failed command by checking MockContext directly
