@@ -1,20 +1,20 @@
 Setting _echo_command = true
 %%> "\\set[silent_echo=\"\\echo[silent=true]\"]"
 Setting silent_echo = \echo[silent=true]
-%%> "\\echo[silent=true] This should be silent"
+%%> "${silent_echo} This should be silent"
 %%> "\\get[_output]"
 _output = This should be silent
 %%> "\\set[raw_to_var=\"\\echo[raw=true,to=raw_var]\"]"
 Setting raw_to_var = \echo[raw=true,to=raw_var]
-%%> "\\echo[raw=true,to=raw_var] Raw\\nContent\\tHere"
+%%> "${raw_to_var} Raw\\nContent\\tHere"
 Raw\nContent\tHere
 %%> "\\get[raw_var]"
 raw_var = Raw\nContent\tHere
 %%> "\\set[output_var=\"my_result\"]"
 Setting output_var = my_result
-%%> "\\set[echo_to_var=\"\\echo[to=my_result]\"]"
+%%> "\\set[echo_to_var=\"\\echo[to=${output_var}]\"]"
 Setting echo_to_var = \echo[to=my_result]
-%%> "\\echo[to=my_result] Stored in dynamic variable"
+%%> "${echo_to_var} Stored in dynamic variable"
 Stored in dynamic variable
 %%> "\\get[my_result]"
 my_result = Stored in dynamic variable
@@ -22,9 +22,9 @@ my_result = Stored in dynamic variable
 Setting var_name = test_var
 %%> "\\set[var_value=\"Macro Set\"]"
 Setting var_value = Macro Set
-%%> "\\set[set_command=\"\\set[test_var=Macro Set]\"]"
+%%> "\\set[set_command=\"\\set[${var_name}=${var_value}]\"]"
 Setting set_command = \set[test_var=Macro Set]
-%%> "\\set[test_var=Macro Set]"
+%%> "${set_command}"
 Setting test_var = Macro Set
 %%> "\\get[test_var]"
 test_var = Macro Set
@@ -32,9 +32,9 @@ test_var = Macro Set
 Setting style_color = blue
 %%> "\\set[target_variable=\"styled_content\"]"
 Setting target_variable = styled_content
-%%> "\\set[styled_echo=\"\\echo[style=blue,raw=false,to=styled_content]\"]"
+%%> "\\set[styled_echo=\"\\echo[style=${style_color},raw=false,to=${target_variable}]\"]"
 Setting styled_echo = \echo[style=blue,raw=false,to=styled_content]
-%%> "\\echo[style=blue,raw=false,to=styled_content] This is\\nStyled\\tContent"
+%%> "${styled_echo} This is\\nStyled\\tContent"
 This is
 Styled	Content
 %%> "\\get[styled_content]"
@@ -44,9 +44,9 @@ Styled	Content
 Setting raw_mode = true
 %%> "\\set[silent_mode=\"false\"]"
 Setting silent_mode = false
-%%> "\\set[configurable_echo=\"\\echo[raw=true,silent=false]\"]"
+%%> "\\set[configurable_echo=\"\\echo[raw=${raw_mode},silent=${silent_mode}]\"]"
 Setting configurable_echo = \echo[raw=true,silent=false]
-%%> "\\echo[raw=true,silent=false] Configurable\\nOutput"
+%%> "${configurable_echo} Configurable\\nOutput"
 Configurable\nOutput
 %%> "\\get[_output]"
 _output = Configurable\nOutput
@@ -54,17 +54,17 @@ _output = Configurable\nOutput
 Setting color = green
 %%> "\\set[dest=\"option_test\"]"
 Setting dest = option_test
-%%> "\\set[styled_cmd=\"\\echo[style=green,to=option_test]\"]"
+%%> "\\set[styled_cmd=\"\\echo[style=${color},to=${dest}]\"]"
 Setting styled_cmd = \echo[style=green,to=option_test]
-%%> "\\echo[style=green,to=option_test] Just testing options"
+%%> "${styled_cmd} Just testing options"
 Just testing options
 %%> "\\get[option_test]"
 option_test = Just testing options
 %%> "\\set[dynamic_target=\"final_result\"]"
 Setting dynamic_target = final_result
-%%> "\\set[mixed_cmd=\"\\echo[raw=true,to=final_result,style=cyan]\"]"
+%%> "\\set[mixed_cmd=\"\\echo[raw=true,to=${dynamic_target},style=cyan]\"]"
 Setting mixed_cmd = \echo[raw=true,to=final_result,style=cyan]
-%%> "\\echo[raw=true,to=final_result,style=cyan] Mixed\\nOptions\\tTest"
+%%> "${mixed_cmd} Mixed\\nOptions\\tTest"
 Mixed\nOptions\tTest
 %%> "\\get[final_result]"
 final_result = Mixed\nOptions\tTest
