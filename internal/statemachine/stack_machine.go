@@ -136,6 +136,11 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 		return nil
 	}
 
+	// Output command line with %%> prefix if echo_commands is enabled
+	if sm.config.EchoCommands {
+		fmt.Printf("%%%%> %q\n", rawCommand)
+	}
+
 	// Use the state processor to handle the command through the proven pipeline
 	return sm.stateProcessor.ProcessCommand(rawCommand)
 }

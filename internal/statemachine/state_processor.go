@@ -159,14 +159,9 @@ func (sp *StateProcessor) executeTryCommand(parsedCmd *parser.Command, _ string)
 
 // executeBuiltinCommand handles execution of builtin commands.
 // This preserves the existing execution logic from processExecuting.
-func (sp *StateProcessor) executeBuiltinCommand(resolved *neurotypes.StateMachineResolvedCommand, parsedCmd *parser.Command, input string) error {
+func (sp *StateProcessor) executeBuiltinCommand(resolved *neurotypes.StateMachineResolvedCommand, parsedCmd *parser.Command, _ string) error {
 	if resolved.BuiltinCommand == nil {
 		return fmt.Errorf("no builtin command to execute")
-	}
-
-	// Output command line with %%> prefix if echo_commands is enabled
-	if sp.config.EchoCommands {
-		fmt.Printf("%%%%> %q\n", input)
 	}
 
 	// Execute the builtin command

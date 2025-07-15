@@ -110,6 +110,14 @@ func (c *BashCommand) Execute(_ map[string]string, input string) error {
 		fmt.Printf("Exit status: %d\n", exitCode)
 	}
 
+	// Return error if exit code is non-zero (for try block error handling)
+	if exitCode != 0 {
+		if stderr != "" {
+			return fmt.Errorf("%s", stderr)
+		}
+		return fmt.Errorf("command failed with exit code %d", exitCode)
+	}
+
 	return nil
 }
 

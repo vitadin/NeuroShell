@@ -84,6 +84,11 @@ func (th *TryHandler) HandleTryError(err error) {
 		if idx := strings.Index(errorMsg, ": "); idx != -1 {
 			errorMsg = errorMsg[idx+2:]
 		}
+	} else if strings.HasPrefix(errorMsg, "command resolution failed") {
+		// Extract the original error message after the colon and space
+		if idx := strings.Index(errorMsg, ": "); idx != -1 {
+			errorMsg = errorMsg[idx+2:]
+		}
 	}
 	_ = th.variableService.SetSystemVariable("_error", errorMsg)
 
