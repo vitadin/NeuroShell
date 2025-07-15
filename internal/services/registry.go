@@ -348,6 +348,26 @@ func GetGlobalQueueService() (*QueueService, error) {
 	return GetGlobalRegistry().GetQueueService()
 }
 
+// GetStackService retrieves the stack service with proper type casting.
+func (r *Registry) GetStackService() (*StackService, error) {
+	service, err := r.GetService("stack")
+	if err != nil {
+		return nil, err
+	}
+
+	stackService, ok := service.(*StackService)
+	if !ok {
+		return nil, fmt.Errorf("stack service has incorrect type")
+	}
+
+	return stackService, nil
+}
+
+// GetGlobalStackService returns the stack service from the global registry.
+func GetGlobalStackService() (*StackService, error) {
+	return GetGlobalRegistry().GetStackService()
+}
+
 // GetGlobalMarkdownService returns the markdown service from the global registry.
 func GetGlobalMarkdownService() (*MarkdownService, error) {
 	service, err := GlobalRegistry.GetService("markdown")

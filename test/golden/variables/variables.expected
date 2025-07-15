@@ -3,7 +3,7 @@ Setting _echo_command = true
 Setting greeting = Hello
 %%> "\\set[name=\"World\"]"
 Setting name = World
-%%> "\\set[message=\"Hello, World!\"]"
+%%> "\\set[message=\"${greeting}, ${name}!\"]"
 Setting message = Hello, World!
 %%> "\\get[message]"
 message = Hello, World!

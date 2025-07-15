@@ -40,6 +40,10 @@ type Context interface {
 	// Testing and debugging methods
 	GetAllVariables() map[string]string
 	SetVariableWithValidation(name string, value string) error
+
+	// Default command configuration
+	GetDefaultCommand() string
+	SetDefaultCommand(command string)
 }
 
 // Service defines the interface for NeuroShell services that provide specific functionality.

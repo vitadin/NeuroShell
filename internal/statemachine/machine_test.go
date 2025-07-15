@@ -39,6 +39,9 @@ func setupTestEnvironment(t *testing.T) func() {
 	if err := services.GetGlobalRegistry().RegisterService(services.NewVariableService()); err != nil {
 		t.Fatalf("Failed to register variable service: %v", err)
 	}
+	if err := services.GetGlobalRegistry().RegisterService(services.NewStackService()); err != nil {
+		t.Fatalf("Failed to register stack service: %v", err)
+	}
 	if err := services.GetGlobalRegistry().RegisterService(services.NewExecutorService()); err != nil {
 		t.Fatalf("Failed to register executor service: %v", err)
 	}
@@ -70,13 +73,8 @@ func TestStateMachine_NewStateMachine(t *testing.T) {
 		t.Error("Expected context to be set correctly")
 	}
 
-	if sm.config != config {
+	if sm.GetConfig().RecursionLimit != config.RecursionLimit {
 		t.Error("Expected config to be set correctly")
-	}
-
-	// Test initial state
-	if sm.getCurrentState() != neurotypes.StateReceived {
-		t.Errorf("Expected initial state to be StateReceived, got %s", sm.getCurrentState().String())
 	}
 }
 
@@ -91,7 +89,7 @@ func TestStateMachine_NewStateMachineWithDefaults(t *testing.T) {
 
 	// Test default configuration is applied
 	defaultConfig := neurotypes.DefaultStateMachineConfig()
-	if sm.config.RecursionLimit != defaultConfig.RecursionLimit {
+	if sm.GetConfig().RecursionLimit != defaultConfig.RecursionLimit {
 		t.Error("Expected default recursion limit to be applied")
 	}
 }

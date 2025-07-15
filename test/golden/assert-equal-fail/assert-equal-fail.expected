@@ -3,7 +3,7 @@ Setting _echo_command = true
 Setting expected_value = hello
 %%> "\\set[actual_value=\"world\"]"
 Setting actual_value = world
-%%> "\\assert-equal[expect=\"hello\", actual=\"world\"]"
+%%> "\\assert-equal[expect=\"${expected_value}\", actual=\"${actual_value}\"]"
 ✗ Assertion failed: values are not equal
   Expected: hello
   Actual:   world

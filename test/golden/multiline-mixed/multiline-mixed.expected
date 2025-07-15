@@ -1,10 +1,13 @@
 Setting _echo_command = true
-%%> "\\echo I think... but wait\nthere is more to say"
-I think... but wait
+%%> "\\echo I think... but wait ..."
+I think... but wait ...
+%%> "there is more to say"
 there is more to say
-%%> "\\echo This message has natural... ellipsis and also\ncontinues on next line"
-This message has natural... ellipsis and also
+%%> "\\echo This message has natural... ellipsis and also ..."
+This message has natural... ellipsis and also ...
+%%> "continues on next line"
 continues on next line
-%%> "\\echo Processing data... please wait\noperation complete"
-Processing data... please wait
+%%> "\\echo Processing data... please wait ..."
+Processing data... please wait ...
+%%> "operation complete"
 operation complete

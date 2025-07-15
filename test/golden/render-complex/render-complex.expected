@@ -3,7 +3,7 @@ Setting _echo_command = true
 Setting cmd1 = \\session-new
 %%> "\\set[cmd2=\"\\\\session-list\"]"
 Setting cmd2 = \\session-list
-%%> "\\render[keywords=[\\\\session-new, \\\\session-list, \\\\help], theme=dark, style=bold, to=styled_output] Commands: \\\\session-new, \\\\session-list, and \\\\help are essential for session management"
+%%> "\\render[keywords=[${cmd1}, ${cmd2}, \\\\help], theme=dark, style=bold, to=styled_output] Commands: ${cmd1}, ${cmd2}, and \\\\help are essential for session management"
 Commands: \\session-new, \\session-list, and \\help are essential for session management
 %%> "\\get[styled_output]"
 styled_output = Commands: \\session-new, \\session-list, and \\help are essential for session management

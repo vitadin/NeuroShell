@@ -92,27 +92,27 @@ func TestParseInput_NoBackslashPrefix(t *testing.T) {
 		expectedMsg  string
 	}{
 		{
-			name:         "plain text becomes send command",
+			name:         "plain text becomes echo command",
 			input:        "hello world",
-			expectedName: "send",
+			expectedName: "echo",
 			expectedMsg:  "hello world",
 		},
 		{
-			name:         "single word becomes send",
+			name:         "single word becomes echo",
 			input:        "hello",
-			expectedName: "send",
+			expectedName: "echo",
 			expectedMsg:  "hello",
 		},
 		{
-			name:         "complex message becomes send",
+			name:         "complex message becomes echo",
 			input:        "analyze this data and create a report",
-			expectedName: "send",
+			expectedName: "echo",
 			expectedMsg:  "analyze this data and create a report",
 		},
 		{
 			name:         "message with special characters",
 			input:        "hello! @user #hashtag $variable",
-			expectedName: "send",
+			expectedName: "echo",
 			expectedMsg:  "hello! @user #hashtag $variable",
 		},
 	}
@@ -138,25 +138,25 @@ func TestParseInput_EdgeCases(t *testing.T) {
 		{
 			name:         "empty input",
 			input:        "",
-			expectedName: "send",
+			expectedName: "echo",
 			expectedMsg:  "",
 		},
 		{
 			name:         "whitespace only",
 			input:        "   ",
-			expectedName: "send",
+			expectedName: "echo",
 			expectedMsg:  "",
 		},
 		{
 			name:         "just backslash",
 			input:        "\\",
-			expectedName: "send",
+			expectedName: "echo",
 			expectedMsg:  "",
 		},
 		{
 			name:         "backslash with spaces",
 			input:        "\\   ",
-			expectedName: "send",
+			expectedName: "echo",
 			expectedMsg:  "",
 		},
 		{
@@ -274,7 +274,7 @@ func TestParseInput_SpecialCharacters(t *testing.T) {
 		{
 			name:         "mixed quotes and brackets",
 			input:        "analyze \"this [data]\" and 'that {info}'",
-			expectedName: "send",
+			expectedName: "echo",
 			expectedMsg:  "analyze \"this [data]\" and 'that {info}'",
 		},
 	}
@@ -306,8 +306,8 @@ func TestParseInput_ParseMode(t *testing.T) {
 			expectedParseMode: neurotypes.ParseModeKeyValue,
 		},
 		{
-			name:              "send command uses key-value mode",
-			input:             "\\send[urgent] message",
+			name:              "echo command uses key-value mode",
+			input:             "\\echo[urgent] message",
 			expectedParseMode: neurotypes.ParseModeKeyValue,
 		},
 	}
@@ -344,7 +344,7 @@ func TestParseInput_LongInputs(t *testing.T) {
 		{
 			name:         "long plain text",
 			input:        longMessage,
-			expectedName: "send",
+			expectedName: "echo",
 		},
 	}
 
@@ -932,8 +932,8 @@ func TestGetParseMode(t *testing.T) {
 			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 		{
-			name:         "send command",
-			commandName:  "send",
+			name:         "echo command",
+			commandName:  "echo",
 			expectedMode: neurotypes.ParseModeKeyValue,
 		},
 		{
@@ -978,7 +978,7 @@ func TestParseInput_ErrorHandling(t *testing.T) {
 		{
 			name:           "extremely long input",
 			input:          strings.Repeat("very long input ", 10000),
-			expectedName:   "send",
+			expectedName:   "echo",
 			shouldNotPanic: true,
 		},
 		{
@@ -1014,7 +1014,7 @@ func TestParseInput_ErrorHandling(t *testing.T) {
 		{
 			name:           "binary data",
 			input:          string([]byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}),
-			expectedName:   "send",
+			expectedName:   "echo",
 			shouldNotPanic: true,
 		},
 		{

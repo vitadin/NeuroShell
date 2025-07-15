@@ -21,14 +21,26 @@ type Command struct {
 }
 
 // ParseInput parses user input into a Command structure with name, options, and message.
+// For backward compatibility, it uses "echo" as the default command.
 func ParseInput(input string) *Command {
+	return ParseInputWithContext(input, nil)
+}
+
+// ParseInputWithContext parses user input using the provided context for default command configuration.
+func ParseInputWithContext(input string, ctx neurotypes.Context) *Command {
 	originalInput := input // Store original before any processing
 	input = strings.TrimSpace(input)
 
-	// If doesn't start with \, treat as \send message
+	// Determine default command from context
+	defaultCmd := "echo" // fallback default
+	if ctx != nil {
+		defaultCmd = ctx.GetDefaultCommand()
+	}
+
+	// If doesn't start with \, treat as default command message
 	if !strings.HasPrefix(input, "\\") {
 		return &Command{
-			Name:         "send",
+			Name:         defaultCmd,
 			Message:      input,
 			Options:      make(map[string]string),
 			OriginalText: originalInput,
@@ -57,9 +69,9 @@ func ParseInput(input string) *Command {
 		}
 	}
 
-	// If no command name (malformed), treat as \send
+	// If no command name (malformed), treat as default command
 	if cmd.Name == "" {
-		cmd.Name = "send"
+		cmd.Name = defaultCmd
 		cmd.Message = input
 	}
 

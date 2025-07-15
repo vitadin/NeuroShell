@@ -6,12 +6,30 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"neuroshell/internal/commands"
+	"neuroshell/internal/data/embedded"
+	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
 )
 
-// resolveCommand attempts to resolve a command name to a builtin command or script.
-func (sm *StateMachine) resolveCommand(commandName string) (*neurotypes.StateMachineResolvedCommand, error) {
+// CommandResolver handles command resolution through the priority system.
+type CommandResolver struct {
+	stdlibLoader *embedded.StdlibLoader
+	logger       *log.Logger
+}
+
+// NewCommandResolver creates a new command resolver.
+func NewCommandResolver() *CommandResolver {
+	return &CommandResolver{
+		stdlibLoader: embedded.NewStdlibLoader(),
+		logger:       logger.NewStyledLogger("CommandResolver"),
+	}
+}
+
+// ResolveCommand attempts to resolve a command name to a builtin command or script.
+// Priority: builtin → stdlib → user scripts
+func (r *CommandResolver) ResolveCommand(commandName string) (*neurotypes.StateMachineResolvedCommand, error) {
 	// Priority 1: Try builtin commands (highest priority)
 	if builtinCmd, exists := commands.GetGlobalRegistry().Get(commandName); exists {
 		return &neurotypes.StateMachineResolvedCommand{
@@ -22,65 +40,61 @@ func (sm *StateMachine) resolveCommand(commandName string) (*neurotypes.StateMac
 	}
 
 	// Priority 2: Try stdlib scripts (medium priority)
-	if sm.stdlibLoader.ScriptExists(commandName) {
-		scriptContent, err := sm.stdlibLoader.LoadScript(commandName)
+	if r.stdlibLoader.ScriptExists(commandName) {
+		scriptContent, err := r.stdlibLoader.LoadScript(commandName)
 		if err != nil {
-			sm.logger.Error("Failed to load stdlib script", "command", commandName, "error", err)
+			r.logger.Error("Failed to load stdlib script", "command", commandName, "error", err)
 		} else {
 			return &neurotypes.StateMachineResolvedCommand{
 				Name:          commandName,
 				Type:          neurotypes.CommandTypeStdlib,
 				ScriptContent: scriptContent,
-				ScriptPath:    sm.stdlibLoader.GetScriptPath(commandName),
+				ScriptPath:    r.stdlibLoader.GetScriptPath(commandName),
 			}, nil
 		}
 	}
 
 	// Priority 3: Try user scripts (lowest priority)
-	// Check if this is a file path (contains .neuro suffix)
 	if strings.HasSuffix(commandName, ".neuro") {
-		sm.logger.Debug("Detected file path command", "command", commandName)
-		return sm.resolveUserFilePath(commandName)
+		r.logger.Debug("Detected file path command", "command", commandName)
+		return r.resolveUserFilePath(commandName)
 	}
-	// TODO: Add name-based user script resolution (~/.neuro/scripts/, etc.)
 
 	return nil, fmt.Errorf("unknown command: %s", commandName)
 }
 
 // resolveUserFilePath resolves a file path to a user script command.
-// It handles both relative and absolute paths with security checks.
-func (sm *StateMachine) resolveUserFilePath(filePath string) (*neurotypes.StateMachineResolvedCommand, error) {
-	sm.logger.Debug("Resolving user file path", "path", filePath)
+func (r *CommandResolver) resolveUserFilePath(filePath string) (*neurotypes.StateMachineResolvedCommand, error) {
+	r.logger.Debug("Resolving user file path", "path", filePath)
 
 	// Path resolution with security checks
-	resolvedPath, err := sm.resolvePathSafely(filePath)
+	resolvedPath, err := r.resolvePathSafely(filePath)
 	if err != nil {
-		sm.logger.Error("Path resolution failed", "path", filePath, "error", err)
+		r.logger.Error("Path resolution failed", "path", filePath, "error", err)
 		return nil, fmt.Errorf("invalid file path: %w", err)
 	}
 
-	sm.logger.Debug("Path resolved", "original", filePath, "resolved", resolvedPath)
+	r.logger.Debug("Path resolved", "original", filePath, "resolved", resolvedPath)
 
 	// Load and validate file content
 	content, err := os.ReadFile(resolvedPath)
 	if err != nil {
-		sm.logger.Error("File read failed", "path", resolvedPath, "error", err)
+		r.logger.Error("File read failed", "path", resolvedPath, "error", err)
 		return nil, fmt.Errorf("failed to read script file: %w", err)
 	}
 
-	sm.logger.Debug("File loaded successfully", "path", resolvedPath, "content_length", len(content))
+	r.logger.Debug("File loaded successfully", "path", resolvedPath, "content_length", len(content))
 
 	return &neurotypes.StateMachineResolvedCommand{
-		Name:          filePath,                   // Original user input
-		Type:          neurotypes.CommandTypeUser, // Existing type
-		ScriptContent: string(content),            // Reuse existing field
-		ScriptPath:    resolvedPath,               // Reuse existing field
+		Name:          filePath,
+		Type:          neurotypes.CommandTypeUser,
+		ScriptContent: string(content),
+		ScriptPath:    resolvedPath,
 	}, nil
 }
 
-// resolvePathSafely resolves file paths with security checks to prevent directory traversal
-// and handles both relative and absolute paths appropriately.
-func (sm *StateMachine) resolvePathSafely(filePath string) (string, error) {
+// resolvePathSafely resolves file paths with security checks.
+func (r *CommandResolver) resolvePathSafely(filePath string) (string, error) {
 	// Security: Prevent directory traversal attacks
 	if strings.Contains(filePath, "..") {
 		return "", fmt.Errorf("parent directory access not allowed")

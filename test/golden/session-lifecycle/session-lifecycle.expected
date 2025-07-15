@@ -15,7 +15,7 @@ Deleted session 'lifecycle_test' (ID: 00000001)
 Created session 'id_test' (ID: 00000002)
 %%> "\\get[#session_id]"
 #session_id = 00000002-0000-4000-8000-000000000002
-%%> "\\session-delete 00000002-0000-4000-8000-000000000002"
+%%> "\\session-delete ${#session_id}"
 Deleted session 'id_test' (ID: 00000002)
 %%> "\\get[#session_name]"
 #session_name = 

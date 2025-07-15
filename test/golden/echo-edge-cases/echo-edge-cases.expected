@@ -23,7 +23,7 @@ Already ends with newline
 Leading and trailing spaces   \n\t
 %%> "\\echo[raw=false]    Leading and trailing spaces   \\n\\t"
 Leading and trailing spaces   
-%%> "\\echo[raw=true] Shell chars: $PATH  `command` $(subshell)"
+%%> "\\echo[raw=true] Shell chars: $PATH ${HOME} `command` $(subshell)"
 Shell chars: $PATH  `command` $(subshell)
 %%> "\\echo[raw=true] Backslashes: \\\\ \\\\\\\\ \\\\n \\\\t \\\\r"
 Backslashes: \\ \\\\ \\n \\t \\r

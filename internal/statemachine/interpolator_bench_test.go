@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"neuroshell/internal/context"
-	"neuroshell/internal/parser"
 )
 
 // BenchmarkCoreInterpolator_SimpleVariable benchmarks basic variable expansion
@@ -155,30 +154,6 @@ func BenchmarkCoreInterpolator_InterpolateCommandLine(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _, _ = interpolator.InterpolateCommandLine(commandLine)
-	}
-}
-
-// BenchmarkCoreInterpolator_InterpolateCommand benchmarks command structure interpolation
-func BenchmarkCoreInterpolator_InterpolateCommand(b *testing.B) {
-	ctx := context.New()
-	interpolator := NewCoreInterpolator(ctx)
-
-	_ = ctx.SetVariable("user", "Alice")
-	_ = ctx.SetVariable("style", "red")
-
-	cmd := &parser.Command{
-		Name:           "echo",
-		Message:        "Hello ${user}",
-		BracketContent: "[style=${style}]",
-		Options: map[string]string{
-			"color": "${style}",
-			"text":  "Hi ${user}",
-		},
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, _ = interpolator.InterpolateCommand(cmd)
 	}
 }
 

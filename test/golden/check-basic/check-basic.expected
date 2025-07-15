@@ -14,6 +14,7 @@ Service Status Check:
   [OK] model                - available/initialized
   [OK] model_catalog        - available/initialized
   [OK] queue                - available/initialized
+  [OK] stack                - available/initialized
   [OK] theme                - available/initialized
   [OK] variable             - available/initialized
-Summary: 14/14 services healthy
+Summary: 15/15 services healthy

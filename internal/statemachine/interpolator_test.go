@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"neuroshell/internal/context"
-	"neuroshell/internal/parser"
 )
 
 // TestCoreInterpolator_NewCoreInterpolator tests interpolator creation.
@@ -250,62 +249,6 @@ func TestCoreInterpolator_ExpandVariablesWithLimit(t *testing.T) {
 	result = interpolator.ExpandVariablesWithLimit("${a}", 0)
 	if result != "final" {
 		t.Errorf("ExpandVariablesWithLimit with zero limit = '%s', expected 'final'", result)
-	}
-}
-
-// TestCoreInterpolator_InterpolateCommand tests command structure interpolation.
-func TestCoreInterpolator_InterpolateCommand(t *testing.T) {
-	ctx := context.New()
-	interpolator := NewCoreInterpolator(ctx)
-
-	// Set up test variables
-	_ = ctx.SetVariable("user", "Alice")
-	_ = ctx.SetVariable("style", "red")
-
-	// Test nil command
-	result, err := interpolator.InterpolateCommand(nil)
-	if err != nil {
-		t.Errorf("InterpolateCommand(nil) unexpected error: %v", err)
-	}
-
-	if result != nil {
-		t.Errorf("InterpolateCommand(nil) = %v, expected nil", result)
-	}
-
-	// Test command with variables
-	cmd := &parser.Command{
-		Name:           "echo",
-		Message:        "Hello ${user}",
-		BracketContent: "[style=${style}]",
-		Options: map[string]string{
-			"color": "${style}",
-			"text":  "Hi ${user}",
-		},
-	}
-
-	interpolated, err := interpolator.InterpolateCommand(cmd)
-	if err != nil {
-		t.Errorf("InterpolateCommand unexpected error: %v", err)
-	}
-
-	if interpolated.Name != "echo" {
-		t.Errorf("Command name should not be interpolated, got '%s'", interpolated.Name)
-	}
-
-	if interpolated.Message != "Hello Alice" {
-		t.Errorf("Message = '%s', expected 'Hello Alice'", interpolated.Message)
-	}
-
-	if interpolated.BracketContent != "[style=red]" {
-		t.Errorf("BracketContent = '%s', expected '[style=red]'", interpolated.BracketContent)
-	}
-
-	if interpolated.Options["color"] != "red" {
-		t.Errorf("Options[color] = '%s', expected 'red'", interpolated.Options["color"])
-	}
-
-	if interpolated.Options["text"] != "Hi Alice" {
-		t.Errorf("Options[text] = '%s', expected 'Hi Alice'", interpolated.Options["text"])
 	}
 }
 

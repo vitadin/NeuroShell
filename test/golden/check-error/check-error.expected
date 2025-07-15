@@ -5,7 +5,7 @@ Service Status Check:
   [FAIL] nonexistent_service  - not available (service nonexistent_service not found)
 Summary: 0/1 services healthy
 Some services are not available or not initialized.
-%%> "\\echo Check status: failed"
+%%> "\\echo Check status: ${_check_status}"
 Check status: failed
-%%> "\\echo Failed services: nonexistent_service"
+%%> "\\echo Failed services: ${_check_failed_services}"
 Failed services: nonexistent_service
