@@ -1,11 +1,17 @@
 Setting _echo_command = true
-%%> "\\echo first line\nsecond line\nthird line\nfinal line"
-first line
-second line
-third line
+%%> "\\echo first line ..."
+first line ...
+%%> "second line ..."
+second line ...
+%%> "third line ..."
+third line ...
+%%> "final line"
 final line
-%%> "\\echo This is line one\nand line two\nand line three\nending here"
-This is line one
-and line two
-and line three
+%%> "\\echo This is line one ..."
+This is line one ...
+%%> "and line two ..."
+and line two ...
+%%> "and line three ..."
+and line three ...
+%%> "ending here"
 ending here
