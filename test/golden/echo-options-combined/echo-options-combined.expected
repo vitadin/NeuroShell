@@ -25,16 +25,16 @@ test4 = Verbose
 interpreted	mode
 %%> "\\set[message=\"Hello\\nWorld\"]"
 Setting message = Hello\nWorld
-%%> "\\echo[raw=true,silent=true,to=combo1] Variable: Hello\\nWorld\\tEnd"
+%%> "\\echo[raw=true,silent=true,to=combo1] Variable: ${message}\\tEnd"
 %%> "\\get[combo1]"
 combo1 = Variable: Hello\nWorld\tEnd
-%%> "\\echo[raw=false,silent=true,to=combo2] Variable: Hello\\nWorld\\tEnd"
+%%> "\\echo[raw=false,silent=true,to=combo2] Variable: ${message}\\tEnd"
 %%> "\\get[combo2]"
 combo2 = Variable: Hello
 World	End
 %%> "\\set[complex=\"Multi\\nLine\\tContent\"]"
 Setting complex = Multi\nLine\tContent
-%%> "\\echo[raw=true,silent=true,to=final_test] Complex: Multi\\nLine\\tContent\\nWith more\\tescapes"
+%%> "\\echo[raw=true,silent=true,to=final_test] Complex: ${complex}\\nWith more\\tescapes"
 %%> "\\get[final_test]"
 final_test = Complex: Multi\nLine\tContent\nWith more\tescapes
 %%> "\\echo[raw=false,silent=false,to=explicit] Explicit\\noptions\\ttest"
