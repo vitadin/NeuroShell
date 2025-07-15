@@ -114,6 +114,9 @@ func (sm *StackMachine) processStack() error {
 			// Normal error propagation
 			return err
 		}
+
+		// Update echo configuration after each command in case _echo_command was modified
+		sm.updateEchoConfig()
 	}
 	return nil
 }
@@ -154,6 +157,11 @@ func (sm *StackMachine) updateEchoConfig() {
 		sm.config.EchoCommands = true
 	case "false", "0", "no", "":
 		sm.config.EchoCommands = false
+	}
+
+	// Propagate config changes to state processor
+	if sm.stateProcessor != nil {
+		sm.stateProcessor.SetConfig(sm.config)
 	}
 }
 

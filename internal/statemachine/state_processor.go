@@ -191,8 +191,8 @@ func (sp *StateProcessor) executeScriptCommand(resolved *neurotypes.StateMachine
 
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
-		// Skip empty lines and comments
-		if trimmed != "" && !strings.HasPrefix(trimmed, "#") {
+		// Skip empty lines and comments (%% for neuro-style comments)
+		if trimmed != "" && !strings.HasPrefix(trimmed, "%%") {
 			scriptLines = append(scriptLines, trimmed)
 		}
 	}
