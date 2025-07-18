@@ -1,6 +1,11 @@
 package services
 
-import "neuroshell/internal/context"
+import (
+	"fmt"
+	"strconv"
+
+	"neuroshell/internal/context"
+)
 
 // StackService provides command stacking functionality for the state machine
 type StackService struct {
@@ -33,6 +38,15 @@ func (ss *StackService) PushCommand(command string) {
 		return
 	}
 	ctx := context.GetGlobalContext().(*context.NeuroContext)
+
+	// Check stack depth limit before pushing
+	if err := ss.checkStackDepthLimit(ctx); err != nil {
+		// In case of stack overflow, we cannot push more commands
+		// Log the error but don't crash the application
+		fmt.Printf("Stack overflow prevented: %v\n", err)
+		return
+	}
+
 	ctx.PushCommand(command)
 }
 
@@ -42,6 +56,16 @@ func (ss *StackService) PushCommands(commands []string) {
 		return
 	}
 	ctx := context.GetGlobalContext().(*context.NeuroContext)
+
+	// Check if adding all commands would exceed stack depth limit
+	currentSize := ctx.GetStackSize()
+	maxDepth := ss.getMaxStackDepth(ctx)
+
+	if currentSize+len(commands) > maxDepth {
+		fmt.Printf("Stack overflow prevented: would exceed maximum depth of %d\n", maxDepth)
+		return
+	}
+
 	ctx.PushCommands(commands)
 }
 
@@ -162,4 +186,31 @@ func (ss *StackService) IsTryErrorCaptured() bool {
 	}
 	ctx := context.GetGlobalContext().(*context.NeuroContext)
 	return ctx.IsTryErrorCaptured()
+}
+
+// Helper methods for stack overflow protection
+
+// checkStackDepthLimit checks if the current stack depth is within limits
+func (ss *StackService) checkStackDepthLimit(ctx *context.NeuroContext) error {
+	currentSize := ctx.GetStackSize()
+	maxDepth := ss.getMaxStackDepth(ctx)
+
+	if currentSize >= maxDepth {
+		return fmt.Errorf("stack depth limit reached (%d commands)", maxDepth)
+	}
+
+	return nil
+}
+
+// getMaxStackDepth retrieves the maximum stack depth from user configuration
+func (ss *StackService) getMaxStackDepth(ctx *context.NeuroContext) int {
+	// Try to get user-configured limit from _max_stack_depth variable
+	if maxDepthStr, err := ctx.GetVariable("_max_stack_depth"); err == nil && maxDepthStr != "" {
+		if maxDepth, err := strconv.Atoi(maxDepthStr); err == nil && maxDepth > 0 {
+			return maxDepth
+		}
+	}
+
+	// Default to 1000 if not configured or invalid
+	return 1000
 }

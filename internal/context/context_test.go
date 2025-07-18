@@ -25,7 +25,7 @@ func TestNew(t *testing.T) {
 	assert.NotEmpty(t, ctx.sessionID)
 	assert.Contains(t, ctx.sessionID, "session_")
 	assert.False(t, ctx.testMode)
-	assert.Equal(t, 2, len(ctx.variables)) // _style and _default_command are initialized by default
+	assert.Equal(t, 3, len(ctx.variables)) // _style, _default_command, and _max_stack_depth are initialized by default
 
 	// Verify that _style is initialized to empty string
 	styleValue, err := ctx.GetVariable("_style")
@@ -36,6 +36,12 @@ func TestNew(t *testing.T) {
 	defaultCmd, err := ctx.GetVariable("_default_command")
 	assert.NoError(t, err)
 	assert.Equal(t, "echo", defaultCmd)
+
+	// Verify that _max_stack_depth is initialized to "1000"
+	maxStackDepth, err := ctx.GetVariable("_max_stack_depth")
+	assert.NoError(t, err)
+	assert.Equal(t, "1000", maxStackDepth)
+
 	assert.Equal(t, 0, len(ctx.history))
 	assert.Equal(t, 0, len(ctx.executionQueue))
 	assert.Equal(t, 0, len(ctx.scriptMetadata))

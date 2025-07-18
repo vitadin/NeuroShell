@@ -1,0 +1,4 @@
+%% Simple while test
+\set[test="true"]
+\while[condition="${test}"] \set[test="false"]
+\echo "Done"

@@ -1,0 +1,38 @@
+%% Counter-based \while loop test - demonstrating proper termination
+\set[_echo_command="true"]
+
+%% Simple counter loop showing termination after condition changes
+\set[counter="0"]
+\while[condition="${counter}"] \set[counter=""]
+\echo "Simple loop executed once, counter is now empty"
+
+%% Test with different truthy/falsy transitions
+\set[flag="yes"]
+\while[condition="${flag}"] \set[flag="no"]  
+\echo "Yes->No transition completed"
+
+\set[switch="on"]
+\while[condition="${switch}"] \set[switch="off"]
+\echo "On->Off transition completed"
+
+\set[enabled="enabled"]
+\while[condition="${enabled}"] \set[enabled="disabled"]
+\echo "Enabled->Disabled transition completed"
+
+%% Test string to empty transition
+\set[text="hello"]
+\while[condition="${text}"] \set[text=""]
+\echo "String to empty transition completed"
+
+%% Test numeric string transitions
+\set[number="1"]
+\while[condition="${number}"] \set[number="0"]
+\echo "1->0 transition completed"
+
+%% Final state verification
+\get[counter]
+\get[flag] 
+\get[switch]
+\get[enabled]
+\get[text]
+\get[number]

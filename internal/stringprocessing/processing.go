@@ -4,6 +4,7 @@
 package stringprocessing
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -116,4 +117,60 @@ func CaptureOutput(fn func()) string {
 
 	// Return captured output
 	return <-outputChan
+}
+
+// IsTruthy determines if a string represents a truthy value with safety protections.
+// This function provides shared condition evaluation logic for \if and \while commands.
+//
+// Condition evaluation rules (case-insensitive):
+//   - Explicitly TRUTHY: 'true', '1', 'yes', 'on', 'enabled'
+//   - Explicitly FALSY: 'false', '0', 'no', 'off', 'disabled'
+//   - Empty strings: FALSY (including whitespace-only)
+//   - Any other non-empty string: TRUTHY
+//
+// Safety protections:
+//   - Returns error if condition string is too long (prevents infinite loops from malformed conditions)
+func IsTruthy(value string) (bool, error) {
+	value = strings.TrimSpace(strings.ToLower(value))
+
+	// Safety check: prevent infinite loops from malformed conditions
+	// Malformed conditions (like from semicolon errors) tend to grow very long
+	const maxConditionLength = 200
+	if len(value) > maxConditionLength {
+		return false, fmt.Errorf("condition too long (%d chars), possible malformed condition", len(value))
+	}
+
+	// Empty string is falsy
+	if value == "" {
+		return false, nil
+	}
+
+	// Common truthy values
+	truthyValues := map[string]bool{
+		"true":    true,
+		"1":       true,
+		"yes":     true,
+		"on":      true,
+		"enabled": true,
+	}
+
+	// Common falsy values
+	falsyValues := map[string]bool{
+		"false":    true,
+		"0":        true,
+		"no":       true,
+		"off":      true,
+		"disabled": true,
+	}
+
+	// Check explicit truthy/falsy values
+	if truthyValues[value] {
+		return true, nil
+	}
+	if falsyValues[value] {
+		return false, nil
+	}
+
+	// Any non-empty string is considered truthy
+	return true, nil
 }

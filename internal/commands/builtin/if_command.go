@@ -7,6 +7,7 @@ import (
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
+	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -109,8 +110,11 @@ func (c *IfCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("condition parameter is required")
 	}
 
-	// Evaluate the condition
-	result := c.evaluateCondition(condition)
+	// Evaluate the condition using shared logic with safety protections
+	result, err := c.evaluateCondition(condition)
+	if err != nil {
+		return fmt.Errorf("condition evaluation failed: %w", err)
+	}
 
 	// Store the result in system variable for debugging
 	if variableService, err := services.GetGlobalVariableService(); err == nil {
@@ -127,52 +131,12 @@ func (c *IfCommand) Execute(args map[string]string, input string) error {
 	return nil
 }
 
-// evaluateCondition evaluates a boolean expression string
+// evaluateCondition evaluates a boolean expression string using shared logic with safety protections.
 // Note: Variable interpolation (${var}) is handled by the state machine before this command executes,
 // so the condition parameter already contains the expanded variable values.
-func (c *IfCommand) evaluateCondition(condition string) bool {
-	// Trim whitespace and evaluate directly
-	// Variables have already been interpolated by the state machine
-	return c.isTruthy(strings.TrimSpace(condition))
-}
-
-// isTruthy determines if a string represents a truthy value
-func (c *IfCommand) isTruthy(value string) bool {
-	value = strings.TrimSpace(strings.ToLower(value))
-
-	// Empty string is falsy
-	if value == "" {
-		return false
-	}
-
-	// Common truthy values
-	truthyValues := map[string]bool{
-		"true":    true,
-		"1":       true,
-		"yes":     true,
-		"on":      true,
-		"enabled": true,
-	}
-
-	// Common falsy values
-	falsyValues := map[string]bool{
-		"false":    true,
-		"0":        true,
-		"no":       true,
-		"off":      true,
-		"disabled": true,
-	}
-
-	// Check explicit truthy/falsy values
-	if truthyValues[value] {
-		return true
-	}
-	if falsyValues[value] {
-		return false
-	}
-
-	// Any non-empty string is considered truthy
-	return true
+func (c *IfCommand) evaluateCondition(condition string) (bool, error) {
+	// Use shared condition evaluation logic with safety protections
+	return stringprocessing.IsTruthy(strings.TrimSpace(condition))
 }
 
 func init() {

@@ -1,0 +1,41 @@
+%% Stack overflow protection test for \while command
+\set[_echo_command="true"]
+
+%% Set a very low stack limit for testing
+\set[_max_stack_depth="10"]
+\get[_max_stack_depth]
+
+%% Test normal loop within stack limits
+\set[safe_counter="0"]
+\while[condition="${safe_counter} < 3"] \echo "Safe iteration: ${safe_counter}"; \set[safe_counter="$((${safe_counter} + 1))"]
+
+%% Test infinite loop protection (should be stopped by stack overflow)
+\echo "Testing infinite loop protection..."
+\set[infinite="true"]
+\while[condition="${infinite}"] \echo "This should be stopped by stack protection"; \set[dummy="value"]
+
+%% Verify we can still execute commands after stack protection
+\echo "After stack protection test"
+\set[after_test="success"]
+\get[after_test]
+
+%% Reset to normal stack depth
+\set[_max_stack_depth="1000"]
+\get[_max_stack_depth]
+
+%% Test that normal loops work again
+\set[normal_counter="0"]
+\while[condition="${normal_counter} < 2"] \echo "Normal loop: ${normal_counter}"; \set[normal_counter="$((${normal_counter} + 1))"]
+
+%% Test stack depth configuration validation
+\set[_max_stack_depth="invalid"]
+\get[_max_stack_depth]
+
+\set[_max_stack_depth="0"]  
+\get[_max_stack_depth]
+
+\set[_max_stack_depth="-1"]
+\get[_max_stack_depth]
+
+%% Should fall back to default (1000) for all invalid values
+\echo "Stack protection test completed"

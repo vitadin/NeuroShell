@@ -1,0 +1,57 @@
+%% Basic \while command functionality test
+\set[_echo_command="true"]
+
+%% Test basic false condition (should not execute at all)
+\while[condition=false] \echo "This should not appear"
+
+%% Test basic true condition that becomes false (single iteration)
+\set[flag="true"]
+\while[condition="${flag}"] \set[flag="false"]
+\echo "Flag is now: ${flag}"
+
+%% Test condition evaluation rules - truthy values
+\set[count="1"]
+\while[condition="${count}"] \set[count="0"]
+\echo "1 is truthy, now count is: ${count}"
+
+\set[count="yes"]
+\while[condition="${count}"] \set[count="no"]
+\echo "yes is truthy, now count is: ${count}"
+
+\set[count="on"]
+\while[condition="${count}"] \set[count="off"]
+\echo "on is truthy, now count is: ${count}"
+
+%% Test condition evaluation rules - falsy values
+\set[count="0"]
+\while[condition="${count}"] \echo "This should not appear - 0 is falsy"
+
+\set[count="no"]
+\while[condition="${count}"] \echo "This should not appear - no is falsy"
+
+\set[count=""]
+\while[condition="${count}"] \echo "This should not appear - empty is falsy"
+
+%% Test command that sets a variable
+\set[loop_var="start"]
+\while[condition="true"] \set[loop_var="end"]
+\get[loop_var]
+
+%% Test empty command (should not execute even with true condition)
+\while[condition=true]
+
+%% Test whitespace-only command
+\while[condition=true]    
+
+%% Verify the #while_result system variable is set correctly
+\set[test_flag="true"]
+\while[condition="${test_flag}"] \set[test_flag="false"]
+\get[#while_result]
+
+\while[condition=false] \set[dummy2="test"]  
+\get[#while_result]
+
+%% Test that while loop properly terminates
+\set[termination_test="true"]
+\while[condition="${termination_test}"] \set[termination_test="false"]
+\echo "Loop terminated properly"

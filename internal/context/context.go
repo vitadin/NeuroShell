@@ -21,6 +21,7 @@ var allowedGlobalVariables = []string{
 	"_echo_command",
 	"_render_markdown",
 	"_default_command",
+	"_max_stack_depth",
 }
 
 // TryBlockContext represents the context for a try block with error boundaries
@@ -113,6 +114,7 @@ func New() *NeuroContext {
 	// Initialize whitelisted global variables with default values
 	_ = ctx.SetSystemVariable("_style", "")
 	_ = ctx.SetSystemVariable("_default_command", "echo")
+	_ = ctx.SetSystemVariable("_max_stack_depth", "1000")
 
 	return ctx
 }

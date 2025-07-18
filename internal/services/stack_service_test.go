@@ -237,3 +237,160 @@ func TestStackService_LargeStack(t *testing.T) {
 
 	assert.Equal(t, 0, service.GetStackSize())
 }
+
+func TestStackService_MaxStackDepthProtection(t *testing.T) {
+	// Setup global context
+	neuroCtx := context.NewTestContext()
+	concreteCtx := neuroCtx.(*context.NeuroContext)
+	context.SetGlobalContext(concreteCtx)
+
+	// Set a low stack limit for testing
+	err := concreteCtx.SetSystemVariable("_max_stack_depth", "5")
+	require.NoError(t, err)
+
+	service := NewStackService()
+
+	// Initialize service
+	err = service.Initialize()
+	require.NoError(t, err)
+
+	// Test single command push with stack limit
+	// Fill stack to just under limit
+	for i := 0; i < 4; i++ {
+		service.PushCommand("cmd" + string(rune('0'+i)))
+	}
+	assert.Equal(t, 4, service.GetStackSize())
+
+	// This should work (at limit)
+	service.PushCommand("cmd4")
+	assert.Equal(t, 5, service.GetStackSize())
+
+	// This should be prevented (exceeds limit)
+	service.PushCommand("cmd5")
+	assert.Equal(t, 5, service.GetStackSize()) // Should not increase
+}
+
+func TestStackService_MaxStackDepthProtection_PushCommands(t *testing.T) {
+	// Setup global context
+	neuroCtx := context.NewTestContext()
+	concreteCtx := neuroCtx.(*context.NeuroContext)
+	context.SetGlobalContext(concreteCtx)
+
+	// Set a low stack limit for testing
+	err := concreteCtx.SetSystemVariable("_max_stack_depth", "3")
+	require.NoError(t, err)
+
+	service := NewStackService()
+
+	// Initialize service
+	err = service.Initialize()
+	require.NoError(t, err)
+
+	// Test multiple commands push with stack limit
+	// Add one command first
+	service.PushCommand("cmd0")
+	assert.Equal(t, 1, service.GetStackSize())
+
+	// Try to add 3 more commands (would exceed limit of 3)
+	commands := []string{"cmd1", "cmd2", "cmd3"}
+	service.PushCommands(commands)
+
+	// Should still be 1 (the batch was rejected)
+	assert.Equal(t, 1, service.GetStackSize())
+
+	// Try to add 2 commands (should work - total would be 3)
+	commands = []string{"cmd1", "cmd2"}
+	service.PushCommands(commands)
+
+	// Should now be 3
+	assert.Equal(t, 3, service.GetStackSize())
+}
+
+func TestStackService_DefaultMaxStackDepth(t *testing.T) {
+	// Setup global context
+	neuroCtx := context.NewTestContext()
+	concreteCtx := neuroCtx.(*context.NeuroContext)
+	context.SetGlobalContext(concreteCtx)
+
+	// Don't set _max_stack_depth, should use default (1000)
+	service := NewStackService()
+
+	// Initialize service
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Test that default limit is 1000
+	maxDepth := service.getMaxStackDepth(concreteCtx)
+	assert.Equal(t, 1000, maxDepth)
+
+	// Test we can add many commands (up to default limit)
+	for i := 0; i < 999; i++ {
+		service.PushCommand("cmd" + string(rune('0'+i%10)))
+	}
+	assert.Equal(t, 999, service.GetStackSize())
+
+	// This should work (at limit)
+	service.PushCommand("cmd999")
+	assert.Equal(t, 1000, service.GetStackSize())
+
+	// This should be prevented (exceeds limit)
+	service.PushCommand("cmd1000")
+	assert.Equal(t, 1000, service.GetStackSize()) // Should not increase
+}
+
+func TestStackService_InvalidMaxStackDepth(t *testing.T) {
+	// Setup global context
+	neuroCtx := context.NewTestContext()
+	concreteCtx := neuroCtx.(*context.NeuroContext)
+	context.SetGlobalContext(concreteCtx)
+
+	service := NewStackService()
+
+	// Initialize service
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Test invalid values fall back to default
+	testCases := []string{"", "invalid", "-1", "0", "abc123"}
+
+	for _, testCase := range testCases {
+		err := concreteCtx.SetSystemVariable("_max_stack_depth", testCase)
+		require.NoError(t, err)
+
+		maxDepth := service.getMaxStackDepth(concreteCtx)
+		assert.Equal(t, 1000, maxDepth, "Invalid value '%s' should fall back to default 1000", testCase)
+	}
+}
+
+func TestStackService_UserConfigurableMaxDepth(t *testing.T) {
+	// Setup global context
+	neuroCtx := context.NewTestContext()
+	concreteCtx := neuroCtx.(*context.NeuroContext)
+	context.SetGlobalContext(concreteCtx)
+
+	service := NewStackService()
+
+	// Initialize service
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Test various valid user configurations
+	testCases := []struct {
+		value    string
+		expected int
+	}{
+		{"1", 1},
+		{"10", 10},
+		{"100", 100},
+		{"2000", 2000},
+		{"50", 50},
+	}
+
+	for _, testCase := range testCases {
+		err := concreteCtx.SetSystemVariable("_max_stack_depth", testCase.value)
+		require.NoError(t, err)
+
+		maxDepth := service.getMaxStackDepth(concreteCtx)
+		assert.Equal(t, testCase.expected, maxDepth, "Value '%s' should result in max depth %d", testCase.value, testCase.expected)
+	}
+}

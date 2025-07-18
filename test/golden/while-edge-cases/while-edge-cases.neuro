@@ -1,0 +1,56 @@
+%% Edge cases for \while command
+\set[_echo_command="true"]
+
+%% Test missing condition parameter (should error)
+\try[id="missing_condition"] \while \echo "This should not execute"
+\get[#try_error_missing_condition]
+
+%% Test with try block - successful loop
+\set[simple_flag="true"]
+\try[id="successful_loop"] \while[condition="${simple_flag}"] \set[simple_flag="false"]
+\get[#try_error_successful_loop]
+\echo "Simple loop in try block completed"
+
+%% Test variable interpolation in condition
+\set[test_var="hello"]
+\while[condition="${test_var}"] \set[test_var=""]
+\echo "Variable interpolation test completed"
+
+%% Test condition with special characters and quotes in variable
+\set[special="yes"]
+\while[condition="${special}"] \set[special="no"]
+\echo "Special chars test: !@#$%^&*()"
+
+%% Test unicode in condition and command
+\set[unicode="🌟"]
+\while[condition="${unicode}"] \set[unicode=""]
+\echo "Unicode test: 🎉✨"
+
+%% Test while loop that immediately exits
+\while[condition=""] \echo "Should not execute"
+\echo "After empty condition while"
+
+%% Test case-insensitive condition evaluation
+\set[upper="TRUE"]
+\while[condition="${upper}"] \set[upper="FALSE"]
+\echo "Uppercase TRUE/FALSE works"
+
+\set[mixed="On"]
+\while[condition="${mixed}"] \set[mixed="Off"]
+\echo "Mixed case On/Off works"
+
+%% Test with system variables
+\set[sys_test="true"]
+\while[condition="${sys_test}"] \set[sys_test="false"]
+\echo "Test mode is: ${#test_mode}"
+
+%% Test whitespace handling in conditions
+\set[spaced="  true  "]
+\while[condition="${spaced}"] \set[spaced="  false  "]
+\echo "Whitespace in condition handled"
+
+%% Test #while_result system variable
+\while[condition="true"] \set[dummy="value"]
+\get[#while_result]
+\while[condition="false"] \set[dummy2="value"]  
+\get[#while_result]
