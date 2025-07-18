@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"neuroshell/internal/commands"
@@ -91,7 +92,15 @@ func (c *SetCommand) Execute(args map[string]string, input string) error {
 
 	// Handle bracket syntax: \set[var=value]
 	if len(args) > 0 {
-		for key, value := range args {
+		// Sort keys to ensure deterministic output order
+		var keys []string
+		for key := range args {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+
+		for _, key := range keys {
+			value := args[key]
 			if err := variableService.Set(key, value); err != nil {
 				return fmt.Errorf("failed to set variable %s: %w", key, err)
 			}
