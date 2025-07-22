@@ -1,6 +1,8 @@
 package services
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"sync"
 
@@ -89,6 +91,79 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 
 	logger.Debug("Created new provider client", "provider", provider)
 	return client, nil
+}
+
+// generateClientID creates a unique, secure client ID for the given provider and API key.
+// Uses SHA-256 hash with first 8 hex characters for uniqueness while maintaining security.
+func (f *ClientFactoryService) generateClientID(provider, apiKey string) string {
+	if apiKey == "" {
+		return fmt.Sprintf("%s:empty***", provider)
+	}
+
+	// Generate SHA-256 hash of the API key
+	hash := sha256.Sum256([]byte(apiKey))
+
+	// Convert to hex and take first 8 characters
+	hexHash := hex.EncodeToString(hash[:])
+
+	return fmt.Sprintf("%s:%s", provider, hexHash[:8])
+}
+
+// GetClientWithID returns both an LLM client and its unique client ID for the specified provider and API key.
+// This method provides both client management and consistent ID generation for external use.
+func (f *ClientFactoryService) GetClientWithID(provider, apiKey string) (neurotypes.LLMClient, string, error) {
+	if !f.initialized {
+		return nil, "", fmt.Errorf("client factory service not initialized")
+	}
+
+	if provider == "" {
+		return nil, "", fmt.Errorf("provider cannot be empty")
+	}
+
+	if apiKey == "" {
+		return nil, "", fmt.Errorf("API key cannot be empty for provider '%s'", provider)
+	}
+
+	// Generate client ID for external use
+	clientID := f.generateClientID(provider, apiKey)
+
+	// Use full API key for internal caching (more secure than using hash for cache key)
+	cacheKey := fmt.Sprintf("%s:%s", provider, apiKey)
+
+	f.mutex.RLock()
+	if client, exists := f.clients[cacheKey]; exists {
+		f.mutex.RUnlock()
+		logger.Debug("Returning cached provider client with ID", "provider", provider, "clientID", clientID)
+		return client, clientID, nil
+	}
+	f.mutex.RUnlock()
+
+	// Create new client with write lock
+	f.mutex.Lock()
+	defer f.mutex.Unlock()
+
+	// Double-check pattern
+	if client, exists := f.clients[cacheKey]; exists {
+		logger.Debug("Returning cached provider client with ID (double-check)", "provider", provider, "clientID", clientID)
+		return client, clientID, nil
+	}
+
+	// Create client based on provider
+	var client neurotypes.LLMClient
+	switch provider {
+	case "openai":
+		client = NewOpenAIClient(apiKey)
+	case "anthropic":
+		// TODO: Implement AnthropicClient when available
+		return nil, "", fmt.Errorf("anthropic provider is not yet implemented")
+	default:
+		return nil, "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, anthropic", provider)
+	}
+
+	f.clients[cacheKey] = client
+
+	logger.Debug("Created new provider client with ID", "provider", provider, "clientID", clientID)
+	return client, clientID, nil
 }
 
 // DetermineAPIKeyForProvider determines the API key for a specific provider.

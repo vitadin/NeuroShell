@@ -31,9 +31,10 @@ func (c *NewCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the session-new command.
 func (c *NewCommand) Usage() string {
-	return `\session-new[system=system_prompt] session_name
+	return `\session-new[system=system_prompt] [session_name]
 
 Examples:
+  \session-new                                    %% Auto-generate name (e.g., "Session 1")
   \session-new work project                       %% Create session named "work project"
   \session-new debug                              %% Create session named "debug"
   \session-new[system=You are a code reviewer] code review  %% Named "code review" with custom system prompt
@@ -42,7 +43,7 @@ Examples:
 Options:
   system - System prompt for LLM context (optional, defaults to helpful assistant)
 
-Note: Session name is required and taken from the input parameter.
+Note: Session name is optional. If not provided, an auto-generated name is used (e.g., "Session 1").
       Use quotes if the name contains special characters.
       Initial messages can be added later with \send command.`
 }
@@ -52,7 +53,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\session-new[system=system_prompt] session_name",
+		Usage:       "\\session-new[system=system_prompt] [session_name]",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
@@ -64,6 +65,10 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 		},
 		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\session-new",
+				Description: "Create session with auto-generated name (e.g., 'Session 1')",
+			},
 			{
 				Command:     "\\session-new work",
 				Description: "Create new session named 'work'",
@@ -82,7 +87,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 		},
 		Notes: []string{
-			"Session name is required and taken from the input parameter",
+			"Session name is optional. If not provided, an auto-generated name is used",
 			"Use quotes if the name contains special characters or spaces",
 			"Variables in session name and system prompt are interpolated",
 			"Session becomes active immediately after creation",
@@ -116,9 +121,10 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	sessionName := input
 	systemPrompt := args["system"]
 
-	// Session name is required
+	// Auto-generate session name if not provided (improved UX)
 	if sessionName == "" {
-		return fmt.Errorf("session name is required\n\nUsage: %s", c.Usage())
+		sessionName = chatService.GenerateDefaultSessionName()
+		fmt.Printf("Auto-generated session name: '%s'\n", sessionName)
 	}
 
 	// Note: Variable interpolation for session name and system prompt is handled by state machine
