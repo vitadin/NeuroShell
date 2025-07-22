@@ -4,7 +4,7 @@
 %% Note: This is a test script to validate the enhanced command resolution system
 
 %% Test script demonstrating parameter usage
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 
 %% Show command parameters received from enhanced resolution
 \echo Command name: ${_0}
