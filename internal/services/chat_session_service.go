@@ -337,19 +337,27 @@ func (c *ChatSessionService) SetActiveSessionWithContext(nameOrID string, ctx ne
 		return err
 	}
 
+	return c.setActiveSessionInternal(session.ID, ctx)
+}
+
+// setActiveSessionInternal sets a session as active by ID, handling deactivation of previous session.
+// This is an internal method used by both SetActiveSession and AddMessage operations.
+func (c *ChatSessionService) setActiveSessionInternal(sessionID string, ctx neurotypes.Context) error {
 	sessions := ctx.GetChatSessions()
 
 	// Deactivate previous active session
 	activeID := ctx.GetActiveSessionID()
-	if activeID != "" {
+	if activeID != "" && activeID != sessionID {
 		if prevSession, exists := sessions[activeID]; exists {
 			prevSession.IsActive = false
 		}
 	}
 
 	// Set new active session
-	session.IsActive = true
-	ctx.SetActiveSessionID(session.ID)
+	if session, exists := sessions[sessionID]; exists {
+		session.IsActive = true
+	}
+	ctx.SetActiveSessionID(sessionID)
 
 	// Update sessions in context
 	ctx.SetChatSessions(sessions)
@@ -534,6 +542,13 @@ func (c *ChatSessionService) AddMessageWithContext(nameOrID string, role, conten
 
 	session.Messages = append(session.Messages, message)
 	session.UpdatedAt = testutils.GetCurrentTime(ctx)
+
+	// Auto-activate the session when a message is added
+	// This ensures the most recently active session is always the current active session
+	err = c.setActiveSessionInternal(session.ID, ctx)
+	if err != nil {
+		return fmt.Errorf("failed to activate session after adding message: %w", err)
+	}
 
 	// Update session in context
 	sessions := ctx.GetChatSessions()
