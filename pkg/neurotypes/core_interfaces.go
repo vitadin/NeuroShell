@@ -15,6 +15,11 @@ type Context interface {
 	IsTestMode() bool
 	GetEnv(key string) string
 
+	// Test environment variable override methods
+	SetTestEnvOverride(key, value string)
+	ClearTestEnvOverride(key string)
+	ClearAllTestEnvOverrides()
+
 	// Chat session storage methods
 	GetChatSessions() map[string]*ChatSession
 	SetChatSessions(sessions map[string]*ChatSession)

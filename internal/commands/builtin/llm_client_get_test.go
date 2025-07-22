@@ -213,29 +213,20 @@ func TestLLMClientGetCommand_Execute_EnvironmentVariableSuccess(t *testing.T) {
 }
 
 func TestLLMClientGetCommand_Execute_MissingAPIKey(t *testing.T) {
-	t.Skip("Skipping test that requires empty environment - will address in future")
 	cmd := &LLMClientGetCommand{}
+	setupLLMClientGetTestRegistry(t)
 
-	// Set up a custom test context that returns empty environment variables
-	oldRegistry := services.GetGlobalRegistry()
-	services.SetGlobalRegistry(services.NewRegistry())
+	// Set up test context with empty environment variable overrides
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
 
-	// Create a custom context that returns empty strings for environment variables
-	ctx := context.New()
-	ctx.SetTestMode(false) // We want to control env vars ourselves
-	context.SetGlobalContext(ctx)
-
-	// Register services
-	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
-	require.NoError(t, err)
-	err = services.GetGlobalRegistry().RegisterService(services.NewClientFactoryService())
-	require.NoError(t, err)
-	err = services.GetGlobalRegistry().InitializeAll()
-	require.NoError(t, err)
+	// Override the API key environment variables to return empty strings
+	ctx.SetTestEnvOverride("OPENAI_API_KEY", "")
+	ctx.SetTestEnvOverride("ANTHROPIC_API_KEY", "")
 
 	defer func() {
-		services.SetGlobalRegistry(oldRegistry)
-		context.ResetGlobalContext()
+		// Clean up overrides after test
+		ctx.ClearAllTestEnvOverrides()
 	}()
 
 	tests := []struct {
@@ -269,6 +260,46 @@ func TestLLMClientGetCommand_Execute_MissingAPIKey(t *testing.T) {
 			assert.Contains(t, err.Error(), "OPENAI_API_KEY")
 		})
 	}
+}
+
+func TestLLMClientGetCommand_Execute_TestEnvOverride(t *testing.T) {
+	cmd := &LLMClientGetCommand{}
+	setupLLMClientGetTestRegistry(t)
+
+	// Set up test context with custom environment variable override
+	ctx := context.GetGlobalContext()
+	ctx.SetTestMode(true)
+
+	// Override the API key environment variable with a custom value
+	customAPIKey := "sk-custom-test-key-123"
+	ctx.SetTestEnvOverride("OPENAI_API_KEY", customAPIKey)
+
+	defer func() {
+		// Clean up overrides after test
+		ctx.ClearAllTestEnvOverrides()
+	}()
+
+	args := map[string]string{"provider": "openai"}
+
+	// Capture stdout
+	var err error
+	outputStr := stringprocessing.CaptureOutput(func() {
+		err = cmd.Execute(args, "")
+	})
+
+	assert.NoError(t, err)
+
+	// Should use the custom API key from the override
+	expectedOutput := "LLM client ready: openai:sk-custo**** (configured: true)"
+	assert.Equal(t, expectedOutput+"\n", outputStr)
+
+	// Verify system variables were set with the custom key
+	variableService, err := services.GetGlobalVariableService()
+	require.NoError(t, err)
+
+	clientID, err := variableService.Get("_client_id")
+	assert.NoError(t, err)
+	assert.Contains(t, clientID, "sk-custo")
 }
 
 func TestLLMClientGetCommand_Execute_UnsupportedProvider(t *testing.T) {

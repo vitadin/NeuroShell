@@ -33,12 +33,13 @@ type TryBlockContext struct {
 // NeuroContext implements the neurotypes.Context interface providing session state management.
 // It maintains variables, message history, execution queues, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
-	variables      map[string]string
-	history        []neurotypes.Message
-	sessionID      string
-	executionQueue []string
-	scriptMetadata map[string]interface{}
-	testMode       bool
+	variables        map[string]string
+	history          []neurotypes.Message
+	sessionID        string
+	executionQueue   []string
+	scriptMetadata   map[string]interface{}
+	testMode         bool
+	testEnvOverrides map[string]string // Test-specific environment variable overrides
 
 	// Stack-based execution support
 	executionStack  []string          // Execution stack (LIFO order)
@@ -74,12 +75,13 @@ type NeuroContext struct {
 // New creates a new NeuroContext with initialized maps and a unique session ID.
 func New() *NeuroContext {
 	ctx := &NeuroContext{
-		variables:      make(map[string]string),
-		history:        make([]neurotypes.Message, 0),
-		sessionID:      "", // Will be set after we know test mode
-		executionQueue: make([]string, 0),
-		scriptMetadata: make(map[string]interface{}),
-		testMode:       false,
+		variables:        make(map[string]string),
+		history:          make([]neurotypes.Message, 0),
+		sessionID:        "", // Will be set after we know test mode
+		executionQueue:   make([]string, 0),
+		scriptMetadata:   make(map[string]interface{}),
+		testMode:         false,
+		testEnvOverrides: make(map[string]string),
 
 		// Initialize stack-based execution support
 		executionStack:  make([]string, 0),
@@ -463,6 +465,12 @@ func (ctx *NeuroContext) GetEnv(key string) string {
 
 // getTestEnvValue returns test mode appropriate values for environment variables.
 func (ctx *NeuroContext) getTestEnvValue(key string) string {
+	// Check for test-specific overrides first
+	if value, exists := ctx.testEnvOverrides[key]; exists {
+		return value
+	}
+
+	// Default test values
 	switch key {
 	case "OPENAI_API_KEY":
 		return "test-openai-key"
@@ -830,4 +838,20 @@ func (ctx *NeuroContext) GetDefaultCommand() string {
 func (ctx *NeuroContext) SetDefaultCommand(command string) {
 	ctx.defaultCommand = command
 	_ = ctx.SetSystemVariable("_default_command", command)
+}
+
+// SetTestEnvOverride sets a test-specific environment variable override.
+// This allows tests to control what GetEnv returns for specific keys without affecting the OS environment.
+func (ctx *NeuroContext) SetTestEnvOverride(key, value string) {
+	ctx.testEnvOverrides[key] = value
+}
+
+// ClearTestEnvOverride removes a test-specific environment variable override.
+func (ctx *NeuroContext) ClearTestEnvOverride(key string) {
+	delete(ctx.testEnvOverrides, key)
+}
+
+// ClearAllTestEnvOverrides removes all test-specific environment variable overrides.
+func (ctx *NeuroContext) ClearAllTestEnvOverrides() {
+	ctx.testEnvOverrides = make(map[string]string)
 }
