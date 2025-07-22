@@ -1,0 +1,4 @@
+%% Test debug-params with no parameters
+%% Verifies behavior when no arguments are provided
+\set[_echo_command="true"]
+\debug-params

@@ -1,0 +1,4 @@
+%% Test debug-params with named parameters only (no message)
+%% Verifies parameter passing when only named arguments are provided
+\set[_echo_command="true"]
+\debug-params[style=blue,prefix=INFO,count=5]

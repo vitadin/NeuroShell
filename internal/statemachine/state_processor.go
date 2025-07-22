@@ -4,6 +4,7 @@ package statemachine
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/charmbracelet/log"
@@ -229,8 +230,15 @@ func (sp *StateProcessor) formatNamedArgs(options map[string]string) string {
 		return ""
 	}
 	var parts []string
-	for key, value := range options {
-		parts = append(parts, fmt.Sprintf("%s=%s", key, value))
+	// Sort keys to ensure deterministic ordering
+	keys := make([]string, 0, len(options))
+	for key := range options {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		parts = append(parts, fmt.Sprintf("%s=%s", key, options[key]))
 	}
 	return strings.Join(parts, ",")
 }
