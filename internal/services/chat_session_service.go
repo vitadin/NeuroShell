@@ -599,3 +599,29 @@ func (c *ChatSessionService) HasSessionsWithContext(ctx neurotypes.Context) bool
 	sessions := ctx.GetChatSessions()
 	return len(sessions) > 0
 }
+
+// GenerateDefaultSessionName creates an auto-generated session name following OS folder naming conventions.
+// It tries patterns like "Session 1", "Session 2", etc., ensuring uniqueness.
+// Fallback patterns include "Chat N", "Work N", "Project N", and finally timestamp-based names.
+func (c *ChatSessionService) GenerateDefaultSessionName() string {
+	if !c.initialized {
+		return "Session 1" // Safe fallback if service not initialized
+	}
+
+	// Primary naming patterns (similar to OS "New Folder" conventions)
+	baseNames := []string{"Session", "Chat", "Work", "Project"}
+
+	// Try each base name with numbered suffixes
+	for _, baseName := range baseNames {
+		for i := 1; i <= 999; i++ {
+			candidateName := fmt.Sprintf("%s %d", baseName, i)
+			if c.IsSessionNameAvailable(candidateName) {
+				return candidateName
+			}
+		}
+	}
+
+	// Final fallback: timestamp-based name (guaranteed unique)
+	now := testutils.GetCurrentTime(neuroshellcontext.GetGlobalContext())
+	return fmt.Sprintf("Session %d", now.Unix())
+}
