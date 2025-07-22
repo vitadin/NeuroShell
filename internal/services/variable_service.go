@@ -143,3 +143,15 @@ func (v *VariableService) UpdateMessageHistoryVariables(session *neurotypes.Chat
 
 	return nil
 }
+
+// GetEnv retrieves an environment variable value through the context layer.
+// This follows the proper architecture: Command -> Service -> Context -> OS.
+// Returns empty string if the environment variable doesn't exist (no error).
+func (v *VariableService) GetEnv(name string) string {
+	if !v.initialized {
+		return "" // Return empty string instead of error for graceful handling
+	}
+
+	ctx := neuroshellcontext.GetGlobalContext()
+	return ctx.GetEnv(name)
+}
