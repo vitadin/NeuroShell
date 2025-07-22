@@ -83,7 +83,7 @@ func TestLLMClientGetCommand_Execute_Success(t *testing.T) {
 				"key":      "sk-test-fake-key-123456789",
 			},
 			expectedProvider: "openai",
-			expectedOutput:   "LLM client ready: openai:sk-test-**** (configured: true)",
+			expectedOutput:   "LLM client ready: openai:ae0557ca (configured: true)",
 		},
 		{
 			name: "default openai provider",
@@ -91,7 +91,7 @@ func TestLLMClientGetCommand_Execute_Success(t *testing.T) {
 				"key": "sk-another-test-key-987654321",
 			},
 			expectedProvider: "openai",
-			expectedOutput:   "LLM client ready: openai:sk-anoth**** (configured: true)",
+			expectedOutput:   "LLM client ready: openai:a076a46e (configured: true)",
 		},
 		{
 			name: "short api key",
@@ -100,7 +100,7 @@ func TestLLMClientGetCommand_Execute_Success(t *testing.T) {
 				"key":      "sk-123",
 			},
 			expectedProvider: "openai",
-			expectedOutput:   "LLM client ready: openai:**** (configured: true)",
+			expectedOutput:   "LLM client ready: openai:acb42a4f (configured: true)",
 		},
 	}
 
@@ -165,13 +165,13 @@ func TestLLMClientGetCommand_Execute_EnvironmentVariableSuccess(t *testing.T) {
 			name:             "openai with environment variable",
 			args:             map[string]string{"provider": "openai"},
 			expectedProvider: "openai",
-			expectedOutput:   "LLM client ready: openai:test-ope**** (configured: true)",
+			expectedOutput:   "LLM client ready: openai:b10394de (configured: true)",
 		},
 		{
 			name:             "default provider with environment variable",
 			args:             map[string]string{},
 			expectedProvider: "openai",
-			expectedOutput:   "LLM client ready: openai:test-ope**** (configured: true)",
+			expectedOutput:   "LLM client ready: openai:b10394de (configured: true)",
 		},
 	}
 
@@ -290,7 +290,7 @@ func TestLLMClientGetCommand_Execute_TestEnvOverride(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should use the custom API key from the override
-	expectedOutput := "LLM client ready: openai:sk-custo**** (configured: true)"
+	expectedOutput := "LLM client ready: openai:bac8d13c (configured: true)"
 	assert.Equal(t, expectedOutput+"\n", outputStr)
 
 	// Verify system variables were set with the custom key
@@ -299,7 +299,7 @@ func TestLLMClientGetCommand_Execute_TestEnvOverride(t *testing.T) {
 
 	clientID, err := variableService.Get("_client_id")
 	assert.NoError(t, err)
-	assert.Contains(t, clientID, "sk-custo")
+	assert.Contains(t, clientID, "bac8d13c")
 }
 
 func TestLLMClientGetCommand_Execute_UnsupportedProvider(t *testing.T) {
@@ -369,7 +369,7 @@ func TestLLMClientGetCommand_Execute_DifferentAPIKeys(t *testing.T) {
 		err1 = cmd.Execute(args1, "")
 	})
 	assert.NoError(t, err1)
-	assert.Contains(t, output1, "sk-first")
+	assert.Contains(t, output1, "d6086e86")
 
 	// Second client with different API key
 	args2 := map[string]string{
@@ -382,7 +382,7 @@ func TestLLMClientGetCommand_Execute_DifferentAPIKeys(t *testing.T) {
 		err2 = cmd.Execute(args2, "")
 	})
 	assert.NoError(t, err2)
-	assert.Contains(t, output2, "sk-secon")
+	assert.Contains(t, output2, "59df17ed")
 
 	// Verify different client IDs were generated
 	variableService, err := services.GetGlobalVariableService()
@@ -390,7 +390,7 @@ func TestLLMClientGetCommand_Execute_DifferentAPIKeys(t *testing.T) {
 
 	clientID, err := variableService.Get("_client_id")
 	assert.NoError(t, err)
-	assert.Contains(t, clientID, "sk-secon") // Should have the latest client ID
+	assert.Contains(t, clientID, "59df17ed") // Should have the latest client ID
 }
 
 func TestLLMClientGetCommand_Execute_ServiceNotAvailable(t *testing.T) {
@@ -441,49 +441,6 @@ func TestLLMClientGetCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "variable service not available")
-}
-
-func TestLLMClientGetCommand_TruncateAPIKey(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
-
-	tests := []struct {
-		name     string
-		apiKey   string
-		expected string
-	}{
-		{
-			name:     "normal length key",
-			apiKey:   "sk-test-fake-key-123456789",
-			expected: "sk-test-****",
-		},
-		{
-			name:     "short key",
-			apiKey:   "sk-123",
-			expected: "****",
-		},
-		{
-			name:     "exactly 8 characters",
-			apiKey:   "sk-12345",
-			expected: "****",
-		},
-		{
-			name:     "9 characters",
-			apiKey:   "sk-123456",
-			expected: "sk-12345****",
-		},
-		{
-			name:     "empty key",
-			apiKey:   "",
-			expected: "****",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := cmd.truncateAPIKey(tt.apiKey)
-			assert.Equal(t, tt.expected, result)
-		})
-	}
 }
 
 // setupLLMClientGetTestRegistry creates a clean test registry for llm-client-get command tests
@@ -553,15 +510,5 @@ func BenchmarkLLMClientGetCommand_Execute(b *testing.B) {
 		_ = stringprocessing.CaptureOutput(func() {
 			_ = cmd.Execute(args, "")
 		})
-	}
-}
-
-func BenchmarkLLMClientGetCommand_TruncateAPIKey(b *testing.B) {
-	cmd := &LLMClientGetCommand{}
-	apiKey := "sk-very-long-test-api-key-for-benchmarking-purposes-123456789"
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = cmd.truncateAPIKey(apiKey)
 	}
 }

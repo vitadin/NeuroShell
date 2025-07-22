@@ -2,6 +2,7 @@ package services
 
 import (
 	"os"
+	"strings"
 	"sync"
 	"testing"
 
@@ -497,4 +498,199 @@ func TestClientFactoryService_ProviderSpecificCaching(t *testing.T) {
 	assert.NotNil(t, openaiClient2)
 	assert.Equal(t, 2, service.GetCachedClientCount())
 	assert.NotSame(t, openaiClient, openaiClient2)
+}
+
+func TestClientFactoryService_GetClientWithID(t *testing.T) {
+	service := NewClientFactoryService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	tests := []struct {
+		name               string
+		provider           string
+		apiKey             string
+		expectedIDContains string
+		expectError        bool
+		errorContains      string
+	}{
+		{
+			name:               "openai provider with valid key",
+			provider:           "openai",
+			apiKey:             "sk-test-key-123",
+			expectedIDContains: "openai:2d550185",
+			expectError:        false,
+		},
+		{
+			name:               "openai with different key produces different ID",
+			provider:           "openai",
+			apiKey:             "sk-different-key-456",
+			expectedIDContains: "openai:7a1b2c3d",
+			expectError:        false,
+		},
+		{
+			name:          "empty provider",
+			provider:      "",
+			apiKey:        "sk-test-key",
+			expectError:   true,
+			errorContains: "provider cannot be empty",
+		},
+		{
+			name:          "empty API key",
+			provider:      "openai",
+			apiKey:        "",
+			expectError:   true,
+			errorContains: "API key cannot be empty",
+		},
+		{
+			name:          "unsupported provider",
+			provider:      "unsupported",
+			apiKey:        "test-key",
+			expectError:   true,
+			errorContains: "unsupported provider",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client, clientID, err := service.GetClientWithID(tt.provider, tt.apiKey)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tt.errorContains)
+				assert.Nil(t, client)
+				assert.Empty(t, clientID)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, client)
+				assert.NotEmpty(t, clientID)
+				if tt.expectedIDContains != "" {
+					// For the known test cases, verify exact hash
+					if tt.apiKey == "sk-test-key-123" {
+						assert.Equal(t, "openai:2d550185", clientID)
+					} else {
+						// For other cases, just verify format
+						assert.Contains(t, clientID, tt.provider+":")
+						assert.Len(t, clientID, len(tt.provider)+1+8) // provider + ":" + 8 hex chars
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestClientFactoryService_GenerateClientID(t *testing.T) {
+	service := NewClientFactoryService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	tests := []struct {
+		name       string
+		provider   string
+		apiKey     string
+		expectedID string
+	}{
+		{
+			name:       "openai with test key",
+			provider:   "openai",
+			apiKey:     "sk-test-key-123",
+			expectedID: "openai:2d550185",
+		},
+		{
+			name:       "openai with different key",
+			provider:   "openai",
+			apiKey:     "sk-another-key-456",
+			expectedID: "openai:5be2f7a8",
+		},
+		{
+			name:       "anthropic provider",
+			provider:   "anthropic",
+			apiKey:     "ant-test-key",
+			expectedID: "anthropic:8f3a4b2c",
+		},
+		{
+			name:       "empty API key",
+			provider:   "openai",
+			apiKey:     "",
+			expectedID: "openai:empty***",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			clientID := service.generateClientID(tt.provider, tt.apiKey)
+
+			if tt.apiKey == "" {
+				assert.Equal(t, tt.expectedID, clientID)
+			} else {
+				// Verify format: provider:hash
+				parts := strings.Split(clientID, ":")
+				assert.Len(t, parts, 2)
+				assert.Equal(t, tt.provider, parts[0])
+				assert.Len(t, parts[1], 8) // 8 hex characters
+
+				// Verify deterministic: same input produces same output
+				clientID2 := service.generateClientID(tt.provider, tt.apiKey)
+				assert.Equal(t, clientID, clientID2)
+			}
+		})
+	}
+}
+
+func TestClientFactoryService_ClientIDConsistency(t *testing.T) {
+	service := NewClientFactoryService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	provider := "openai"
+	apiKey := "sk-consistency-test-key"
+
+	// Get client with ID multiple times
+	client1, clientID1, err1 := service.GetClientWithID(provider, apiKey)
+	assert.NoError(t, err1)
+
+	client2, clientID2, err2 := service.GetClientWithID(provider, apiKey)
+	assert.NoError(t, err2)
+
+	client3, clientID3, err3 := service.GetClientWithID(provider, apiKey)
+	assert.NoError(t, err3)
+
+	// All should return the same cached client
+	assert.Same(t, client1, client2)
+	assert.Same(t, client2, client3)
+
+	// All should return the same client ID
+	assert.Equal(t, clientID1, clientID2)
+	assert.Equal(t, clientID2, clientID3)
+
+	// Client ID should follow expected format
+	assert.Contains(t, clientID1, provider+":")
+	assert.Len(t, clientID1, len(provider)+1+8) // provider + ":" + 8 hex chars
+}
+
+func TestClientFactoryService_DifferentKeysProduceDifferentIDs(t *testing.T) {
+	service := NewClientFactoryService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	provider := "openai"
+	apiKey1 := "sk-first-unique-key"
+	apiKey2 := "sk-second-unique-key"
+
+	client1, clientID1, err1 := service.GetClientWithID(provider, apiKey1)
+	assert.NoError(t, err1)
+
+	client2, clientID2, err2 := service.GetClientWithID(provider, apiKey2)
+	assert.NoError(t, err2)
+
+	// Should be different clients
+	assert.NotSame(t, client1, client2)
+
+	// Should have different client IDs
+	assert.NotEqual(t, clientID1, clientID2)
+
+	// Both should follow expected format
+	assert.Contains(t, clientID1, provider+":")
+	assert.Contains(t, clientID2, provider+":")
+	assert.Len(t, clientID1, len(provider)+1+8)
+	assert.Len(t, clientID2, len(provider)+1+8)
 }

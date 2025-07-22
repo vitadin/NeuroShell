@@ -126,15 +126,11 @@ func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("client factory service not available: %w", err)
 	}
 
-	// Get or create client using the API key
-	client, err := clientFactory.GetClientForProvider(provider, apiKey)
+	// Get or create client with ID from service (service handles ID generation)
+	client, clientID, err := clientFactory.GetClientWithID(provider, apiKey)
 	if err != nil {
 		return fmt.Errorf("failed to get client for provider %s: %w", provider, err)
 	}
-
-	// Generate client identifier for subsequent use (truncate API key for security)
-	truncatedKey := c.truncateAPIKey(apiKey)
-	clientID := fmt.Sprintf("%s:%s", provider, truncatedKey)
 
 	// Set result variables (graceful degradation - we already have the service)
 	_ = variableService.SetSystemVariable("_client_id", clientID)
@@ -149,15 +145,6 @@ func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
 	fmt.Printf("LLM client ready: %s (configured: %t)\n", clientID, client.IsConfigured())
 
 	return nil
-}
-
-// truncateAPIKey truncates API key for safe display in client ID.
-// Shows first 8 characters for identification while maintaining security.
-func (c *LLMClientGetCommand) truncateAPIKey(apiKey string) string {
-	if len(apiKey) <= 8 {
-		return "****"
-	}
-	return apiKey[:8] + "****"
 }
 
 func init() {
