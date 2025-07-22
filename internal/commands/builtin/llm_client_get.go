@@ -1,0 +1,140 @@
+package builtin
+
+import (
+	"fmt"
+
+	"neuroshell/internal/commands"
+	"neuroshell/internal/services"
+	"neuroshell/pkg/neurotypes"
+)
+
+// LLMClientGetCommand implements the \llm-client-get command for getting/creating LLM clients.
+// It provides LLM client creation and caching functionality for the NeuroShell environment.
+type LLMClientGetCommand struct{}
+
+// Name returns the command name "llm-client-get" for registration and lookup.
+func (c *LLMClientGetCommand) Name() string {
+	return "llm-client-get"
+}
+
+// ParseMode returns ParseModeKeyValue for bracket parameter parsing.
+func (c *LLMClientGetCommand) ParseMode() neurotypes.ParseMode {
+	return neurotypes.ParseModeKeyValue
+}
+
+// Description returns a brief description of what the llm-client-get command does.
+func (c *LLMClientGetCommand) Description() string {
+	return "Get or create LLM client for provider"
+}
+
+// Usage returns the syntax and usage examples for the llm-client-get command.
+func (c *LLMClientGetCommand) Usage() string {
+	return "\\llm-client-get[key=api_key, provider=openai]"
+}
+
+// HelpInfo returns structured help information for the llm-client-get command.
+func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     c.Name(),
+		Description: c.Description(),
+		Usage:       c.Usage(),
+		ParseMode:   c.ParseMode(),
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "provider",
+				Description: "LLM provider name (openai, anthropic)",
+				Required:    false,
+				Type:        "string",
+				Default:     "openai",
+			},
+			{
+				Name:        "key",
+				Description: "API key for the provider",
+				Required:    true,
+				Type:        "string",
+			},
+		},
+		Examples: []neurotypes.HelpExample{
+			{
+				Command:     "\\llm-client-get[provider=openai, key=sk-...]",
+				Description: "Get OpenAI client with explicit API key",
+			},
+			{
+				Command:     "\\llm-client-get[key=${OPENAI_API_KEY}]",
+				Description: "Get OpenAI client using variable interpolation",
+			},
+		},
+		Notes: []string{
+			"Creates and caches LLM clients for subsequent use",
+			"Client ID stored in ${_client_id} system variable",
+			"API key is required for client creation",
+			"Client configuration status stored in ${#client_configured}",
+			"Provider name stored in ${#client_provider}",
+			"Cached client count stored in ${#client_cache_count}",
+		},
+	}
+}
+
+// Execute creates or retrieves an LLM client for the specified provider.
+// It requires an explicit API key for client creation.
+func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
+	// Get API key from arguments (required)
+	apiKey := args["key"]
+	if apiKey == "" {
+		return fmt.Errorf("API key is required. Usage: %s", c.Usage())
+	}
+
+	// Determine provider (from args or default to openai)
+	provider := args["provider"]
+	if provider == "" {
+		provider = "openai" // Default to openai provider
+	}
+
+	// Get required services
+	clientFactory, err := services.GetGlobalClientFactoryService()
+	if err != nil {
+		return fmt.Errorf("client factory service not available: %w", err)
+	}
+
+	// Get or create client using the provided API key
+	client, err := clientFactory.GetClientForProvider(provider, apiKey)
+	if err != nil {
+		return fmt.Errorf("failed to get client for provider %s: %w", provider, err)
+	}
+
+	// Generate client identifier for subsequent use (truncate API key for security)
+	truncatedKey := c.truncateAPIKey(apiKey)
+	clientID := fmt.Sprintf("%s:%s", provider, truncatedKey)
+
+	// Get variable service for storing results - graceful degradation if not available
+	if variableService, err := services.GetGlobalVariableService(); err == nil {
+		// Set result variables (ignore errors for graceful degradation)
+		_ = variableService.SetSystemVariable("_client_id", clientID)
+		_ = variableService.SetSystemVariable("_output", fmt.Sprintf("LLM client ready: %s", clientID))
+
+		// Set metadata variables
+		_ = variableService.SetSystemVariable("#client_provider", provider)
+		_ = variableService.SetSystemVariable("#client_configured", fmt.Sprintf("%t", client.IsConfigured()))
+		_ = variableService.SetSystemVariable("#client_cache_count", fmt.Sprintf("%d", clientFactory.GetCachedClientCount()))
+	}
+
+	// Output success message
+	fmt.Printf("LLM client ready: %s (configured: %t)\n", clientID, client.IsConfigured())
+
+	return nil
+}
+
+// truncateAPIKey truncates API key for safe display in client ID.
+// Shows first 8 characters for identification while maintaining security.
+func (c *LLMClientGetCommand) truncateAPIKey(apiKey string) string {
+	if len(apiKey) <= 8 {
+		return "****"
+	}
+	return apiKey[:8] + "****"
+}
+
+func init() {
+	if err := commands.GetGlobalRegistry().Register(&LLMClientGetCommand{}); err != nil {
+		panic(fmt.Sprintf("failed to register llm-client-get command: %v", err))
+	}
+}
