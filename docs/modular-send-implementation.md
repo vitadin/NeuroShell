@@ -20,6 +20,51 @@ Inspired by the existing LLM architecture design principle: "*commands orchestra
 - **OpenAI Integration**: Library handles JSON serialization internally
 - **No JSON manipulation needed** in neuro scripts
 
+## Component Independence Architecture
+
+### Three Independent Components
+
+The `\llm-call` command operates by synthesizing three completely independent components that do not rely on or know about each other:
+
+1. **Client Component (`${_client_id}`)**
+   - Manages API authentication and provider connection
+   - Created via `\llm-client-get[provider=openai]`
+   - Handles HTTP clients, API keys, rate limiting
+   - Provider-agnostic authentication layer
+
+2. **Model Configuration Component (`${model_id}`)**
+   - Rich configuration containing model name, version, parameters
+   - Includes temperature, max_tokens, stop sequences, model-specific settings
+   - Created and managed via `internal/commands/model/` commands
+   - Examples: `\model-new`, `\model-list`, `\model-get`, `\model-status`
+   - Stores comprehensive model metadata, not just model names
+
+3. **Session Component (`${session_id}`)**
+   - Contains conversation history and context
+   - Managed via `internal/commands/session/` commands
+   - Includes messages, system prompts, timestamps
+   - Independent of specific models or clients
+
+### Why `model_id` Instead of Model Names
+
+The `model_id` parameter references a **model configuration** rather than a raw model name because:
+
+- **Rich Metadata**: Model configs contain model name, version, key parameters, stop sequences, and provider-specific settings
+- **Reproducibility**: Same model configuration ensures consistent behavior across calls
+- **Customization**: Users can create multiple configurations for the same base model with different parameters
+- **Management**: Existing `\model-*` commands provide full lifecycle management of these configurations
+
+### Component Synthesis in `\llm-call`
+
+The `\llm-call` command:
+1. **Retrieves** the client by `${_client_id}` (authentication layer)
+2. **Retrieves** the model configuration by `${model_id}` (parameters and settings)  
+3. **Retrieves** the session by `${session_id}` (conversation context)
+4. **Synthesizes** these into a unified API call to the LLM provider
+5. **Returns** the response without the components knowing about each other
+
+This separation enables maximum flexibility - the same session can use different models, the same model can be used with different clients, and the same client can serve multiple sessions.
+
 ## Fundamental Go Commands (Phase 1)
 
 ### 1. `\llm-client-get` - Client Management
@@ -35,7 +80,7 @@ Inspired by the existing LLM architecture design principle: "*commands orchestra
 
 ### 2. `\llm-call` - Core LLM Request
 ```neuro
-\llm-call[client=${_client_id}, model=gpt-4, session=${session_id}]
+\llm-call[client=${_client_id}, model_id=${model_id}, session=${session_id}]
 # Reads entire ChatSession, makes API call, returns response
 # Response stored in ${_output}
 ```
@@ -44,6 +89,7 @@ Inspired by the existing LLM architecture design principle: "*commands orchestra
 - Takes ChatSession struct, converts to OpenAI format internally
 - Handles both sync and streaming modes
 - Direct OpenAI Go library integration
+- **Component Synthesis**: Combines three independent components (client, model config, session) into a unified API call
 
 ### 3. `\session-get-active` - Get Active Session
 ```neuro
@@ -93,14 +139,18 @@ Inspired by the existing LLM architecture design principle: "*commands orchestra
 \llm-client-get[provider=openai]
 \set[client_id="${_client_id}"]
 
-%% 4. Make LLM call (reads entire session, returns response)
-\llm-call[client=${client_id}, model=${llm_model}, session=${session_id}]
+%% 4. Get or use model configuration (assumes ${model_id} is already set)
+%% Alternative: \model-get-active to get active model ID
+%% Alternative: \set[model_id="my-gpt4-config"] to use specific model config
+
+%% 5. Make LLM call (reads entire session, returns response)
+\llm-call[client=${client_id}, model_id=${model_id}, session=${session_id}]
 \set[response="${_output}"]
 
-%% 5. Add assistant response to session
+%% 6. Add assistant response to session
 \session-add-assistantmsg[session=${session_id}] ${response}
 
-%% 6. Update message history variables and display response
+%% 7. Update message history variables and display response
 \set[1="${response}"]
 \render-markdown ${response}
 ```
@@ -110,13 +160,13 @@ Inspired by the existing LLM architecture design principle: "*commands orchestra
 %% Streaming variant - same workflow with streaming LLM call
 %% Usage: \send-stream Hello, how are you?
 
-%% Steps 1-3: Same as send.neuro
+%% Steps 1-4: Same as send.neuro (session, user message, client, model config)
 
-%% 4. Make streaming LLM call
-\llm-call[client=${client_id}, model=${llm_model}, session=${session_id}, stream=true]
+%% 5. Make streaming LLM call
+\llm-call[client=${client_id}, model_id=${model_id}, session=${session_id}, stream=true]
 \set[response="${_output}"]
 
-%% 5-6: Same as send.neuro
+%% 6-7: Same as send.neuro (add assistant response, update variables)
 ```
 
 ## Implementation Benefits
@@ -125,21 +175,25 @@ Inspired by the existing LLM architecture design principle: "*commands orchestra
 - Each Go command has single responsibility
 - Easy to unit test individual operations  
 - Clear interfaces and error handling
+- **Component Independence**: Client, model config, and session components are completely decoupled
 
 ### 2. **Readable, Maintainable Scripts**
-- 6-step workflow is easy to understand
+- 7-step workflow is easy to understand
 - Professional users can modify individual steps
 - No monolithic Go code to maintain
+- **Model Configuration Flexibility**: Users can switch between different model configs with same base model but different parameters
 
 ### 3. **Reusable Building Blocks**
 - Commands can be used in other LLM workflows
 - Support for multi-agent conversations
 - Custom LLM interaction patterns
+- **Model Configuration Reuse**: Same model configs can be used across different sessions and workflows
 
 ### 4. **Leverages Existing Infrastructure**
-- Uses established service patterns (ClientFactory, LLMService, ChatSessionService)
-- Compatible with existing session/, render/ commands
+- Uses established service patterns (ClientFactory, LLMService, ChatSessionService, ModelService)
+- Compatible with existing session/, model/, render/ commands
 - Follows existing variable system conventions
+- **Model Management Integration**: Full integration with existing `\model-*` command suite
 
 ### 5. **Future-Proof Architecture**
 - Easy to add new providers (Anthropic via OpenAI-compatible endpoints)
@@ -160,7 +214,7 @@ User Input → ChatSession (Go structs) → OpenAI Library → Response → Chat
 
 ### Variable Integration Pattern
 - **Input**: `${_1}` for message content
-- **Configuration**: `${llm_model}` for model selection
+- **Configuration**: `${model_id}` for model configuration selection
 - **Session**: `${session_id}` for conversation context
 - **Client**: `${_client_id}` for API client
 - **Output**: `${_output}` for LLM response
@@ -288,3 +342,136 @@ _ = variableService.SetSystemVariable("_output", response)
 This modular approach achieves the goal of eliminating monolithic Go implementations while maintaining full functionality and improving maintainability. The fundamental Go commands provide essential building blocks, while neuro scripts enable powerful, customizable workflows that professional users can understand and modify.
 
 The key insight is that **simplicity in individual components enables complexity in composition** - atomic Go commands combined through neuro script orchestration create a flexible, powerful LLM communication system.
+
+## Model Configuration Examples
+
+### Creating and Using Model Configurations
+
+```neuro
+%% Create different model configurations for different use cases
+\model-new[name=gpt4-creative] openai gpt-4 temperature=0.9 max_tokens=2000
+\model-new[name=gpt4-analytical] openai gpt-4 temperature=0.1 max_tokens=1500
+\model-new[name=gpt4-coding] openai gpt-4 temperature=0.2 max_tokens=4000 stop=["\n\n"]
+
+%% Use different configurations in workflows
+\set[model_id="gpt4-creative"]
+\llm-call[client=${_client_id}, model_id=${model_id}, session=${session_id}] Write a creative story
+
+\set[model_id="gpt4-analytical"]  
+\llm-call[client=${_client_id}, model_id=${model_id}, session=${session_id}] Analyze this data
+
+\set[model_id="gpt4-coding"]
+\llm-call[client=${_client_id}, model_id=${model_id}, session=${session_id}] Review this code
+```
+
+### Component Independence in Practice
+
+```neuro
+%% Same session can use different models
+\set[session_id="analysis-work"]
+\set[client_id="${_openai_client}"]
+
+%% Start with analytical model
+\set[model_id="gpt4-analytical"]
+\llm-call[client=${client_id}, model_id=${model_id}, session=${session_id}] Analyze trends
+
+%% Switch to creative model for same session
+\set[model_id="gpt4-creative"] 
+\llm-call[client=${client_id}, model_id=${model_id}, session=${session_id}] Create a visualization idea
+
+%% Same model config can be used across different sessions
+\set[session_id="coding-work"]
+\set[model_id="gpt4-coding"]
+\llm-call[client=${client_id}, model_id=${model_id}, session=${session_id}] Review this function
+```
+
+This demonstrates how the three components (client, model config, session) operate independently while being composed by `\llm-call` to create diverse LLM interactions.
+
+## Service Implementation Gaps Analysis
+
+### Current Service Status for `\llm-call` Support
+
+After analyzing the three core services that manage the independent components, the following gaps have been identified:
+
+#### ✅ **LLMService** - COMPLETE
+**Status:** Ready for `\llm-call` implementation
+- ✅ `SendCompletion(client, session, model, message)` - exactly what `\llm-call` needs
+- ✅ `StreamCompletion(client, session, model, message)` - for streaming support
+- ✅ Pure business logic design - takes all three components as parameters
+- ✅ No service dependencies - perfect for component synthesis
+
+#### ✅ **ChatSessionService** - COMPLETE  
+**Status:** Ready for `\llm-call` implementation
+- ✅ `GetSessionByNameOrID(nameOrID)` - supports both session names and IDs
+- ✅ `GetActiveSession()` - for default session resolution when no session specified
+- ✅ Complete session lifecycle management
+- ✅ All necessary methods exist for session component retrieval
+
+#### ✅ **ModelService** - COMPLETE (with limitation)
+**Status:** Ready for `\llm-call` implementation, minor limitation noted
+- ✅ `GetModelByNameWithGlobalContext(name)` - retrieves stored model configurations
+- ✅ `GetActiveModelConfigWithGlobalContext()` - provides default model fallback
+- ⚠️ **Limitation**: Active model returns synthetic default rather than stored model config
+- ⚠️ **Note**: Limitation does not block `\llm-call` functionality
+
+#### ❌ **ClientFactoryService** - CRITICAL GAP
+**Status:** Missing essential method for `\llm-call` implementation
+
+**MISSING CRITICAL METHOD**: `GetClientByID(clientID string) (LLMClient, error)`
+
+**Current Methods:**
+- ✅ `GetClientWithID(provider, apiKey)` - creates client and returns client ID  
+- ✅ `GetClientForProvider(provider, apiKey)` - creates client without ID tracking
+- ❌ **Gap**: No method to retrieve existing client using client ID
+
+**The Problem:**
+1. `\llm-client-get` command stores client ID in `${_client_id}` system variable
+2. `\llm-call` command needs to retrieve the cached client using that client ID
+3. **Critical Gap**: No service method exists to get client by its ID
+
+### Required ClientFactoryService Enhancement
+
+#### Client Storage Architecture Decision
+**Storage Key Format**: `provider:hashed-api-key` (e.g., `"openai:a1b2c3d4"`)
+- **Rationale**: This format serves as both cache key and client ID
+- **Benefit**: Enables direct lookup without additional mapping structures
+- **Consistency**: Same format used for caching and client identification
+
+#### Required Method Addition
+```go
+// GetClientByID retrieves a cached LLM client by its client ID.
+// Client ID format: "provider:hashed-api-key" (e.g., "openai:a1b2c3d4")
+func (f *ClientFactoryService) GetClientByID(clientID string) (neurotypes.LLMClient, error) {
+    if !f.initialized {
+        return nil, fmt.Errorf("client factory service not initialized")
+    }
+    
+    // Validate client ID format
+    if !strings.Contains(clientID, ":") {
+        return nil, fmt.Errorf("invalid client ID format: %s", clientID)
+    }
+    
+    // Direct lookup using client ID as cache key
+    f.mutex.RLock()
+    defer f.mutex.RUnlock()
+    
+    if client, exists := f.clients[clientID]; exists {
+        return client, nil
+    }
+    
+    return nil, fmt.Errorf("client with ID '%s' not found in cache", clientID)
+}
+```
+
+#### Service Method Integration
+The `GetClientByID` method integrates seamlessly with existing architecture:
+- **Storage**: Uses same `f.clients[clientID]` map as existing methods
+- **Caching**: Leverages existing cache management and thread safety
+- **ID Generation**: Compatible with existing `generateClientID()` method
+- **Lookup**: Direct O(1) lookup using client ID as map key
+
+### Implementation Priority
+1. **Critical**: Add `GetClientByID` method to ClientFactoryService
+2. **Optional**: Enhance ModelService to support stored default models (future improvement)
+
+This single method addition completes the service layer requirements for `\llm-call` implementation, enabling the command to retrieve all three components (client, model config, session) and synthesize them into unified LLM API calls.
