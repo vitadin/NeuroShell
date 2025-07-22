@@ -29,7 +29,7 @@ func (c *LLMClientGetCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the llm-client-get command.
 func (c *LLMClientGetCommand) Usage() string {
-	return "\\llm-client-get[key=api_key, provider=openai]"
+	return "\\llm-client-get[key=api_key, provider=openai] or \\llm-client-get (uses env vars)"
 }
 
 // HelpInfo returns structured help information for the llm-client-get command.
@@ -49,8 +49,8 @@ func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 			{
 				Name:        "key",
-				Description: "API key for the provider",
-				Required:    true,
+				Description: "API key for the provider (optional if environment variable is set)",
+				Required:    false,
 				Type:        "string",
 			},
 		},
@@ -63,11 +63,17 @@ func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
 				Command:     "\\llm-client-get[key=${OPENAI_API_KEY}]",
 				Description: "Get OpenAI client using variable interpolation",
 			},
+			{
+				Command:     "\\llm-client-get",
+				Description: "Get OpenAI client using OPENAI_API_KEY environment variable",
+			},
 		},
 		Notes: []string{
 			"Creates and caches LLM clients for subsequent use",
 			"Client ID stored in ${_client_id} system variable",
-			"API key is required for client creation",
+			"API key can be provided explicitly or via environment variables:",
+			"  - OPENAI_API_KEY for OpenAI provider",
+			"  - ANTHROPIC_API_KEY for Anthropic provider (when supported)",
 			"Client configuration status stored in ${#client_configured}",
 			"Provider name stored in ${#client_provider}",
 			"Cached client count stored in ${#client_cache_count}",
@@ -76,27 +82,51 @@ func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
 }
 
 // Execute creates or retrieves an LLM client for the specified provider.
-// It requires an explicit API key for client creation.
+// API key can be provided explicitly or via environment variables.
 func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
-	// Get API key from arguments (required)
-	apiKey := args["key"]
-	if apiKey == "" {
-		return fmt.Errorf("API key is required. Usage: %s", c.Usage())
-	}
-
 	// Determine provider (from args or default to openai)
 	provider := args["provider"]
 	if provider == "" {
 		provider = "openai" // Default to openai provider
 	}
 
-	// Get required services
+	// Get variable service first for API key resolution
+	variableService, err := services.GetGlobalVariableService()
+	if err != nil {
+		return fmt.Errorf("variable service not available: %w", err)
+	}
+
+	// Get API key - first from args, then from environment variable
+	apiKey := args["key"]
+	if apiKey == "" {
+		// Get API key from environment variable via VariableService
+		// This follows proper architecture: Command -> Service -> Context -> OS
+		switch provider {
+		case "openai":
+			apiKey = variableService.GetEnv("OPENAI_API_KEY")
+		case "anthropic":
+			apiKey = variableService.GetEnv("ANTHROPIC_API_KEY")
+		default:
+			return fmt.Errorf("unsupported provider '%s'. Supported providers: openai, anthropic", provider)
+		}
+
+		// If still no API key found, return error
+		if apiKey == "" {
+			envVarName := "OPENAI_API_KEY"
+			if provider == "anthropic" {
+				envVarName = "ANTHROPIC_API_KEY"
+			}
+			return fmt.Errorf("API key not found. Please provide key parameter or set %s environment variable. Usage: %s", envVarName, c.Usage())
+		}
+	}
+
+	// Get client factory service
 	clientFactory, err := services.GetGlobalClientFactoryService()
 	if err != nil {
 		return fmt.Errorf("client factory service not available: %w", err)
 	}
 
-	// Get or create client using the provided API key
+	// Get or create client using the API key
 	client, err := clientFactory.GetClientForProvider(provider, apiKey)
 	if err != nil {
 		return fmt.Errorf("failed to get client for provider %s: %w", provider, err)
@@ -106,17 +136,14 @@ func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
 	truncatedKey := c.truncateAPIKey(apiKey)
 	clientID := fmt.Sprintf("%s:%s", provider, truncatedKey)
 
-	// Get variable service for storing results - graceful degradation if not available
-	if variableService, err := services.GetGlobalVariableService(); err == nil {
-		// Set result variables (ignore errors for graceful degradation)
-		_ = variableService.SetSystemVariable("_client_id", clientID)
-		_ = variableService.SetSystemVariable("_output", fmt.Sprintf("LLM client ready: %s", clientID))
+	// Set result variables (graceful degradation - we already have the service)
+	_ = variableService.SetSystemVariable("_client_id", clientID)
+	_ = variableService.SetSystemVariable("_output", fmt.Sprintf("LLM client ready: %s", clientID))
 
-		// Set metadata variables
-		_ = variableService.SetSystemVariable("#client_provider", provider)
-		_ = variableService.SetSystemVariable("#client_configured", fmt.Sprintf("%t", client.IsConfigured()))
-		_ = variableService.SetSystemVariable("#client_cache_count", fmt.Sprintf("%d", clientFactory.GetCachedClientCount()))
-	}
+	// Set metadata variables
+	_ = variableService.SetSystemVariable("#client_provider", provider)
+	_ = variableService.SetSystemVariable("#client_configured", fmt.Sprintf("%t", client.IsConfigured()))
+	_ = variableService.SetSystemVariable("#client_cache_count", fmt.Sprintf("%d", clientFactory.GetCachedClientCount()))
 
 	// Output success message
 	fmt.Printf("LLM client ready: %s (configured: %t)\n", clientID, client.IsConfigured())
