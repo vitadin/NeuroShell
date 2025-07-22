@@ -1,0 +1,4 @@
+%% Test debug-params with simple message
+%% Verifies basic parameter passing functionality for stdlib scripts
+\set[_echo_command="true"]
+\debug-params Hello World

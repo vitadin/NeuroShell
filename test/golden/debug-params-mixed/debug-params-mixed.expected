@@ -1,0 +1,50 @@
+Setting _echo_command = true
+%%> "\\debug-params[style=red,prefix=DEBUG,level=verbose] Test message with parameters"
+%%> "\\echo ==============================================="
+===============================================
+%%> "\\echo ==============================================="
+===============================================
+%%> "\\echo === Core Parameter Variables ==="
+=== Core Parameter Variables ===
+%%> "\\echo _0 (command name): \"${_0}\""
+_0 (command name): "debug-params"
+%%> "\\echo _1 (message/first positional): \"${_1}\""
+_1 (message/first positional): "Test message with parameters"
+%%> "\\echo _* (all positional args): \"${_*}\""
+_* (all positional args): "Test message with parameters"
+%%> "\\echo _@ (all named args formatted): \"${_@}\""
+_@ (all named args formatted): "level=verbose,prefix=DEBUG,style=red"
+%%> "\\echo === Named Parameters ==="
+=== Named Parameters ===
+%%> "\\if[condition=\"${style}\"] \\echo style = \"${style}\""
+%%> "\\echo style = \"red\""
+style = "red"
+%%> "\\if[condition=\"${prefix}\"] \\echo prefix = \"${prefix}\""
+%%> "\\echo prefix = \"DEBUG\""
+prefix = "DEBUG"
+%%> "\\if[condition=\"${count}\"] \\echo count = \"${count}\""
+%%> "\\if[condition=\"${debug}\"] \\echo debug = \"${debug}\""
+%%> "\\if[condition=\"${format}\"] \\echo format = \"${format}\""
+%%> "\\if[condition=\"${level}\"] \\echo level = \"${level}\""
+%%> "\\echo level = \"verbose\""
+level = "verbose"
+%%> "\\if[condition=\"${type}\"] \\echo type = \"${type}\""
+%%> "\\if[condition=\"${mode}\"] \\echo mode = \"${mode}\""
+%%> "\\echo === Parameter Analysis ==="
+=== Parameter Analysis ===
+%%> "\\set[has_message=\"${_1}\"]"
+Setting has_message = Test message with parameters
+%%> "\\set[has_named=\"${_@}\"]"
+Setting has_named = level=verbose,prefix=DEBUG,style=red
+%%> "\\if[condition=\"${has_message}\"] \\echo Message parameter provided"
+%%> "\\echo Message parameter provided"
+Message parameter provided
+%%> "\\if[condition=\"${has_named}\"] \\echo Named parameters provided"
+%%> "\\echo Named parameters provided"
+Named parameters provided
+%%> "\\echo ==============================================="
+===============================================
+%%> "\\echo End of parameter analysis"
+End of parameter analysis
+%%> "\\echo ==============================================="
+===============================================

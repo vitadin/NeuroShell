@@ -4,6 +4,7 @@ package statemachine
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/charmbracelet/log"
@@ -130,7 +131,7 @@ func (sp *StateProcessor) executeCommand(resolved *neurotypes.StateMachineResolv
 	case neurotypes.CommandTypeBuiltin:
 		return sp.executeBuiltinCommand(resolved, parsedCmd, input)
 	case neurotypes.CommandTypeStdlib, neurotypes.CommandTypeUser:
-		return sp.executeScriptCommand(resolved)
+		return sp.executeScriptCommand(resolved, parsedCmd)
 	default:
 		return fmt.Errorf("unknown command type: %v", resolved.Type)
 	}
@@ -175,9 +176,26 @@ func (sp *StateProcessor) executeBuiltinCommand(resolved *neurotypes.StateMachin
 
 // executeScriptCommand handles execution of script commands (stdlib and user).
 // This preserves the existing script execution logic.
-func (sp *StateProcessor) executeScriptCommand(resolved *neurotypes.StateMachineResolvedCommand) error {
+func (sp *StateProcessor) executeScriptCommand(resolved *neurotypes.StateMachineResolvedCommand, parsedCmd *parser.Command) error {
 	if resolved.ScriptContent == "" {
 		return fmt.Errorf("no script content to execute")
+	}
+
+	// Set up parameter variables before script execution
+	variableService, err := services.GetGlobalVariableService()
+	if err != nil {
+		sp.logger.Error("Failed to get variable service", "error", err)
+	} else {
+		// Special parameter variables (using SetSystemVariable for system-level variables)
+		_ = variableService.SetSystemVariable("_0", resolved.Name)                         // Command name
+		_ = variableService.SetSystemVariable("_1", parsedCmd.Message)                     // Message/first positional arg
+		_ = variableService.SetSystemVariable("_*", parsedCmd.Message)                     // All positional args (same as _1)
+		_ = variableService.SetSystemVariable("_@", sp.formatNamedArgs(parsedCmd.Options)) // Named args
+
+		// Individual named parameters (these are user-level variables)
+		for key, value := range parsedCmd.Options {
+			_ = variableService.Set(key, value)
+		}
 	}
 
 	// Parse script lines
@@ -204,6 +222,25 @@ func (sp *StateProcessor) executeScriptCommand(resolved *neurotypes.StateMachine
 	}
 
 	return nil
+}
+
+// formatNamedArgs formats named arguments as a comma-separated string.
+func (sp *StateProcessor) formatNamedArgs(options map[string]string) string {
+	if len(options) == 0 {
+		return ""
+	}
+	var parts []string
+	// Sort keys to ensure deterministic ordering
+	keys := make([]string, 0, len(options))
+	for key := range options {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
+		parts = append(parts, fmt.Sprintf("%s=%s", key, options[key]))
+	}
+	return strings.Join(parts, ",")
 }
 
 // SetConfig updates the configuration.

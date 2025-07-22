@@ -6,21 +6,22 @@
 %% Note: Demonstrates stdlib command with parameter processing and macro usage
 
 %% Enhanced echo command with formatting
-\set[_echo_commands="true"]
+\set[_echo_command="true"]
 
 %% Process parameters
 \set[message="${_1}"]
 \set[color="${style}"]
 \set[msg_prefix="${prefix}"]
 
-%% Build dynamic command based on parameters
-\set[base_cmd="\echo"]
+%% Set default values first
+\set[echo_cmd="\echo"]
+\set[final_message="${message}"]
 
-%% Add style if provided
-\set[styled_cmd="${color!=?${base_cmd}[style=${color}]:${base_cmd}}"]
+%% Override if color is provided
+\if[condition="${color}"] \set[echo_cmd="\echo[style=${color}]"]
 
-%% Add prefix to message if provided
-\set[final_message="${msg_prefix!=?${msg_prefix}: ${message}:${message}}"]
+%% Override if prefix is provided  
+\if[condition="${msg_prefix}"] \set[final_message="${msg_prefix}: ${message}"]
 
-%% Execute the dynamically built command
-${styled_cmd} ${final_message}
+%% Execute the command
+${echo_cmd} ${final_message}

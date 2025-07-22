@@ -1,0 +1,38 @@
+%% Description: Debug script to display all parameter variables passed to a neuro script
+%% Usage: \debug-params [key=value...] <message>
+%% Example: \debug-params[style=blue,prefix=INFO,count=5] Hello World
+%% Note: Useful for development and debugging parameter passing functionality
+
+%% Debug Parameters Script
+\echo ===============================================
+\echo DEBUG PARAMETERS - Script Parameter Analysis
+\echo ===============================================
+
+%% Core parameter variables
+\echo === Core Parameter Variables ===
+\echo _0 (command name): "${_0}"
+\echo _1 (message/first positional): "${_1}"  
+\echo _* (all positional args): "${_*}"
+\echo _@ (all named args formatted): "${_@}"
+
+%% Named parameters section
+\echo === Named Parameters ===
+\if[condition="${style}"] \echo style = "${style}"
+\if[condition="${prefix}"] \echo prefix = "${prefix}"
+\if[condition="${count}"] \echo count = "${count}"
+\if[condition="${debug}"] \echo debug = "${debug}"
+\if[condition="${format}"] \echo format = "${format}"
+\if[condition="${level}"] \echo level = "${level}"
+\if[condition="${type}"] \echo type = "${type}"
+\if[condition="${mode}"] \echo mode = "${mode}"
+
+%% Parameter analysis
+\echo === Parameter Analysis ===
+\set[has_message="${_1}"]
+\set[has_named="${_@}"]
+\if[condition="${has_message}"] \echo Message parameter provided
+\if[condition="${has_named}"] \echo Named parameters provided  
+
+\echo ===============================================
+\echo End of parameter analysis
+\echo ===============================================
