@@ -12,11 +12,13 @@ Model Configurations - Filter: name='prod' (2 models):
   claude-prod-model (00000001)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:01
   openai-prod-model (00000002)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
 %%> "\\model-status[provider=\"anthropic\"]"
@@ -24,11 +26,13 @@ Model Configurations - Filter: provider='anthropic' (2 models):
   claude-prod-model (00000001)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:01
   claude-test-model (00000003)
     Provider: anthropic
     Base Model: claude-3-sonnet
+    Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03
 %%> "\\model-status[name=\"claude\", provider=\"anthropic\"]"
@@ -36,11 +40,13 @@ Model Configurations - Filter: name='claude', provider='anthropic' (2 models):
   claude-prod-model (00000001)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:01
   claude-test-model (00000003)
     Provider: anthropic
     Base Model: claude-3-sonnet
+    Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03
 %%> "\\model-status[provider=\"nonexistent\"]"

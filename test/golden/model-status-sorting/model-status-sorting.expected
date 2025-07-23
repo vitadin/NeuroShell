@@ -10,17 +10,20 @@ Model Configurations (3 models):
   alpha-model (00000002)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:02
   middle-model (00000003)
     Provider: openai
     Base Model: gpt-4
+    Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03
     Active: true
   zebra-model (00000001)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:01
 %%> "\\model-status[sort=\"provider\"]"
@@ -28,17 +31,20 @@ Model Configurations (3 models):
   alpha-model (00000002)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:02
   middle-model (00000003)
     Provider: openai
     Base Model: gpt-4
+    Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03
     Active: true
   zebra-model (00000001)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:01
 %%> "\\model-status[sort=\"created\"]"
@@ -46,16 +52,19 @@ Model Configurations (3 models):
   zebra-model (00000001)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:01
   alpha-model (00000002)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:02
   middle-model (00000003)
     Provider: openai
     Base Model: gpt-4
+    Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03
     Active: true

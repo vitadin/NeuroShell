@@ -37,7 +37,7 @@ func (m *ModelService) Initialize() error {
 // CreateModel creates a new model configuration with the given parameters.
 // It validates the model name (no spaces, unique), generates a unique ID,
 // and maintains bidirectional mapping between names and IDs.
-func (m *ModelService) CreateModel(name, provider, baseModel string, parameters map[string]any, description string, ctx neurotypes.Context) (*neurotypes.ModelConfig, error) {
+func (m *ModelService) CreateModel(name, provider, baseModel string, parameters map[string]any, description, catalogID string, ctx neurotypes.Context) (*neurotypes.ModelConfig, error) {
 	if !m.initialized {
 		return nil, fmt.Errorf("model service not initialized")
 	}
@@ -77,6 +77,7 @@ func (m *ModelService) CreateModel(name, provider, baseModel string, parameters 
 		BaseModel:   baseModel,
 		Parameters:  parameters,
 		Description: description,
+		CatalogID:   catalogID,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
@@ -93,9 +94,9 @@ func (m *ModelService) CreateModel(name, provider, baseModel string, parameters 
 }
 
 // CreateModelWithGlobalContext creates a new model configuration using the global context singleton.
-func (m *ModelService) CreateModelWithGlobalContext(name, provider, baseModel string, parameters map[string]any, description string) (*neurotypes.ModelConfig, error) {
+func (m *ModelService) CreateModelWithGlobalContext(name, provider, baseModel string, parameters map[string]any, description, catalogID string) (*neurotypes.ModelConfig, error) {
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.CreateModel(name, provider, baseModel, parameters, description, ctx)
+	return m.CreateModel(name, provider, baseModel, parameters, description, catalogID, ctx)
 }
 
 // GetModel retrieves a model configuration by ID.

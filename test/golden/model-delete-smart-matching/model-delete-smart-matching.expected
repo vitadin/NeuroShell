@@ -32,6 +32,7 @@ Model Configurations (1 models):
   permanent-model (00000003)
     Provider: anthropic
     Base Model: claude-3-sonnet
+    Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03
     Active: true

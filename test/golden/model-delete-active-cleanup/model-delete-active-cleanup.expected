@@ -24,6 +24,7 @@ Model Configurations (1 models):
   backup-model (00000002)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
     Active: true

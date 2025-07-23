@@ -54,10 +54,10 @@ func TestActivateCommand_Execute_ActivateByName(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create test models
-	model1, err := modelService.CreateModel("test-model-1", "openai", "gpt-4", nil, "Test model 1", ctx)
+	model1, err := modelService.CreateModel("test-model-1", "openai", "gpt-4", nil, "Test model 1", "", ctx)
 	require.NoError(t, err)
 
-	model2, err := modelService.CreateModel("test-model-2", "openai", "gpt-3.5-turbo", nil, "Test model 2", ctx)
+	model2, err := modelService.CreateModel("test-model-2", "openai", "gpt-3.5-turbo", nil, "Test model 2", "", ctx)
 	require.NoError(t, err)
 
 	// Initially model2 should be active (last created)
@@ -108,10 +108,10 @@ func TestActivateCommand_Execute_ActivateByPartialName(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create test models
-	model1, err := modelService.CreateModel("my-claude-model", "anthropic", "claude-3-sonnet", nil, "Test Claude model", ctx)
+	model1, err := modelService.CreateModel("my-claude-model", "anthropic", "claude-3-sonnet", nil, "Test Claude model", "", ctx)
 	require.NoError(t, err)
 
-	_, err = modelService.CreateModel("my-gpt-model", "openai", "gpt-4", nil, "Test GPT model", ctx)
+	_, err = modelService.CreateModel("my-gpt-model", "openai", "gpt-4", nil, "Test GPT model", "", ctx)
 	require.NoError(t, err)
 
 	// Create activate command
@@ -150,10 +150,10 @@ func TestActivateCommand_Execute_ActivateByID(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create test models
-	model1, err := modelService.CreateModel("test-model-1", "openai", "gpt-4", nil, "Test model 1", ctx)
+	model1, err := modelService.CreateModel("test-model-1", "openai", "gpt-4", nil, "Test model 1", "", ctx)
 	require.NoError(t, err)
 
-	_, err = modelService.CreateModel("test-model-2", "openai", "gpt-3.5-turbo", nil, "Test model 2", ctx)
+	_, err = modelService.CreateModel("test-model-2", "openai", "gpt-3.5-turbo", nil, "Test model 2", "", ctx)
 	require.NoError(t, err)
 
 	// Create activate command
@@ -194,7 +194,7 @@ func TestActivateCommand_Execute_NoMatches(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create test model
-	_, err = modelService.CreateModel("test-model", "openai", "gpt-4", nil, "Test model", ctx)
+	_, err = modelService.CreateModel("test-model", "openai", "gpt-4", nil, "Test model", "", ctx)
 	require.NoError(t, err)
 
 	// Create activate command
@@ -232,10 +232,10 @@ func TestActivateCommand_Execute_MultipleMatches(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create test models with similar names
-	_, err = modelService.CreateModel("gpt-model-1", "openai", "gpt-4", nil, "GPT model 1", ctx)
+	_, err = modelService.CreateModel("gpt-model-1", "openai", "gpt-4", nil, "GPT model 1", "", ctx)
 	require.NoError(t, err)
 
-	_, err = modelService.CreateModel("gpt-model-2", "openai", "gpt-3.5-turbo", nil, "GPT model 2", ctx)
+	_, err = modelService.CreateModel("gpt-model-2", "openai", "gpt-3.5-turbo", nil, "GPT model 2", "", ctx)
 	require.NoError(t, err)
 
 	// Create activate command
@@ -329,7 +329,7 @@ func TestActivateCommand_Execute_AlreadyActiveModel(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create and verify active model
-	model, err := modelService.CreateModel("active-model", "openai", "gpt-4", nil, "Active model", ctx)
+	model, err := modelService.CreateModel("active-model", "openai", "gpt-4", nil, "Active model", "", ctx)
 	require.NoError(t, err)
 
 	// Verify it's active (should be auto-activated)

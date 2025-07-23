@@ -130,7 +130,7 @@ func TestLLMCallCommand_Execute_DryRun(t *testing.T) {
 
 	// Create test model
 	model, err := modelService.CreateModelWithGlobalContext("test-model", "openai", "gpt-4",
-		map[string]any{"temperature": 0.7}, "Test model")
+		map[string]any{"temperature": 0.7}, "Test model", "")
 	require.NoError(t, err)
 
 	// Create test session
@@ -202,7 +202,7 @@ func TestLLMCallCommand_Execute_SyncCall(t *testing.T) {
 
 	// Create test model
 	model, err := modelService.CreateModelWithGlobalContext("test-model", "openai", "gpt-4",
-		map[string]any{"temperature": 0.7}, "Test model")
+		map[string]any{"temperature": 0.7}, "Test model", "")
 	require.NoError(t, err)
 
 	// Create test session with a message
@@ -277,7 +277,7 @@ func TestLLMCallCommand_Execute_StreamingCall(t *testing.T) {
 
 	// Create test model
 	model, err := modelService.CreateModelWithGlobalContext("test-model", "openai", "gpt-4",
-		map[string]any{"temperature": 0.7}, "Test model")
+		map[string]any{"temperature": 0.7}, "Test model", "")
 	require.NoError(t, err)
 
 	// Create test session with a message
@@ -345,7 +345,7 @@ func TestLLMCallCommand_Execute_DefaultResolution(t *testing.T) {
 
 	// Create and activate test model
 	model, err := modelService.CreateModelWithGlobalContext("test-model", "openai", "gpt-4",
-		map[string]any{"temperature": 0.7}, "Test model")
+		map[string]any{"temperature": 0.7}, "Test model", "")
 	require.NoError(t, err)
 	err = modelService.SetActiveModelWithGlobalContext(model.ID)
 	require.NoError(t, err)
@@ -457,7 +457,7 @@ func TestLLMCallCommand_Execute_EmptySession(t *testing.T) {
 
 	// Create test model
 	model, err := modelService.CreateModelWithGlobalContext("test-model", "openai", "gpt-4",
-		map[string]any{"temperature": 0.7}, "Test model")
+		map[string]any{"temperature": 0.7}, "Test model", "")
 	require.NoError(t, err)
 
 	// Create test session WITHOUT messages
@@ -515,7 +515,7 @@ func TestLLMCallCommand_Execute_EmptySession_DryRun(t *testing.T) {
 
 	// Create test model
 	model, err := modelService.CreateModelWithGlobalContext("test-model", "openai", "gpt-4",
-		map[string]any{"temperature": 0.7}, "Test model")
+		map[string]any{"temperature": 0.7}, "Test model", "")
 	require.NoError(t, err)
 
 	// Create test session WITHOUT messages
@@ -593,7 +593,7 @@ func TestLLMCallCommand_Execute_InvalidComponents(t *testing.T) {
 
 	// Create valid model but test invalid session
 	modelService, _ := services.GetGlobalModelService()
-	model, _ := modelService.CreateModelWithGlobalContext("test-model", "openai", "gpt-4", nil, "Test model")
+	model, _ := modelService.CreateModelWithGlobalContext("test-model", "openai", "gpt-4", nil, "Test model", "")
 
 	args["model_id"] = model.Name
 	args["session_id"] = "nonexistent-session"

@@ -28,6 +28,10 @@ type ModelConfig struct {
 	// Description is an optional human-readable description of the model configuration
 	Description string `json:"description"`
 
+	// CatalogID is the catalog ID used to create this model (if created from catalog)
+	// Empty string if the model was created manually without using catalog_id
+	CatalogID string `json:"catalog_id"`
+
 	// CreatedAt is the timestamp when the model configuration was created
 	CreatedAt time.Time `json:"created_at"`
 

@@ -66,11 +66,13 @@ Model Configurations (2 models):
   my-claude-4 (00000001)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:01
   my-o3-model (00000002)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
     Active: true
@@ -89,6 +91,7 @@ Model Configurations (3 models):
   custom-model (00000003)
     Provider: anthropic
     Base Model: claude-3-sonnet
+    Catalog ID: none
     Parameters: 1 (temperature=0.8)
     Created: 2025-01-01 00:00:03
     Description: Custom model
@@ -96,11 +99,13 @@ Model Configurations (3 models):
   my-claude-4 (00000001)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:01
   my-o3-model (00000002)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
 %%> "\\model-delete my-claude-4"
@@ -110,6 +115,7 @@ Model Configurations (2 models):
   custom-model (00000003)
     Provider: anthropic
     Base Model: claude-3-sonnet
+    Catalog ID: none
     Parameters: 1 (temperature=0.8)
     Created: 2025-01-01 00:00:03
     Description: Custom model
@@ -117,6 +123,7 @@ Model Configurations (2 models):
   my-o3-model (00000002)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
 %%> "\\get[#active_model_name]"

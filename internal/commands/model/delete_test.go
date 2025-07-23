@@ -54,10 +54,10 @@ func TestDeleteCommand_Execute_DeleteByName(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create test models
-	model1, err := modelService.CreateModel("test-model-1", "openai", "gpt-4", nil, "Test model 1", ctx)
+	model1, err := modelService.CreateModel("test-model-1", "openai", "gpt-4", nil, "Test model 1", "", ctx)
 	require.NoError(t, err)
 
-	model2, err := modelService.CreateModel("test-model-2", "openai", "gpt-3.5-turbo", nil, "Test model 2", ctx)
+	model2, err := modelService.CreateModel("test-model-2", "openai", "gpt-3.5-turbo", nil, "Test model 2", "", ctx)
 	require.NoError(t, err)
 
 	// Create delete command
@@ -110,7 +110,7 @@ func TestDeleteCommand_Execute_DeleteByPartialName(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create test model
-	model, err := modelService.CreateModel("my-claude-model", "anthropic", "claude-3-sonnet", nil, "Test Claude model", ctx)
+	model, err := modelService.CreateModel("my-claude-model", "anthropic", "claude-3-sonnet", nil, "Test Claude model", "", ctx)
 	require.NoError(t, err)
 
 	// Create delete command
@@ -150,7 +150,7 @@ func TestDeleteCommand_Execute_DeleteByID(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create test model
-	model, err := modelService.CreateModel("test-model", "openai", "gpt-4", nil, "Test model", ctx)
+	model, err := modelService.CreateModel("test-model", "openai", "gpt-4", nil, "Test model", "", ctx)
 	require.NoError(t, err)
 
 	// Create delete command
@@ -192,7 +192,7 @@ func TestDeleteCommand_Execute_NoMatches(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create test model
-	_, err = modelService.CreateModel("test-model", "openai", "gpt-4", nil, "Test model", ctx)
+	_, err = modelService.CreateModel("test-model", "openai", "gpt-4", nil, "Test model", "", ctx)
 	require.NoError(t, err)
 
 	// Create delete command
@@ -230,10 +230,10 @@ func TestDeleteCommand_Execute_MultipleMatches(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create test models with similar names
-	_, err = modelService.CreateModel("gpt-model-1", "openai", "gpt-4", nil, "GPT model 1", ctx)
+	_, err = modelService.CreateModel("gpt-model-1", "openai", "gpt-4", nil, "GPT model 1", "", ctx)
 	require.NoError(t, err)
 
-	_, err = modelService.CreateModel("gpt-model-2", "openai", "gpt-3.5-turbo", nil, "GPT model 2", ctx)
+	_, err = modelService.CreateModel("gpt-model-2", "openai", "gpt-3.5-turbo", nil, "GPT model 2", "", ctx)
 	require.NoError(t, err)
 
 	// Create delete command
@@ -327,7 +327,7 @@ func TestDeleteCommand_Execute_ActiveModelCleanup(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create and set active model
-	model, err := modelService.CreateModel("active-model", "openai", "gpt-4", nil, "Active model", ctx)
+	model, err := modelService.CreateModel("active-model", "openai", "gpt-4", nil, "Active model", "", ctx)
 	require.NoError(t, err)
 
 	// Verify it's active (should be auto-activated)
