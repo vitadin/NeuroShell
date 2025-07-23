@@ -136,13 +136,13 @@ func TestStatusCommand_Execute_WithModels(t *testing.T) {
 	model1, err := modelService.CreateModelWithGlobalContext(
 		"test-gpt4", "openai", "gpt-4",
 		map[string]any{"temperature": 0.7, "max_tokens": 1000},
-		"Test GPT-4 model")
+		"Test GPT-4 model", "")
 	require.NoError(t, err)
 
 	model2, err := modelService.CreateModelWithGlobalContext(
 		"test-claude", "anthropic", "claude-3-sonnet",
 		map[string]any{"temperature": 0.5},
-		"Test Claude model")
+		"Test Claude model", "")
 	require.NoError(t, err)
 
 	// Execute command
@@ -199,13 +199,13 @@ func TestStatusCommand_Execute_FilterByName(t *testing.T) {
 	_, err := modelService.CreateModelWithGlobalContext(
 		"prod-gpt4", "openai", "gpt-4",
 		map[string]any{"temperature": 0.3},
-		"Production GPT-4 model")
+		"Production GPT-4 model", "")
 	require.NoError(t, err)
 
 	_, err = modelService.CreateModelWithGlobalContext(
 		"test-gpt4", "openai", "gpt-4",
 		map[string]any{"temperature": 0.7},
-		"Test GPT-4 model")
+		"Test GPT-4 model", "")
 	require.NoError(t, err)
 
 	// Execute command with name filter
@@ -263,13 +263,13 @@ func TestStatusCommand_Execute_FilterByProvider(t *testing.T) {
 	_, err := modelService.CreateModelWithGlobalContext(
 		"gpt4-model", "openai", "gpt-4",
 		map[string]any{"temperature": 0.7},
-		"OpenAI GPT-4 model")
+		"OpenAI GPT-4 model", "")
 	require.NoError(t, err)
 
 	_, err = modelService.CreateModelWithGlobalContext(
 		"claude-model", "anthropic", "claude-3-sonnet",
 		map[string]any{"temperature": 0.5},
-		"Anthropic Claude model")
+		"Anthropic Claude model", "")
 	require.NoError(t, err)
 
 	// Execute command with provider filter
@@ -319,7 +319,7 @@ func TestStatusCommand_Execute_SortByCreated(t *testing.T) {
 	_, err := modelService.CreateModelWithGlobalContext(
 		"older-model", "openai", "gpt-4",
 		map[string]any{"temperature": 0.7},
-		"Older model")
+		"Older model", "")
 	require.NoError(t, err)
 
 	// Small delay to ensure different timestamps
@@ -329,7 +329,7 @@ func TestStatusCommand_Execute_SortByCreated(t *testing.T) {
 	_, err = modelService.CreateModelWithGlobalContext(
 		"newer-model", "openai", "gpt-4",
 		map[string]any{"temperature": 0.5},
-		"Newer model")
+		"Newer model", "")
 	require.NoError(t, err)
 
 	// Execute command with sort by created
@@ -420,7 +420,7 @@ func TestStatusCommand_Execute_NoMatchingModels(t *testing.T) {
 	_, err := modelService.CreateModelWithGlobalContext(
 		"gpt4-model", "openai", "gpt-4",
 		map[string]any{"temperature": 0.7},
-		"Test model")
+		"Test model", "")
 	require.NoError(t, err)
 
 	// Execute command with filter that matches nothing

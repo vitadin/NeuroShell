@@ -10,11 +10,13 @@ Model Configurations (3 models):
   claude-model (00000001)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:01
   custom-claude (00000003)
     Provider: anthropic
     Base Model: claude-3-sonnet
+    Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03
     Description: Custom Claude model
@@ -22,6 +24,7 @@ Model Configurations (3 models):
   openai-model (00000002)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
 %%> "\\get[#model_count]"
@@ -33,11 +36,13 @@ _output = Model Configurations (3 models):
   claude-model (00000001)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:01
   custom-claude (00000003)
     Provider: anthropic
     Base Model: claude-3-sonnet
+    Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03
     Description: Custom Claude model
@@ -45,5 +50,6 @@ _output = Model Configurations (3 models):
   openai-model (00000002)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02

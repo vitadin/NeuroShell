@@ -59,13 +59,13 @@ func TestModelService_CreateModel_AutoActivation(t *testing.T) {
 
 	// Create first model - should become active automatically
 	model1, err := service.CreateModel("test-model-1", "openai", "gpt-4",
-		map[string]any{"temperature": 0.7}, "Test model 1", ctx)
+		map[string]any{"temperature": 0.7}, "Test model 1", "", ctx)
 	require.NoError(t, err)
 	assert.Equal(t, model1.ID, ctx.GetActiveModelID())
 
 	// Create second model - should become active automatically
 	model2, err := service.CreateModel("test-model-2", "openai", "gpt-3.5-turbo",
-		map[string]any{"temperature": 0.5}, "Test model 2", ctx)
+		map[string]any{"temperature": 0.5}, "Test model 2", "", ctx)
 	require.NoError(t, err)
 	assert.Equal(t, model2.ID, ctx.GetActiveModelID())
 }
@@ -88,7 +88,7 @@ func TestModelService_GetActiveModelConfig_ContextTracking(t *testing.T) {
 
 	// Create a model - should become active
 	model1, err := service.CreateModel("test-model", "openai", "gpt-4",
-		map[string]any{"temperature": 0.8}, "Test model", ctx)
+		map[string]any{"temperature": 0.8}, "Test model", "", ctx)
 	require.NoError(t, err)
 
 	// GetActiveModelConfig should return the created model
@@ -109,10 +109,10 @@ func TestModelService_SetActiveModel(t *testing.T) {
 	ctx := context.GetGlobalContext()
 
 	// Create two models
-	model1, err := service.CreateModel("model-1", "openai", "gpt-4", nil, "Model 1", ctx)
+	model1, err := service.CreateModel("model-1", "openai", "gpt-4", nil, "Model 1", "", ctx)
 	require.NoError(t, err)
 
-	model2, err := service.CreateModel("model-2", "openai", "gpt-3.5-turbo", nil, "Model 2", ctx)
+	model2, err := service.CreateModel("model-2", "openai", "gpt-3.5-turbo", nil, "Model 2", "", ctx)
 	require.NoError(t, err)
 
 	// model2 should be active (last created)
@@ -145,7 +145,7 @@ func TestModelService_DeleteModel_ActiveCleanup(t *testing.T) {
 	ctx := context.GetGlobalContext()
 
 	// Create a model
-	model, err := service.CreateModel("test-model", "openai", "gpt-4", nil, "Test model", ctx)
+	model, err := service.CreateModel("test-model", "openai", "gpt-4", nil, "Test model", "", ctx)
 	require.NoError(t, err)
 
 	// Verify it's active
@@ -175,11 +175,11 @@ func TestModelService_GetActiveModelConfig_LatestFallback(t *testing.T) {
 	ctx := context.GetGlobalContext()
 
 	// Create two models
-	_, err = service.CreateModel("model-1", "openai", "gpt-4", nil, "Model 1", ctx)
+	_, err = service.CreateModel("model-1", "openai", "gpt-4", nil, "Model 1", "", ctx)
 	require.NoError(t, err)
 
 	// Wait a bit to ensure different timestamps
-	model2, err := service.CreateModel("model-2", "openai", "gpt-3.5-turbo", nil, "Model 2", ctx)
+	model2, err := service.CreateModel("model-2", "openai", "gpt-3.5-turbo", nil, "Model 2", "", ctx)
 	require.NoError(t, err)
 
 	// Clear active model ID to test fallback
@@ -203,7 +203,7 @@ func TestModelService_ClearActiveModel(t *testing.T) {
 	ctx := context.GetGlobalContext()
 
 	// Create a model
-	model, err := service.CreateModel("test-model", "openai", "gpt-4", nil, "Test model", ctx)
+	model, err := service.CreateModel("test-model", "openai", "gpt-4", nil, "Test model", "", ctx)
 	require.NoError(t, err)
 
 	// Verify it's active

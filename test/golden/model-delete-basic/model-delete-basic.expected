@@ -10,17 +10,20 @@ Model Configurations (3 models):
   another-model (00000003)
     Provider: anthropic
     Base Model: claude-3-sonnet
+    Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03
     Active: true
   model-to-delete (00000001)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:01
   model-to-keep (00000002)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
 %%> "\\model-delete model-to-delete"
@@ -40,12 +43,14 @@ Model Configurations (2 models):
   another-model (00000003)
     Provider: anthropic
     Base Model: claude-3-sonnet
+    Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03
     Active: true
   model-to-keep (00000002)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
 %%> "\\get[#model_count]"

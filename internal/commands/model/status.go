@@ -292,6 +292,13 @@ func (c *StatusCommand) formatModelDetails(model *neurotypes.ModelConfig, active
 	details.WriteString(fmt.Sprintf("    Provider: %s\n", model.Provider))
 	details.WriteString(fmt.Sprintf("    Base Model: %s\n", model.BaseModel))
 
+	// Catalog ID
+	if model.CatalogID != "" {
+		details.WriteString(fmt.Sprintf("    Catalog ID: %s\n", model.CatalogID))
+	} else {
+		details.WriteString("    Catalog ID: none\n")
+	}
+
 	// Parameters
 	if len(model.Parameters) > 0 {
 		details.WriteString(fmt.Sprintf("    Parameters: %d (", len(model.Parameters)))
@@ -342,6 +349,10 @@ func (c *StatusCommand) updateStatusVariables(allModels map[string]*neurotypes.M
 		variables["#model_current_base"] = model.BaseModel
 		variables["#model_current_created"] = model.CreatedAt.Format("2006-01-02 15:04:05")
 		variables["#model_current_param_count"] = fmt.Sprintf("%d", len(model.Parameters))
+
+		if model.CatalogID != "" {
+			variables["#model_current_catalog_id"] = model.CatalogID
+		}
 
 		if model.Description != "" {
 			variables["#model_current_description"] = model.Description

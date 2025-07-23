@@ -256,7 +256,7 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	}
 
 	// Create model configuration
-	model, err := modelService.CreateModelWithGlobalContext(modelName, provider, baseModel, parameters, description)
+	model, err := modelService.CreateModelWithGlobalContext(modelName, provider, baseModel, parameters, description, catalogID)
 	if err != nil {
 		return fmt.Errorf("failed to create model: %w", err)
 	}

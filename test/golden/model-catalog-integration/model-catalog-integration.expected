@@ -42,11 +42,13 @@ Model Configurations (2 models):
   claude-s4-instance (00000001)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:01
   openai-o3-instance (00000002)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
     Active: true
@@ -69,11 +71,13 @@ Model Configurations (2 models):
   claude-s4-instance (00000001)
     Provider: anthropic
     Base Model: claude-sonnet-4-20250514
+    Catalog ID: CS4
     Parameters: none
     Created: 2025-01-01 00:00:01
   openai-o3-instance (00000002)
     Provider: openai
     Base Model: o3
+    Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
     Active: true
