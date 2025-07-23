@@ -38,8 +38,8 @@ func (s *LLMService) Initialize() error {
 }
 
 // SendCompletion sends a chat completion request using the provided client.
-// All dependencies are explicitly provided as parameters.
-func (s *LLMService) SendCompletion(client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, message string) (string, error) {
+// The session is sent as-is with no message manipulation - this is the caller's responsibility.
+func (s *LLMService) SendCompletion(client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig) (string, error) {
 	logger.ServiceOperation("llm", "send_completion", "starting")
 
 	if !s.initialized {
@@ -57,27 +57,10 @@ func (s *LLMService) SendCompletion(client neurotypes.LLMClient, session *neurot
 		return "", fmt.Errorf("llm client is not configured")
 	}
 
-	// Add the user message to the session before sending
-	updatedSession := &neurotypes.ChatSession{
-		ID:           session.ID,
-		Name:         session.Name,
-		SystemPrompt: session.SystemPrompt,
-		Messages:     make([]neurotypes.Message, len(session.Messages)),
-		CreatedAt:    session.CreatedAt,
-		UpdatedAt:    session.UpdatedAt,
-	}
-	copy(updatedSession.Messages, session.Messages)
+	logger.Debug("Sending completion request", "provider", client.GetProviderName(), "model", model.BaseModel, "messages", len(session.Messages))
 
-	// Add the new user message
-	updatedSession.Messages = append(updatedSession.Messages, neurotypes.Message{
-		Role:    "user",
-		Content: message,
-	})
-
-	logger.Debug("Sending completion request", "provider", client.GetProviderName(), "model", model.BaseModel)
-
-	// Send the completion request using the client
-	response, err := client.SendChatCompletion(updatedSession, model)
+	// Send the completion request using the client with session as-is
+	response, err := client.SendChatCompletion(session, model)
 	if err != nil {
 		logger.Error("Completion request failed", "error", err)
 		return "", fmt.Errorf("completion request failed: %w", err)
@@ -89,8 +72,8 @@ func (s *LLMService) SendCompletion(client neurotypes.LLMClient, session *neurot
 }
 
 // StreamCompletion sends a streaming chat completion request using the provided client.
-// All dependencies are explicitly provided as parameters.
-func (s *LLMService) StreamCompletion(client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, message string) (<-chan neurotypes.StreamChunk, error) {
+// The session is sent as-is with no message manipulation - this is the caller's responsibility.
+func (s *LLMService) StreamCompletion(client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
 	logger.ServiceOperation("llm", "stream_completion", "starting")
 
 	if !s.initialized {
@@ -108,27 +91,10 @@ func (s *LLMService) StreamCompletion(client neurotypes.LLMClient, session *neur
 		return nil, fmt.Errorf("llm client is not configured")
 	}
 
-	// Add the user message to the session before sending
-	updatedSession := &neurotypes.ChatSession{
-		ID:           session.ID,
-		Name:         session.Name,
-		SystemPrompt: session.SystemPrompt,
-		Messages:     make([]neurotypes.Message, len(session.Messages)),
-		CreatedAt:    session.CreatedAt,
-		UpdatedAt:    session.UpdatedAt,
-	}
-	copy(updatedSession.Messages, session.Messages)
+	logger.Debug("Sending streaming completion request", "provider", client.GetProviderName(), "model", model.BaseModel, "messages", len(session.Messages))
 
-	// Add the new user message
-	updatedSession.Messages = append(updatedSession.Messages, neurotypes.Message{
-		Role:    "user",
-		Content: message,
-	})
-
-	logger.Debug("Sending streaming completion request", "provider", client.GetProviderName(), "model", model.BaseModel)
-
-	// Send the streaming completion request using the client
-	responseChan, err := client.StreamChatCompletion(updatedSession, model)
+	// Send the streaming completion request using the client with session as-is
+	responseChan, err := client.StreamChatCompletion(session, model)
 	if err != nil {
 		logger.Error("Streaming completion request failed", "error", err)
 		return nil, fmt.Errorf("streaming completion request failed: %w", err)
@@ -169,17 +135,23 @@ func (m *MockLLMService) Initialize() error {
 }
 
 // SendCompletion mocks sending a completion request
-func (m *MockLLMService) SendCompletion(_ neurotypes.LLMClient, _ *neurotypes.ChatSession, _ *neurotypes.ModelConfig, message string) (string, error) {
+func (m *MockLLMService) SendCompletion(_ neurotypes.LLMClient, session *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (string, error) {
 	if !m.initialized {
 		return "", fmt.Errorf("mock llm service not initialized")
 	}
 
-	// Return a response that includes the actual message content
-	return fmt.Sprintf("This is a mocking reply message for the sending message: %s", message), nil
+	// Create a mock response with message count and last message info for debugging
+	messageCount := len(session.Messages)
+	lastMessage := "no messages"
+	if messageCount > 0 {
+		lastMessage = session.Messages[messageCount-1].Content
+	}
+
+	return fmt.Sprintf("This is a mocking reply (received %d messages, last: %s)", messageCount, lastMessage), nil
 }
 
 // StreamCompletion mocks streaming completion (returns a channel with mock response)
-func (m *MockLLMService) StreamCompletion(_ neurotypes.LLMClient, _ *neurotypes.ChatSession, _ *neurotypes.ModelConfig, message string) (<-chan neurotypes.StreamChunk, error) {
+func (m *MockLLMService) StreamCompletion(_ neurotypes.LLMClient, session *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
 	if !m.initialized {
 		return nil, fmt.Errorf("mock llm service not initialized")
 	}
@@ -187,8 +159,14 @@ func (m *MockLLMService) StreamCompletion(_ neurotypes.LLMClient, _ *neurotypes.
 	// Create a channel for streaming response
 	responseChan := make(chan neurotypes.StreamChunk, 1)
 
-	// Get the mock response
-	response := fmt.Sprintf("This is a mocking reply message for the sending message: %s", message)
+	// Create a mock response with message count and last message info for debugging
+	messageCount := len(session.Messages)
+	lastMessage := "no messages"
+	if messageCount > 0 {
+		lastMessage = session.Messages[messageCount-1].Content
+	}
+
+	response := fmt.Sprintf("This is a mocking reply (received %d messages, last: %s)", messageCount, lastMessage)
 
 	// Send the response through the channel and close it
 	go func() {
