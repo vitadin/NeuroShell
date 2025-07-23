@@ -1,0 +1,65 @@
+Setting _echo_command = true
+%%> "\\session-new[system=\"This is an extremely long system prompt that should definitely be truncated when displayed by the session-show command because it exceeds the maximum display length and will demonstrate the smart truncation feature with ellipsis\"] truncation_test"
+Created session 'truncation_test' (ID: 00000001)
+%%> "\\session-add-usermsg \"This is a user message with some content to demonstrate message rendering\""
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\session-add-assistantmsg \"This is an assistant response that provides some helpful information and demonstrates how assistant messages are displayed in the session show output\""
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\session-add-usermsg \"Here is another user message that continues the conversation and adds more context to demonstrate multiple message handling\""
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\session-show truncation_test"
+Session: truncation_test (ID: 00000001)
+System: This is an extremely long system prompt that shoul...rate the smart truncation feature with ellipsis (228 chars)
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:07
+Messages: 3 total
+[1] user (00:00:02): "This is a user message with some content to demonstrate message rendering"
+[2] assistant (00:00:04): "This is an assistant response that provides some helpful information and demonstrates how assistant messages are displayed in the session show output"
+[3] user (00:00:06): "Here is another user message that continues the conversation and adds more context to demonstrate multiple message handling"
+%%> "\\session-new message_limit_test"
+Created session 'message_limit_test' (ID: 00000005)
+%%> "\\session-add-usermsg \"Message 1: First user message\""
+Added user message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-add-assistantmsg \"Message 2: First assistant response\""
+Added assistant message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-add-usermsg \"Message 3: Second user message\""
+Added user message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-add-assistantmsg \"Message 4: Second assistant response\""
+Added assistant message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-add-usermsg \"Message 5: Third user message\""
+Added user message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-add-assistantmsg \"Message 6: Third assistant response\""
+Added assistant message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-add-usermsg \"Message 7: Fourth user message\""
+Added user message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-add-assistantmsg \"Message 8: Fourth assistant response\""
+Added assistant message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-add-usermsg \"Message 9: Fifth user message\""
+Added user message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-add-assistantmsg \"Message 10: Fifth assistant response\""
+Added assistant message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-add-usermsg \"Message 11: Sixth user message (should be shown)\""
+Added user message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-add-assistantmsg \"Message 12: Sixth assistant response (should be shown)\""
+Added assistant message to session '00000005-0000-4000-8000-000000000005'
+%%> "\\session-show message_limit_test"
+Session: message_limit_test (ID: 00000005)
+System: You are a helpful assistant.
+Created: 2025-01-01 00:00:08
+Updated: 2025-01-01 00:00:32
+Messages: 12 total
+[1] user (00:00:09): "Message 1: First user message"
+[2] assistant (00:00:11): "Message 2: First assistant response"
+[3] user (00:00:13): "Message 3: Second user message"
+[4] assistant (00:00:15): "Message 4: Second assistant response"
+[5] user (00:00:17): "Message 5: Third user message"
+... (2 more messages) ...
+[8] assistant (00:00:23): "Message 8: Fourth assistant response"
+[9] user (00:00:25): "Message 9: Fifth user message"
+[10] assistant (00:00:27): "Message 10: Fifth assistant response"
+[11] user (00:00:29): "Message 11: Sixth user message (should be shown)"
+[12] assistant (00:00:31): "Message 12: Sixth assistant response (should be shown)"
+%%> "\\session-delete truncation_test"
+Deleted session 'truncation_test' (ID: 00000001)
+%%> "\\session-delete message_limit_test"
+Deleted session 'message_limit_test' (ID: 00000005)

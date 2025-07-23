@@ -1,0 +1,35 @@
+%% Test session-show rendering features (truncation, message display)
+\set[_echo_command="true"]
+
+%% Create session with very long system prompt to test truncation
+\session-new[system="This is an extremely long system prompt that should definitely be truncated when displayed by the session-show command because it exceeds the maximum display length and will demonstrate the smart truncation feature with ellipsis"] truncation_test
+
+%% Add some messages to test message display
+\session-add-usermsg "This is a user message with some content to demonstrate message rendering"
+\session-add-assistantmsg "This is an assistant response that provides some helpful information and demonstrates how assistant messages are displayed in the session show output"
+\session-add-usermsg "Here is another user message that continues the conversation and adds more context to demonstrate multiple message handling"
+
+%% Show the session to see truncation and message display
+\session-show truncation_test
+
+%% Create another session with many messages to test message limit
+\session-new message_limit_test
+\session-add-usermsg "Message 1: First user message"
+\session-add-assistantmsg "Message 2: First assistant response"
+\session-add-usermsg "Message 3: Second user message"
+\session-add-assistantmsg "Message 4: Second assistant response"
+\session-add-usermsg "Message 5: Third user message"
+\session-add-assistantmsg "Message 6: Third assistant response"
+\session-add-usermsg "Message 7: Fourth user message"
+\session-add-assistantmsg "Message 8: Fourth assistant response"
+\session-add-usermsg "Message 9: Fifth user message"
+\session-add-assistantmsg "Message 10: Fifth assistant response"
+\session-add-usermsg "Message 11: Sixth user message (should be shown)"
+\session-add-assistantmsg "Message 12: Sixth assistant response (should be shown)"
+
+%% Show session with many messages (should demonstrate truncation)
+\session-show message_limit_test
+
+%% Clean up sessions
+\session-delete truncation_test
+\session-delete message_limit_test
