@@ -1,0 +1,61 @@
+# Test send command with conversation history and message variables
+# This test verifies that the send command correctly manages conversation history
+
+\set[_echo_command=true]
+
+# Start with a clean state
+\session-list
+
+# Create a new session for testing conversation history
+\session-new[system="You are a conversation history test assistant"] history_test_session
+
+# Test 1: First message - should initialize history variables
+\send First message in conversation
+\get[1]
+\get[2]
+\get[3]
+
+# Verify session shows correct message count
+\session-show history_test_session
+
+# Test 2: Second message - should update history variables correctly
+\send Second message - this builds on the first
+\get[1]
+\get[2]
+\get[3]
+\get[4]
+
+# Verify session shows updated message count
+\session-show history_test_session
+
+# Test 3: Third message - verify history variables shift correctly
+\send Third message to verify history variable shifting
+\get[1]
+\get[2]
+\get[3]
+\get[4]
+\get[5]
+\get[6]
+
+# Test 4: Verify that switching sessions maintains separate histories
+\session-new[system="You are a separate session"] separate_session
+\send First message in separate session
+\get[1]  # Should be the new message
+\get[2]  # Should be empty/different
+
+# Switch back to original session
+\session-activate history_test_session
+\send Fourth message back in original session
+\get[1]  # Should be the fourth message
+\get[2]  # Should be the assistant reply to third message
+
+# Test 5: Verify conversation continuity with context
+\send This message should have context from previous messages in this session
+
+# Final verification - show complete session history
+\session-show history_test_session
+\session-show separate_session
+
+# Clean up
+\session-delete history_test_session
+\session-delete separate_session

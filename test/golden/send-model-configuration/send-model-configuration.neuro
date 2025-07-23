@@ -1,0 +1,54 @@
+# Test send command with different model configurations
+# This test verifies that the send command works with various model configurations
+
+\set[_echo_command=true]
+
+# Start with a clean state
+\session-list
+
+# Create a new session for testing
+\session-new[system="You are a model configuration test assistant"] model_test_session
+
+# Test 1: Use default model configuration
+\send Test message with default model configuration
+
+# Check what model was used
+\get[#active_model_name]
+\get[#active_model_provider]
+
+# Test 2: Create and activate a specific model configuration using catalog_id
+\model-new[catalog_id=O4M, temperature=0.7, max_tokens=150] test_model
+\model-activate test_model
+
+# Send message with the specific model configuration
+\send Test message with custom O4-mini model
+
+# Check what model was used
+\get[#active_model_name]
+\get[#active_model_provider]
+\get[#active_model_temperature]
+\get[#active_model_max_tokens]
+
+# Test 3: Switch to a different model configuration
+\model-new[catalog_id=CS4, temperature=0.2, max_tokens=100] strict_model
+\model-activate strict_model
+
+# Send message with the different model configuration
+\send Test message with strict Claude Sonnet 4 model configuration
+
+# Check what model was used
+\get[#active_model_name]
+\get[#active_model_provider]
+\get[#active_model_temperature]
+\get[#active_model_max_tokens]
+
+# Test 4: Verify model configuration persists across send calls
+\send Second message to verify model persistence
+
+# Check that model configuration is still active
+\get[#active_model_name]
+
+# Clean up
+\session-delete model_test_session
+\model-delete test_model
+\model-delete strict_model

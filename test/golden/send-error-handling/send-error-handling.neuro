@@ -1,0 +1,27 @@
+%% Test send.neuro error handling scenarios
+\set[_echo_command="true"]
+
+%% Test 1: Send without any sessions (should auto-create/activate)
+%% Clear any existing sessions first
+\session-list
+\try \session-delete Session
+\try \session-delete session_1
+
+%% Now test send with no sessions - should auto-activate or show guidance
+\try \send Hello from empty state
+\get[_error]
+
+%% Test 2: Send with valid session (should work)
+\session-new auto_created_session
+\send Hello from valid session
+\get[1]
+
+%% Test 3: Test behavior when session exists but none active
+\session-new inactive_session
+%% Try to clear active session (may not work, but test the scenario)
+\try \send Hello with session selection
+\get[1]
+
+%% Clean up
+\session-delete auto_created_session
+\session-delete inactive_session

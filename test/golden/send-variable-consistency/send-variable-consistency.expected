@@ -1,0 +1,167 @@
+Setting _echo_command = true
+%%> "\\session-new[system=\"You are a test assistant\"] variable_test_session"
+Created session 'variable_test_session' (ID: 00000001)
+%%> "\\get[1]"
+1 = 
+%%> "\\get[_output]"
+_output = Created session 'variable_test_session' (ID: 00000001)
+%%> "\\get[_session_id]"
+_session_id = 
+%%> "\\get[_client_id]"
+_client_id = 
+%%> "\\send First test message for variable consistency"
+%%> "\\session-activate"
+Active session: variable_test_session (ID: 00000001)
+%%> "\\set[session_id=\"${_session_id}\"]"
+Setting session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\set[empty_check=\"${session_id}\"]"
+Setting empty_check = 00000001-0000-4000-8000-000000000001
+%%> "\\set[need_new=\"yes\"]"
+Setting need_new = yes
+%%> "\\if[condition=\"${empty_check}\"] \\set[need_new=\"\"]"
+%%> "\\set[need_new=\"\"]"
+Setting need_new = 
+%%> "\\if[condition=\"${need_new}\"] \\session-new"
+%%> "\\if[condition=\"${need_new}\"] \\set[session_id=\"${#session_id}\"]"
+%%> "\\session-add-usermsg[session=${session_id}] ${_1}"
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\set[client_id=\"${_client_id}\"]"
+Setting client_id = openai:b10394de
+%%> "\\get[#active_model_name]"
+#active_model_name = 
+%%> "\\set[has_model=\"${#active_model_name}\"]"
+Setting has_model = 
+%%> "\\set[need_model=\"yes\"]"
+Setting need_model = yes
+%%> "\\if[condition=\"${has_model}\"] \\set[need_model=\"\"]"
+%%> "\\if[condition=\"${need_model}\"] \\model-new[catalog_id=O4M] default_model"
+%%> "\\model-new[catalog_id=O4M] default_model"
+Created model 'default_model' (ID: 00000003, Provider: openai, Base: o4-mini)
+%%> "\\if[condition=\"${need_model}\"] \\model-activate default_model"
+%%> "\\model-activate default_model"
+Activated model 'default_model' (ID: 00000003, Provider: openai, Base: o4-mini)
+%%> "\\llm-call[client_id=${client_id}, session_id=${session_id}]"
+This is a mocking reply (received 1 messages, last: First test message for variable consistency)
+%%> "\\session-add-assistantmsg[session=${session_id}] ${_output}"
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\set[1=\"${_output}\"]"
+Setting 1 = This is a mocking reply (received 1 messages, last: First test message for variable consistency)
+%%> "\\render-markdown ${_output}"
+  This is a mocking reply (received 1 messages, last: First test message for  
+  variable consistency)                                                       
+%%> "\\get[1]"
+1 = This is a mocking reply (received 1 messages, last: First test message for variable consistency)
+%%> "\\get[_output]"
+_output = 
+  This is a mocking reply (received 1 messages, last: First test message for  
+  variable consistency)                                                       
+%%> "\\get[#session_name]"
+#session_name = variable_test_session
+%%> "\\get[#active_session_name]"
+#active_session_name = 
+%%> "\\send Second message to test variable continuity"
+%%> "\\session-activate"
+Active session: variable_test_session (ID: 00000001)
+%%> "\\set[session_id=\"${_session_id}\"]"
+Setting session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\set[empty_check=\"${session_id}\"]"
+Setting empty_check = 00000001-0000-4000-8000-000000000001
+%%> "\\set[need_new=\"yes\"]"
+Setting need_new = yes
+%%> "\\if[condition=\"${empty_check}\"] \\set[need_new=\"\"]"
+%%> "\\set[need_new=\"\"]"
+Setting need_new = 
+%%> "\\if[condition=\"${need_new}\"] \\session-new"
+%%> "\\if[condition=\"${need_new}\"] \\set[session_id=\"${#session_id}\"]"
+%%> "\\session-add-usermsg[session=${session_id}] ${_1}"
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\set[client_id=\"${_client_id}\"]"
+Setting client_id = openai:b10394de
+%%> "\\get[#active_model_name]"
+#active_model_name = default_model
+%%> "\\set[has_model=\"${#active_model_name}\"]"
+Setting has_model = default_model
+%%> "\\set[need_model=\"yes\"]"
+Setting need_model = yes
+%%> "\\if[condition=\"${has_model}\"] \\set[need_model=\"\"]"
+%%> "\\set[need_model=\"\"]"
+Setting need_model = 
+%%> "\\if[condition=\"${need_model}\"] \\model-new[catalog_id=O4M] default_model"
+%%> "\\if[condition=\"${need_model}\"] \\model-activate default_model"
+%%> "\\llm-call[client_id=${client_id}, session_id=${session_id}]"
+This is a mocking reply (received 3 messages, last: Second message to test variable continuity)
+%%> "\\session-add-assistantmsg[session=${session_id}] ${_output}"
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\set[1=\"${_output}\"]"
+Setting 1 = This is a mocking reply (received 3 messages, last: Second message to test variable continuity)
+%%> "\\render-markdown ${_output}"
+  This is a mocking reply (received 3 messages, last: Second message to test  
+  variable continuity)                                                        
+%%> "\\get[1]"
+1 = This is a mocking reply (received 3 messages, last: Second message to test variable continuity)
+%%> "\\get[_output]"
+_output = 
+  This is a mocking reply (received 3 messages, last: Second message to test  
+  variable continuity)                                                        
+%%> "\\session-show variable_test_session"
+Session: variable_test_session (ID: 00000001)
+System: You are a test assistant
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:10
+Messages: 4 total
+[1] user (00:00:02): First test message for variable consistency
+[2] assistant (00:00:05): This is a mocking reply (received 1 messages, last: First test message for variable consistency)
+[3] user (00:00:07): Second message to test variable continuity
+[4] assistant (00:00:09): This is a mocking reply (received 3 messages, last: Second message to test variable continuity)
+%%> "\\get[_client_id]"
+_client_id = openai:b10394de
+%%> "\\set[test_var=\"interpolated content\"]"
+Setting test_var = interpolated content
+%%> "\\send This message contains ${test_var} to verify variable interpolation works"
+%%> "\\session-activate"
+Active session: variable_test_session (ID: 00000001)
+%%> "\\set[session_id=\"${_session_id}\"]"
+Setting session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\set[empty_check=\"${session_id}\"]"
+Setting empty_check = 00000001-0000-4000-8000-000000000001
+%%> "\\set[need_new=\"yes\"]"
+Setting need_new = yes
+%%> "\\if[condition=\"${empty_check}\"] \\set[need_new=\"\"]"
+%%> "\\set[need_new=\"\"]"
+Setting need_new = 
+%%> "\\if[condition=\"${need_new}\"] \\session-new"
+%%> "\\if[condition=\"${need_new}\"] \\set[session_id=\"${#session_id}\"]"
+%%> "\\session-add-usermsg[session=${session_id}] ${_1}"
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\set[client_id=\"${_client_id}\"]"
+Setting client_id = openai:b10394de
+%%> "\\get[#active_model_name]"
+#active_model_name = default_model
+%%> "\\set[has_model=\"${#active_model_name}\"]"
+Setting has_model = default_model
+%%> "\\set[need_model=\"yes\"]"
+Setting need_model = yes
+%%> "\\if[condition=\"${has_model}\"] \\set[need_model=\"\"]"
+%%> "\\set[need_model=\"\"]"
+Setting need_model = 
+%%> "\\if[condition=\"${need_model}\"] \\model-new[catalog_id=O4M] default_model"
+%%> "\\if[condition=\"${need_model}\"] \\model-activate default_model"
+%%> "\\llm-call[client_id=${client_id}, session_id=${session_id}]"
+This is a mocking reply (received 5 messages, last: This message contains interpolated content to verify variable interpolation works)
+%%> "\\session-add-assistantmsg[session=${session_id}] ${_output}"
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\set[1=\"${_output}\"]"
+Setting 1 = This is a mocking reply (received 5 messages, last: This message contains interpolated content to verify variable interpolation works)
+%%> "\\render-markdown ${_output}"
+  This is a mocking reply (received 5 messages, last: This message contains   
+  interpolated content to verify variable interpolation works)                
+%%> "\\get[1]"
+1 = This is a mocking reply (received 5 messages, last: This message contains interpolated content to verify variable interpolation works)
+%%> "\\session-delete variable_test_session"
+Deleted session 'variable_test_session' (ID: 00000001)

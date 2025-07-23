@@ -1,0 +1,18 @@
+%% Test basic send.neuro workflow with mock responses
+\set[_echo_command="true"]
+
+%% Create a session to work with
+\session-new[system="You are a helpful assistant"] test_send_session
+
+%% Test the send script with a simple message
+\send Hello, how are you doing today?
+
+%% Verify the response was added to the session and history
+\get[1]
+\get[_output]
+
+%% Check session has both user and assistant messages
+\session-show test_send_session
+
+%% Clean up the test session
+\session-delete test_send_session

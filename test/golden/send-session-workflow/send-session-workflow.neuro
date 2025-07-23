@@ -1,0 +1,51 @@
+%% Test send command with different session workflow scenarios
+\set[_echo_command="true"]
+
+%% Test 1: Send with no sessions (should auto-create or activate)
+\send Hello from empty state - this should auto-activate or create session
+
+%% Check what session was used
+\get[#active_session_name]
+\get[#active_session_id]
+
+%% Test 2: Create multiple sessions and test session switching
+\session-new[system="You are a work assistant"] work_session
+\session-new[system="You are a personal assistant"] personal_session
+
+%% Send to current active session (should be personal_session)
+\send This should go to personal session
+
+%% Verify it went to personal session
+\session-show personal_session
+
+%% Test 3: Switch to work session and send
+\session-activate work_session
+\send This should go to work session
+
+%% Verify it went to work session
+\session-show work_session
+
+%% Test 4: Send multiple messages to same session
+\send First work message
+\send Second work message
+\send Third work message
+
+%% Check the session has all messages
+\session-show work_session
+
+%% Test 5: Test session variable persistence across sends
+\get[#active_session_name]
+\get[#active_session_id]
+
+%% Test 6: Switch sessions and verify send works
+\session-activate personal_session
+\send Back to personal session
+\get[#active_session_name]
+
+%% Clean up all sessions
+\session-delete work_session
+\session-delete personal_session
+
+%% Try to delete the auto-created session from Test 1 if it exists
+\try \session-delete Session
+\try \session-delete session_1

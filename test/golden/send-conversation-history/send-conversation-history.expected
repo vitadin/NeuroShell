@@ -1,0 +1,357 @@
+# Test send command with conversation history and message variables
+# This test verifies that the send command correctly manages conversation history
+Setting _echo_command = true
+%%> "# Start with a clean state"
+# Start with a clean state
+%%> "\\session-list"
+No sessions found.
+%%> "# Create a new session for testing conversation history"
+# Create a new session for testing conversation history
+%%> "\\session-new[system=\"You are a conversation history test assistant\"] history_test_session"
+Created session 'history_test_session' (ID: 00000001)
+%%> "# Test 1: First message - should initialize history variables"
+# Test 1: First message - should initialize history variables
+%%> "\\send First message in conversation"
+%%> "\\session-activate"
+Active session: history_test_session (ID: 00000001)
+%%> "\\set[session_id=\"${_session_id}\"]"
+Setting session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\set[empty_check=\"${session_id}\"]"
+Setting empty_check = 00000001-0000-4000-8000-000000000001
+%%> "\\set[need_new=\"yes\"]"
+Setting need_new = yes
+%%> "\\if[condition=\"${empty_check}\"] \\set[need_new=\"\"]"
+%%> "\\set[need_new=\"\"]"
+Setting need_new = 
+%%> "\\if[condition=\"${need_new}\"] \\session-new"
+%%> "\\if[condition=\"${need_new}\"] \\set[session_id=\"${#session_id}\"]"
+%%> "\\session-add-usermsg[session=${session_id}] ${_1}"
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\set[client_id=\"${_client_id}\"]"
+Setting client_id = openai:b10394de
+%%> "\\get[#active_model_name]"
+#active_model_name = 
+%%> "\\set[has_model=\"${#active_model_name}\"]"
+Setting has_model = 
+%%> "\\set[need_model=\"yes\"]"
+Setting need_model = yes
+%%> "\\if[condition=\"${has_model}\"] \\set[need_model=\"\"]"
+%%> "\\if[condition=\"${need_model}\"] \\model-new[catalog_id=O4M] default_model"
+%%> "\\model-new[catalog_id=O4M] default_model"
+Created model 'default_model' (ID: 00000003, Provider: openai, Base: o4-mini)
+%%> "\\if[condition=\"${need_model}\"] \\model-activate default_model"
+%%> "\\model-activate default_model"
+Activated model 'default_model' (ID: 00000003, Provider: openai, Base: o4-mini)
+%%> "\\llm-call[client_id=${client_id}, session_id=${session_id}]"
+This is a mocking reply (received 1 messages, last: First message in conversation)
+%%> "\\session-add-assistantmsg[session=${session_id}] ${_output}"
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\set[1=\"${_output}\"]"
+Setting 1 = This is a mocking reply (received 1 messages, last: First message in conversation)
+%%> "\\render-markdown ${_output}"
+  This is a mocking reply (received 1 messages, last: First message in        
+  conversation)                                                               
+%%> "\\get[1]"
+1 = This is a mocking reply (received 1 messages, last: First message in conversation)
+%%> "\\get[2]"
+2 = 
+%%> "\\get[3]"
+3 = 
+%%> "# Verify session shows correct message count"
+# Verify session shows correct message count
+%%> "\\session-show history_test_session"
+Session: history_test_session (ID: 00000001)
+System: You are a conversation history test assistant
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:06
+Messages: 2 total
+[1] user (00:00:02): First message in conversation
+[2] assistant (00:00:05): This is a mocking reply (received 1 messages, last: First message in conversation)
+%%> "# Test 2: Second message - should update history variables correctly"
+# Test 2: Second message - should update history variables correctly
+%%> "\\send Second message - this builds on the first"
+%%> "\\session-activate"
+Active session: history_test_session (ID: 00000001)
+%%> "\\set[session_id=\"${_session_id}\"]"
+Setting session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\set[empty_check=\"${session_id}\"]"
+Setting empty_check = 00000001-0000-4000-8000-000000000001
+%%> "\\set[need_new=\"yes\"]"
+Setting need_new = yes
+%%> "\\if[condition=\"${empty_check}\"] \\set[need_new=\"\"]"
+%%> "\\set[need_new=\"\"]"
+Setting need_new = 
+%%> "\\if[condition=\"${need_new}\"] \\session-new"
+%%> "\\if[condition=\"${need_new}\"] \\set[session_id=\"${#session_id}\"]"
+%%> "\\session-add-usermsg[session=${session_id}] ${_1}"
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\set[client_id=\"${_client_id}\"]"
+Setting client_id = openai:b10394de
+%%> "\\get[#active_model_name]"
+#active_model_name = default_model
+%%> "\\set[has_model=\"${#active_model_name}\"]"
+Setting has_model = default_model
+%%> "\\set[need_model=\"yes\"]"
+Setting need_model = yes
+%%> "\\if[condition=\"${has_model}\"] \\set[need_model=\"\"]"
+%%> "\\set[need_model=\"\"]"
+Setting need_model = 
+%%> "\\if[condition=\"${need_model}\"] \\model-new[catalog_id=O4M] default_model"
+%%> "\\if[condition=\"${need_model}\"] \\model-activate default_model"
+%%> "\\llm-call[client_id=${client_id}, session_id=${session_id}]"
+This is a mocking reply (received 3 messages, last: Second message - this builds on the first)
+%%> "\\session-add-assistantmsg[session=${session_id}] ${_output}"
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\set[1=\"${_output}\"]"
+Setting 1 = This is a mocking reply (received 3 messages, last: Second message - this builds on the first)
+%%> "\\render-markdown ${_output}"
+  This is a mocking reply (received 3 messages, last: Second message - this   
+  builds on the first)                                                        
+%%> "\\get[1]"
+1 = This is a mocking reply (received 3 messages, last: Second message - this builds on the first)
+%%> "\\get[2]"
+2 = 
+%%> "\\get[3]"
+3 = 
+%%> "\\get[4]"
+4 = 
+%%> "# Verify session shows updated message count"
+# Verify session shows updated message count
+%%> "\\session-show history_test_session"
+Session: history_test_session (ID: 00000001)
+System: You are a conversation history test assistant
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:10
+Messages: 4 total
+[1] user (00:00:02): First message in conversation
+[2] assistant (00:00:05): This is a mocking reply (received 1 messages, last: First message in conversation)
+[3] user (00:00:07): Second message - this builds on the first
+[4] assistant (00:00:09): This is a mocking reply (received 3 messages, last: Second message - this builds on the first)
+%%> "# Test 3: Third message - verify history variables shift correctly"
+# Test 3: Third message - verify history variables shift correctly
+%%> "\\send Third message to verify history variable shifting"
+%%> "\\session-activate"
+Active session: history_test_session (ID: 00000001)
+%%> "\\set[session_id=\"${_session_id}\"]"
+Setting session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\set[empty_check=\"${session_id}\"]"
+Setting empty_check = 00000001-0000-4000-8000-000000000001
+%%> "\\set[need_new=\"yes\"]"
+Setting need_new = yes
+%%> "\\if[condition=\"${empty_check}\"] \\set[need_new=\"\"]"
+%%> "\\set[need_new=\"\"]"
+Setting need_new = 
+%%> "\\if[condition=\"${need_new}\"] \\session-new"
+%%> "\\if[condition=\"${need_new}\"] \\set[session_id=\"${#session_id}\"]"
+%%> "\\session-add-usermsg[session=${session_id}] ${_1}"
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\set[client_id=\"${_client_id}\"]"
+Setting client_id = openai:b10394de
+%%> "\\get[#active_model_name]"
+#active_model_name = default_model
+%%> "\\set[has_model=\"${#active_model_name}\"]"
+Setting has_model = default_model
+%%> "\\set[need_model=\"yes\"]"
+Setting need_model = yes
+%%> "\\if[condition=\"${has_model}\"] \\set[need_model=\"\"]"
+%%> "\\set[need_model=\"\"]"
+Setting need_model = 
+%%> "\\if[condition=\"${need_model}\"] \\model-new[catalog_id=O4M] default_model"
+%%> "\\if[condition=\"${need_model}\"] \\model-activate default_model"
+%%> "\\llm-call[client_id=${client_id}, session_id=${session_id}]"
+This is a mocking reply (received 5 messages, last: Third message to verify history variable shifting)
+%%> "\\session-add-assistantmsg[session=${session_id}] ${_output}"
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\set[1=\"${_output}\"]"
+Setting 1 = This is a mocking reply (received 5 messages, last: Third message to verify history variable shifting)
+%%> "\\render-markdown ${_output}"
+  This is a mocking reply (received 5 messages, last: Third message to verify 
+  history variable shifting)                                                  
+%%> "\\get[1]"
+1 = This is a mocking reply (received 5 messages, last: Third message to verify history variable shifting)
+%%> "\\get[2]"
+2 = 
+%%> "\\get[3]"
+3 = 
+%%> "\\get[4]"
+4 = 
+%%> "\\get[5]"
+5 = 
+%%> "\\get[6]"
+6 = 
+%%> "# Test 4: Verify that switching sessions maintains separate histories"
+# Test 4: Verify that switching sessions maintains separate histories
+%%> "\\session-new[system=\"You are a separate session\"] separate_session"
+Created session 'separate_session' (ID: 00000009)
+%%> "\\send First message in separate session"
+%%> "\\session-activate"
+Active session: separate_session (ID: 00000009)
+%%> "\\set[session_id=\"${_session_id}\"]"
+Setting session_id = 00000009-0000-4000-8000-000000000009
+%%> "\\set[empty_check=\"${session_id}\"]"
+Setting empty_check = 00000009-0000-4000-8000-000000000009
+%%> "\\set[need_new=\"yes\"]"
+Setting need_new = yes
+%%> "\\if[condition=\"${empty_check}\"] \\set[need_new=\"\"]"
+%%> "\\set[need_new=\"\"]"
+Setting need_new = 
+%%> "\\if[condition=\"${need_new}\"] \\session-new"
+%%> "\\if[condition=\"${need_new}\"] \\set[session_id=\"${#session_id}\"]"
+%%> "\\session-add-usermsg[session=${session_id}] ${_1}"
+Added user message to session '00000009-0000-4000-8000-000000000009'
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\set[client_id=\"${_client_id}\"]"
+Setting client_id = openai:b10394de
+%%> "\\get[#active_model_name]"
+#active_model_name = default_model
+%%> "\\set[has_model=\"${#active_model_name}\"]"
+Setting has_model = default_model
+%%> "\\set[need_model=\"yes\"]"
+Setting need_model = yes
+%%> "\\if[condition=\"${has_model}\"] \\set[need_model=\"\"]"
+%%> "\\set[need_model=\"\"]"
+Setting need_model = 
+%%> "\\if[condition=\"${need_model}\"] \\model-new[catalog_id=O4M] default_model"
+%%> "\\if[condition=\"${need_model}\"] \\model-activate default_model"
+%%> "\\llm-call[client_id=${client_id}, session_id=${session_id}]"
+This is a mocking reply (received 1 messages, last: First message in separate session)
+%%> "\\session-add-assistantmsg[session=${session_id}] ${_output}"
+Added assistant message to session '00000009-0000-4000-8000-000000000009'
+%%> "\\set[1=\"${_output}\"]"
+Setting 1 = This is a mocking reply (received 1 messages, last: First message in separate session)
+%%> "\\render-markdown ${_output}"
+  This is a mocking reply (received 1 messages, last: First message in        
+  separate session)                                                           
+%%> "\\get[1]  # Should be the new message"
+1 = This is a mocking reply (received 1 messages, last: First message in separate session)
+%%> "\\get[2]  # Should be empty/different"
+2 = 
+%%> "# Switch back to original session"
+# Switch back to original session
+%%> "\\session-activate history_test_session"
+Activated session 'history_test_session' (ID: 00000001, Messages: 6)
+%%> "\\send Fourth message back in original session"
+%%> "\\session-activate"
+Active session: history_test_session (ID: 00000001)
+%%> "\\set[session_id=\"${_session_id}\"]"
+Setting session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\set[empty_check=\"${session_id}\"]"
+Setting empty_check = 00000001-0000-4000-8000-000000000001
+%%> "\\set[need_new=\"yes\"]"
+Setting need_new = yes
+%%> "\\if[condition=\"${empty_check}\"] \\set[need_new=\"\"]"
+%%> "\\set[need_new=\"\"]"
+Setting need_new = 
+%%> "\\if[condition=\"${need_new}\"] \\session-new"
+%%> "\\if[condition=\"${need_new}\"] \\set[session_id=\"${#session_id}\"]"
+%%> "\\session-add-usermsg[session=${session_id}] ${_1}"
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\set[client_id=\"${_client_id}\"]"
+Setting client_id = openai:b10394de
+%%> "\\get[#active_model_name]"
+#active_model_name = default_model
+%%> "\\set[has_model=\"${#active_model_name}\"]"
+Setting has_model = default_model
+%%> "\\set[need_model=\"yes\"]"
+Setting need_model = yes
+%%> "\\if[condition=\"${has_model}\"] \\set[need_model=\"\"]"
+%%> "\\set[need_model=\"\"]"
+Setting need_model = 
+%%> "\\if[condition=\"${need_model}\"] \\model-new[catalog_id=O4M] default_model"
+%%> "\\if[condition=\"${need_model}\"] \\model-activate default_model"
+%%> "\\llm-call[client_id=${client_id}, session_id=${session_id}]"
+This is a mocking reply (received 7 messages, last: Fourth message back in original session)
+%%> "\\session-add-assistantmsg[session=${session_id}] ${_output}"
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\set[1=\"${_output}\"]"
+Setting 1 = This is a mocking reply (received 7 messages, last: Fourth message back in original session)
+%%> "\\render-markdown ${_output}"
+  This is a mocking reply (received 7 messages, last: Fourth message back in  
+  original session)                                                           
+%%> "\\get[1]  # Should be the fourth message"
+1 = This is a mocking reply (received 7 messages, last: Fourth message back in original session)
+%%> "\\get[2]  # Should be the assistant reply to third message"
+2 = 
+%%> "# Test 5: Verify conversation continuity with context"
+# Test 5: Verify conversation continuity with context
+%%> "\\send This message should have context from previous messages in this session"
+%%> "\\session-activate"
+Active session: history_test_session (ID: 00000001)
+%%> "\\set[session_id=\"${_session_id}\"]"
+Setting session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\set[empty_check=\"${session_id}\"]"
+Setting empty_check = 00000001-0000-4000-8000-000000000001
+%%> "\\set[need_new=\"yes\"]"
+Setting need_new = yes
+%%> "\\if[condition=\"${empty_check}\"] \\set[need_new=\"\"]"
+%%> "\\set[need_new=\"\"]"
+Setting need_new = 
+%%> "\\if[condition=\"${need_new}\"] \\session-new"
+%%> "\\if[condition=\"${need_new}\"] \\set[session_id=\"${#session_id}\"]"
+%%> "\\session-add-usermsg[session=${session_id}] ${_1}"
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\set[client_id=\"${_client_id}\"]"
+Setting client_id = openai:b10394de
+%%> "\\get[#active_model_name]"
+#active_model_name = default_model
+%%> "\\set[has_model=\"${#active_model_name}\"]"
+Setting has_model = default_model
+%%> "\\set[need_model=\"yes\"]"
+Setting need_model = yes
+%%> "\\if[condition=\"${has_model}\"] \\set[need_model=\"\"]"
+%%> "\\set[need_model=\"\"]"
+Setting need_model = 
+%%> "\\if[condition=\"${need_model}\"] \\model-new[catalog_id=O4M] default_model"
+%%> "\\if[condition=\"${need_model}\"] \\model-activate default_model"
+%%> "\\llm-call[client_id=${client_id}, session_id=${session_id}]"
+This is a mocking reply (received 9 messages, last: This message should have context from previous messages in this session)
+%%> "\\session-add-assistantmsg[session=${session_id}] ${_output}"
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\set[1=\"${_output}\"]"
+Setting 1 = This is a mocking reply (received 9 messages, last: This message should have context from previous messages in this session)
+%%> "\\render-markdown ${_output}"
+  This is a mocking reply (received 9 messages, last: This message should have
+  context from previous messages in this session)                             
+%%> "# Final verification - show complete session history"
+# Final verification - show complete session history
+%%> "\\session-show history_test_session"
+Session: history_test_session (ID: 00000001)
+System: You are a conversation history test assistant
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:27
+Messages: 10 total
+[1] user (00:00:02): First message in conversation
+[2] assistant (00:00:05): This is a mocking reply (received 1 messages, last: First message in conversation)
+[3] user (00:00:07): Second message - this builds on the first
+[4] assistant (00:00:09): This is a mocking reply (received 3 messages, last: Second message - this builds on the first)
+[5] user (00:00:11): Third message to verify history variable shifting
+[6] assistant (00:00:13): This is a mocking reply (received 5 messages, last: Third message to verify history variable shifting)
+[7] user (00:00:20): Fourth message back in original session
+[8] assistant (00:00:22): This is a mocking reply (received 7 messages, last: Fourth message back in original session)
+[9] user (00:00:24): This message should have context from previous messages in this session
+[10] assistant (00:00:26): This is a mocking reply (received 9 messages, last: This message should have context from previous messages in this session)
+%%> "\\session-show separate_session"
+Session: separate_session (ID: 00000009)
+System: You are a separate session
+Created: 2025-01-01 00:00:15
+Updated: 2025-01-01 00:00:19
+Messages: 2 total
+[1] user (00:00:16): First message in separate session
+[2] assistant (00:00:18): This is a mocking reply (received 1 messages, last: First message in separate session)
+%%> "# Clean up"
+# Clean up
+%%> "\\session-delete history_test_session"
+Deleted session 'history_test_session' (ID: 00000001)
+%%> "\\session-delete separate_session"
+Deleted session 'separate_session' (ID: 00000009)

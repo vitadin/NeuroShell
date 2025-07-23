@@ -1,0 +1,49 @@
+%% Test send variable consistency and proper variable management
+\set[_echo_command="true"]
+
+%% Create a fresh session for testing
+\session-new[system="You are a test assistant"] variable_test_session
+
+%% Test 1: Check initial state of variables before send
+\get[1]
+\get[_output]
+\get[_session_id]
+\get[_client_id]
+
+%% Test 2: Send first message and verify all variable updates
+\send First test message for variable consistency
+
+%% Verify message history variable (${1}) is set correctly
+\get[1]
+
+%% Verify _output contains the response
+\get[_output]
+
+%% Verify session variables are maintained
+\get[#session_name]
+\get[#active_session_name]
+
+%% Test 3: Send second message to verify history updates
+\send Second message to test variable continuity
+
+%% Verify new response is in ${1}
+\get[1]
+
+%% Verify _output is updated
+\get[_output]
+
+%% Test 4: Check session contains both messages
+\session-show variable_test_session
+
+%% Test 5: Verify client ID consistency across calls
+\get[_client_id]
+
+%% Test 6: Send third message with variable interpolation
+\set[test_var="interpolated content"]
+\send This message contains ${test_var} to verify variable interpolation works
+
+%% Verify the interpolated message was processed
+\get[1]
+
+%% Clean up
+\session-delete variable_test_session
