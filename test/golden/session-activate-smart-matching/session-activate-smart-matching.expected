@@ -1,0 +1,53 @@
+Setting _echo_command = true
+%%> "\\session-new work_session_1"
+Created session 'work_session_1' (ID: 00000001)
+%%> "\\session-new work_session_2"
+Created session 'work_session_2' (ID: 00000002)
+%%> "\\session-new debug_session"
+Created session 'debug_session' (ID: 00000003)
+%%> "\\session-new project_alpha"
+Created session 'project_alpha' (ID: 00000004)
+%%> "\\session-activate work_session_1"
+Activated session 'work_session_1' (ID: 00000001, Messages: 0)
+%%> "\\get[#active_session_name]"
+#active_session_name = work_session_1
+%%> "\\session-activate debug"
+Activated session 'debug_session' (ID: 00000003, Messages: 0)
+%%> "\\get[#active_session_name]"
+#active_session_name = debug_session
+%%> "\\session-activate proj"
+Activated session 'project_alpha' (ID: 00000004, Messages: 0)
+%%> "\\get[#active_session_name]"
+#active_session_name = project_alpha
+%%> "\\session-activate[id=true] 00000001"
+Activated session 'work_session_1' (ID: 00000001, Messages: 0)
+%%> "\\get[#active_session_name]"
+#active_session_name = work_session_1
+%%> "\\session-activate[id=true] 00000003"
+Activated session 'debug_session' (ID: 00000003, Messages: 0)
+%%> "\\get[#active_session_name]"
+#active_session_name = debug_session
+%%> "\\try \\session-activate work"
+%%> "\\session-activate work"
+%%> "\\get[_error]"
+_error = Multiple sessions match name 'work'. Please be more specific:
+  work_session_1 (ID: 00000001, messages: 0)
+  work_session_2 (ID: 00000002, messages: 0)
+Tip: Use the full name or a longer ID prefix to uniquely identify the session.
+%%> "\\try \\session-activate[id=true] 000000"
+%%> "\\session-activate[id=true] 000000"
+%%> "\\get[_error]"
+_error = Multiple sessions match ID prefix '000000'. Please be more specific:
+  ID: 00000001 (name: work_session_1, messages: 0)
+  ID: 00000002 (name: work_session_2, messages: 0)
+  ID: 00000003 (name: debug_session, messages: 0)
+  ID: 00000004 (name: project_alpha, messages: 0)
+Tip: Use the full name or a longer ID prefix to uniquely identify the session.
+%%> "\\session-delete work_session_1"
+Deleted session 'work_session_1' (ID: 00000001)
+%%> "\\session-delete work_session_2"
+Deleted session 'work_session_2' (ID: 00000002)
+%%> "\\session-delete debug_session"
+Deleted session 'debug_session' (ID: 00000003)
+%%> "\\session-delete project_alpha"
+Deleted session 'project_alpha' (ID: 00000004)

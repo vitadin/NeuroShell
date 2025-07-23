@@ -378,15 +378,17 @@ just test-e2e
 ```neuro
 %% Test session creation with time-sensitive data
 \session-new[name="test_session", system="You are helpful"]
-\get[#session_id]
-\get[#session_name]
+\session-activate
+\get[#active_session_id]
+\get[#active_session_name]
 ```
 
 **Corresponding .expected file:**
 ```
 Created session 'test_session' (ID: {{PLACEHOLDER:8:8}})
-#session_id = {{PLACEHOLDER:10:20}}
-#session_name = test_session
+Active session: test_session (ID: {{PLACEHOLDER:8:8}})
+#active_session_id = {{PLACEHOLDER:36:36}}
+#active_session_name = test_session
 ```
 
 ### Managing Golden Files

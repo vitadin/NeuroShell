@@ -1,0 +1,39 @@
+Setting _echo_command = true
+%%> "\\session-new[system=\"You are a helpful assistant\"] session_one"
+Created session 'session_one' (ID: 00000001)
+%%> "\\session-new[system=\"You are a code reviewer\"] session_two"
+Created session 'session_two' (ID: 00000002)
+%%> "\\session-new[system=\"You are a data analyst\"] session_three"
+Created session 'session_three' (ID: 00000003)
+%%> "\\session-activate session_one"
+Activated session 'session_one' (ID: 00000001, Messages: 0)
+%%> "\\get[#active_session_name]"
+#active_session_name = session_one
+%%> "\\get[#active_session_id]"
+#active_session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\session-activate session_two"
+Activated session 'session_two' (ID: 00000002, Messages: 0)
+%%> "\\get[#active_session_name]"
+#active_session_name = session_two
+%%> "\\get[#active_session_id]"
+#active_session_id = 00000002-0000-4000-8000-000000000002
+%%> "\\session-new test_id_session"
+Created session 'test_id_session' (ID: 00000004)
+%%> "\\get[#session_id]"
+#session_id = 00000004-0000-4000-8000-000000000004
+%%> "\\session-activate[id=true] ${#session_id}"
+Activated session 'test_id_session' (ID: 00000004, Messages: 0)
+%%> "\\get[#active_session_name]"
+#active_session_name = test_id_session
+%%> "\\session-activate[id=true] 00000001"
+Activated session 'session_one' (ID: 00000001, Messages: 0)
+%%> "\\get[#active_session_name]"
+#active_session_name = session_one
+%%> "\\session-delete session_one"
+Deleted session 'session_one' (ID: 00000001)
+%%> "\\session-delete session_two"
+Deleted session 'session_two' (ID: 00000002)
+%%> "\\session-delete session_three"
+Deleted session 'session_three' (ID: 00000003)
+%%> "\\session-delete test_id_session"
+Deleted session 'test_id_session' (ID: 00000004)

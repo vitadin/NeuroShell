@@ -1,0 +1,39 @@
+%% Test session-activate no-parameter behavior
+\set[_echo_command="true"]
+
+%% Test behavior when no sessions exist
+\session-activate
+\get[#active_session_name]
+\get[#active_session_id]
+
+%% Create a session - it becomes active automatically
+\session-new test_session
+\get[#session_name]
+\get[#session_id]
+
+%% Test no-parameter behavior - should show active session
+\session-activate
+\get[#active_session_name]
+\get[#active_session_id]
+
+%% Create another session (which becomes the new active session)
+\session-new second_session
+\get[#session_name]
+
+%% Activate the first session manually
+\session-activate test_session
+\get[#active_session_name]
+
+%% Create additional sessions to test auto-activation of latest
+\session-new older_session
+\session-new newer_session
+
+%% Clean up all sessions
+\session-delete test_session
+\session-delete second_session
+\session-delete older_session
+\session-delete newer_session
+
+%% Test no-parameter behavior when all sessions are gone
+\session-activate
+\get[#active_session_name]
