@@ -27,6 +27,8 @@ type Context interface {
 	SetSessionNameToID(nameToID map[string]string)
 	GetActiveSessionID() string
 	SetActiveSessionID(sessionID string)
+	GetActiveModelID() string
+	SetActiveModelID(modelID string)
 
 	// Model storage methods (bidirectional mapping)
 	GetModels() map[string]*ModelConfig
@@ -39,8 +41,10 @@ type Context interface {
 	ModelIDExists(id string) bool
 
 	// LLM client storage methods
-	GetLLMClient(apiKey string) (LLMClient, bool)
-	SetLLMClient(apiKey string, client LLMClient)
+	GetLLMClient(clientID string) (LLMClient, bool)
+	SetLLMClient(clientID string, client LLMClient)
+	GetLLMClientCount() int
+	ClearLLMClients()
 
 	// Testing and debugging methods
 	GetAllVariables() map[string]string

@@ -4,25 +4,23 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"sync"
+	"strings"
 
+	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
 )
 
 // ClientFactoryService implements the ClientFactory interface.
-// It manages the creation and caching of LLM clients based on API keys.
+// It manages the creation of LLM clients, using the context layer for stateless caching.
 type ClientFactoryService struct {
 	initialized bool
-	clients     map[string]neurotypes.LLMClient
-	mutex       sync.RWMutex
 }
 
 // NewClientFactoryService creates a new ClientFactoryService instance.
 func NewClientFactoryService() *ClientFactoryService {
 	return &ClientFactoryService{
 		initialized: false,
-		clients:     make(map[string]neurotypes.LLMClient),
 	}
 }
 
@@ -54,24 +52,13 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 		return nil, fmt.Errorf("API key cannot be empty for provider '%s'", provider)
 	}
 
-	// Create a composite key for provider-specific caching
-	cacheKey := fmt.Sprintf("%s:%s", provider, apiKey)
+	// Generate client ID for caching
+	clientID := f.generateClientID(provider, apiKey)
+	ctx := neuroshellcontext.GetGlobalContext()
 
-	f.mutex.RLock()
-	if client, exists := f.clients[cacheKey]; exists {
-		f.mutex.RUnlock()
-		logger.Debug("Returning cached provider client", "provider", provider)
-		return client, nil
-	}
-	f.mutex.RUnlock()
-
-	// Create new client with write lock
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
-
-	// Double-check pattern
-	if client, exists := f.clients[cacheKey]; exists {
-		logger.Debug("Returning cached provider client (double-check)", "provider", provider)
+	// Check if client exists in context cache
+	if client, exists := ctx.GetLLMClient(clientID); exists {
+		logger.Debug("Returning cached provider client", "provider", provider, "clientID", clientID)
 		return client, nil
 	}
 
@@ -87,14 +74,16 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 		return nil, fmt.Errorf("unsupported provider '%s'. Supported providers: openai, anthropic", provider)
 	}
 
-	f.clients[cacheKey] = client
+	// Store client in context cache
+	ctx.SetLLMClient(clientID, client)
 
-	logger.Debug("Created new provider client", "provider", provider)
+	logger.Debug("Created new provider client", "provider", provider, "clientID", clientID)
 	return client, nil
 }
 
 // generateClientID creates a unique, secure client ID for the given provider and API key.
-// Uses SHA-256 hash with first 8 hex characters for uniqueness while maintaining security.
+// Uses SHA-256 hash with first 8 hex characters for uniqueness while maintaining usability.
+// Format: "provider:hashed-api-key" (e.g., "openai:a1b2c3d4")
 func (f *ClientFactoryService) generateClientID(provider, apiKey string) string {
 	if apiKey == "" {
 		return fmt.Sprintf("%s:empty***", provider)
@@ -103,7 +92,7 @@ func (f *ClientFactoryService) generateClientID(provider, apiKey string) string 
 	// Generate SHA-256 hash of the API key
 	hash := sha256.Sum256([]byte(apiKey))
 
-	// Convert to hex and take first 8 characters
+	// Convert to hex and take first 8 characters for usability
 	hexHash := hex.EncodeToString(hash[:])
 
 	return fmt.Sprintf("%s:%s", provider, hexHash[:8])
@@ -124,27 +113,13 @@ func (f *ClientFactoryService) GetClientWithID(provider, apiKey string) (neuroty
 		return nil, "", fmt.Errorf("API key cannot be empty for provider '%s'", provider)
 	}
 
-	// Generate client ID for external use
+	// Generate client ID for external use (also serves as cache key)
 	clientID := f.generateClientID(provider, apiKey)
+	ctx := neuroshellcontext.GetGlobalContext()
 
-	// Use full API key for internal caching (more secure than using hash for cache key)
-	cacheKey := fmt.Sprintf("%s:%s", provider, apiKey)
-
-	f.mutex.RLock()
-	if client, exists := f.clients[cacheKey]; exists {
-		f.mutex.RUnlock()
+	// Check if client exists in context cache
+	if client, exists := ctx.GetLLMClient(clientID); exists {
 		logger.Debug("Returning cached provider client with ID", "provider", provider, "clientID", clientID)
-		return client, clientID, nil
-	}
-	f.mutex.RUnlock()
-
-	// Create new client with write lock
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
-
-	// Double-check pattern
-	if client, exists := f.clients[cacheKey]; exists {
-		logger.Debug("Returning cached provider client with ID (double-check)", "provider", provider, "clientID", clientID)
 		return client, clientID, nil
 	}
 
@@ -160,10 +135,44 @@ func (f *ClientFactoryService) GetClientWithID(provider, apiKey string) (neuroty
 		return nil, "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, anthropic", provider)
 	}
 
-	f.clients[cacheKey] = client
+	// Store client in context cache
+	ctx.SetLLMClient(clientID, client)
 
 	logger.Debug("Created new provider client with ID", "provider", provider, "clientID", clientID)
 	return client, clientID, nil
+}
+
+// GetClientByID retrieves a cached LLM client by its client ID.
+// Client ID format: "provider:hashed-api-key" (e.g., "openai:a1b2c3d4...")
+// This method enables direct O(1) lookup using the client ID as the cache key.
+func (f *ClientFactoryService) GetClientByID(clientID string) (neurotypes.LLMClient, error) {
+	if !f.initialized {
+		return nil, fmt.Errorf("client factory service not initialized")
+	}
+
+	if clientID == "" {
+		return nil, fmt.Errorf("client ID cannot be empty")
+	}
+
+	// Validate client ID format (must contain colon separator)
+	if !strings.Contains(clientID, ":") {
+		return nil, fmt.Errorf("invalid client ID format: %s (expected 'provider:hash')", clientID)
+	}
+
+	// Ensure both provider and hash parts are non-empty
+	parts := strings.Split(clientID, ":")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return nil, fmt.Errorf("invalid client ID format: %s (expected 'provider:hash')", clientID)
+	}
+
+	// Direct lookup using client ID from context
+	ctx := neuroshellcontext.GetGlobalContext()
+	if client, exists := ctx.GetLLMClient(clientID); exists {
+		logger.Debug("Retrieved cached client by ID", "clientID", clientID)
+		return client, nil
+	}
+
+	return nil, fmt.Errorf("client with ID '%s' not found in cache", clientID)
 }
 
 // DetermineAPIKeyForProvider determines the API key for a specific provider.
@@ -199,15 +208,13 @@ func (f *ClientFactoryService) DetermineAPIKeyForProvider(provider string, ctx n
 
 // GetCachedClientCount returns the number of cached clients (for testing/debugging).
 func (f *ClientFactoryService) GetCachedClientCount() int {
-	f.mutex.RLock()
-	defer f.mutex.RUnlock()
-	return len(f.clients)
+	ctx := neuroshellcontext.GetGlobalContext()
+	return ctx.GetLLMClientCount()
 }
 
 // ClearCache removes all cached clients (for testing/debugging).
 func (f *ClientFactoryService) ClearCache() {
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
-	f.clients = make(map[string]neurotypes.LLMClient)
+	ctx := neuroshellcontext.GetGlobalContext()
+	ctx.ClearLLMClients()
 	logger.Debug("Client cache cleared")
 }

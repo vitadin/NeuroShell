@@ -52,13 +52,16 @@ type NeuroContext struct {
 	sessionNameToID map[string]string                  // Name to ID mapping
 	activeSessionID string                             // Currently active session ID
 
+	// Active model tracking
+	activeModelID string // Currently active model ID
+
 	// Model storage (bidirectional mapping)
 	models        map[string]*neurotypes.ModelConfig // Model storage by ID
 	modelNameToID map[string]string                  // Name to ID mapping
 	modelIDToName map[string]string                  // ID to name mapping
 
 	// LLM client storage
-	llmClients map[string]neurotypes.LLMClient // LLM client storage by API key identifier
+	llmClients map[string]neurotypes.LLMClient // LLM client storage by client ID (provider:hash format)
 
 	// Command registry information
 	registeredCommands map[string]bool                 // Track registered command names for autocomplete
@@ -537,6 +540,16 @@ func (ctx *NeuroContext) SetActiveSessionID(sessionID string) {
 	ctx.activeSessionID = sessionID
 }
 
+// GetActiveModelID returns the currently active model ID.
+func (ctx *NeuroContext) GetActiveModelID() string {
+	return ctx.activeModelID
+}
+
+// SetActiveModelID sets the currently active model ID.
+func (ctx *NeuroContext) SetActiveModelID(modelID string) {
+	ctx.activeModelID = modelID
+}
+
 // GetModels returns all model configurations stored in the context.
 func (ctx *NeuroContext) GetModels() map[string]*neurotypes.ModelConfig {
 	return ctx.models
@@ -579,15 +592,25 @@ func (ctx *NeuroContext) ModelIDExists(id string) bool {
 	return exists
 }
 
-// GetLLMClient retrieves an LLM client by API key identifier
-func (ctx *NeuroContext) GetLLMClient(apiKey string) (neurotypes.LLMClient, bool) {
-	client, exists := ctx.llmClients[apiKey]
+// GetLLMClient retrieves an LLM client by client ID (provider:hash format)
+func (ctx *NeuroContext) GetLLMClient(clientID string) (neurotypes.LLMClient, bool) {
+	client, exists := ctx.llmClients[clientID]
 	return client, exists
 }
 
-// SetLLMClient stores an LLM client by API key identifier
-func (ctx *NeuroContext) SetLLMClient(apiKey string, client neurotypes.LLMClient) {
-	ctx.llmClients[apiKey] = client
+// SetLLMClient stores an LLM client by client ID (provider:hash format)
+func (ctx *NeuroContext) SetLLMClient(clientID string, client neurotypes.LLMClient) {
+	ctx.llmClients[clientID] = client
+}
+
+// GetLLMClientCount returns the number of cached LLM clients (for testing/debugging)
+func (ctx *NeuroContext) GetLLMClientCount() int {
+	return len(ctx.llmClients)
+}
+
+// ClearLLMClients removes all cached LLM clients (for testing/debugging)
+func (ctx *NeuroContext) ClearLLMClients() {
+	ctx.llmClients = make(map[string]neurotypes.LLMClient)
 }
 
 // RegisterCommand registers a command name for autocomplete functionality.

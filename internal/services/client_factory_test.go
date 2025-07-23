@@ -139,6 +139,9 @@ func TestClientFactoryService_ClientCaching(t *testing.T) {
 }
 
 func TestClientFactoryService_CacheKeyFormat(t *testing.T) {
+	// Clear global context to ensure test isolation
+	context.ResetGlobalContext()
+
 	service := NewClientFactoryService()
 	err := service.Initialize()
 	require.NoError(t, err)
@@ -262,6 +265,9 @@ func TestClientFactoryService_DetermineAPIKeyForProvider(t *testing.T) {
 }
 
 func TestClientFactoryService_ConcurrentAccess(t *testing.T) {
+	// Clear global context to ensure test isolation
+	context.ResetGlobalContext()
+
 	service := NewClientFactoryService()
 	err := service.Initialize()
 	require.NoError(t, err)
@@ -309,6 +315,9 @@ func TestClientFactoryService_ConcurrentAccess(t *testing.T) {
 }
 
 func TestClientFactoryService_ClearCache(t *testing.T) {
+	// Clear global context to ensure test isolation
+	context.ResetGlobalContext()
+
 	service := NewClientFactoryService()
 	err := service.Initialize()
 	require.NoError(t, err)
@@ -333,6 +342,9 @@ func TestClientFactoryService_ClearCache(t *testing.T) {
 }
 
 func TestClientFactoryService_GetCachedClientCount(t *testing.T) {
+	// Clear global context to ensure test isolation
+	context.ResetGlobalContext()
+
 	service := NewClientFactoryService()
 	err := service.Initialize()
 	require.NoError(t, err)
@@ -470,6 +482,9 @@ func TestClientFactoryService_Integration(t *testing.T) {
 }
 
 func TestClientFactoryService_ProviderSpecificCaching(t *testing.T) {
+	// Clear global context to ensure test isolation
+	context.ResetGlobalContext()
+
 	service := NewClientFactoryService()
 	err := service.Initialize()
 	require.NoError(t, err)
@@ -693,4 +708,94 @@ func TestClientFactoryService_DifferentKeysProduceDifferentIDs(t *testing.T) {
 	assert.Contains(t, clientID2, provider+":")
 	assert.Len(t, clientID1, len(provider)+1+8)
 	assert.Len(t, clientID2, len(provider)+1+8)
+}
+
+func TestClientFactoryService_GetClientByID(t *testing.T) {
+	service := NewClientFactoryService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	provider := "openai"
+	apiKey := "sk-test-key-123"
+
+	// First create a client to get its ID
+	client, clientID, err := service.GetClientWithID(provider, apiKey)
+	require.NoError(t, err)
+	require.NotNil(t, client)
+	require.Equal(t, "openai:2d550185", clientID)
+
+	tests := []struct {
+		name        string
+		clientID    string
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name:        "successful client retrieval by ID",
+			clientID:    clientID,
+			expectError: false,
+		},
+		{
+			name:        "empty client ID",
+			clientID:    "",
+			expectError: true,
+			errorMsg:    "client ID cannot be empty",
+		},
+		{
+			name:        "invalid client ID format - no colon",
+			clientID:    "openai2d550185",
+			expectError: true,
+			errorMsg:    "invalid client ID format: openai2d550185 (expected 'provider:hash')",
+		},
+		{
+			name:        "invalid client ID format - empty provider",
+			clientID:    ":2d550185",
+			expectError: true,
+			errorMsg:    "invalid client ID format: :2d550185 (expected 'provider:hash')",
+		},
+		{
+			name:        "invalid client ID format - empty hash",
+			clientID:    "openai:",
+			expectError: true,
+			errorMsg:    "invalid client ID format: openai: (expected 'provider:hash')",
+		},
+		{
+			name:        "client ID not found in cache",
+			clientID:    "openai:deadbeef",
+			expectError: true,
+			errorMsg:    "client with ID 'openai:deadbeef' not found in cache",
+		},
+		{
+			name:        "service not initialized",
+			clientID:    clientID,
+			expectError: true,
+			errorMsg:    "client factory service not initialized",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Special case for uninitialized service test
+			if tt.name == "service not initialized" {
+				uninitializedService := NewClientFactoryService()
+				retrievedClient, err := uninitializedService.GetClientByID(tt.clientID)
+				assert.Error(t, err)
+				assert.Nil(t, retrievedClient)
+				assert.Contains(t, err.Error(), tt.errorMsg)
+				return
+			}
+
+			retrievedClient, err := service.GetClientByID(tt.clientID)
+
+			if tt.expectError {
+				assert.Error(t, err)
+				assert.Nil(t, retrievedClient)
+				assert.Contains(t, err.Error(), tt.errorMsg)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, retrievedClient)
+				assert.Equal(t, client, retrievedClient) // Should be the same client instance
+			}
+		})
+	}
 }

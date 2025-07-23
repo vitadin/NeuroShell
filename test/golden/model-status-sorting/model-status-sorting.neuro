@@ -1,0 +1,22 @@
+%% Test model status sorting functionality
+\set[_echo_command="true"]
+
+%% Create models with different names and providers to test sorting
+\model-new[catalog_id="O3"] zebra-model
+\model-new[catalog_id="CS4"] alpha-model
+\model-new[provider="openai", base_model="gpt-4"] middle-model
+
+%% Test sorting by name (alphabetical)
+\model-status[sort="name"]
+
+%% Test sorting by provider (then by name)
+\model-status[sort="provider"]
+
+%% Test sorting by creation date (chronological)
+\model-status[sort="created"]
+
+%% Test invalid sort option (should show error)
+\try \model-status[sort="invalid"]
+
+%% Verify variables are still consistent
+\get[#model_count]

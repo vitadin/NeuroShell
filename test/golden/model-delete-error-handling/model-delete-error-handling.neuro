@@ -1,0 +1,29 @@
+%% Test model deletion error handling
+\set[_echo_command="true"]
+
+%% Create models for testing error scenarios
+\model-new[catalog_id="CS4"] test-model-1
+\model-new[catalog_id="O3"] test-model-2
+
+%% Test no matches scenario
+\try \model-delete nonexistent-model
+
+%% Test multiple matches scenario
+\model-new[provider="anthropic", base_model="claude-3-sonnet"] test-similar
+\model-new[provider="openai", base_model="gpt-4"] test-different
+\try \model-delete test
+
+%% Test empty input error
+\try \model-delete 
+
+%% Test non-existent ID prefix
+\try \model-delete[id=true] xyz123
+
+%% Clean up for final test
+\model-delete test-model-1
+\model-delete test-model-2  
+\model-delete test-similar
+\model-delete test-different
+
+%% Test when no models exist at all
+\try \model-delete anything

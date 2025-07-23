@@ -28,10 +28,6 @@ type ModelConfig struct {
 	// Description is an optional human-readable description of the model configuration
 	Description string `json:"description"`
 
-	// IsDefault indicates whether this model is the default for new sessions
-	// Only one model should have IsDefault=true at any time
-	IsDefault bool `json:"is_default"`
-
 	// CreatedAt is the timestamp when the model configuration was created
 	CreatedAt time.Time `json:"created_at"`
 
