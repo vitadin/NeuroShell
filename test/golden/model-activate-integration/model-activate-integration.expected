@@ -1,0 +1,43 @@
+Setting _echo_command = true
+%%> "\\model-new[catalog_id=\"CS4\"] primary-model"
+Created model 'primary-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+%%> "\\model-new[catalog_id=\"O3\"] secondary-model"
+Created model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\model-activate primary-model"
+Activated model 'primary-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+%%> "\\model-status"
+Model Configurations (2 models):
+  primary-model (00000001)
+    Provider: anthropic
+    Base Model: claude-sonnet-4-20250514
+    Parameters: none
+    Created: 2025-01-01 00:00:01
+    Active: true
+  secondary-model (00000002)
+    Provider: openai
+    Base Model: o3
+    Parameters: none
+    Created: 2025-01-01 00:00:02
+%%> "\\model-activate secondary-model"
+Activated model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\model-status"
+Model Configurations (2 models):
+  primary-model (00000001)
+    Provider: anthropic
+    Base Model: claude-sonnet-4-20250514
+    Parameters: none
+    Created: 2025-01-01 00:00:01
+  secondary-model (00000002)
+    Provider: openai
+    Base Model: o3
+    Parameters: none
+    Created: 2025-01-01 00:00:02
+    Active: true
+%%> "\\get[#active_model_name]"
+#active_model_name = secondary-model
+%%> "\\get[#active_model_provider]"
+#active_model_provider = openai
+%%> "\\model-new[provider=\"anthropic\", base_model=\"claude-3-sonnet\"] new-model"
+Created model 'new-model' (ID: 00000003, Provider: anthropic, Base: claude-3-sonnet)
+%%> "\\get[#active_model_name]"
+#active_model_name = secondary-model
