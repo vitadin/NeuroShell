@@ -210,6 +210,16 @@ func (c *LLMCallCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to get session '%s': %w", sessionID, err)
 	}
 
+	// Validate session has messages before making LLM call
+	if len(session.Messages) == 0 {
+		// For dry run, show warnings but continue to display debug info
+		if args["dry_run"] == "true" {
+			return c.handleDryRun(client, model, session, variableService)
+		}
+		// For actual calls, error out immediately
+		return fmt.Errorf("session '%s' contains no messages. Use \\session-add-usermsg to add messages before calling LLM", session.Name)
+	}
+
 	// Handle dry_run option
 	if args["dry_run"] == "true" {
 		return c.handleDryRun(client, model, session, variableService)
@@ -251,6 +261,9 @@ func (c *LLMCallCommand) handleDryRun(client neurotypes.LLMClient, model *neurot
 	fmt.Println("Messages:")
 	if len(session.Messages) == 0 {
 		fmt.Println("  (no messages in session)")
+		fmt.Println("\n⚠️  WARNING: This session contains no messages!")
+		fmt.Println("    Actual \\llm-call would fail with: session contains no messages")
+		fmt.Println("    Use \\session-add-usermsg to add messages before calling LLM")
 	} else {
 		for i, msg := range session.Messages {
 			fmt.Printf("  [%d] %s: %s\n", i+1, msg.Role, msg.Content)
