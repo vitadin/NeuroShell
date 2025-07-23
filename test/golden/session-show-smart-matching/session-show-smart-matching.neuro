@@ -1,0 +1,40 @@
+%% Test session-show smart matching capabilities  
+\set[_echo_command="true"]
+
+%% Create sessions with similar names for testing
+\session-new work_project_alpha
+\session-new work_project_beta
+\session-new debug_session
+
+%% Test unique name prefix matching
+\session-show debug
+
+%% Test unique name with partial match
+\session-show alpha
+
+%% Test ID-based matching with [id=true]
+\session-show[id=true] 00000001
+
+%% Test unique ID prefix
+\session-show[id=true] 00000003
+
+%% Test ambiguous name matching (should show error with multiple matches)
+\try \session-show work_project
+\get[_error]
+
+%% Test ambiguous ID prefix matching (should show error)
+\try \session-show[id=true] 000000
+\get[_error]
+
+%% Test no matches by name
+\try \session-show nonexistent_session
+\get[_error]
+
+%% Test no matches by ID
+\try \session-show[id=true] xyz999
+\get[_error]
+
+%% Clean up all sessions
+\session-delete work_project_alpha
+\session-delete work_project_beta
+\session-delete debug_session
