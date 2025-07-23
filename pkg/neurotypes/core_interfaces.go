@@ -39,8 +39,10 @@ type Context interface {
 	ModelIDExists(id string) bool
 
 	// LLM client storage methods
-	GetLLMClient(apiKey string) (LLMClient, bool)
-	SetLLMClient(apiKey string, client LLMClient)
+	GetLLMClient(clientID string) (LLMClient, bool)
+	SetLLMClient(clientID string, client LLMClient)
+	GetLLMClientCount() int
+	ClearLLMClients()
 
 	// Testing and debugging methods
 	GetAllVariables() map[string]string
