@@ -1,0 +1,42 @@
+%% Test session-activate smart matching capabilities
+\set[_echo_command="true"]
+
+%% Create sessions with similar names for prefix testing
+\session-new work_session_1
+\session-new work_session_2
+\session-new debug_session
+\session-new project_alpha
+
+%% Test exact name match
+\session-activate work_session_1
+\get[#active_session_name]
+
+%% Test unique prefix matching  
+\session-activate debug
+\get[#active_session_name]
+
+%% Test unique prefix with partial match
+\session-activate proj
+\get[#active_session_name]
+
+%% Test ID-based activation with [id=true]
+\session-activate[id=true] 00000001
+\get[#active_session_name]
+
+%% Test unique ID prefix matching
+\session-activate[id=true] 00000003
+\get[#active_session_name]
+
+%% Test that ambiguous prefix shows error (work matches both work_session_1 and work_session_2)
+\try \session-activate work
+\get[_error]
+
+%% Test that ambiguous ID prefix shows error
+\try \session-activate[id=true] 000000
+\get[_error]
+
+%% Clean up all sessions
+\session-delete work_session_1
+\session-delete work_session_2
+\session-delete debug_session  
+\session-delete project_alpha
