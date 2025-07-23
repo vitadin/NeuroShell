@@ -27,6 +27,8 @@ type Context interface {
 	SetSessionNameToID(nameToID map[string]string)
 	GetActiveSessionID() string
 	SetActiveSessionID(sessionID string)
+	GetActiveModelID() string
+	SetActiveModelID(modelID string)
 
 	// Model storage methods (bidirectional mapping)
 	GetModels() map[string]*ModelConfig

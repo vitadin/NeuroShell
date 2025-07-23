@@ -77,7 +77,6 @@ func (m *ModelService) CreateModel(name, provider, baseModel string, parameters 
 		BaseModel:   baseModel,
 		Parameters:  parameters,
 		Description: description,
-		IsDefault:   false, // New models are not default by default
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
@@ -86,6 +85,9 @@ func (m *ModelService) CreateModel(name, provider, baseModel string, parameters 
 	if err := m.storeModel(model, ctx); err != nil {
 		return nil, fmt.Errorf("failed to store model: %w", err)
 	}
+
+	// Auto-activate the newly created model (following session pattern)
+	ctx.SetActiveModelID(modelID)
 
 	return model, nil
 }
@@ -184,6 +186,11 @@ func (m *ModelService) DeleteModel(id string, ctx neurotypes.Context) error {
 	// Remove model from storage
 	delete(models, id)
 	ctx.SetModels(models)
+
+	// Clear active model if it was the deleted one
+	if ctx.GetActiveModelID() == id {
+		ctx.SetActiveModelID("")
+	}
 
 	return nil
 }
@@ -298,21 +305,58 @@ func (m *ModelService) ValidateModelParameters(parameters map[string]any) error 
 	return nil
 }
 
-// GetActiveModelConfig returns the model configuration for the active chat session.
-// For now, this returns a default GPT-4 configuration. Future implementations could
-// link models to specific chat sessions or use global model settings.
+// GetActiveModelConfig returns the model configuration for the active model.
+// Uses context-only tracking: checks active model ID, falls back to latest model,
+// or returns synthetic default if no models exist.
 func (m *ModelService) GetActiveModelConfig(ctx neurotypes.Context) (*neurotypes.ModelConfig, error) {
 	if !m.initialized {
 		return nil, fmt.Errorf("model service not initialized")
 	}
 
-	// For now, return a default GPT-4 configuration
-	// TODO: In the future, this could:
-	// 1. Get the active chat session and its associated model
-	// 2. Use a global default model setting
-	// 3. Allow per-session model configuration
+	// 1. Try to get active model ID from context (single source of truth)
+	activeID := ctx.GetActiveModelID()
+	if activeID != "" {
+		if model, err := m.GetModel(activeID, ctx); err == nil {
+			return model, nil
+		}
+		// If active ID points to deleted model, clear it
+		ctx.SetActiveModelID("")
+	}
 
-	defaultConfig := &neurotypes.ModelConfig{
+	// 2. If no active model, find latest created/updated model
+	models := ctx.GetModels()
+	if len(models) > 0 {
+		latest := m.findLatestModelByTimestamp(models)
+		ctx.SetActiveModelID(latest.ID) // Auto-set as active
+		return latest, nil
+	}
+
+	// 3. Final fallback: synthetic default (no models exist)
+	return m.createSyntheticDefault(ctx), nil
+}
+
+// GetActiveModelConfigWithGlobalContext returns the active model configuration using the global context singleton.
+func (m *ModelService) GetActiveModelConfigWithGlobalContext() (*neurotypes.ModelConfig, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return m.GetActiveModelConfig(ctx)
+}
+
+// findLatestModelByTimestamp finds the most recently updated model for auto-activation.
+// Uses UpdatedAt timestamp to determine the latest model.
+func (m *ModelService) findLatestModelByTimestamp(models map[string]*neurotypes.ModelConfig) *neurotypes.ModelConfig {
+	var latest *neurotypes.ModelConfig
+	for _, model := range models {
+		if latest == nil || model.UpdatedAt.After(latest.UpdatedAt) {
+			latest = model
+		}
+	}
+	return latest
+}
+
+// createSyntheticDefault creates a synthetic default GPT-4 configuration as fallback.
+// This is used when no models exist in the system.
+func (m *ModelService) createSyntheticDefault(ctx neurotypes.Context) *neurotypes.ModelConfig {
+	return &neurotypes.ModelConfig{
 		ID:        "default-gpt-4",
 		Name:      "default-gpt-4",
 		Provider:  "openai",
@@ -321,17 +365,63 @@ func (m *ModelService) GetActiveModelConfig(ctx neurotypes.Context) (*neurotypes
 			"temperature": 0.7,
 			"max_tokens":  1000,
 		},
-		Description: "Default GPT-4 configuration",
-		IsDefault:   true,
+		Description: "Default GPT-4 configuration (synthetic)",
 		CreatedAt:   testutils.GetCurrentTime(ctx),
 		UpdatedAt:   testutils.GetCurrentTime(ctx),
 	}
-
-	return defaultConfig, nil
 }
 
-// GetActiveModelConfigWithGlobalContext returns the active model configuration using the global context singleton.
-func (m *ModelService) GetActiveModelConfigWithGlobalContext() (*neurotypes.ModelConfig, error) {
+// SetActiveModel sets the specified model as active by ID.
+func (m *ModelService) SetActiveModel(modelID string, ctx neurotypes.Context) error {
+	if !m.initialized {
+		return fmt.Errorf("model service not initialized")
+	}
+
+	// Validate that the model exists
+	_, err := m.GetModel(modelID, ctx)
+	if err != nil {
+		return fmt.Errorf("cannot set active model: %w", err)
+	}
+
+	// Set as active in context
+	ctx.SetActiveModelID(modelID)
+	return nil
+}
+
+// SetActiveModelWithGlobalContext sets the specified model as active by ID using the global context singleton.
+func (m *ModelService) SetActiveModelWithGlobalContext(modelID string) error {
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.GetActiveModelConfig(ctx)
+	return m.SetActiveModel(modelID, ctx)
+}
+
+// SetActiveModelByName sets the specified model as active by name.
+func (m *ModelService) SetActiveModelByName(name string, ctx neurotypes.Context) error {
+	model, err := m.GetModelByName(name, ctx)
+	if err != nil {
+		return fmt.Errorf("cannot set active model: %w", err)
+	}
+
+	return m.SetActiveModel(model.ID, ctx)
+}
+
+// SetActiveModelByNameWithGlobalContext sets the specified model as active by name using the global context singleton.
+func (m *ModelService) SetActiveModelByNameWithGlobalContext(name string) error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return m.SetActiveModelByName(name, ctx)
+}
+
+// ClearActiveModel clears the active model setting.
+func (m *ModelService) ClearActiveModel(ctx neurotypes.Context) error {
+	if !m.initialized {
+		return fmt.Errorf("model service not initialized")
+	}
+
+	ctx.SetActiveModelID("")
+	return nil
+}
+
+// ClearActiveModelWithGlobalContext clears the active model setting using the global context singleton.
+func (m *ModelService) ClearActiveModelWithGlobalContext() error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return m.ClearActiveModel(ctx)
 }

@@ -487,12 +487,11 @@ func TestStatusCommand_formatModelDetails(t *testing.T) {
 		BaseModel:   "gpt-4",
 		Parameters:  map[string]any{"temperature": 0.7, "max_tokens": 1000},
 		Description: "Test model description",
-		IsDefault:   false,
 		CreatedAt:   time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
 		UpdatedAt:   time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
 	}
 
-	details := cmd.formatModelDetails(model)
+	details := cmd.formatModelDetails(model, "")
 
 	assert.Contains(t, details, "test-model (12345678)")
 	assert.Contains(t, details, "Provider: openai")

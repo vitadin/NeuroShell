@@ -52,6 +52,9 @@ type NeuroContext struct {
 	sessionNameToID map[string]string                  // Name to ID mapping
 	activeSessionID string                             // Currently active session ID
 
+	// Active model tracking
+	activeModelID string // Currently active model ID
+
 	// Model storage (bidirectional mapping)
 	models        map[string]*neurotypes.ModelConfig // Model storage by ID
 	modelNameToID map[string]string                  // Name to ID mapping
@@ -535,6 +538,16 @@ func (ctx *NeuroContext) GetActiveSessionID() string {
 // SetActiveSessionID sets the currently active session ID.
 func (ctx *NeuroContext) SetActiveSessionID(sessionID string) {
 	ctx.activeSessionID = sessionID
+}
+
+// GetActiveModelID returns the currently active model ID.
+func (ctx *NeuroContext) GetActiveModelID() string {
+	return ctx.activeModelID
+}
+
+// SetActiveModelID sets the currently active model ID.
+func (ctx *NeuroContext) SetActiveModelID(modelID string) {
+	ctx.activeModelID = modelID
 }
 
 // GetModels returns all model configurations stored in the context.

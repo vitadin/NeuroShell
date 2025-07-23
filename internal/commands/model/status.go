@@ -236,6 +236,14 @@ func (c *StatusCommand) sortModels(models []*neurotypes.ModelConfig, sortBy stri
 
 // formatModelStatus formats the model list for display.
 func (c *StatusCommand) formatModelStatus(models []*neurotypes.ModelConfig, nameFilter, providerFilter string) string {
+	// Get active model ID from model service
+	modelService, err := services.GetGlobalModelService()
+	var activeModelID string
+	if err == nil {
+		if activeModel, err := modelService.GetActiveModelConfigWithGlobalContext(); err == nil {
+			activeModelID = activeModel.ID
+		}
+	}
 	if len(models) == 0 {
 		if nameFilter != "" || providerFilter != "" {
 			var filters []string
@@ -268,7 +276,7 @@ func (c *StatusCommand) formatModelStatus(models []*neurotypes.ModelConfig, name
 
 	// Model details
 	for _, model := range models {
-		output.WriteString(c.formatModelDetails(model))
+		output.WriteString(c.formatModelDetails(model, activeModelID))
 		output.WriteString("\n")
 	}
 
@@ -276,7 +284,7 @@ func (c *StatusCommand) formatModelStatus(models []*neurotypes.ModelConfig, name
 }
 
 // formatModelDetails formats detailed information for a single model.
-func (c *StatusCommand) formatModelDetails(model *neurotypes.ModelConfig) string {
+func (c *StatusCommand) formatModelDetails(model *neurotypes.ModelConfig, activeModelID string) string {
 	var details strings.Builder
 
 	// Basic info
@@ -309,9 +317,9 @@ func (c *StatusCommand) formatModelDetails(model *neurotypes.ModelConfig) string
 		details.WriteString(fmt.Sprintf("    Description: %s\n", model.Description))
 	}
 
-	// Default flag
-	if model.IsDefault {
-		details.WriteString("    Default: true\n")
+	// Active flag - check if this model is the currently active one
+	if model.ID == activeModelID {
+		details.WriteString("    Active: true\n")
 	}
 
 	return details.String()
