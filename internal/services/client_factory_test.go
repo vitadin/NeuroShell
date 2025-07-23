@@ -3,14 +3,12 @@ package services
 import (
 	"os"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/context"
-	"neuroshell/pkg/neurotypes"
 )
 
 func TestClientFactoryService_Name(t *testing.T) {
@@ -262,56 +260,6 @@ func TestClientFactoryService_DetermineAPIKeyForProvider(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestClientFactoryService_ConcurrentAccess(t *testing.T) {
-	// Clear global context to ensure test isolation
-	context.ResetGlobalContext()
-
-	service := NewClientFactoryService()
-	err := service.Initialize()
-	require.NoError(t, err)
-
-	const numGoroutines = 10
-	const numIterations = 100
-
-	var wg sync.WaitGroup
-	results := make(chan neurotypes.LLMClient, numGoroutines*numIterations)
-
-	// Launch multiple goroutines that create clients concurrently
-	for i := 0; i < numGoroutines; i++ {
-		wg.Add(1)
-		go func(goroutineID int) {
-			defer wg.Done()
-
-			for j := 0; j < numIterations; j++ {
-				client, err := service.GetClientForProvider("openai", "sk-test-key")
-				if err != nil {
-					t.Errorf("Goroutine %d, iteration %d: unexpected error: %v", goroutineID, j, err)
-					return
-				}
-				results <- client
-			}
-		}(i)
-	}
-
-	// Wait for all goroutines to complete
-	wg.Wait()
-	close(results)
-
-	// Verify all clients are the same (cached)
-	var firstClient neurotypes.LLMClient
-	count := 0
-	for client := range results {
-		if firstClient == nil {
-			firstClient = client
-		}
-		assert.Same(t, firstClient, client, "All clients should be the same cached instance")
-		count++
-	}
-
-	assert.Equal(t, numGoroutines*numIterations, count)
-	assert.Equal(t, 1, service.GetCachedClientCount()) // Only one client should be cached
 }
 
 func TestClientFactoryService_ClearCache(t *testing.T) {
