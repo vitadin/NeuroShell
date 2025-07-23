@@ -74,7 +74,7 @@ func TestLLMService_SendCompletion(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	response, err := service.SendCompletion(client, session, modelConfig, "Hello, world!")
+	response, err := service.SendCompletion(client, session, modelConfig)
 	require.NoError(t, err)
 	assert.Equal(t, "This is a mock LLM response.", response)
 }
@@ -108,7 +108,7 @@ func TestLLMService_SendCompletion_DifferentModels(t *testing.T) {
 				Provider:  "openai",
 			}
 
-			response, err := service.SendCompletion(client, session, modelConfig, "Hello")
+			response, err := service.SendCompletion(client, session, modelConfig)
 			require.NoError(t, err)
 			assert.Equal(t, tt.expected, response)
 		})
@@ -137,7 +137,7 @@ func TestLLMService_SendCompletion_CustomResponse(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	response, err := service.SendCompletion(client, session, modelConfig, "Hello")
+	response, err := service.SendCompletion(client, session, modelConfig)
 	require.NoError(t, err)
 	assert.Equal(t, "Custom response for testing", response)
 }
@@ -167,7 +167,7 @@ func TestLLMService_SendCompletion_WithActualMessages(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	response, err := service.SendCompletion(client, session, modelConfig, "New message")
+	response, err := service.SendCompletion(client, session, modelConfig)
 	require.NoError(t, err)
 	assert.Equal(t, "This is a mock LLM response.", response)
 }
@@ -188,7 +188,7 @@ func TestLLMService_SendCompletion_NotInitialized(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	_, err := service.SendCompletion(client, session, modelConfig, "Hello")
+	_, err := service.SendCompletion(client, session, modelConfig)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "llm service not initialized")
 }
@@ -209,7 +209,7 @@ func TestLLMService_SendCompletion_NilClient(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	_, err = service.SendCompletion(nil, session, modelConfig, "Hello")
+	_, err = service.SendCompletion(nil, session, modelConfig)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "llm client cannot be nil")
 }
@@ -236,7 +236,7 @@ func TestLLMService_SendCompletion_UnconfiguredClient(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	_, err = service.SendCompletion(client, session, modelConfig, "Hello")
+	_, err = service.SendCompletion(client, session, modelConfig)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "llm client is not configured")
 }

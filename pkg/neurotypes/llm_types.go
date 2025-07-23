@@ -49,10 +49,10 @@ type LLMService interface {
 	Service
 
 	// SendCompletion sends a chat completion request using the provided client.
-	// All dependencies are explicitly provided as parameters.
-	SendCompletion(client LLMClient, session *ChatSession, model *ModelConfig, message string) (string, error)
+	// The session is sent as-is - message manipulation is the caller's responsibility.
+	SendCompletion(client LLMClient, session *ChatSession, model *ModelConfig) (string, error)
 
 	// StreamCompletion sends a streaming chat completion request using the provided client.
-	// All dependencies are explicitly provided as parameters.
-	StreamCompletion(client LLMClient, session *ChatSession, model *ModelConfig, message string) (<-chan StreamChunk, error)
+	// The session is sent as-is - message manipulation is the caller's responsibility.
+	StreamCompletion(client LLMClient, session *ChatSession, model *ModelConfig) (<-chan StreamChunk, error)
 }
