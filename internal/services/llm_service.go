@@ -140,13 +140,14 @@ func (m *MockLLMService) SendCompletion(_ neurotypes.LLMClient, session *neuroty
 		return "", fmt.Errorf("mock llm service not initialized")
 	}
 
-	// Create a mock response based on the session's last message (if any)
-	lastMessage := "No messages in session"
-	if len(session.Messages) > 0 {
-		lastMessage = session.Messages[len(session.Messages)-1].Content
+	// Create a mock response with message count and last message info for debugging
+	messageCount := len(session.Messages)
+	lastMessage := "no messages"
+	if messageCount > 0 {
+		lastMessage = session.Messages[messageCount-1].Content
 	}
 
-	return fmt.Sprintf("This is a mocking reply message for the last message: %s", lastMessage), nil
+	return fmt.Sprintf("This is a mocking reply (received %d messages, last: %s)", messageCount, lastMessage), nil
 }
 
 // StreamCompletion mocks streaming completion (returns a channel with mock response)
@@ -158,13 +159,14 @@ func (m *MockLLMService) StreamCompletion(_ neurotypes.LLMClient, session *neuro
 	// Create a channel for streaming response
 	responseChan := make(chan neurotypes.StreamChunk, 1)
 
-	// Create a mock response based on the session's last message (if any)
-	lastMessage := "No messages in session"
-	if len(session.Messages) > 0 {
-		lastMessage = session.Messages[len(session.Messages)-1].Content
+	// Create a mock response with message count and last message info for debugging
+	messageCount := len(session.Messages)
+	lastMessage := "no messages"
+	if messageCount > 0 {
+		lastMessage = session.Messages[messageCount-1].Content
 	}
 
-	response := fmt.Sprintf("This is a mocking reply message for the last message: %s", lastMessage)
+	response := fmt.Sprintf("This is a mocking reply (received %d messages, last: %s)", messageCount, lastMessage)
 
 	// Send the response through the channel and close it
 	go func() {

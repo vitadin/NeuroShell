@@ -227,7 +227,7 @@ func TestLLMCallCommand_Execute_SyncCall(t *testing.T) {
 	// Verify response variables were set
 	output, err := variableService.Get("_output")
 	require.NoError(t, err)
-	assert.Contains(t, output, "mocking reply message")
+	assert.Contains(t, output, "mocking reply")
 
 	llmResponse, err := variableService.Get("#llm_response")
 	require.NoError(t, err)
@@ -302,7 +302,7 @@ func TestLLMCallCommand_Execute_StreamingCall(t *testing.T) {
 	// Verify response variables were set
 	output, err := variableService.Get("_output")
 	require.NoError(t, err)
-	assert.Contains(t, output, "mocking reply message")
+	assert.Contains(t, output, "mocking reply")
 
 	callMode, err := variableService.Get("#llm_call_mode")
 	require.NoError(t, err)
@@ -571,7 +571,7 @@ func TestLLMCallCommand_handleSyncCall(t *testing.T) {
 	// Verify variables were set
 	output, err := variableService.Get("_output")
 	require.NoError(t, err)
-	assert.Contains(t, output, "mocking reply message")
+	assert.Contains(t, output, "mocking reply")
 
 	callMode, err := variableService.Get("#llm_call_mode")
 	require.NoError(t, err)
@@ -615,7 +615,7 @@ func TestLLMCallCommand_handleStreamingCall(t *testing.T) {
 	// Verify variables were set
 	output, err := variableService.Get("_output")
 	require.NoError(t, err)
-	assert.Contains(t, output, "mocking reply message")
+	assert.Contains(t, output, "mocking reply")
 
 	callMode, err := variableService.Get("#llm_call_mode")
 	require.NoError(t, err)
