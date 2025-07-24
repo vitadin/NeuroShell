@@ -1,0 +1,23 @@
+name: gpt-4o-2024-11-20
+id: G4O
+display_name: GPT-4o
+provider: openai
+description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
+capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs, omni]
+context_window: 128000
+max_output_tokens: 16384
+knowledge_cutoff: "2023-09-30"
+modalities: [text-input, image-input, text-output]
+pricing:
+  input_per_m_token: 2.50
+  output_per_m_token: 10.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  fine_tuning: true
+  vision: true
+  predicted_outputs: true
+  distillation: true
+tools: [web-search, file-search, image-generation, code-interpreter]
+version: "2024-11-20"

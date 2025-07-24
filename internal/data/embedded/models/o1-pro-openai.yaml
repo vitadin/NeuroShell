@@ -1,0 +1,23 @@
+name: o1-pro-2025-03-19
+id: O1P
+display_name: o1-pro
+provider: openai
+description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
+capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, reinforcement-learning, complex-reasoning, chain-of-thought]
+context_window: 200000
+max_output_tokens: 100000
+knowledge_cutoff: "2023-09-30"
+modalities: [text-input, image-input, text-output]
+pricing:
+  input_per_m_token: 150.00
+  output_per_m_token: 600.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  vision: true
+  batch: true
+  mcp: true
+  reinforcement_learning: true
+reasoning_tokens: true
+version: "2025-03-19"
