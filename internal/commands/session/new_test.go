@@ -297,6 +297,9 @@ func setupSessionTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	err = services.GetGlobalRegistry().RegisterService(services.NewChatSessionService())
 	require.NoError(t, err)
 
+	err = services.GetGlobalRegistry().RegisterService(services.NewStackService())
+	require.NoError(t, err)
+
 	// Note: InterpolationService removed - state machine handles interpolation
 
 	// Initialize services

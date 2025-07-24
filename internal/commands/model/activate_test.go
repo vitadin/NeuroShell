@@ -271,8 +271,12 @@ func TestActivateCommand_Execute_EmptyInput(t *testing.T) {
 	cmd := &ActivateCommand{}
 
 	err := cmd.Execute(map[string]string{}, "")
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "model name or ID prefix is required")
+	require.NoError(t, err)
+
+	// Check that the appropriate message is stored in _output
+	variableService, _ := services.GetGlobalVariableService()
+	output, _ := variableService.Get("_output")
+	assert.Contains(t, output, "No models available. Use \\model-new to create one.")
 }
 
 func TestActivateCommand_Execute_NoModels(t *testing.T) {
