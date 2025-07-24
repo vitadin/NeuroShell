@@ -47,3 +47,8 @@ var KimiK2OpenRouterModelData []byte
 //
 //go:embed models/kimi-k2-moonshot.yaml
 var KimiK2MoonshotModelData []byte
+
+// Qwen3235BOpenRouterModelData contains the embedded Qwen3-235B (OpenRouter) model YAML data.
+//
+//go:embed models/qwen3-235b-openrouter.yaml
+var Qwen3235BOpenRouterModelData []byte

@@ -1,6 +1,6 @@
 Setting _echo_command = true
 %%> "\\model-catalog"
-Model Catalog (9 models):
+Model Catalog (10 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
@@ -92,3 +92,12 @@ Openrouter Models:
     Features: streaming, function-calling
     Knowledge cutoff: 2024-12-01
     Description: Free access to Kimi K2 via OpenRouter, a trillion-parameter MoE model optimized for advanced tool use, reasoning, and code synthesis
+  [ORQ3A] Qwen: Qwen3 235B A22B 2507 (qwen/qwen3-235b-a22b-07-25)
+    Provider: openrouter
+    Context: 262,144 tokens (max output: 32,768 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, tool-use, multilingual, thinking-mode, instruction-following
+    Modalities: text-input, text-output
+    Pricing: $0.12/1M input, $0.59/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Knowledge cutoff: 2025-07-01
+    Description: Mixture-of-Experts model with 235B total/22B active parameters via OpenRouter, featuring thinking mode and advanced multilingual capabilities
