@@ -1,0 +1,23 @@
+name: o3-pro-2025-06-10
+id: O3P
+display_name: o3-pro
+provider: openai
+description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
+capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning]
+context_window: 200000
+max_output_tokens: 100000
+knowledge_cutoff: "2024-05-31"
+modalities: [text-input, image-input, text-output]
+pricing:
+  input_per_m_token: 20.00
+  output_per_m_token: 80.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  vision: true
+  batch: true
+  reinforcement_learning: true
+tools: [web-search, file-search, image-generation]
+reasoning_tokens: true
+version: "2025-06-10"

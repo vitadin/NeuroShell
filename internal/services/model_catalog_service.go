@@ -111,6 +111,18 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, grok4Model)
 
+	gpt41Model, err := m.loadModelFile(embedded.GPT41ModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GPT-4.1 model: %w", err)
+	}
+	allModels = append(allModels, gpt41Model)
+
+	o3ProModel, err := m.loadModelFile(embedded.O3ProModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load o3-pro model: %w", err)
+	}
+	allModels = append(allModels, o3ProModel)
+
 	// Validate that all model IDs are unique (case-insensitive)
 	if err := m.validateUniqueIDs(allModels); err != nil {
 		return nil, fmt.Errorf("model catalog validation failed: %w", err)
