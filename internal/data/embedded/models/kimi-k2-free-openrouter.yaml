@@ -1,0 +1,20 @@
+name: moonshotai/kimi-k2:free
+id: ORK2F
+display_name: Kimi K2 Free (OpenRouter)
+provider: openrouter
+description: Free access to Kimi K2 via OpenRouter, a trillion-parameter MoE model optimized for advanced tool use, reasoning, and code synthesis
+capabilities: [text, reasoning, analysis, coding, writing, tool-use, agentic]
+context_window: 65536
+max_output_tokens: 32768
+knowledge_cutoff: "2024-12-01"
+modalities: [text-input, text-output]
+pricing:
+  input_per_m_token: 0.00
+  output_per_m_token: 0.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: false
+  fine_tuning: false
+  tool_calling: true
+  multilingual: true

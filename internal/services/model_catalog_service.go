@@ -80,6 +80,37 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, claudeOpus4Model)
 
+	// Load Kimi K2 models
+	kimiK2FreeModel, err := m.loadModelFile(embedded.KimiK2FreeOpenRouterModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Kimi K2 Free (OpenRouter) model: %w", err)
+	}
+	allModels = append(allModels, kimiK2FreeModel)
+
+	kimiK2Model, err := m.loadModelFile(embedded.KimiK2OpenRouterModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Kimi K2 (OpenRouter) model: %w", err)
+	}
+	allModels = append(allModels, kimiK2Model)
+
+	kimiK2MoonshotModel, err := m.loadModelFile(embedded.KimiK2MoonshotModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Kimi K2 (Moonshot) model: %w", err)
+	}
+	allModels = append(allModels, kimiK2MoonshotModel)
+
+	qwen3235BModel, err := m.loadModelFile(embedded.Qwen3235BOpenRouterModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Qwen3-235B (OpenRouter) model: %w", err)
+	}
+	allModels = append(allModels, qwen3235BModel)
+
+	grok4Model, err := m.loadModelFile(embedded.Grok4OpenRouterModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Grok-4 (OpenRouter) model: %w", err)
+	}
+	allModels = append(allModels, grok4Model)
+
 	// Validate that all model IDs are unique (case-insensitive)
 	if err := m.validateUniqueIDs(allModels); err != nil {
 		return nil, fmt.Errorf("model catalog validation failed: %w", err)

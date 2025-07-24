@@ -34,20 +34,23 @@ func (c *CatalogCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the model-catalog command.
 func (c *CatalogCommand) Usage() string {
-	return `\model-catalog[provider=openai|anthropic|all, sort=name|provider, search=query]
+	return `\model-catalog[provider=openai|anthropic|openrouter|moonshot|all, sort=name|provider, search=query]
 
 Examples:
   \model-catalog                              %% List all available models (default: sorted by provider)
   \model-catalog[provider=openai]             %% List OpenAI models only
   \model-catalog[provider=anthropic]          %% List Anthropic models only
+  \model-catalog[provider=openrouter]         %% List OpenRouter models only
+  \model-catalog[provider=moonshot]           %% List Moonshot models only
   \model-catalog[sort=name]                   %% Sort models alphabetically by name
   \model-catalog[search=gpt-4]                %% Search for models containing "gpt-4"
   \model-catalog[search=CS4]                  %% Search by model ID (case-insensitive)
+  \model-catalog[search=kimi]                 %% Search for Kimi models
   \model-catalog[provider=openai,sort=name]   %% OpenAI models sorted by name
   \model-catalog[search=claude,sort=name]     %% Search for Claude models, sorted by name
 
 Options:
-  provider - Filter by provider: openai, anthropic, all (default: all)
+  provider - Filter by provider: openai, anthropic, openrouter, moonshot, all (default: all)
   sort     - Sort order: name (alphabetical), provider (by provider then name)
   search   - Search query to filter models by ID, name, display name, or description
 
@@ -171,7 +174,7 @@ func (c *CatalogCommand) Execute(args map[string]string, _ string) error {
 
 	// Build model-to-provider mapping
 	modelToProvider := make(map[string]string)
-	for _, supportedProvider := range []string{"anthropic", "openai"} {
+	for _, supportedProvider := range []string{"anthropic", "openai", "openrouter", "moonshot"} {
 		providerModels, err := modelCatalogService.GetModelCatalogByProvider(supportedProvider)
 		if err != nil {
 			return fmt.Errorf("failed to get %s models for mapping: %w", supportedProvider, err)
@@ -209,12 +212,14 @@ func (c *CatalogCommand) Execute(args map[string]string, _ string) error {
 // validateArguments checks if the provided provider and sort options are valid.
 func (c *CatalogCommand) validateArguments(provider, sortBy string) error {
 	validProviders := map[string]bool{
-		"all":       true,
-		"openai":    true,
-		"anthropic": true,
+		"all":        true,
+		"openai":     true,
+		"anthropic":  true,
+		"openrouter": true,
+		"moonshot":   true,
 	}
 	if !validProviders[provider] {
-		return fmt.Errorf("invalid provider option '%s'. Valid options: all, openai, anthropic", provider)
+		return fmt.Errorf("invalid provider option '%s'. Valid options: all, openai, anthropic, openrouter, moonshot", provider)
 	}
 
 	validSorts := map[string]bool{
@@ -271,6 +276,11 @@ func (c *CatalogCommand) sortModels(models []neurotypes.ModelCatalogEntry, sortB
 
 // getProviderFromModel determines the provider for a model entry using the model catalog data.
 func (c *CatalogCommand) getProviderFromModel(model neurotypes.ModelCatalogEntry, modelToProvider map[string]string) string {
+	// Use the Provider field directly from the model entry
+	if model.Provider != "" {
+		return model.Provider
+	}
+	// Fallback to mapping for legacy compatibility
 	if provider, exists := modelToProvider[model.Name]; exists {
 		return provider
 	}

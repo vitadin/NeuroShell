@@ -1,0 +1,21 @@
+name: kimi-k2-0711-preview
+id: MK2
+display_name: Kimi K2 (Moonshot)
+provider: moonshot
+description: Direct access to Kimi K2 via Moonshot AI platform, a trillion-parameter MoE model with 384 experts and advanced reasoning capabilities
+capabilities: [text, reasoning, analysis, coding, writing, tool-use, agentic]
+context_window: 128000
+max_output_tokens: 32768
+knowledge_cutoff: "2024-12-01"
+modalities: [text-input, text-output]
+pricing:
+  input_per_m_token: 0.15
+  output_per_m_token: 2.50
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: false
+  fine_tuning: false
+  tool_calling: true
+  multilingual: true
+version: "2024-07-11"

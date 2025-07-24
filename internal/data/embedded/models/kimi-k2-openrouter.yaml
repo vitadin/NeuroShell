@@ -1,0 +1,20 @@
+name: moonshotai/kimi-k2
+id: ORK2
+display_name: Kimi K2 (OpenRouter)
+provider: openrouter
+description: Trillion-parameter MoE model with 32B active parameters via OpenRouter, optimized for advanced tool use, reasoning, and code synthesis
+capabilities: [text, reasoning, analysis, coding, writing, tool-use, agentic]
+context_window: 131000
+max_output_tokens: 32768
+knowledge_cutoff: "2024-12-01"
+modalities: [text-input, text-output]
+pricing:
+  input_per_m_token: 0.14
+  output_per_m_token: 2.49
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: false
+  fine_tuning: false
+  tool_calling: true
+  multilingual: true

@@ -32,3 +32,28 @@ var Claude37OpusModelData []byte
 //
 //go:embed models/claude-opus-4.yaml
 var ClaudeOpus4ModelData []byte
+
+// KimiK2FreeOpenRouterModelData contains the embedded Kimi K2 Free (OpenRouter) model YAML data.
+//
+//go:embed models/kimi-k2-free-openrouter.yaml
+var KimiK2FreeOpenRouterModelData []byte
+
+// KimiK2OpenRouterModelData contains the embedded Kimi K2 (OpenRouter) model YAML data.
+//
+//go:embed models/kimi-k2-openrouter.yaml
+var KimiK2OpenRouterModelData []byte
+
+// KimiK2MoonshotModelData contains the embedded Kimi K2 (Moonshot) model YAML data.
+//
+//go:embed models/kimi-k2-moonshot.yaml
+var KimiK2MoonshotModelData []byte
+
+// Qwen3235BOpenRouterModelData contains the embedded Qwen3-235B (OpenRouter) model YAML data.
+//
+//go:embed models/qwen3-235b-openrouter.yaml
+var Qwen3235BOpenRouterModelData []byte
+
+// Grok4OpenRouterModelData contains the embedded Grok-4 (OpenRouter) model YAML data.
+//
+//go:embed models/grok-4-openrouter.yaml
+var Grok4OpenRouterModelData []byte

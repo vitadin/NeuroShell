@@ -1,0 +1,23 @@
+name: x-ai/grok-4
+id: ORG4
+display_name: "xAI: Grok 4"
+provider: openrouter
+description: Grok 4 is xAI's latest reasoning model with a 256k context window. It supports parallel tool calling, structured outputs, and both image and text inputs with mandatory reasoning capabilities.
+capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, structured-outputs, parallel-tool-calling, mandatory-reasoning]
+context_window: 256000
+max_output_tokens: 256000
+knowledge_cutoff: "2025-07-09"
+modalities: [text-input, image-input, text-output]
+pricing:
+  input_per_m_token: 3.00
+  output_per_m_token: 15.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  fine_tuning: false
+  tool_calling: true
+  parallel_tool_calling: true
+  vision: true
+  mandatory_reasoning: true
+version: "2025-07-09"
