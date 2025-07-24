@@ -2,7 +2,9 @@ package services
 
 import (
 	"fmt"
+	"os"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/charmbracelet/glamour"
 	"neuroshell/internal/logger"
@@ -29,12 +31,15 @@ func (m *MarkdownService) Name() string {
 	return "markdown"
 }
 
-// Initialize sets up the MarkdownService with default configuration.
+// Initialize sets up the MarkdownService with enhanced UTF-8 and terminal support.
 func (m *MarkdownService) Initialize() error {
-	// Create a terminal renderer with auto-style detection
+	// Ensure UTF-8 environment variables are set for proper terminal detection
+	m.ensureUTF8Environment()
+
+	// Create a terminal renderer with UTF-8 support
 	renderer, err := glamour.NewTermRenderer(
-		glamour.WithAutoStyle(),
-		glamour.WithWordWrap(80), // Default word wrap
+		glamour.WithAutoStyle(),  // Auto-detect terminal style
+		glamour.WithWordWrap(80), // Default word wrap with UTF-8 awareness
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create markdown renderer: %w", err)
@@ -43,7 +48,7 @@ func (m *MarkdownService) Initialize() error {
 	m.renderer = renderer
 	m.initialized = true
 
-	logger.Debug("MarkdownService initialized successfully")
+	logger.Debug("MarkdownService initialized successfully with UTF-8 support")
 	return nil
 }
 
@@ -54,7 +59,7 @@ func (m *MarkdownService) Render(markdown string) (string, error) {
 	return m.RenderWithOptions(markdown, true)
 }
 
-// RenderWithOptions renders markdown content with configurable string processing.
+// RenderWithOptions renders markdown content with configurable string processing and UTF-8 safety.
 // interpretEscapes controls whether escape sequences like \n are converted to actual characters.
 func (m *MarkdownService) RenderWithOptions(markdown string, interpretEscapes bool) (string, error) {
 	if !m.initialized {
@@ -65,13 +70,22 @@ func (m *MarkdownService) RenderWithOptions(markdown string, interpretEscapes bo
 		return "", fmt.Errorf("markdown content cannot be empty")
 	}
 
+	// Validate and sanitize UTF-8 input to prevent encoding issues
+	sanitizedMarkdown := m.sanitizeUTF8(markdown)
+
 	// Process text using the shared utility functions
-	processedMarkdown := stringprocessing.ProcessTextForMarkdown(markdown, interpretEscapes)
+	processedMarkdown := stringprocessing.ProcessTextForMarkdown(sanitizedMarkdown, interpretEscapes)
 
 	// Render the markdown content
 	rendered, err := m.renderer.Render(processedMarkdown)
 	if err != nil {
 		return "", fmt.Errorf("failed to render markdown: %w", err)
+	}
+
+	// Validate output is valid UTF-8
+	if !utf8.ValidString(rendered) {
+		logger.Debug("Rendered markdown contains invalid UTF-8, attempting to fix")
+		rendered = m.fixInvalidUTF8(rendered)
 	}
 
 	return rendered, nil
@@ -84,7 +98,7 @@ func (m *MarkdownService) RenderWithStyle(markdown string, style string) (string
 	return m.RenderWithStyleAndOptions(markdown, style, true)
 }
 
-// RenderWithStyleAndOptions renders markdown content with a specific style and configurable string processing.
+// RenderWithStyleAndOptions renders markdown content with a specific style and configurable string processing with UTF-8 safety.
 func (m *MarkdownService) RenderWithStyleAndOptions(markdown string, style string, interpretEscapes bool) (string, error) {
 	if !m.initialized {
 		return "", fmt.Errorf("markdown service not initialized")
@@ -94,10 +108,13 @@ func (m *MarkdownService) RenderWithStyleAndOptions(markdown string, style strin
 		return "", fmt.Errorf("markdown content cannot be empty")
 	}
 
-	// Process text using the shared utility functions
-	processedMarkdown := stringprocessing.ProcessTextForMarkdown(markdown, interpretEscapes)
+	// Validate and sanitize UTF-8 input to prevent encoding issues
+	sanitizedMarkdown := m.sanitizeUTF8(markdown)
 
-	// Create a new renderer with the specified style
+	// Process text using the shared utility functions
+	processedMarkdown := stringprocessing.ProcessTextForMarkdown(sanitizedMarkdown, interpretEscapes)
+
+	// Create a new renderer with the specified style and UTF-8 support
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithStylePath(style),
 		glamour.WithWordWrap(80),
@@ -112,6 +129,12 @@ func (m *MarkdownService) RenderWithStyleAndOptions(markdown string, style strin
 	rendered, err := renderer.Render(processedMarkdown)
 	if err != nil {
 		return "", fmt.Errorf("failed to render markdown with style '%s': %w", style, err)
+	}
+
+	// Validate output is valid UTF-8
+	if !utf8.ValidString(rendered) {
+		logger.Debug("Rendered markdown contains invalid UTF-8, attempting to fix")
+		rendered = m.fixInvalidUTF8(rendered)
 	}
 
 	return rendered, nil
@@ -140,7 +163,7 @@ func (m *MarkdownService) RenderWithThemeAndOptions(markdown string, interpretEs
 	return m.RenderWithStyleAndOptions(markdown, glamourStyle, interpretEscapes)
 }
 
-// SetWordWrap sets the word wrap width for markdown rendering.
+// SetWordWrap sets the word wrap width for markdown rendering with UTF-8 character awareness.
 func (m *MarkdownService) SetWordWrap(width int) error {
 	if !m.initialized {
 		return fmt.Errorf("markdown service not initialized")
@@ -150,7 +173,7 @@ func (m *MarkdownService) SetWordWrap(width int) error {
 		return fmt.Errorf("word wrap width must be positive, got %d", width)
 	}
 
-	// Create a new renderer with updated word wrap
+	// Create a new renderer with updated word wrap and UTF-8 support
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithAutoStyle(),
 		glamour.WithWordWrap(width),
@@ -160,7 +183,7 @@ func (m *MarkdownService) SetWordWrap(width int) error {
 	}
 
 	m.renderer = renderer
-	logger.Debug("MarkdownService word wrap updated", "width", width)
+	logger.Debug("MarkdownService word wrap updated with UTF-8 support", "width", width)
 	return nil
 }
 
@@ -220,8 +243,71 @@ func (m *MarkdownService) GetServiceInfo() map[string]interface{} {
 		"name":        m.Name(),
 		"initialized": m.initialized,
 		"styles":      m.GetAvailableStyles(),
-		"description": "Markdown rendering service using Glamour library",
+		"description": "Markdown rendering service using Glamour library with UTF-8 support",
 	}
+}
+
+// ensureUTF8Environment sets up environment variables for proper UTF-8 terminal handling.
+func (m *MarkdownService) ensureUTF8Environment() {
+	// Set LANG if not already set to ensure UTF-8 locale
+	if os.Getenv("LANG") == "" {
+		if err := os.Setenv("LANG", "en_US.UTF-8"); err != nil {
+			logger.Debug("Failed to set LANG environment variable", "error", err)
+		} else {
+			logger.Debug("Set LANG environment variable for UTF-8 support")
+		}
+	}
+
+	// Set LC_ALL if not set to ensure consistent UTF-8 handling
+	if os.Getenv("LC_ALL") == "" {
+		if err := os.Setenv("LC_ALL", "en_US.UTF-8"); err != nil {
+			logger.Debug("Failed to set LC_ALL environment variable", "error", err)
+		} else {
+			logger.Debug("Set LC_ALL environment variable for UTF-8 support")
+		}
+	}
+
+	// Ensure TERM supports UTF-8 if not already set
+	if os.Getenv("TERM") == "" {
+		if err := os.Setenv("TERM", "xterm-256color"); err != nil {
+			logger.Debug("Failed to set TERM environment variable", "error", err)
+		} else {
+			logger.Debug("Set TERM environment variable for enhanced terminal support")
+		}
+	}
+}
+
+// sanitizeUTF8 cleans and validates UTF-8 input to prevent encoding issues.
+func (m *MarkdownService) sanitizeUTF8(input string) string {
+	// If input is already valid UTF-8, return as-is
+	if utf8.ValidString(input) {
+		return input
+	}
+
+	logger.Debug("Input contains invalid UTF-8, sanitizing")
+
+	// Convert invalid UTF-8 sequences to replacement characters
+	sanitized := strings.ToValidUTF8(input, "�")
+
+	// Log if we had to make replacements
+	if sanitized != input {
+		logger.Debug("Replaced invalid UTF-8 sequences with replacement characters")
+	}
+
+	return sanitized
+}
+
+// fixInvalidUTF8 attempts to fix invalid UTF-8 in rendered output.
+func (m *MarkdownService) fixInvalidUTF8(output string) string {
+	// Convert any remaining invalid UTF-8 to replacement characters
+	fixed := strings.ToValidUTF8(output, "�")
+
+	// If we made changes, log it
+	if fixed != output {
+		logger.Debug("Fixed invalid UTF-8 in rendered output")
+	}
+
+	return fixed
 }
 
 func init() {

@@ -115,17 +115,21 @@ func (ci *CoreInterpolator) ExpandVariables(text string) string {
 //
 // This function provides fine-grained control over expansion depth.
 func (ci *CoreInterpolator) ExpandOnce(text string) string {
+
 	var stack []string
 	pending := false
 
-	for i := 0; i < len(text); i++ {
+	// Convert to runes for proper UTF-8 handling
+	runes := []rune(text)
+
+	for i := 0; i < len(runes); i++ {
 		// Look for ${
 		switch {
-		case i < len(text)-1 && text[i] == '$' && text[i+1] == '{':
+		case i < len(runes)-1 && runes[i] == '$' && runes[i+1] == '{':
 			stack = append(stack, "${")
 			pending = true
 			i++ // Skip the '{'
-		case text[i] == '}' && pending:
+		case runes[i] == '}' && pending:
 			// Pop back to "${" marker to extract variable name
 			varName := ""
 			for len(stack) > 0 && stack[len(stack)-1] != "${" {
@@ -142,13 +146,15 @@ func (ci *CoreInterpolator) ExpandOnce(text string) string {
 			stack = append(stack, value)
 			pending = false
 		default:
-			// Regular character or "}" when not pending
-			stack = append(stack, string(text[i]))
+			// Regular character or "}" when not pending - use rune to preserve UTF-8
+			stack = append(stack, string(runes[i]))
 		}
 	}
 
 	// Join all stack elements to form final result
-	return strings.Join(stack, "")
+	result := strings.Join(stack, "")
+
+	return result
 }
 
 // ExpandWithLimit performs iterative variable expansion with a maximum iteration limit.
@@ -192,6 +198,7 @@ func (ci *CoreInterpolator) getVariableValue(varName string) string {
 
 	// Get variable value from context
 	value, _ := ci.context.GetVariable(varName)
+
 	return value
 }
 

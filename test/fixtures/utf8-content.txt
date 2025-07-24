@@ -1,0 +1,12 @@
+UTF-8 Test Content
+==================
+
+Basic accented: café, naïve, résumé, piñata
+Non-Latin: 日本語, Ελληνικά, Русский
+Symbols: — – "" … 
+Emojis: 🚀 ✨ 🌟 💫 ⭐
+Math: π ∑ ∞ ≠ ≤ ≥
+Currency: € £ ¥ ₽ ₹
+
+Mixed line: café with 🚀 and — dash
+Complex: "Hello" said the café owner in 日本語
