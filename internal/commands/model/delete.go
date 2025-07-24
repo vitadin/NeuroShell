@@ -49,7 +49,7 @@ Notes:
   - With id=true, searches model ID prefixes
   - If multiple models match, shows list of matches and asks for more specific input
   - If no models match, shows helpful suggestions
-  - If the deleted model is currently active, the active model will be cleared
+  - After deletion, automatically re-evaluates active model (shows current or activates latest)
   - Deletion is permanent and cannot be undone`
 }
 
@@ -88,7 +88,7 @@ func (c *DeleteCommand) HelpInfo() neurotypes.HelpInfo {
 			"Use id=true to search by model ID prefix instead",
 			"If multiple models match, shows list and asks for more specific input",
 			"If no models match, shows helpful suggestions",
-			"Deletion of active model clears the active model setting",
+			"After deletion, automatically re-evaluates active model state",
 			"Variables in model text are interpolated before processing",
 		},
 	}
@@ -238,6 +238,13 @@ func (c *DeleteCommand) deleteModel(model *neurotypes.ModelConfig, modelService 
 	// Prepare success message
 	outputMsg := fmt.Sprintf("Deleted model '%s' (ID: %s, Provider: %s, Base: %s)",
 		modelName, modelID[:8], modelProvider, modelBase)
+
+	// Auto-push model activation command to stack service to handle active model state
+	// This will either show current active model, activate latest model, or show "no models" message
+	if stackService, err := services.GetGlobalStackService(); err == nil {
+		activateCommand := "\\model-activate"
+		stackService.PushCommand(activateCommand)
+	}
 
 	// Update deletion-related variables
 	if err := c.updateDeletionVariables(modelName, modelID, modelProvider, modelBase, variableService); err != nil {

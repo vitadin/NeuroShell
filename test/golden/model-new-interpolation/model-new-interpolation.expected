@@ -9,6 +9,10 @@ Setting model_name = test-model
 Setting temp_setting = 0.7
 %%> "\\model-new[provider=\"${model_provider}\", base_model=\"${model_base}\", temperature=\"${temp_setting}\"] ${model_name}"
 Created model 'test-model' (ID: 00000001, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated model 'test-model' (ID: 00000001, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\get[#model_id]"

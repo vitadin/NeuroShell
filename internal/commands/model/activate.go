@@ -34,17 +34,20 @@ func (c *ActivateCommand) Description() string {
 func (c *ActivateCommand) Usage() string {
 	return `\model-activate[id=false] model_text
 \model-activate[id=true] id_prefix
+\model-activate
 
 Examples:
   \model-activate my-gpt                    %% Activate by name (default) - matches any model name containing "my-gpt"
   \model-activate[id=true] 1234            %% Activate by ID prefix - matches any model ID starting with "1234"
   \model-activate my-claude-model          %% Activate by exact or partial name match
   \model-activate[id=true] abc123          %% Activate by ID prefix match
+  \model-activate                          %% Show current active model, or activate latest if none active
 
 Options:
   id - Search by model ID prefix instead of name (default: false)
 
 Notes:
+  - When called with no parameters: shows current active model or activates latest model
   - By default, searches model names for matches (partial matching supported)
   - With id=true, searches model ID prefixes
   - If multiple models match, shows list of matches and asks for more specific input
@@ -58,7 +61,7 @@ func (c *ActivateCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\model-activate[id=false] model_text",
+		Usage:       "\\model-activate[id=false] [model_text]",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
@@ -82,8 +85,13 @@ func (c *ActivateCommand) HelpInfo() neurotypes.HelpInfo {
 				Command:     "\\model-activate claude",
 				Description: "Activate by partial name match",
 			},
+			{
+				Command:     "\\model-activate",
+				Description: "Show current active model or activate latest model",
+			},
 		},
 		Notes: []string{
+			"When called with no parameters: shows current active model or activates latest model",
 			"By default searches model names (partial matching supported)",
 			"Use id=true to search by model ID prefix instead",
 			"If multiple models match, shows list and asks for more specific input",
@@ -112,10 +120,10 @@ func (c *ActivateCommand) Execute(args map[string]string, input string) error {
 	idStr := args["id"]
 	byID := idStr == "true"
 
-	// Validate input
+	// Handle no-parameter case: show current active model or activate latest
 	searchText := input
 	if searchText == "" {
-		return fmt.Errorf("model name or ID prefix is required\n\nUsage: %s", c.Usage())
+		return c.handleNoParameters(modelService, variableService)
 	}
 
 	// Get all models for searching
@@ -280,6 +288,70 @@ func (c *ActivateCommand) updateActivationVariables(model *neurotypes.ModelConfi
 	}
 
 	return nil
+}
+
+// handleNoParameters handles the case when model-activate is called without parameters.
+// It shows current active model if exists, otherwise activates the latest created model.
+func (c *ActivateCommand) handleNoParameters(modelService *services.ModelService, variableService *services.VariableService) error {
+	// Check if there's already an active model
+	activeModelName, err := variableService.Get("#active_model_name")
+	if err == nil && activeModelName != "" {
+		// There's already an active model, show current status
+		activeModelID, _ := variableService.Get("#active_model_id")
+		activeModelProvider, _ := variableService.Get("#active_model_provider")
+		activeModelBase, _ := variableService.Get("#active_model_base")
+
+		outputMsg := fmt.Sprintf("Current active model: '%s' (ID: %s, Provider: %s, Base: %s)",
+			activeModelName, activeModelID[:8], activeModelProvider, activeModelBase)
+
+		// Store result in _output variable
+		if err := variableService.SetSystemVariable("_output", outputMsg); err != nil {
+			return fmt.Errorf("failed to store result: %w", err)
+		}
+
+		fmt.Println(outputMsg)
+		return nil
+	}
+
+	// No active model exists, try to activate the latest created model
+	models, err := modelService.ListModelsWithGlobalContext()
+	if err != nil {
+		return fmt.Errorf("failed to list models: %w", err)
+	}
+
+	if len(models) == 0 {
+		// No models exist, show friendly message
+		outputMsg := "No models available. Use \\model-new to create one."
+
+		if err := variableService.SetSystemVariable("_output", outputMsg); err != nil {
+			return fmt.Errorf("failed to store result: %w", err)
+		}
+
+		fmt.Println(outputMsg)
+		return nil
+	}
+
+	// Find the latest created model
+	latestModel := c.findLatestModel(models)
+	if latestModel == nil {
+		return fmt.Errorf("failed to find latest model")
+	}
+
+	// Activate the latest model
+	return c.activateModel(latestModel, modelService, variableService)
+}
+
+// findLatestModel finds the most recently created model from the models map.
+func (c *ActivateCommand) findLatestModel(models map[string]*neurotypes.ModelConfig) *neurotypes.ModelConfig {
+	var latestModel *neurotypes.ModelConfig
+
+	for _, model := range models {
+		if latestModel == nil || model.CreatedAt.After(latestModel.CreatedAt) {
+			latestModel = model
+		}
+	}
+
+	return latestModel
 }
 
 func init() {

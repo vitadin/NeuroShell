@@ -1,14 +1,26 @@
 Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"O3\"] zebra-model"
 Created model 'zebra-model' (ID: 00000001, Provider: openai, Base: o3)
+%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated model 'zebra-model' (ID: 00000001, Provider: openai, Base: o3)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O4M\"] alpha-model"
 Created model 'alpha-model' (ID: 00000002, Provider: openai, Base: o4-mini)
+%%> "\\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+Activated model 'alpha-model' (ID: 00000002, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[provider=\"openai\", base_model=\"gpt-4\"] middle-model"
 Created model 'middle-model' (ID: 00000003, Provider: openai, Base: gpt-4)
+%%> "\\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
+Activated model 'middle-model' (ID: 00000003, Provider: openai, Base: gpt-4)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-status[sort=\"name\"]"

@@ -1,10 +1,18 @@
 Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"O4M\"] current-model"
 Created model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] backup-model"
 Created model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+Activated model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-activate current-model"
@@ -17,6 +25,8 @@ LLM client ready: openai:b10394de (configured: true)
 #active_model_id = 00000001-0000-4000-8000-000000000001
 %%> "\\model-delete current-model"
 Deleted model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\model-activate"
+Current active model: 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\get[#active_model_name]"
 #active_model_name = current-model
 %%> "\\get[#active_model_id]"
@@ -24,7 +34,7 @@ Deleted model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\get[#deleted_model_name]"
 #deleted_model_name = current-model
 %%> "\\get[_output]"
-_output = Deleted model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+_output = Current active model: 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\model-status"
 Model Configurations (1 models):
   backup-model (00000002)
