@@ -1,0 +1,56 @@
+%% UTF-8 character rendering test for \set and \get commands
+\set[_echo_command="true"]
+
+%% Test setting UTF-8 variables
+\set[cafe="café"]
+\set[japanese="日本語"]
+\set[emoji="🚀"]
+\set[currency="€ £ ¥"]
+\set[symbols="— – "" …"]
+
+%% Test getting UTF-8 variables back
+\get[cafe]
+\get[japanese]
+\get[emoji]
+\get[currency]
+\get[symbols]
+
+%% Test complex UTF-8 content in variables
+\set[complex="Complex: café with 日本語 and 🚀 — testing"]
+\get[complex]
+
+%% Test UTF-8 variable names (if supported)
+\set[café_name="This is a café"]
+\get[café_name]
+
+%% Test variable interpolation within UTF-8 content
+\set[greeting="Hello"]
+\set[place="café"]
+\set[combined="${greeting} at the ${place} with 🚀"]
+\get[combined]
+
+%% Test mixed UTF-8 characters in one variable
+\set[mixed="Math: π ≠ ∞, Currency: € £, Quotes: "", Emoji: 🚀 ✨"]
+\get[mixed]
+
+%% Test multiline UTF-8 content
+\set[multiline="Line 1: café\nLine 2: 日本語\nLine 3: 🚀 rocket"]
+\get[multiline]
+
+%% Test escaping and special characters with UTF-8
+\set[escaped="Escaped: \"café\" and 'naïve' with — dash"]
+\get[escaped]
+
+%% Test empty UTF-8 content
+\set[empty=""]
+\get[empty]
+
+%% Test overwriting UTF-8 variables
+\set[test_var="Original: café"]
+\get[test_var]
+\set[test_var="Updated: 日本語 🚀"]
+\get[test_var]
+
+%% Test UTF-8 in allowed system variable (_style is whitelisted)
+\set[_style="café styling with 🚀"]
+\get[_style]

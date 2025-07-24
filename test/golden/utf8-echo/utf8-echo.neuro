@@ -1,0 +1,44 @@
+%% UTF-8 character rendering test for \echo command
+\set[_echo_command="true"]
+
+%% Test basic UTF-8 characters
+\echo Basic UTF-8: café, naïve, résumé
+
+%% Test non-Latin scripts  
+\echo Non-Latin: 日本語, Ελληνικά, Русский
+
+%% Test symbols and punctuation
+\echo Symbols: — – "" … 
+
+%% Test emojis
+\echo Emojis: 🚀 ✨ 🌟 💫 ⭐
+
+%% Test mathematical symbols
+\echo Math: π ∑ ∞ ≠ ≤ ≥
+
+%% Test currency symbols
+\echo Currency: € £ ¥ ₽ ₹
+
+%% Test variable storage and retrieval with UTF-8
+\set[utf8_var="Testing UTF-8: café, 日本語, 🚀"]
+\echo Variable content: ${utf8_var}
+
+%% Test variable interpolation with UTF-8
+\set[accent="café"]
+\set[emoji="🚀"]
+\set[dash="—"]
+\echo Combining: ${accent} and ${emoji} with ${dash}
+
+%% Test output storage preserves UTF-8
+\echo[to=custom_utf8] Stored UTF-8: café with 🚀 and — dash
+\get[custom_utf8]
+
+%% Test silent mode with UTF-8
+\echo[silent=true] Silent UTF-8: "Hello" said the café owner
+\get[_output]
+
+%% Test complex UTF-8 mixing
+\echo Complex: "Hello" said the café owner in 日本語
+
+%% Verify final output variable
+\get[_output]
