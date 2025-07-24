@@ -80,6 +80,25 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, claudeOpus4Model)
 
+	// Load Kimi K2 models
+	kimiK2FreeModel, err := m.loadModelFile(embedded.KimiK2FreeOpenRouterModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Kimi K2 Free (OpenRouter) model: %w", err)
+	}
+	allModels = append(allModels, kimiK2FreeModel)
+
+	kimiK2Model, err := m.loadModelFile(embedded.KimiK2OpenRouterModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Kimi K2 (OpenRouter) model: %w", err)
+	}
+	allModels = append(allModels, kimiK2Model)
+
+	kimiK2MoonshotModel, err := m.loadModelFile(embedded.KimiK2MoonshotModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Kimi K2 (Moonshot) model: %w", err)
+	}
+	allModels = append(allModels, kimiK2MoonshotModel)
+
 	// Validate that all model IDs are unique (case-insensitive)
 	if err := m.validateUniqueIDs(allModels); err != nil {
 		return nil, fmt.Errorf("model catalog validation failed: %w", err)
