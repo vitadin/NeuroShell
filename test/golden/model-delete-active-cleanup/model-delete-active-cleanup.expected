@@ -1,18 +1,12 @@
 Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"O4M\"] current-model"
 Created model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-Activated model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] backup-model"
 Created model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-Activated model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-activate current-model"

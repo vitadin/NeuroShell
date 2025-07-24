@@ -1,18 +1,12 @@
 Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"O4M\"] primary-model"
 Created model 'primary-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-Activated model 'primary-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] secondary-model"
 Created model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-Activated model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-activate primary-model"
@@ -59,10 +53,7 @@ Model Configurations (2 models):
 #active_model_provider = openai
 %%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\"] new-model"
 Created model 'new-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
-Activated model 'new-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\get[#active_model_name]"

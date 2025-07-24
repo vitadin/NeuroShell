@@ -49,18 +49,12 @@ Model Catalog (Openai) (2 models):
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
 %%> "\\model-new[catalog_id=\"O4M\"] my-claude-4"
 Created model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-Activated model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] my-o3-model"
 Created model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-Activated model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-status"
@@ -92,10 +86,7 @@ Activated model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\", temperature=\"0.8\", description=\"Custom model\"] custom-model"
 Created model 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
-Activated model 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-status"
