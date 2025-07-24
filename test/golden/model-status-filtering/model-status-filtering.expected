@@ -1,18 +1,26 @@
 Setting _echo_command = true
-%%> "\\model-new[catalog_id=\"CS4\"] claude-prod-model"
-Created model 'claude-prod-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+%%> "\\model-new[catalog_id=\"O4M\"] claude-prod-model"
+Created model 'claude-prod-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] openai-prod-model"
 Created model 'openai-prod-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-new[provider=\"anthropic\", base_model=\"claude-3-sonnet\"] claude-test-model"
-Created model 'claude-test-model' (ID: 00000003, Provider: anthropic, Base: claude-3-sonnet)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\"] claude-test-model"
+Created model 'claude-test-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[provider=\"openai\", base_model=\"gpt-4\"] openai-test-model"
 Created model 'openai-test-model' (ID: 00000004, Provider: openai, Base: gpt-4)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-status[name=\"prod\"]"
 Model Configurations - Filter: name='prod' (2 models):
   claude-prod-model (00000001)
-    Provider: anthropic
-    Base Model: claude-sonnet-4-20250514
-    Catalog ID: CS4
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:01
   openai-prod-model (00000002)
@@ -21,31 +29,44 @@ Model Configurations - Filter: name='prod' (2 models):
     Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
-%%> "\\model-status[provider=\"anthropic\"]"
-Model Configurations - Filter: provider='anthropic' (2 models):
+%%> "\\model-status[provider=\"openai\"]"
+Model Configurations - Filter: provider='openai' (4 models):
   claude-prod-model (00000001)
-    Provider: anthropic
-    Base Model: claude-sonnet-4-20250514
-    Catalog ID: CS4
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:01
   claude-test-model (00000003)
-    Provider: anthropic
-    Base Model: claude-3-sonnet
+    Provider: openai
+    Base Model: gpt-3.5-turbo
     Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03
-%%> "\\model-status[name=\"claude\", provider=\"anthropic\"]"
-Model Configurations - Filter: name='claude', provider='anthropic' (2 models):
+  openai-prod-model (00000002)
+    Provider: openai
+    Base Model: o3
+    Catalog ID: O3
+    Parameters: none
+    Created: 2025-01-01 00:00:02
+  openai-test-model (00000004)
+    Provider: openai
+    Base Model: gpt-4
+    Catalog ID: none
+    Parameters: none
+    Created: 2025-01-01 00:00:04
+    Active: true
+%%> "\\model-status[name=\"claude\", provider=\"openai\"]"
+Model Configurations - Filter: name='claude', provider='openai' (2 models):
   claude-prod-model (00000001)
-    Provider: anthropic
-    Base Model: claude-sonnet-4-20250514
-    Catalog ID: CS4
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:01
   claude-test-model (00000003)
-    Provider: anthropic
-    Base Model: claude-3-sonnet
+    Provider: openai
+    Base Model: gpt-3.5-turbo
     Catalog ID: none
     Parameters: none
     Created: 2025-01-01 00:00:03

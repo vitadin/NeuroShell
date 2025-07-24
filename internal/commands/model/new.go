@@ -267,6 +267,11 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		stackService.PushCommand(clientCommand)
 	}
 
+	// Automatically activate the newly created model for seamless UX
+	if err := c.activateNewModel(model, variableService); err != nil {
+		return fmt.Errorf("failed to activate new model: %w", err)
+	}
+
 	// Update model-related variables
 	if err := c.updateModelVariables(model, variableService); err != nil {
 		return fmt.Errorf("failed to update model variables: %w", err)
@@ -381,6 +386,34 @@ func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variabl
 	for name, value := range variables {
 		if err := variableService.SetSystemVariable(name, value); err != nil {
 			return fmt.Errorf("failed to set variable %s: %w", name, err)
+		}
+	}
+
+	return nil
+}
+
+// activateNewModel automatically activates the newly created model.
+func (c *NewCommand) activateNewModel(model *neurotypes.ModelConfig, variableService *services.VariableService) error {
+	// Set active model variables - same logic as model-activate command
+	variables := map[string]string{
+		"#active_model_id":       model.ID,
+		"#active_model_name":     model.Name,
+		"#active_model_provider": model.Provider,
+		"#active_model_base":     model.BaseModel,
+		"#active_model_created":  model.CreatedAt.Format("2006-01-02 15:04:05"),
+	}
+
+	// Add parameter count
+	variables["#active_model_param_count"] = fmt.Sprintf("%d", len(model.Parameters))
+
+	// Add description if present
+	if model.Description != "" {
+		variables["#active_model_description"] = model.Description
+	}
+
+	for name, value := range variables {
+		if err := variableService.SetSystemVariable(name, value); err != nil {
+			return fmt.Errorf("failed to set active model variable %s: %w", name, err)
 		}
 	}
 

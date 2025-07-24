@@ -55,6 +55,7 @@ sessions/
 .neuro_sessions/
 temp/
 logs/
+archived/
 
 # Development and testing
 coverage.html

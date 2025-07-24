@@ -2,19 +2,19 @@
 \set[_echo_command="true"]
 
 %% Create models with different providers and names
-\model-new[catalog_id="CS4"] claude-prod-model
+\model-new[catalog_id="O4M"] claude-prod-model
 \model-new[catalog_id="O3"] openai-prod-model
-\model-new[provider="anthropic", base_model="claude-3-sonnet"] claude-test-model
+\model-new[provider="openai", base_model="gpt-3.5-turbo"] claude-test-model
 \model-new[provider="openai", base_model="gpt-4"] openai-test-model
 
 %% Test filtering by name pattern
 \model-status[name="prod"]
 
 %% Test filtering by provider
-\model-status[provider="anthropic"]
+\model-status[provider="openai"]
 
 %% Test combined filters
-\model-status[name="claude", provider="anthropic"]
+\model-status[name="claude", provider="openai"]
 
 %% Test filter with no matches
 \model-status[provider="nonexistent"]

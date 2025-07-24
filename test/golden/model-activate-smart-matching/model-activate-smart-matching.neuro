@@ -2,9 +2,9 @@
 \set[_echo_command="true"]
 
 %% Create models with similar names for testing partial matching
-\model-new[catalog_id="CS4"] my-claude-model
+\model-new[catalog_id="O4M"] my-claude-model
 \model-new[catalog_id="O3"] my-openai-model
-\model-new[provider="anthropic", base_model="claude-3-sonnet"] another-claude
+\model-new[provider="openai", base_model="gpt-3.5-turbo"] another-claude
 
 %% Test partial name matching (should match unique substring)
 \model-activate openai

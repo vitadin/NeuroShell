@@ -21,7 +21,7 @@
 \get[#active_model_name]
 \if-not[condition="${#active_model_name}"] \model-new[catalog_id=O4M] default_model
 
-%% Step 4: Get client using model's provider (auto-created by model commands via stack service)
+%% Step 4: Get client using active model's provider (auto-created by model commands via stack service)
 \get[#active_model_provider]
 \llm-client-get[provider=${#active_model_provider}]
 
