@@ -346,57 +346,51 @@ func (ctx *NeuroContext) InterpolateVariables(text string) string {
 	return text
 }
 
-// interpolateOnce performs a single pass of variable interpolation
+// interpolateOnce performs a single pass of variable interpolation with UTF-8 safety
+// This preserves the original business logic but uses rune-based processing for UTF-8 safety
 func (ctx *NeuroContext) interpolateOnce(text string) string {
-	result := strings.Builder{}
-	i := 0
+	var stack []string
+	pending := false
 
-	for i < len(text) {
+	// Convert to runes for proper UTF-8 handling
+	runes := []rune(text)
+
+	for i := 0; i < len(runes); i++ {
 		// Look for ${
-		if i < len(text)-1 && text[i] == '$' && text[i+1] == '{' {
-			// Find the matching closing brace
-			braceCount := 1
-			start := i + 2 // Position after ${
-			end := start
-
-			for end < len(text) && braceCount > 0 {
-				switch text[end] {
-				case '{':
-					braceCount++
-				case '}':
-					braceCount--
-				}
-				if braceCount > 0 {
-					end++
-				}
+		switch {
+		case i < len(runes)-1 && runes[i] == '$' && runes[i+1] == '{':
+			stack = append(stack, "${")
+			pending = true
+			i++ // Skip the '{'
+		case runes[i] == '}' && pending:
+			// Pop back to "${" marker to extract variable name
+			varName := ""
+			for len(stack) > 0 && stack[len(stack)-1] != "${" {
+				varName = stack[len(stack)-1] + varName
+				stack = stack[:len(stack)-1]
+			}
+			// Remove the "${" marker
+			if len(stack) > 0 {
+				stack = stack[:len(stack)-1]
 			}
 
-			if braceCount == 0 {
-				// Found matching closing brace
-				varName := text[start:end]
-
-				// Special case: empty variable name should be left as-is
-				if varName == "" {
-					result.WriteString("${}")
-				} else if value, err := ctx.GetVariable(varName); err == nil {
-					result.WriteString(value)
-				}
-				// If variable doesn't exist, write nothing (empty string)
-
-				i = end + 1 // Move past the closing brace
+			// Special case: empty variable name should be left as-is
+			if varName == "" {
+				stack = append(stack, "${}")
 			} else {
-				// No matching closing brace, treat as literal text
-				result.WriteByte(text[i])
-				i++
+				// Get variable value and push to stack
+				value, _ := ctx.GetVariable(varName)
+				stack = append(stack, value)
 			}
-		} else {
-			// Regular character
-			result.WriteByte(text[i])
-			i++
+			pending = false
+		default:
+			// Regular character or "}" when not pending - use rune to preserve UTF-8
+			stack = append(stack, string(runes[i]))
 		}
 	}
 
-	return result.String()
+	// Join all stack elements to form final result
+	return strings.Join(stack, "")
 }
 
 // QueueCommand adds a command to the execution queue.
