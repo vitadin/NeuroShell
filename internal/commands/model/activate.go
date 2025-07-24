@@ -229,6 +229,12 @@ func (c *ActivateCommand) activateModel(model *neurotypes.ModelConfig, modelServ
 		return fmt.Errorf("failed to activate model: %w", err)
 	}
 
+	// Auto-push client creation command to stack service for seamless UX
+	if stackService, err := services.GetGlobalStackService(); err == nil {
+		clientCommand := fmt.Sprintf("\\llm-client-get[provider=%s]", model.Provider)
+		stackService.PushCommand(clientCommand)
+	}
+
 	// Prepare success message
 	outputMsg := fmt.Sprintf("Activated model '%s' (ID: %s, Provider: %s, Base: %s)",
 		model.Name, model.ID[:8], model.Provider, model.BaseModel)

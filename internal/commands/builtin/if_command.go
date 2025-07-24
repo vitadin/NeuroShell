@@ -8,6 +8,7 @@ import (
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
+	"neuroshell/pkg/stringprocessing"
 )
 
 // IfCommand implements the \if command for conditional execution.
@@ -131,48 +132,9 @@ func (c *IfCommand) Execute(args map[string]string, input string) error {
 // Note: Variable interpolation (${var}) is handled by the state machine before this command executes,
 // so the condition parameter already contains the expanded variable values.
 func (c *IfCommand) evaluateCondition(condition string) bool {
-	// Trim whitespace and evaluate directly
+	// Trim whitespace and evaluate using shared logic
 	// Variables have already been interpolated by the state machine
-	return c.isTruthy(strings.TrimSpace(condition))
-}
-
-// isTruthy determines if a string represents a truthy value
-func (c *IfCommand) isTruthy(value string) bool {
-	value = strings.TrimSpace(strings.ToLower(value))
-
-	// Empty string is falsy
-	if value == "" {
-		return false
-	}
-
-	// Common truthy values
-	truthyValues := map[string]bool{
-		"true":    true,
-		"1":       true,
-		"yes":     true,
-		"on":      true,
-		"enabled": true,
-	}
-
-	// Common falsy values
-	falsyValues := map[string]bool{
-		"false":    true,
-		"0":        true,
-		"no":       true,
-		"off":      true,
-		"disabled": true,
-	}
-
-	// Check explicit truthy/falsy values
-	if truthyValues[value] {
-		return true
-	}
-	if falsyValues[value] {
-		return false
-	}
-
-	// Any non-empty string is considered truthy
-	return true
+	return stringprocessing.IsTruthy(strings.TrimSpace(condition))
 }
 
 func init() {

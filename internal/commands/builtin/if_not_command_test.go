@@ -10,41 +10,41 @@ import (
 	"neuroshell/pkg/stringprocessing"
 )
 
-func TestIfCommand_Name(t *testing.T) {
-	cmd := &IfCommand{}
-	assert.Equal(t, "if", cmd.Name())
+func TestIfNotCommand_Name(t *testing.T) {
+	cmd := &IfNotCommand{}
+	assert.Equal(t, "if-not", cmd.Name())
 }
 
-func TestIfCommand_Description(t *testing.T) {
-	cmd := &IfCommand{}
+func TestIfNotCommand_Description(t *testing.T) {
+	cmd := &IfNotCommand{}
 	assert.NotEmpty(t, cmd.Description())
 	assert.Contains(t, cmd.Description(), "Conditionally")
 }
 
-func TestIfCommand_Usage(t *testing.T) {
-	cmd := &IfCommand{}
+func TestIfNotCommand_Usage(t *testing.T) {
+	cmd := &IfNotCommand{}
 	usage := cmd.Usage()
-	assert.Contains(t, usage, "\\if")
+	assert.Contains(t, usage, "\\if-not")
 	assert.Contains(t, usage, "condition")
 }
 
-func TestIfCommand_HelpInfo(t *testing.T) {
-	cmd := &IfCommand{}
+func TestIfNotCommand_HelpInfo(t *testing.T) {
+	cmd := &IfNotCommand{}
 	help := cmd.HelpInfo()
-	assert.Equal(t, "if", help.Command)
+	assert.Equal(t, "if-not", help.Command)
 	assert.NotEmpty(t, help.Description)
 	assert.NotEmpty(t, help.Usage)
 	assert.NotEmpty(t, help.Examples)
 	assert.NotEmpty(t, help.Notes)
 }
 
-func TestIfCommand_ParseMode(t *testing.T) {
-	cmd := &IfCommand{}
+func TestIfNotCommand_ParseMode(t *testing.T) {
+	cmd := &IfNotCommand{}
 	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 }
 
-func TestIfCommand_EvaluateCondition(t *testing.T) {
-	cmd := &IfCommand{}
+func TestIfNotCommand_EvaluateCondition(t *testing.T) {
+	cmd := &IfNotCommand{}
 
 	tests := []struct {
 		name      string
@@ -82,8 +82,8 @@ func TestIfCommand_EvaluateCondition(t *testing.T) {
 	}
 }
 
-func TestIfCommand_IsTruthy(t *testing.T) {
-
+func TestIfNotCommand_IsTruthy(t *testing.T) {
+	// Test that if-not uses the same IsTruthy logic as stringprocessing
 	tests := []struct {
 		name     string
 		value    string
@@ -118,8 +118,8 @@ func TestIfCommand_IsTruthy(t *testing.T) {
 	}
 }
 
-func TestIfCommand_Execute_MissingCondition(t *testing.T) {
-	cmd := &IfCommand{}
+func TestIfNotCommand_Execute_MissingCondition(t *testing.T) {
+	cmd := &IfNotCommand{}
 	args := map[string]string{}
 
 	err := cmd.Execute(args, "some command")
@@ -127,7 +127,7 @@ func TestIfCommand_Execute_MissingCondition(t *testing.T) {
 	assert.Contains(t, err.Error(), "condition parameter is required")
 }
 
-func TestIfCommand_Execute_TrueCondition(t *testing.T) {
+func TestIfNotCommand_Execute_FalseCondition(t *testing.T) {
 	// Setup test context
 	ctx := context.NewTestContext()
 	concreteCtx := ctx.(*context.NeuroContext)
@@ -139,103 +139,22 @@ func TestIfCommand_Execute_TrueCondition(t *testing.T) {
 	_ = services.GetGlobalRegistry().RegisterService(services.NewStackService())
 	_ = services.GetGlobalRegistry().InitializeAll()
 
-	cmd := &IfCommand{}
-	args := map[string]string{"condition": "true"}
-
-	err := cmd.Execute(args, "\\set[var=test_value]")
-	assert.NoError(t, err)
-
-	// Check if command was pushed to stack
-	stackSize := concreteCtx.GetStackSize()
-	assert.Equal(t, 1, stackSize)
-
-	// Check if result was stored
-	varValue, _ := concreteCtx.GetVariable("#if_result")
-	assert.Equal(t, "true", varValue)
-}
-
-func TestIfCommand_Execute_FalseCondition(t *testing.T) {
-	// Setup test context
-	ctx := context.NewTestContext()
-	concreteCtx := ctx.(*context.NeuroContext)
-	ctx.SetTestMode(true)
-
-	// Setup services
-	services.SetGlobalRegistry(services.NewRegistry())
-	_ = services.GetGlobalRegistry().RegisterService(services.NewVariableService())
-	_ = services.GetGlobalRegistry().RegisterService(services.NewStackService())
-	_ = services.GetGlobalRegistry().InitializeAll()
-
-	cmd := &IfCommand{}
+	cmd := &IfNotCommand{}
 	args := map[string]string{"condition": "false"}
 
 	err := cmd.Execute(args, "\\set[var=test_value]")
 	assert.NoError(t, err)
 
-	// Check if command was NOT queued
-	queueSize := concreteCtx.GetStackSize()
-	assert.Equal(t, 0, queueSize)
+	// Check if command was pushed to stack (condition is false, so if-not executes)
+	stackSize := concreteCtx.GetStackSize()
+	assert.Equal(t, 1, stackSize)
 
 	// Check if result was stored
-	varValue, _ := concreteCtx.GetVariable("#if_result")
+	varValue, _ := concreteCtx.GetVariable("#if_not_result")
 	assert.Equal(t, "false", varValue)
 }
 
-func TestIfCommand_Execute_VariableCondition(t *testing.T) {
-	// Setup test context
-	ctx := context.NewTestContext()
-	concreteCtx := ctx.(*context.NeuroContext)
-	ctx.SetTestMode(true)
-
-	// Setup services
-	services.SetGlobalRegistry(services.NewRegistry())
-	varService := services.NewVariableService()
-	stackService := services.NewStackService()
-	_ = services.GetGlobalRegistry().RegisterService(varService)
-	_ = services.GetGlobalRegistry().RegisterService(stackService)
-	_ = services.GetGlobalRegistry().InitializeAll()
-
-	cmd := &IfCommand{}
-	// Note: In real execution, the state machine would have already expanded ${debug_mode} to "true"
-	// This test simulates that the \if command receives the pre-expanded value
-	args := map[string]string{"condition": "true"}
-
-	err := cmd.Execute(args, "\\set[var=test_value]")
-	assert.NoError(t, err)
-
-	// Check if command was pushed to stack
-	stackSize := concreteCtx.GetStackSize()
-	assert.Equal(t, 1, stackSize)
-}
-
-func TestIfCommand_Execute_InterpolatedSystemVariable(t *testing.T) {
-	// Setup test context
-	ctx := context.NewTestContext()
-	concreteCtx := ctx.(*context.NeuroContext)
-	ctx.SetTestMode(true)
-
-	// Setup services
-	services.SetGlobalRegistry(services.NewRegistry())
-	varService := services.NewVariableService()
-	stackService := services.NewStackService()
-	_ = services.GetGlobalRegistry().RegisterService(varService)
-	_ = services.GetGlobalRegistry().RegisterService(stackService)
-	_ = services.GetGlobalRegistry().InitializeAll()
-
-	cmd := &IfCommand{}
-	// Note: In real execution, the state machine would have already expanded ${#test_mode} to "true"
-	// This test simulates that the \if command receives the pre-expanded value
-	args := map[string]string{"condition": "true"}
-
-	err := cmd.Execute(args, "\\set[var=test_value]")
-	assert.NoError(t, err)
-
-	// Check if command was pushed to stack (interpolated value should be truthy)
-	stackSize := concreteCtx.GetStackSize()
-	assert.Equal(t, 1, stackSize)
-}
-
-func TestIfCommand_Execute_EmptyCommand(t *testing.T) {
+func TestIfNotCommand_Execute_TrueCondition(t *testing.T) {
 	// Setup test context
 	ctx := context.NewTestContext()
 	concreteCtx := ctx.(*context.NeuroContext)
@@ -247,8 +166,89 @@ func TestIfCommand_Execute_EmptyCommand(t *testing.T) {
 	_ = services.GetGlobalRegistry().RegisterService(services.NewStackService())
 	_ = services.GetGlobalRegistry().InitializeAll()
 
-	cmd := &IfCommand{}
+	cmd := &IfNotCommand{}
 	args := map[string]string{"condition": "true"}
+
+	err := cmd.Execute(args, "\\set[var=test_value]")
+	assert.NoError(t, err)
+
+	// Check if command was NOT queued (condition is true, so if-not does not execute)
+	queueSize := concreteCtx.GetStackSize()
+	assert.Equal(t, 0, queueSize)
+
+	// Check if result was stored
+	varValue, _ := concreteCtx.GetVariable("#if_not_result")
+	assert.Equal(t, "true", varValue)
+}
+
+func TestIfNotCommand_Execute_VariableCondition(t *testing.T) {
+	// Setup test context
+	ctx := context.NewTestContext()
+	concreteCtx := ctx.(*context.NeuroContext)
+	ctx.SetTestMode(true)
+
+	// Setup services
+	services.SetGlobalRegistry(services.NewRegistry())
+	varService := services.NewVariableService()
+	stackService := services.NewStackService()
+	_ = services.GetGlobalRegistry().RegisterService(varService)
+	_ = services.GetGlobalRegistry().RegisterService(stackService)
+	_ = services.GetGlobalRegistry().InitializeAll()
+
+	cmd := &IfNotCommand{}
+	// Note: In real execution, the state machine would have already expanded ${debug_mode} to "false"
+	// This test simulates that the \if-not command receives the pre-expanded value
+	args := map[string]string{"condition": "false"}
+
+	err := cmd.Execute(args, "\\set[var=test_value]")
+	assert.NoError(t, err)
+
+	// Check if command was pushed to stack (condition is false, so if-not executes)
+	stackSize := concreteCtx.GetStackSize()
+	assert.Equal(t, 1, stackSize)
+}
+
+func TestIfNotCommand_Execute_InterpolatedSystemVariable(t *testing.T) {
+	// Setup test context
+	ctx := context.NewTestContext()
+	concreteCtx := ctx.(*context.NeuroContext)
+	ctx.SetTestMode(true)
+
+	// Setup services
+	services.SetGlobalRegistry(services.NewRegistry())
+	varService := services.NewVariableService()
+	stackService := services.NewStackService()
+	_ = services.GetGlobalRegistry().RegisterService(varService)
+	_ = services.GetGlobalRegistry().RegisterService(stackService)
+	_ = services.GetGlobalRegistry().InitializeAll()
+
+	cmd := &IfNotCommand{}
+	// Note: In real execution, the state machine would have already expanded ${#test_mode} to ""
+	// This test simulates that the \if-not command receives the pre-expanded value
+	args := map[string]string{"condition": ""}
+
+	err := cmd.Execute(args, "\\set[var=test_value]")
+	assert.NoError(t, err)
+
+	// Check if command was pushed to stack (empty condition is falsy, so if-not executes)
+	stackSize := concreteCtx.GetStackSize()
+	assert.Equal(t, 1, stackSize)
+}
+
+func TestIfNotCommand_Execute_EmptyCommand(t *testing.T) {
+	// Setup test context
+	ctx := context.NewTestContext()
+	concreteCtx := ctx.(*context.NeuroContext)
+	ctx.SetTestMode(true)
+
+	// Setup services
+	services.SetGlobalRegistry(services.NewRegistry())
+	_ = services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	_ = services.GetGlobalRegistry().RegisterService(services.NewStackService())
+	_ = services.GetGlobalRegistry().InitializeAll()
+
+	cmd := &IfNotCommand{}
+	args := map[string]string{"condition": "false"}
 
 	err := cmd.Execute(args, "")
 	assert.NoError(t, err)
@@ -258,7 +258,7 @@ func TestIfCommand_Execute_EmptyCommand(t *testing.T) {
 	assert.Equal(t, 0, queueSize)
 }
 
-func TestIfCommand_Execute_WhitespaceCommand(t *testing.T) {
+func TestIfNotCommand_Execute_WhitespaceCommand(t *testing.T) {
 	// Setup test context
 	ctx := context.NewTestContext()
 	concreteCtx := ctx.(*context.NeuroContext)
@@ -270,8 +270,8 @@ func TestIfCommand_Execute_WhitespaceCommand(t *testing.T) {
 	_ = services.GetGlobalRegistry().RegisterService(services.NewStackService())
 	_ = services.GetGlobalRegistry().InitializeAll()
 
-	cmd := &IfCommand{}
-	args := map[string]string{"condition": "true"}
+	cmd := &IfNotCommand{}
+	args := map[string]string{"condition": "false"}
 
 	err := cmd.Execute(args, "   \t\n  ")
 	assert.NoError(t, err)
@@ -281,16 +281,16 @@ func TestIfCommand_Execute_WhitespaceCommand(t *testing.T) {
 	assert.Equal(t, 0, queueSize)
 }
 
-func TestIfCommand_Execute_MissingServices(t *testing.T) {
-	cmd := &IfCommand{}
-	args := map[string]string{"condition": "true"}
+func TestIfNotCommand_Execute_MissingServices(t *testing.T) {
+	cmd := &IfNotCommand{}
+	args := map[string]string{"condition": "false"}
 
 	// This should not panic even if services are missing
 	err := cmd.Execute(args, "\\set[var=test]")
 	assert.NoError(t, err)
 }
 
-func TestIfCommand_Execute_InterpolatedConditions(t *testing.T) {
+func TestIfNotCommand_Execute_InterpolatedConditions(t *testing.T) {
 	// Setup test context
 	ctx := context.NewTestContext()
 	concreteCtx := ctx.(*context.NeuroContext)
@@ -304,22 +304,22 @@ func TestIfCommand_Execute_InterpolatedConditions(t *testing.T) {
 	_ = services.GetGlobalRegistry().RegisterService(stackService)
 	_ = services.GetGlobalRegistry().InitializeAll()
 
-	cmd := &IfCommand{}
+	cmd := &IfNotCommand{}
 
-	// Test with truthy condition (state machine would have expanded ${flag1} to "true")
-	args := map[string]string{"condition": "true"}
+	// Test with falsy condition (state machine would have expanded ${flag1} to "false")
+	args := map[string]string{"condition": "false"}
 	err := cmd.Execute(args, "\\set[var1=value1]")
 	assert.NoError(t, err)
-	assert.Equal(t, 1, concreteCtx.GetStackSize())
+	assert.Equal(t, 1, concreteCtx.GetStackSize()) // if-not executes on false
 
 	// Clear stack
 	concreteCtx.ClearStack()
 
-	// Test with falsy condition (state machine would have expanded ${flag2} to "false")
-	args = map[string]string{"condition": "false"}
+	// Test with truthy condition (state machine would have expanded ${flag2} to "true")
+	args = map[string]string{"condition": "true"}
 	err = cmd.Execute(args, "\\set[var2=value2]")
 	assert.NoError(t, err)
-	assert.Equal(t, 0, concreteCtx.GetStackSize())
+	assert.Equal(t, 0, concreteCtx.GetStackSize()) // if-not does not execute on true
 
 	// Clear stack
 	concreteCtx.ClearStack()
@@ -328,5 +328,5 @@ func TestIfCommand_Execute_InterpolatedConditions(t *testing.T) {
 	args = map[string]string{"condition": ""}
 	err = cmd.Execute(args, "\\set[var3=value3]")
 	assert.NoError(t, err)
-	assert.Equal(t, 0, concreteCtx.GetStackSize())
+	assert.Equal(t, 1, concreteCtx.GetStackSize()) // if-not executes on empty (falsy)
 }

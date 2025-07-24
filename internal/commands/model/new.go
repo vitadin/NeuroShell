@@ -261,6 +261,12 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to create model: %w", err)
 	}
 
+	// Auto-push client creation command to stack service for seamless UX
+	if stackService, err := services.GetGlobalStackService(); err == nil {
+		clientCommand := fmt.Sprintf("\\llm-client-get[provider=%s]", model.Provider)
+		stackService.PushCommand(clientCommand)
+	}
+
 	// Update model-related variables
 	if err := c.updateModelVariables(model, variableService); err != nil {
 		return fmt.Errorf("failed to update model variables: %w", err)

@@ -1,51 +1,34 @@
-%% Description: Modular send implementation using existing fundamental commands
+%% Description: Seamless send implementation leveraging variable service and auto-client creation
 %% Usage: \send Hello, how are you?
-%% This script orchestrates the complete LLM conversation workflow
+%% Assumes user has activated a model first (seamless "Model → Chat" workflow)
 %% 
 %% Workflow:
-%% 1. Get/ensure active session (auto-activates if none active)
-%% 2. Add user message to session
-%% 3. Get LLM client (uses OPENAI_API_KEY environment variable)
-%% 4. Make LLM call (uses active model configuration by default)
-%% 5. Add assistant response to session
-%% 6. Update message history variables and display response
+%% 1. Ensure active session (create if needed)
+%% 2. Add user message to session  
+%% 3. Ensure active model (create default if needed)
+%% 4. Get client (leverages auto-creation from model commands)
+%% 5. Make LLM call
+%% 6. Add assistant response and display
 
-%% Step 1: Get/ensure active session - try to activate, create if none exists
+%% Step 1: Ensure active session - create if session-activate returns empty
 \session-activate
-
-%% Simple logic: if _session_id is empty after activate, we need to create a session
-\set[session_id="${_session_id}"]
-\set[empty_check="${session_id}"]
-
-%% If session_id is empty, empty_check will be empty (falsy), so create session
-\set[need_new="yes"] 
-\if[condition="${empty_check}"] \set[need_new=""]
-\if[condition="${need_new}"] \session-new
-\if[condition="${need_new}"] \set[session_id="${#session_id}"]
+\if-not[condition="${_session_id}"] \session-new
 
 %% Step 2: Add user message to session
-\session-add-usermsg[session=${session_id}] ${_1}
+\session-add-usermsg[session=${_session_id}] ${_1}
 
-%% Step 3: Get LLM client (uses OPENAI_API_KEY environment variable)
-\llm-client-get[provider=openai]
-\set[client_id="${_client_id}"]
-
-%% Step 3.5: Ensure we have an active model configuration
+%% Step 3: Ensure active model - create default if no active model
 \get[#active_model_name]
-\set[has_model="${#active_model_name}"]
+\if-not[condition="${#active_model_name}"] \model-new[catalog_id=O4M] default_model
 
-%% If no active model, create a default one using OpenAI's latest model
-\set[need_model="yes"]
-\if[condition="${has_model}"] \set[need_model=""]
-\if[condition="${need_model}"] \model-new[catalog_id=O4M] default_model
-\if[condition="${need_model}"] \model-activate default_model
+%% Step 4: Get client using model's provider (auto-created by model commands via stack service)
+\get[#active_model_provider]
+\llm-client-get[provider=${#active_model_provider}]
 
-%% Step 4: Make LLM call (uses active model configuration by default)
-\llm-call[client_id=${client_id}, session_id=${session_id}]
+%% Step 5: Make LLM call using all components
+\llm-call[client_id=${_client_id}, session_id=${_session_id}]
 
-%% Step 5: Add assistant response to session (use _output directly)
-\session-add-assistantmsg[session=${session_id}] ${_output}
-
-%% Step 6: Update message history variables and display response
+%% Step 6: Add assistant response to session and display
+\session-add-assistantmsg[session=${_session_id}] ${_output}
 \set[1="${_output}"]
 \render-markdown ${_output}
