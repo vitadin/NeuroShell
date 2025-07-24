@@ -2,11 +2,11 @@
 \set[_echo_command="true"]
 
 %% Start with catalog to see available models
-\model-catalog[provider="anthropic"]
+\model-catalog[provider="openai"]
 \model-catalog[provider="openai"]
 
 %% Create models using catalog
-\model-new[catalog_id="CS4"] my-claude-4
+\model-new[catalog_id="O4M"] my-claude-4
 \model-new[catalog_id="O3"] my-o3-model
 
 %% Check status after creation
@@ -23,7 +23,7 @@
 \model-activate my-o3-model
 
 %% Create additional model with custom parameters
-\model-new[provider="anthropic", base_model="claude-3-sonnet", temperature="0.8", description="Custom model"] custom-model
+\model-new[provider="openai", base_model="gpt-3.5-turbo", temperature="0.8", description="Custom model"] custom-model
 
 %% Check full status
 \model-status

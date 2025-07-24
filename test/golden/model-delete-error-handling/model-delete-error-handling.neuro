@@ -2,14 +2,14 @@
 \set[_echo_command="true"]
 
 %% Create models for testing error scenarios
-\model-new[catalog_id="CS4"] test-model-1
+\model-new[catalog_id="O4M"] test-model-1
 \model-new[catalog_id="O3"] test-model-2
 
 %% Test no matches scenario
 \try \model-delete nonexistent-model
 
 %% Test multiple matches scenario
-\model-new[provider="anthropic", base_model="claude-3-sonnet"] test-similar
+\model-new[provider="openai", base_model="gpt-3.5-turbo"] test-similar
 \model-new[provider="openai", base_model="gpt-4"] test-different
 \try \model-delete test
 

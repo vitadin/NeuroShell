@@ -2,7 +2,7 @@
 \set[_echo_command="true"]
 
 %% Create multiple models
-\model-new[catalog_id="CS4"] primary-model
+\model-new[catalog_id="O4M"] primary-model
 \model-new[catalog_id="O3"] secondary-model
 
 %% Activate primary model
@@ -22,7 +22,7 @@
 \get[#active_model_provider]
 
 %% Test that creating a new model doesn't change active model
-\model-new[provider="anthropic", base_model="claude-3-sonnet"] new-model
+\model-new[provider="openai", base_model="gpt-3.5-turbo"] new-model
 
 %% Verify secondary-model is still active
 \get[#active_model_name]

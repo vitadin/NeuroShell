@@ -1,12 +1,20 @@
 Setting _echo_command = true
 %%> "\\session-new work_session_1"
 Created session 'work_session_1' (ID: 00000001)
+%%> "\\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated session 'work_session_1' (ID: 00000001, Messages: 0)
 %%> "\\session-new work_session_2"
 Created session 'work_session_2' (ID: 00000002)
+%%> "\\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+Activated session 'work_session_2' (ID: 00000002, Messages: 0)
 %%> "\\session-new debug_session"
 Created session 'debug_session' (ID: 00000003)
+%%> "\\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
+Activated session 'debug_session' (ID: 00000003, Messages: 0)
 %%> "\\session-new project_alpha"
 Created session 'project_alpha' (ID: 00000004)
+%%> "\\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
+Activated session 'project_alpha' (ID: 00000004, Messages: 0)
 %%> "\\session-activate work_session_1"
 Activated session 'work_session_1' (ID: 00000001, Messages: 0)
 %%> "\\get[#active_session_name]"
@@ -45,9 +53,17 @@ _error = Multiple sessions match ID prefix '000000'. Please be more specific:
 Tip: Use the full name or a longer ID prefix to uniquely identify the session.
 %%> "\\session-delete work_session_1"
 Deleted session 'work_session_1' (ID: 00000001)
+%%> "\\session-activate"
+Active session: debug_session (ID: 00000003)
 %%> "\\session-delete work_session_2"
 Deleted session 'work_session_2' (ID: 00000002)
+%%> "\\session-activate"
+Active session: debug_session (ID: 00000003)
 %%> "\\session-delete debug_session"
 Deleted session 'debug_session' (ID: 00000003)
+%%> "\\session-activate"
+No active session found. Activated most recent session: project_alpha (ID: 00000004)
 %%> "\\session-delete project_alpha"
 Deleted session 'project_alpha' (ID: 00000004)
+%%> "\\session-activate"
+No sessions found. Use \session-new to create a session.

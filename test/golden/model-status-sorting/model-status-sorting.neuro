@@ -3,7 +3,7 @@
 
 %% Create models with different names and providers to test sorting
 \model-new[catalog_id="O3"] zebra-model
-\model-new[catalog_id="CS4"] alpha-model
+\model-new[catalog_id="O4M"] alpha-model
 \model-new[provider="openai", base_model="gpt-4"] middle-model
 
 %% Test sorting by name (alphabetical)

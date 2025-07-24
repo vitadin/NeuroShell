@@ -2,9 +2,9 @@
 \set[_echo_command="true"]
 
 %% Create multiple models
-\model-new[catalog_id="CS4"] model-to-delete
+\model-new[catalog_id="O4M"] model-to-delete
 \model-new[catalog_id="O3"] model-to-keep
-\model-new[provider="anthropic", base_model="claude-3-sonnet"] another-model
+\model-new[provider="openai", base_model="gpt-3.5-turbo"] another-model
 
 %% Verify all models exist
 \model-status

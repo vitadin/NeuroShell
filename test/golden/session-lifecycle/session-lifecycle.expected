@@ -1,23 +1,31 @@
 Setting _echo_command = true
 %%> "\\session-new[system=\"You are a test assistant\"] lifecycle_test"
 Created session 'lifecycle_test' (ID: 00000001)
+%%> "\\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated session 'lifecycle_test' (ID: 00000001, Messages: 0)
 %%> "\\get[#session_name]"
 #session_name = lifecycle_test
 %%> "\\get[#session_id]"
 #session_id = 00000001-0000-4000-8000-000000000001
 %%> "\\session-delete[name=\"lifecycle_test\"]"
 Deleted session 'lifecycle_test' (ID: 00000001)
+%%> "\\session-activate"
+No sessions found. Use \session-new to create a session.
 %%> "\\get[#session_name]"
-#session_name = 
+#session_name = lifecycle_test
 %%> "\\get[#session_id]"
-#session_id = 
+#session_id = 00000001-0000-4000-8000-000000000001
 %%> "\\session-new id_test"
 Created session 'id_test' (ID: 00000002)
+%%> "\\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+Activated session 'id_test' (ID: 00000002, Messages: 0)
 %%> "\\get[#session_id]"
 #session_id = 00000002-0000-4000-8000-000000000002
 %%> "\\session-delete ${#session_id}"
 Deleted session 'id_test' (ID: 00000002)
+%%> "\\session-activate"
+No sessions found. Use \session-new to create a session.
 %%> "\\get[#session_name]"
-#session_name = 
+#session_name = id_test
 %%> "\\get[#session_id]"
-#session_id = 
+#session_id = 00000002-0000-4000-8000-000000000002

@@ -1,6 +1,6 @@
 %% Test model creation with parameters
 \set[_echo_command="true"]
-\model-new[provider="anthropic", base_model="claude-3-sonnet", temperature="0.8", max_tokens="2000", description="Advanced model for creative tasks"] creative-claude
+\model-new[provider="openai", base_model="gpt-3.5-turbo", temperature="0.8", max_tokens="2000", description="Advanced model for creative tasks"] creative-claude
 \get[#model_id]
 \get[#model_name]
 \get[#model_provider]

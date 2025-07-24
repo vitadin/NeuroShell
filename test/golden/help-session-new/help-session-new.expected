@@ -21,6 +21,6 @@ Notes:
   Session name is optional. If not provided, an auto-generated name is used
   Use quotes if the name contains special characters or spaces
   Variables in session name and system prompt are interpolated
-  Session becomes active immediately after creation
+  Session automatically becomes active after creation via stack service
   Session ID and metadata are stored in system variables (${#session_id}, etc.)
   Initial messages can be added later with \send command

@@ -1,48 +1,50 @@
 Setting _echo_command = true
-%%> "\\model-catalog[provider=\"anthropic\", sort=\"name\"]"
-Model Catalog (Anthropic) (4 models):
-  [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
-    Context: 200,000 tokens (max output: 4,096 tokens)
-    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning
+%%> "\\model-catalog[provider=\"openai\", sort=\"name\"]"
+Model Catalog (Openai) (2 models):
+  [O3] O3 (o3)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
     Modalities: text-input, text-output, image-input
-    Pricing: $15.00/1M input, $75.00/1M output tokens
+    Pricing: $2.00/1M input, $8.00/1M output tokens
     Features: streaming, function-calling, structured-outputs, vision
-    Knowledge cutoff: 2023-08-01
-    Description: Top-level intelligence, fluency, and understanding
-  [CS37] Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
-    Context: 200,000 tokens (max output: 64,000 tokens)
-    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
+    Tools: web-search, file-search, image-generation, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Snapshots: o3, o3-2025-04-16
+    Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
+  [O4M] O4-mini (o4-mini)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
     Modalities: text-input, text-output, image-input
-    Pricing: $3.00/1M input, $15.00/1M output tokens
-    Features: streaming, function-calling, structured-outputs, vision
-    Knowledge cutoff: 2024-11-01
-    Description: High intelligence with toggleable extended thinking
-  [CO4] Claude Opus 4 (claude-opus-4-20250514)
-    Context: 200,000 tokens (max output: 32,000 tokens)
-    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking
-    Modalities: text-input, text-output, image-input
-    Pricing: $15.00/1M input, $75.00/1M output tokens
-    Features: streaming, function-calling, structured-outputs, vision
-    Knowledge cutoff: 2025-03-01
-    Description: Highest level of intelligence and capability
-  [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
-    Context: 200,000 tokens (max output: 64,000 tokens)
-    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
-    Modalities: text-input, text-output, image-input
-    Pricing: $3.00/1M input, $15.00/1M output tokens
-    Features: streaming, function-calling, structured-outputs, vision
-    Knowledge cutoff: 2025-03-01
-    Description: High intelligence and balanced performance
-%%> "\\model-new[catalog_id=\"CS4\"] claude-s4-instance"
-Created model 'claude-s4-instance' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+    Pricing: $1.10/1M input, $4.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Snapshots: o4-mini, o4-mini-2025-04-16
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
+%%> "\\model-new[catalog_id=\"O4M\"] claude-s4-instance"
+Created model 'claude-s4-instance' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated model 'claude-s4-instance' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] openai-o3-instance"
 Created model 'openai-o3-instance' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+Activated model 'openai-o3-instance' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-status"
 Model Configurations (2 models):
   claude-s4-instance (00000001)
-    Provider: anthropic
-    Base Model: claude-sonnet-4-20250514
-    Catalog ID: CS4
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:01
   openai-o3-instance (00000002)
@@ -55,11 +57,15 @@ Model Configurations (2 models):
 %%> "\\get[#model_count]"
 #model_count = 2
 %%> "\\model-activate claude-s4-instance"
-Activated model 'claude-s4-instance' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Activated model 'claude-s4-instance' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\get[#active_model_base]"
-#active_model_base = claude-sonnet-4-20250514
+#active_model_base = o4-mini
 %%> "\\model-activate openai-o3-instance"
 Activated model 'openai-o3-instance' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\get[#active_model_base]"
 #active_model_base = o3
 %%> "\\get[#active_model_provider]"
@@ -69,9 +75,9 @@ Activated model 'openai-o3-instance' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\model-status"
 Model Configurations (2 models):
   claude-s4-instance (00000001)
-    Provider: anthropic
-    Base Model: claude-sonnet-4-20250514
-    Catalog ID: CS4
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:01
   openai-o3-instance (00000002)

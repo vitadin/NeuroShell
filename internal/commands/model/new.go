@@ -261,7 +261,20 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to create model: %w", err)
 	}
 
-	// Update model-related variables
+	// Auto-push client creation command to stack service for seamless UX
+	if stackService, err := services.GetGlobalStackService(); err == nil {
+		clientCommand := fmt.Sprintf("\\llm-client-get[provider=%s]", model.Provider)
+		stackService.PushCommand(clientCommand)
+	}
+
+	// Auto-push model activation command to stack service for seamless UX
+	// Use precise ID-based activation to avoid any ambiguity
+	if stackService, err := services.GetGlobalStackService(); err == nil {
+		activateCommand := fmt.Sprintf("\\model-activate[id=true] %s", model.ID)
+		stackService.PushCommand(activateCommand)
+	}
+
+	// Update model-related variables (not active model variables - that's done by model-activate)
 	if err := c.updateModelVariables(model, variableService); err != nil {
 		return fmt.Errorf("failed to update model variables: %w", err)
 	}

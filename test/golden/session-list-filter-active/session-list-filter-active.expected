@@ -1,10 +1,16 @@
 Setting _echo_command = true
 %%> "\\session-new first_session"
 Created session 'first_session' (ID: 00000001)
+%%> "\\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated session 'first_session' (ID: 00000001, Messages: 0)
 %%> "\\session-new second_session"
 Created session 'second_session' (ID: 00000002)
+%%> "\\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+Activated session 'second_session' (ID: 00000002, Messages: 0)
 %%> "\\session-new active_session"
 Created session 'active_session' (ID: 00000003)
+%%> "\\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
+Activated session 'active_session' (ID: 00000003, Messages: 0)
 %%> "\\session-list[filter=active]"
 Sessions (1 total):
   active_session    (ID: 00000003, active, 0 messages, created: 2025-01-01)

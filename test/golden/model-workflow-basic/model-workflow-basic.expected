@@ -1,38 +1,4 @@
 Setting _echo_command = true
-%%> "\\model-catalog[provider=\"anthropic\"]"
-Model Catalog (Anthropic) (4 models):
-  [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
-    Context: 200,000 tokens (max output: 4,096 tokens)
-    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning
-    Modalities: text-input, text-output, image-input
-    Pricing: $15.00/1M input, $75.00/1M output tokens
-    Features: streaming, function-calling, structured-outputs, vision
-    Knowledge cutoff: 2023-08-01
-    Description: Top-level intelligence, fluency, and understanding
-  [CS37] Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
-    Context: 200,000 tokens (max output: 64,000 tokens)
-    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
-    Modalities: text-input, text-output, image-input
-    Pricing: $3.00/1M input, $15.00/1M output tokens
-    Features: streaming, function-calling, structured-outputs, vision
-    Knowledge cutoff: 2024-11-01
-    Description: High intelligence with toggleable extended thinking
-  [CO4] Claude Opus 4 (claude-opus-4-20250514)
-    Context: 200,000 tokens (max output: 32,000 tokens)
-    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking
-    Modalities: text-input, text-output, image-input
-    Pricing: $15.00/1M input, $75.00/1M output tokens
-    Features: streaming, function-calling, structured-outputs, vision
-    Knowledge cutoff: 2025-03-01
-    Description: Highest level of intelligence and capability
-  [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
-    Context: 200,000 tokens (max output: 64,000 tokens)
-    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
-    Modalities: text-input, text-output, image-input
-    Pricing: $3.00/1M input, $15.00/1M output tokens
-    Features: streaming, function-calling, structured-outputs, vision
-    Knowledge cutoff: 2025-03-01
-    Description: High intelligence and balanced performance
 %%> "\\model-catalog[provider=\"openai\"]"
 Model Catalog (Openai) (2 models):
   [O3] O3 (o3)
@@ -57,16 +23,52 @@ Model Catalog (Openai) (2 models):
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
-%%> "\\model-new[catalog_id=\"CS4\"] my-claude-4"
-Created model 'my-claude-4' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+%%> "\\model-catalog[provider=\"openai\"]"
+Model Catalog (Openai) (2 models):
+  [O3] O3 (o3)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
+    Modalities: text-input, text-output, image-input
+    Pricing: $2.00/1M input, $8.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: web-search, file-search, image-generation, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Snapshots: o3, o3-2025-04-16
+    Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
+  [O4M] O4-mini (o4-mini)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.10/1M input, $4.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Snapshots: o4-mini, o4-mini-2025-04-16
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
+%%> "\\model-new[catalog_id=\"O4M\"] my-claude-4"
+Created model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] my-o3-model"
 Created model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+Activated model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-status"
 Model Configurations (2 models):
   my-claude-4 (00000001)
-    Provider: anthropic
-    Base Model: claude-sonnet-4-20250514
-    Catalog ID: CS4
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:01
   my-o3-model (00000002)
@@ -77,29 +79,39 @@ Model Configurations (2 models):
     Created: 2025-01-01 00:00:02
     Active: true
 %%> "\\model-activate my-claude-4"
-Activated model 'my-claude-4' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Activated model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\get[#active_model_name]"
 #active_model_name = my-claude-4
 %%> "\\get[#active_model_provider]"
-#active_model_provider = anthropic
+#active_model_provider = openai
 %%> "\\model-activate my-o3-model"
 Activated model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-new[provider=\"anthropic\", base_model=\"claude-3-sonnet\", temperature=\"0.8\", description=\"Custom model\"] custom-model"
-Created model 'custom-model' (ID: 00000003, Provider: anthropic, Base: claude-3-sonnet)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\", temperature=\"0.8\", description=\"Custom model\"] custom-model"
+Created model 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
+Activated model 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-status"
 Model Configurations (3 models):
   custom-model (00000003)
-    Provider: anthropic
-    Base Model: claude-3-sonnet
+    Provider: openai
+    Base Model: gpt-3.5-turbo
     Catalog ID: none
     Parameters: 1 (temperature=0.8)
     Created: 2025-01-01 00:00:03
     Description: Custom model
     Active: true
   my-claude-4 (00000001)
-    Provider: anthropic
-    Base Model: claude-sonnet-4-20250514
-    Catalog ID: CS4
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:01
   my-o3-model (00000002)
@@ -109,12 +121,14 @@ Model Configurations (3 models):
     Parameters: none
     Created: 2025-01-01 00:00:02
 %%> "\\model-delete my-claude-4"
-Deleted model 'my-claude-4' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Deleted model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\model-activate"
+Current active model: 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
 %%> "\\model-status"
 Model Configurations (2 models):
   custom-model (00000003)
-    Provider: anthropic
-    Base Model: claude-3-sonnet
+    Provider: openai
+    Base Model: gpt-3.5-turbo
     Catalog ID: none
     Parameters: 1 (temperature=0.8)
     Created: 2025-01-01 00:00:03
@@ -127,10 +141,14 @@ Model Configurations (2 models):
     Parameters: none
     Created: 2025-01-01 00:00:02
 %%> "\\get[#active_model_name]"
-#active_model_name = my-o3-model
+#active_model_name = custom-model
 %%> "\\model-delete my-o3-model"
 Deleted model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\model-activate"
+Current active model: 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
 %%> "\\model-delete custom-model"
-Deleted model 'custom-model' (ID: 00000003, Provider: anthropic, Base: claude-3-sonnet)
+Deleted model 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\model-activate"
+Current active model: 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
 %%> "\\model-status"
 No model configurations found. Use \model-new to create model configurations.

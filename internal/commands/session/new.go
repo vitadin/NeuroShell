@@ -90,7 +90,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 			"Session name is optional. If not provided, an auto-generated name is used",
 			"Use quotes if the name contains special characters or spaces",
 			"Variables in session name and system prompt are interpolated",
-			"Session becomes active immediately after creation",
+			"Session automatically becomes active after creation via stack service",
 			"Session ID and metadata are stored in system variables (${#session_id}, etc.)",
 			"Initial messages can be added later with \\send command",
 		},
@@ -135,7 +135,14 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to create session: %w", err)
 	}
 
-	// Update session-related variables
+	// Auto-push session activation command to stack service for seamless UX
+	// Use precise ID-based activation to avoid any ambiguity
+	if stackService, err := services.GetGlobalStackService(); err == nil {
+		activateCommand := fmt.Sprintf("\\session-activate[id=true] %s", session.ID)
+		stackService.PushCommand(activateCommand)
+	}
+
+	// Update session-related variables (not active session variables - that's done by session-activate)
 	if err := c.updateSessionVariables(session, variableService); err != nil {
 		return fmt.Errorf("failed to update session variables: %w", err)
 	}

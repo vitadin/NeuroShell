@@ -1,6 +1,8 @@
 Setting _echo_command = true
 %%> "\\session-new[system=\"You are a helpful assistant\"] basic_session"
 Created session 'basic_session' (ID: 00000001)
+%%> "\\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated session 'basic_session' (ID: 00000001, Messages: 0)
 %%> "\\get[#session_name]"
 #session_name = basic_session
 %%> "\\get[#session_id]"
@@ -11,27 +13,41 @@ System: You are a helpful assistant
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:01
 Messages: 0 total
+%%> "\\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated session 'basic_session' (ID: 00000001, Messages: 0)
 %%> "\\session-new[system=\"You are a very comprehensive and detailed assistant that provides thorough explanations and helps users understand complex topics by breaking them down into manageable components\"] long_prompt_session"
 Created session 'long_prompt_session' (ID: 00000002)
+%%> "\\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+Activated session 'long_prompt_session' (ID: 00000002, Messages: 0)
 %%> "\\session-show basic_session"
 Session: basic_session (ID: 00000001)
 System: You are a helpful assistant
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:01
 Messages: 0 total
+%%> "\\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated session 'basic_session' (ID: 00000001, Messages: 0)
 %%> "\\session-show basic"
 Session: basic_session (ID: 00000001)
 System: You are a helpful assistant
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:01
 Messages: 0 total
+%%> "\\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated session 'basic_session' (ID: 00000001, Messages: 0)
 %%> "\\session-show[id=true] 00000001"
 Session: basic_session (ID: 00000001)
 System: You are a helpful assistant
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:01
 Messages: 0 total
+%%> "\\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated session 'basic_session' (ID: 00000001, Messages: 0)
 %%> "\\session-delete basic_session"
 Deleted session 'basic_session' (ID: 00000001)
+%%> "\\session-activate"
+No active session found. Activated most recent session: long_prompt_session (ID: 00000002)
 %%> "\\session-delete long_prompt_session"
 Deleted session 'long_prompt_session' (ID: 00000002)
+%%> "\\session-activate"
+No sessions found. Use \session-new to create a session.

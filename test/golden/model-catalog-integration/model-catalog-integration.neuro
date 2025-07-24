@@ -2,10 +2,10 @@
 \set[_echo_command="true"]
 
 %% First check available catalog models
-\model-catalog[provider="anthropic", sort="name"]
+\model-catalog[provider="openai", sort="name"]
 
 %% Create models using different catalog IDs
-\model-new[catalog_id="CS4"] claude-s4-instance
+\model-new[catalog_id="O4M"] claude-s4-instance
 \model-new[catalog_id="O3"] openai-o3-instance
 
 %% Verify catalog information is preserved in status

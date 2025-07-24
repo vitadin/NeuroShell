@@ -159,9 +159,11 @@ func (c *DeleteCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to delete session '%s': %w", sessionName, err)
 	}
 
-	// Update session-related variables after deletion
-	if err := c.updateSessionVariablesAfterDeletion(variableService); err != nil {
-		return fmt.Errorf("failed to update session variables: %w", err)
+	// Auto-push session activation command to stack service to handle active session state
+	// This will either show current active session, activate latest session, or show "no sessions" message
+	if stackService, err := services.GetGlobalStackService(); err == nil {
+		activateCommand := "\\session-activate"
+		stackService.PushCommand(activateCommand)
 	}
 
 	// Prepare output message
@@ -174,59 +176,6 @@ func (c *DeleteCommand) Execute(args map[string]string, input string) error {
 
 	// Print confirmation
 	fmt.Println(outputMsg)
-
-	return nil
-}
-
-// updateSessionVariablesAfterDeletion clears session-related system variables if the deleted session was active
-func (c *DeleteCommand) updateSessionVariablesAfterDeletion(variableService *services.VariableService) error {
-	// Get chat session service to check current session
-	chatService, err := services.GetGlobalChatSessionService()
-	if err != nil {
-		return err
-	}
-
-	// Get current session (if any)
-	currentSession, err := chatService.GetActiveSession()
-	if err != nil {
-		// Handle the case where there's no active session
-		if err.Error() == "no active session" {
-			currentSession = nil
-		} else {
-			return err
-		}
-	}
-	if currentSession != nil {
-		// Session is still active, update variables with current session info
-		variables := map[string]string{
-			"#session_id":      currentSession.ID,
-			"#session_name":    currentSession.Name,
-			"#message_count":   fmt.Sprintf("%d", len(currentSession.Messages)),
-			"#system_prompt":   currentSession.SystemPrompt,
-			"#session_created": currentSession.CreatedAt.Format("2006-01-02 15:04:05"),
-		}
-
-		for name, value := range variables {
-			if err := variableService.SetSystemVariable(name, value); err != nil {
-				return fmt.Errorf("failed to set variable %s: %w", name, err)
-			}
-		}
-	} else {
-		// No active session, clear session variables
-		sessionVariables := []string{
-			"#session_id",
-			"#session_name",
-			"#message_count",
-			"#system_prompt",
-			"#session_created",
-		}
-
-		for _, name := range sessionVariables {
-			if err := variableService.SetSystemVariable(name, ""); err != nil {
-				return fmt.Errorf("failed to clear variable %s: %w", name, err)
-			}
-		}
-	}
 
 	return nil
 }

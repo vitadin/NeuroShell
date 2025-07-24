@@ -1,27 +1,49 @@
 Setting _echo_command = true
-%%> "\\model-new[catalog_id=\"CS4\"] first-model"
-Created model 'first-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+%%> "\\model-new[catalog_id=\"O4M\"] first-model"
+Created model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] second-model"
 Created model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-new[provider=\"anthropic\", base_model=\"claude-3-sonnet\"] third-model"
-Created model 'third-model' (ID: 00000003, Provider: anthropic, Base: claude-3-sonnet)
+%%> "\\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+Activated model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\"] third-model"
+Created model 'third-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
+Activated model 'third-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-activate first-model"
-Activated model 'first-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Activated model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\get[#active_model_name]"
 #active_model_name = first-model
 %%> "\\get[#active_model_id]"
 #active_model_id = 00000001-0000-4000-8000-000000000001
 %%> "\\get[#active_model_provider]"
-#active_model_provider = anthropic
+#active_model_provider = openai
 %%> "\\get[#active_model_base]"
-#active_model_base = claude-sonnet-4-20250514
+#active_model_base = o4-mini
 %%> "\\get[_output]"
-_output = Activated model 'first-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+_output = LLM client ready: openai:b10394de
 %%> "\\model-activate second-model"
 Activated model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
 %%> "\\get[#active_model_name]"
 #active_model_name = second-model
 %%> "\\get[#active_model_provider]"
 #active_model_provider = openai
 %%> "\\get[_output]"
-_output = Activated model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
+_output = LLM client ready: openai:b10394de

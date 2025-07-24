@@ -290,16 +290,19 @@ func (c *ShowCommand) renderSessionInfo(session *neurotypes.ChatSession, variabl
 		c.renderMessages(session.Messages)
 	}
 
+	// Auto-push session activation command to stack service to handle active session state
+	// This will activate the shown session for seamless UX
+	if stackService, err := services.GetGlobalStackService(); err == nil {
+		activateCommand := fmt.Sprintf("\\session-activate[id=true] %s", session.ID)
+		stackService.PushCommand(activateCommand)
+	}
+
 	// Store session information in variables for potential use
 	outputMsg := fmt.Sprintf("Displayed session '%s' (ID: %s, Messages: %d)",
 		session.Name, session.ID[:8], messageCount)
 
 	if err := variableService.SetSystemVariable("_output", outputMsg); err != nil {
 		return fmt.Errorf("failed to store result: %w", err)
-	}
-
-	if err := variableService.SetSystemVariable("_session_id", session.ID); err != nil {
-		return fmt.Errorf("failed to set _session_id variable: %w", err)
 	}
 
 	return nil
