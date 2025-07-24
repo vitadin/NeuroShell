@@ -9,6 +9,7 @@ import (
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
+	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -22,6 +23,8 @@ type StackMachine struct {
 	stateProcessor *StateProcessor
 	// Try handler for error boundary management
 	tryHandler *TryHandler
+	// Silent handler for output suppression management
+	silentHandler *SilentHandler
 	// Configuration options
 	config neurotypes.StateMachineConfig
 	// Custom styled logger
@@ -37,6 +40,7 @@ func NewStackMachine(ctx *context.NeuroContext, config neurotypes.StateMachineCo
 		context:        ctx,
 		stateProcessor: NewStateProcessor(ctx, config),
 		tryHandler:     NewTryHandler(),
+		silentHandler:  NewSilentHandler(),
 		config:         config,
 		logger:         logger.NewStyledLogger("StackMachine"),
 	}
@@ -136,12 +140,29 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 		return nil
 	}
 
-	// Output command line with %%> prefix if echo_commands is enabled
-	if sm.config.EchoCommands {
+	// Check for silent boundary markers using SilentHandler
+	if isMarker, silentID, isStart := sm.silentHandler.IsSilentBoundaryMarker(rawCommand); isMarker {
+		if isStart {
+			sm.silentHandler.EnterSilentBlock(silentID)
+		} else {
+			sm.silentHandler.ExitSilentBlock(silentID)
+		}
+		return nil
+	}
+
+	// Output command line with %%> prefix if echo_commands is enabled and not in silent block
+	if sm.config.EchoCommands && !sm.silentHandler.IsInSilentBlock() {
 		fmt.Printf("%%%%> %q\n", rawCommand)
 	}
 
 	// Use the state processor to handle the command through the proven pipeline
+	// Suppress output if in silent block
+	if sm.silentHandler.IsInSilentBlock() {
+		return stringprocessing.WithSuppressedOutput(func() error {
+			return sm.stateProcessor.ProcessCommand(rawCommand)
+		})
+	}
+
 	return sm.stateProcessor.ProcessCommand(rawCommand)
 }
 

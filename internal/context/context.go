@@ -30,6 +30,12 @@ type TryBlockContext struct {
 	ErrorCaptured bool   // Whether an error has been captured
 }
 
+// SilentBlockContext represents the context for a silent block with output suppression
+type SilentBlockContext struct {
+	ID         string // Unique identifier for this silent block
+	StartDepth int    // Stack depth when silent block started
+}
+
 // NeuroContext implements the neurotypes.Context interface providing session state management.
 // It maintains variables, message history, execution queues, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
@@ -42,10 +48,12 @@ type NeuroContext struct {
 	testEnvOverrides map[string]string // Test-specific environment variable overrides
 
 	// Stack-based execution support
-	executionStack  []string          // Execution stack (LIFO order)
-	tryBlocks       []TryBlockContext // Try block management
-	currentTryDepth int               // Current try block depth
-	stackMutex      sync.RWMutex      // Protects executionStack and tryBlocks
+	executionStack     []string             // Execution stack (LIFO order)
+	tryBlocks          []TryBlockContext    // Try block management
+	currentTryDepth    int                  // Current try block depth
+	silentBlocks       []SilentBlockContext // Silent block management
+	currentSilentDepth int                  // Current silent block depth
+	stackMutex         sync.RWMutex         // Protects executionStack, tryBlocks, and silentBlocks
 
 	// Chat session storage
 	chatSessions    map[string]*neurotypes.ChatSession // Session storage by ID
@@ -87,9 +95,11 @@ func New() *NeuroContext {
 		testEnvOverrides: make(map[string]string),
 
 		// Initialize stack-based execution support
-		executionStack:  make([]string, 0),
-		tryBlocks:       make([]TryBlockContext, 0),
-		currentTryDepth: 0,
+		executionStack:     make([]string, 0),
+		tryBlocks:          make([]TryBlockContext, 0),
+		currentTryDepth:    0,
+		silentBlocks:       make([]SilentBlockContext, 0),
+		currentSilentDepth: 0,
 
 		// Initialize chat session storage
 		chatSessions:    make(map[string]*neurotypes.ChatSession),
@@ -846,6 +856,58 @@ func (ctx *NeuroContext) IsTryErrorCaptured() bool {
 	}
 
 	return ctx.tryBlocks[len(ctx.tryBlocks)-1].ErrorCaptured
+}
+
+// PushSilentBoundary pushes silent boundary markers for silent blocks
+func (ctx *NeuroContext) PushSilentBoundary(silentID string) {
+	ctx.stackMutex.Lock()
+	defer ctx.stackMutex.Unlock()
+
+	// Create silent block context
+	silentBlock := SilentBlockContext{
+		ID:         silentID,
+		StartDepth: len(ctx.executionStack),
+	}
+
+	ctx.silentBlocks = append(ctx.silentBlocks, silentBlock)
+	ctx.currentSilentDepth++
+}
+
+// PopSilentBoundary removes the most recent silent block context
+func (ctx *NeuroContext) PopSilentBoundary() {
+	ctx.stackMutex.Lock()
+	defer ctx.stackMutex.Unlock()
+
+	if len(ctx.silentBlocks) > 0 {
+		ctx.silentBlocks = ctx.silentBlocks[:len(ctx.silentBlocks)-1]
+		ctx.currentSilentDepth--
+	}
+}
+
+// IsInSilentBlock returns true if currently inside a silent block
+func (ctx *NeuroContext) IsInSilentBlock() bool {
+	ctx.stackMutex.RLock()
+	defer ctx.stackMutex.RUnlock()
+	return len(ctx.silentBlocks) > 0
+}
+
+// GetCurrentSilentID returns the ID of the current silent block
+func (ctx *NeuroContext) GetCurrentSilentID() string {
+	ctx.stackMutex.RLock()
+	defer ctx.stackMutex.RUnlock()
+
+	if len(ctx.silentBlocks) == 0 {
+		return ""
+	}
+
+	return ctx.silentBlocks[len(ctx.silentBlocks)-1].ID
+}
+
+// GetCurrentSilentDepth returns the current silent block depth
+func (ctx *NeuroContext) GetCurrentSilentDepth() int {
+	ctx.stackMutex.RLock()
+	defer ctx.stackMutex.RUnlock()
+	return ctx.currentSilentDepth
 }
 
 // GetDefaultCommand returns the default command to use when input doesn't start with \\
