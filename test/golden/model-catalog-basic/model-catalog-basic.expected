@@ -1,6 +1,6 @@
 Setting _echo_command = true
 %%> "\\model-catalog"
-Model Catalog (6 models):
+Model Catalog (9 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
@@ -38,6 +38,16 @@ Anthropic Models:
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2025-03-01
     Description: High intelligence and balanced performance
+Moonshot Models:
+  [MK2] Kimi K2 (Moonshot) (kimi-k2-0711-preview)
+    Provider: moonshot
+    Context: 128,000 tokens (max output: 32,768 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, agentic
+    Modalities: text-input, text-output
+    Pricing: $0.15/1M input, $2.50/1M output tokens
+    Features: streaming, function-calling
+    Knowledge cutoff: 2024-12-01
+    Description: Direct access to Kimi K2 via Moonshot AI platform, a trillion-parameter MoE model with 384 experts and advanced reasoning capabilities
 Openai Models:
   [O3] O3 (o3)
     Provider: openai
@@ -63,3 +73,22 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
+Openrouter Models:
+  [ORK2] Kimi K2 (OpenRouter) (moonshotai/kimi-k2)
+    Provider: openrouter
+    Context: 131,000 tokens (max output: 32,768 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, agentic
+    Modalities: text-input, text-output
+    Pricing: $0.14/1M input, $2.49/1M output tokens
+    Features: streaming, function-calling
+    Knowledge cutoff: 2024-12-01
+    Description: Trillion-parameter MoE model with 32B active parameters via OpenRouter, optimized for advanced tool use, reasoning, and code synthesis
+  [ORK2F] Kimi K2 Free (OpenRouter) (moonshotai/kimi-k2:free)
+    Provider: openrouter
+    Context: 65,536 tokens (max output: 32,768 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, agentic
+    Modalities: text-input, text-output
+    Pricing: $0.00/1M input, $0.00/1M output tokens
+    Features: streaming, function-calling
+    Knowledge cutoff: 2024-12-01
+    Description: Free access to Kimi K2 via OpenRouter, a trillion-parameter MoE model optimized for advanced tool use, reasoning, and code synthesis
