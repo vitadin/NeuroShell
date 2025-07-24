@@ -30,19 +30,15 @@ Current active model: 'test-different' (ID: 00000004, Provider: openai, Base: gp
 %%> "\\model-activate[id=true] xyz123"
 %%> "\\model-delete test-model-1"
 Deleted model 'test-model-1' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\model-activate"
-Current active model: 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
+%%> "\\silent \\model-activate"
 %%> "\\model-delete test-model-2"
 Deleted model 'test-model-2' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-activate"
-Current active model: 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
+%%> "\\silent \\model-activate"
 %%> "\\model-delete test-similar"
 Deleted model 'test-similar' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\model-activate"
-Current active model: 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
+%%> "\\silent \\model-activate"
 %%> "\\model-delete test-different"
 Deleted model 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
-%%> "\\model-activate"
-Current active model: 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
+%%> "\\silent \\model-activate"
 %%> "\\try \\model-activate anything"
 %%> "\\model-activate anything"

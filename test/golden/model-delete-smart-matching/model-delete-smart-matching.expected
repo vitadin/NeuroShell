@@ -16,8 +16,7 @@ Created model 'permanent-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-t
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-delete temp"
 Deleted model 'my-claude-temp' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\model-activate"
-Current active model: 'permanent-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\silent \\model-activate"
 %%> "\\get[#deleted_model_name]"
 #deleted_model_name = my-claude-temp
 %%> "\\get[_output]"
@@ -37,14 +36,12 @@ LLM client ready: openai:b10394de (configured: true)
 Setting short_id = 00000004-0000-4000-8000-000000000004
 %%> "\\model-delete[id=true] ${short_id}"
 Deleted model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4)
-%%> "\\model-activate"
-Current active model: 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4)
+%%> "\\silent \\model-activate"
 %%> "\\get[#deleted_model_name]"
 #deleted_model_name = id-test-model
 %%> "\\model-delete OPENAI"
 Deleted model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-activate"
-Current active model: 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4)
+%%> "\\silent \\model-activate"
 %%> "\\get[#deleted_model_name]"
 #deleted_model_name = my-openai-model
 %%> "\\model-status"

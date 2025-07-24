@@ -37,8 +37,7 @@ Model Configurations (3 models):
     Created: 2025-01-01 00:00:02
 %%> "\\model-delete model-to-delete"
 Deleted model 'model-to-delete' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\model-activate"
-Current active model: 'another-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\silent \\model-activate"
 %%> "\\get[#deleted_model_name]"
 #deleted_model_name = model-to-delete
 %%> "\\get[#deleted_model_id]"

@@ -19,8 +19,7 @@ LLM client ready: openai:b10394de (configured: true)
 #active_model_id = 00000001-0000-4000-8000-000000000001
 %%> "\\model-delete current-model"
 Deleted model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\model-activate"
-Current active model: 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\model-activate"
 %%> "\\get[#active_model_name]"
 #active_model_name = current-model
 %%> "\\get[#active_model_id]"

@@ -113,8 +113,7 @@ Model Configurations (3 models):
     Created: 2025-01-01 00:00:02
 %%> "\\model-delete my-claude-4"
 Deleted model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\model-activate"
-Current active model: 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\silent \\model-activate"
 %%> "\\model-status"
 Model Configurations (2 models):
   custom-model (00000003)
@@ -135,11 +134,9 @@ Model Configurations (2 models):
 #active_model_name = custom-model
 %%> "\\model-delete my-o3-model"
 Deleted model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-activate"
-Current active model: 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\silent \\model-activate"
 %%> "\\model-delete custom-model"
 Deleted model 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\model-activate"
-Current active model: 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\silent \\model-activate"
 %%> "\\model-status"
 No model configurations found. Use \model-new to create model configurations.

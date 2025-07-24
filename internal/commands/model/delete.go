@@ -242,7 +242,7 @@ func (c *DeleteCommand) deleteModel(model *neurotypes.ModelConfig, modelService 
 	// Auto-push model activation command to stack service to handle active model state
 	// This will either show current active model, activate latest model, or show "no models" message
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		activateCommand := "\\model-activate"
+		activateCommand := "\\silent \\model-activate"
 		stackService.PushCommand(activateCommand)
 	}
 

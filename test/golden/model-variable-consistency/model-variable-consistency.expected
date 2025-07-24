@@ -66,8 +66,7 @@ Model Configurations (3 models):
 #model_filtered_count = 3
 %%> "\\model-delete third-model"
 Deleted model 'third-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\model-activate"
-Current active model: 'second-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\model-activate"
 %%> "\\get[#model_count]"
 #model_count = 3
 %%> "\\get[#deleted_model_name]"
@@ -76,8 +75,7 @@ Current active model: 'second-model' (ID: 00000002, Provider: openai, Base: o3)
 #active_model_name = second-model
 %%> "\\model-delete second-model"
 Deleted model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-activate"
-Current active model: 'second-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\model-activate"
 %%> "\\get[#active_model_name]"
 #active_model_name = second-model
 %%> "\\get[#active_model_id]"
