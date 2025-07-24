@@ -67,3 +67,8 @@ var GPT41ModelData []byte
 //
 //go:embed models/o3-pro-openai.yaml
 var O3ProModelData []byte
+
+// O1ModelData contains the embedded o1 model YAML data.
+//
+//go:embed models/o1-openai.yaml
+var O1ModelData []byte

@@ -1,6 +1,6 @@
 Setting _echo_command = true
 %%> "\\model-catalog[provider=openai]"
-Model Catalog (Openai) (4 models):
+Model Catalog (Openai) (5 models):
   [G41] GPT-4.1 (gpt-4.1-2025-04-14)
     Context: 1,047,576 tokens (max output: 32,768 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs
@@ -10,6 +10,16 @@ Model Catalog (Openai) (4 models):
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
     Description: GPT-4.1 is our flagship model for complex tasks. It is well suited for problem solving across domains.
+  [O1] o1 (o1-2024-12-17)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
+    Modalities: text-input, image-input, text-output
+    Pricing: $15.00/1M input, $60.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: file-search
+    Knowledge cutoff: 2023-09-30
+    Reasoning tokens supported
+    Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O3] O3 (o3)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
@@ -77,7 +87,7 @@ Model Catalog (Anthropic) (4 models):
     Knowledge cutoff: 2025-03-01
     Description: High intelligence and balanced performance
 %%> "\\model-catalog[provider=all]"
-Model Catalog (13 models):
+Model Catalog (14 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
@@ -136,6 +146,17 @@ Openai Models:
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
     Description: GPT-4.1 is our flagship model for complex tasks. It is well suited for problem solving across domains.
+  [O1] o1 (o1-2024-12-17)
+    Provider: openai
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
+    Modalities: text-input, image-input, text-output
+    Pricing: $15.00/1M input, $60.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: file-search
+    Knowledge cutoff: 2023-09-30
+    Reasoning tokens supported
+    Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O3] O3 (o3)
     Provider: openai
     Context: 200,000 tokens (max output: 100,000 tokens)

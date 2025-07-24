@@ -1,6 +1,6 @@
 Setting _echo_command = true
 %%> "\\model-catalog[sort=name]"
-Model Catalog (13 models):
+Model Catalog (14 models):
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
     Context: 200,000 tokens (max output: 4,096 tokens)
@@ -74,6 +74,17 @@ Model Catalog (13 models):
     Features: streaming, function-calling
     Knowledge cutoff: 2024-12-01
     Description: Free access to Kimi K2 via OpenRouter, a trillion-parameter MoE model optimized for advanced tool use, reasoning, and code synthesis
+  [O1] o1 (o1-2024-12-17)
+    Provider: openai
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
+    Modalities: text-input, image-input, text-output
+    Pricing: $15.00/1M input, $60.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: file-search
+    Knowledge cutoff: 2023-09-30
+    Reasoning tokens supported
+    Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O3] O3 (o3)
     Provider: openai
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -128,7 +139,7 @@ Model Catalog (13 models):
     Knowledge cutoff: 2025-07-09
     Description: Grok 4 is xAI's latest reasoning model with a 256k context window. It supports parallel tool calling, structured outputs, and both image and text inputs with mandatory reasoning capabilities.
 %%> "\\model-catalog[sort=provider]"
-Model Catalog (13 models):
+Model Catalog (14 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
@@ -187,6 +198,17 @@ Openai Models:
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
     Description: GPT-4.1 is our flagship model for complex tasks. It is well suited for problem solving across domains.
+  [O1] o1 (o1-2024-12-17)
+    Provider: openai
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
+    Modalities: text-input, image-input, text-output
+    Pricing: $15.00/1M input, $60.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: file-search
+    Knowledge cutoff: 2023-09-30
+    Reasoning tokens supported
+    Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O3] O3 (o3)
     Provider: openai
     Context: 200,000 tokens (max output: 100,000 tokens)

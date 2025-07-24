@@ -123,6 +123,12 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, o3ProModel)
 
+	o1Model, err := m.loadModelFile(embedded.O1ModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load o1 model: %w", err)
+	}
+	allModels = append(allModels, o1Model)
+
 	// Validate that all model IDs are unique (case-insensitive)
 	if err := m.validateUniqueIDs(allModels); err != nil {
 		return nil, fmt.Errorf("model catalog validation failed: %w", err)
