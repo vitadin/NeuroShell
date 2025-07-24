@@ -138,7 +138,7 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	// Auto-push session activation command to stack service for seamless UX
 	// Use precise ID-based activation to avoid any ambiguity
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		activateCommand := fmt.Sprintf("\\session-activate[id=true] %s", session.ID)
+		activateCommand := fmt.Sprintf("\\silent \\session-activate[id=true] %s", session.ID)
 		stackService.PushCommand(activateCommand)
 	}
 
