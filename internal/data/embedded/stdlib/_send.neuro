@@ -26,7 +26,7 @@
 \silent \llm-client-get[provider=${#active_model_provider}]
 
 %% Step 5: Make LLM call using all components
-\llm-call[client_id=${_client_id}, session_id=${_session_id}]
+\silent \llm-call[client_id=${_client_id}, session_id=${_session_id}]
 
 %% Step 6: Add assistant response to session and display
 \silent \session-add-assistantmsg[session=${_session_id}] ${#llm_response}
