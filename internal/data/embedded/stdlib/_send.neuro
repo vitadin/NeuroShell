@@ -11,24 +11,24 @@
 %% 6. Add assistant response and display
 
 %% Step 1: Ensure active session - create if session-activate returns empty
-\session-activate
-\if-not[condition="${_session_id}"] \session-new
+\silent \session-activate
+\silent \if-not[condition="${_session_id}"] \session-new
 
 %% Step 2: Add user message to session
-\session-add-usermsg[session=${_session_id}] ${_1}
+\silent \session-add-usermsg[session=${_session_id}] ${_1}
 
 %% Step 3: Ensure active model - create default if no active model
-\get[#active_model_name]
-\if-not[condition="${#active_model_name}"] \model-new[catalog_id=O4M] default_model
+\silent \get[#active_model_name]
+\silent \if-not[condition="${#active_model_name}"] \model-new[catalog_id=O4M] default_model
 
 %% Step 4: Get client using active model's provider (auto-created by model commands via stack service)
-\get[#active_model_provider]
-\llm-client-get[provider=${#active_model_provider}]
+\silent \get[#active_model_provider]
+\silent \llm-client-get[provider=${#active_model_provider}]
 
 %% Step 5: Make LLM call using all components
 \llm-call[client_id=${_client_id}, session_id=${_session_id}]
 
 %% Step 6: Add assistant response to session and display
-\session-add-assistantmsg[session=${_session_id}] ${_output}
-\set[1="${_output}"]
-\render-markdown ${_output}
+\silent \session-add-assistantmsg[session=${_session_id}] ${#llm_response}
+\silent \set[1="${#llm_response}"]
+\render-markdown ${#llm_response}
