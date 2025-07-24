@@ -45,6 +45,18 @@ func TestClientFactoryService_GetClientForProvider(t *testing.T) {
 			expectError: false,
 		},
 		{
+			name:        "successful openrouter client creation",
+			provider:    "openrouter",
+			apiKey:      "sk-or-test-key",
+			expectError: false,
+		},
+		{
+			name:        "successful moonshot client creation",
+			provider:    "moonshot",
+			apiKey:      "sk-ms-test-key",
+			expectError: false,
+		},
+		{
 			name:        "empty provider",
 			provider:    "",
 			apiKey:      "sk-test-key",
@@ -63,14 +75,13 @@ func TestClientFactoryService_GetClientForProvider(t *testing.T) {
 			provider:    "unsupported",
 			apiKey:      "test-key",
 			expectError: true,
-			errorMsg:    "unsupported provider 'unsupported'. Supported providers: openai, anthropic",
+			errorMsg:    "unsupported provider 'unsupported'. Supported providers: openai, openrouter, moonshot, anthropic",
 		},
 		{
-			name:        "anthropic provider not yet implemented",
+			name:        "successful anthropic client creation",
 			provider:    "anthropic",
-			apiKey:      "test-key",
-			expectError: true,
-			errorMsg:    "anthropic provider is not yet implemented",
+			apiKey:      "sk-ant-test-key",
+			expectError: false,
 		},
 	}
 
@@ -108,6 +119,9 @@ func TestClientFactoryService_GetClientForProvider_NotInitialized(t *testing.T) 
 }
 
 func TestClientFactoryService_ClientCaching(t *testing.T) {
+	// Clear global context to ensure test isolation
+	context.ResetGlobalContext()
+
 	service := NewClientFactoryService()
 	err := service.Initialize()
 	require.NoError(t, err)
@@ -151,10 +165,10 @@ func TestClientFactoryService_CacheKeyFormat(t *testing.T) {
 	assert.Equal(t, 1, service.GetCachedClientCount())
 
 	// Different provider with same key should be treated as different
-	// (Note: anthropic will fail because it's not implemented yet)
-	_, err = service.GetClientForProvider("anthropic", "test-key")
-	assert.Error(t, err)                               // Expected because anthropic is not implemented
-	assert.Equal(t, 1, service.GetCachedClientCount()) // Should remain 1 due to error
+	anthropicClient, err := service.GetClientForProvider("anthropic", "test-key")
+	assert.NoError(t, err) // Anthropic is now implemented
+	assert.NotNil(t, anthropicClient)
+	assert.Equal(t, 2, service.GetCachedClientCount()) // Should be 2 now (openai + anthropic)
 }
 
 func TestClientFactoryService_DetermineAPIKeyForProvider(t *testing.T) {
@@ -231,7 +245,7 @@ func TestClientFactoryService_DetermineAPIKeyForProvider(t *testing.T) {
 			name:        "unsupported provider",
 			provider:    "unsupported",
 			expectError: true,
-			errorMsg:    "unsupported provider 'unsupported'. Supported providers: openai, anthropic",
+			errorMsg:    "unsupported provider 'unsupported'. Supported providers: openai, openrouter, moonshot, anthropic",
 		},
 	}
 
@@ -343,7 +357,7 @@ func TestClientFactoryService_ErrorMessages(t *testing.T) {
 			name:     "unsupported provider",
 			provider: "gpt",
 			apiKey:   "test-key",
-			expected: "unsupported provider 'gpt'. Supported providers: openai, anthropic",
+			expected: "unsupported provider 'gpt'. Supported providers: openai, openrouter, moonshot, anthropic",
 		},
 	}
 
@@ -391,7 +405,7 @@ func TestClientFactoryService_DetermineAPIKeyForProvider_ErrorMessages(t *testin
 		{
 			name:     "unsupported provider",
 			provider: "claude",
-			expected: "unsupported provider 'claude'. Supported providers: openai, anthropic",
+			expected: "unsupported provider 'claude'. Supported providers: openai, openrouter, moonshot, anthropic",
 		},
 	}
 
@@ -446,20 +460,19 @@ func TestClientFactoryService_ProviderSpecificCaching(t *testing.T) {
 	assert.NotNil(t, openaiClient)
 	assert.Equal(t, 1, service.GetCachedClientCount())
 
-	// Attempting to create Anthropic client with same key should fail
-	// (because anthropic is not implemented yet)
-	_, err = service.GetClientForProvider("anthropic", "same-key")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "anthropic provider is not yet implemented")
+	// Create Anthropic client with same key should succeed (anthropic is now implemented)
+	anthropicClient, err := service.GetClientForProvider("anthropic", "same-key")
+	assert.NoError(t, err)
+	assert.NotNil(t, anthropicClient)
 
-	// Cache count should remain 1 (no new client created due to error)
-	assert.Equal(t, 1, service.GetCachedClientCount())
+	// Cache count should be 2 (openai + anthropic with same key but different providers)
+	assert.Equal(t, 2, service.GetCachedClientCount())
 
 	// But different OpenAI keys should create separate entries
 	openaiClient2, err := service.GetClientForProvider("openai", "different-key")
 	assert.NoError(t, err)
 	assert.NotNil(t, openaiClient2)
-	assert.Equal(t, 2, service.GetCachedClientCount())
+	assert.Equal(t, 3, service.GetCachedClientCount()) // Now 3 total: openai:same-key, anthropic:same-key, openai:different-key
 	assert.NotSame(t, openaiClient, openaiClient2)
 }
 

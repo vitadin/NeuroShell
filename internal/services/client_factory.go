@@ -67,11 +67,14 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 	switch provider {
 	case "openai":
 		client = NewOpenAIClient(apiKey)
+	case "openrouter":
+		client = f.createOpenAICompatibleClient(apiKey, "openrouter", "https://openrouter.ai/api/v1")
+	case "moonshot":
+		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
 	case "anthropic":
-		// TODO: Implement AnthropicClient when available
-		return nil, fmt.Errorf("anthropic provider is not yet implemented")
+		client = f.createAnthropicCompatibleClient(apiKey)
 	default:
-		return nil, fmt.Errorf("unsupported provider '%s'. Supported providers: openai, anthropic", provider)
+		return nil, fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic", provider)
 	}
 
 	// Store client in context cache
@@ -128,11 +131,14 @@ func (f *ClientFactoryService) GetClientWithID(provider, apiKey string) (neuroty
 	switch provider {
 	case "openai":
 		client = NewOpenAIClient(apiKey)
+	case "openrouter":
+		client = f.createOpenAICompatibleClient(apiKey, "openrouter", "https://openrouter.ai/api/v1")
+	case "moonshot":
+		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
 	case "anthropic":
-		// TODO: Implement AnthropicClient when available
-		return nil, "", fmt.Errorf("anthropic provider is not yet implemented")
+		client = f.createAnthropicCompatibleClient(apiKey)
 	default:
-		return nil, "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, anthropic", provider)
+		return nil, "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic", provider)
 	}
 
 	// Store client in context cache
@@ -190,11 +196,17 @@ func (f *ClientFactoryService) DetermineAPIKeyForProvider(provider string, ctx n
 	case "openai":
 		envVarName = "OPENAI_API_KEY"
 		apiKey = ctx.GetEnv(envVarName)
+	case "openrouter":
+		envVarName = "OPENROUTER_API_KEY"
+		apiKey = ctx.GetEnv(envVarName)
+	case "moonshot":
+		envVarName = "MOONSHOT_API_KEY"
+		apiKey = ctx.GetEnv(envVarName)
 	case "anthropic":
 		envVarName = "ANTHROPIC_API_KEY"
 		apiKey = ctx.GetEnv(envVarName)
 	default:
-		return "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, anthropic", provider)
+		return "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic", provider)
 	}
 
 	if apiKey == "" {
@@ -217,4 +229,47 @@ func (f *ClientFactoryService) ClearCache() {
 	ctx := neuroshellcontext.GetGlobalContext()
 	ctx.ClearLLMClients()
 	logger.Debug("Client cache cleared")
+}
+
+// createOpenAICompatibleClient creates a new OpenAI-compatible client with the specified provider name and base URL.
+func (f *ClientFactoryService) createOpenAICompatibleClient(apiKey, providerName, baseURL string) neurotypes.LLMClient {
+	// Build headers map with provider-specific defaults
+	headers := make(map[string]string)
+
+	// Set default headers for OpenRouter
+	if providerName == "openrouter" {
+		headers["HTTP-Referer"] = "https://github.com/vitadin/NeuroShell"
+		headers["X-Title"] = "NeuroShell"
+	}
+
+	// Create client configuration
+	config := OpenAICompatibleConfig{
+		ProviderName: providerName,
+		APIKey:       apiKey,
+		BaseURL:      baseURL,
+		Headers:      headers,
+	}
+
+	logger.Debug("Creating OpenAI-compatible client", "provider", providerName, "baseURL", baseURL, "headerCount", len(headers))
+	return NewOpenAICompatibleClient(config)
+}
+
+// createAnthropicCompatibleClient creates a new Anthropic-compatible client using the OpenAI-compatible client infrastructure.
+func (f *ClientFactoryService) createAnthropicCompatibleClient(apiKey string) neurotypes.LLMClient {
+	// Create Anthropic-specific headers
+	headers := map[string]string{
+		"anthropic-version": "2023-06-01",
+	}
+
+	// Create client configuration for Anthropic
+	config := OpenAICompatibleConfig{
+		ProviderName: "anthropic",
+		APIKey:       apiKey,
+		BaseURL:      "https://api.anthropic.com/v1",
+		Headers:      headers,
+		Endpoint:     "/messages",
+	}
+
+	logger.Debug("Creating Anthropic-compatible client", "baseURL", config.BaseURL, "endpoint", config.Endpoint)
+	return NewOpenAICompatibleClient(config)
 }

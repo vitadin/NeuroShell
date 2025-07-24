@@ -29,7 +29,7 @@ func (c *LLMClientGetCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the llm-client-get command.
 func (c *LLMClientGetCommand) Usage() string {
-	return "\\llm-client-get[key=api_key, provider=openai] or \\llm-client-get (uses env vars)"
+	return "\\llm-client-get[key=api_key, provider=openai|openrouter|moonshot|anthropic] or \\llm-client-get (uses env vars)"
 }
 
 // HelpInfo returns structured help information for the llm-client-get command.
@@ -42,7 +42,7 @@ func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "provider",
-				Description: "LLM provider name (openai, anthropic)",
+				Description: "LLM provider name (openai, openrouter, moonshot, anthropic)",
 				Required:    false,
 				Type:        "string",
 				Default:     "openai",
@@ -60,6 +60,18 @@ func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Get OpenAI client with explicit API key",
 			},
 			{
+				Command:     "\\llm-client-get[provider=openrouter, key=sk-or-...]",
+				Description: "Get OpenRouter client with explicit API key",
+			},
+			{
+				Command:     "\\llm-client-get[provider=moonshot, key=sk-...]",
+				Description: "Get Moonshot client with explicit API key",
+			},
+			{
+				Command:     "\\llm-client-get[provider=anthropic, key=sk-ant-...]",
+				Description: "Get Anthropic client with explicit API key",
+			},
+			{
 				Command:     "\\llm-client-get[key=${OPENAI_API_KEY}]",
 				Description: "Get OpenAI client using variable interpolation",
 			},
@@ -73,7 +85,10 @@ func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
 			"Client ID stored in ${_client_id} system variable",
 			"API key can be provided explicitly or via environment variables:",
 			"  - OPENAI_API_KEY for OpenAI provider",
-			"  - ANTHROPIC_API_KEY for Anthropic provider (when supported)",
+			"  - OPENROUTER_API_KEY for OpenRouter provider",
+			"  - MOONSHOT_API_KEY for Moonshot provider",
+			"  - ANTHROPIC_API_KEY for Anthropic provider",
+			"OpenRouter configuration is automatically set for NeuroShell",
 			"Client configuration status stored in ${#client_configured}",
 			"Provider name stored in ${#client_provider}",
 			"Cached client count stored in ${#client_cache_count}",
@@ -104,17 +119,30 @@ func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
 		switch provider {
 		case "openai":
 			apiKey = variableService.GetEnv("OPENAI_API_KEY")
+		case "openrouter":
+			apiKey = variableService.GetEnv("OPENROUTER_API_KEY")
+		case "moonshot":
+			apiKey = variableService.GetEnv("MOONSHOT_API_KEY")
 		case "anthropic":
 			apiKey = variableService.GetEnv("ANTHROPIC_API_KEY")
 		default:
-			return fmt.Errorf("unsupported provider '%s'. Supported providers: openai, anthropic", provider)
+			return fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic", provider)
 		}
 
 		// If still no API key found, return error
 		if apiKey == "" {
-			envVarName := "OPENAI_API_KEY"
-			if provider == "anthropic" {
+			var envVarName string
+			switch provider {
+			case "openai":
+				envVarName = "OPENAI_API_KEY"
+			case "openrouter":
+				envVarName = "OPENROUTER_API_KEY"
+			case "moonshot":
+				envVarName = "MOONSHOT_API_KEY"
+			case "anthropic":
 				envVarName = "ANTHROPIC_API_KEY"
+			default:
+				envVarName = "API_KEY"
 			}
 			return fmt.Errorf("API key not found. Please provide key parameter or set %s environment variable. Usage: %s", envVarName, c.Usage())
 		}
