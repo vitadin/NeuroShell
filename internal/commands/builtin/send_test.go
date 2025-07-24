@@ -1,13 +1,7 @@
 package builtin
 
-// COMMENTED OUT: Send command test functionality disabled during state machine transition
-// This file contains tests for the \send command implementation which is temporarily disabled
-// while transitioning to the new state machine execution model.
-//
-// To re-enable: uncomment all code below (except this comment block)
-
-/*
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,139 +19,216 @@ func TestSendCommand_Name(t *testing.T) {
 
 func TestSendCommand_ParseMode(t *testing.T) {
 	cmd := &SendCommand{}
-	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
+	assert.Equal(t, neurotypes.ParseModeRaw, cmd.ParseMode())
 }
 
 func TestSendCommand_Description(t *testing.T) {
 	cmd := &SendCommand{}
-	assert.Equal(t, "Send message to LLM agent", cmd.Description())
+	desc := cmd.Description()
+	assert.NotEmpty(t, desc)
+	assert.Contains(t, strings.ToLower(desc), "send")
+	assert.Contains(t, strings.ToLower(desc), "message")
 }
 
 func TestSendCommand_Usage(t *testing.T) {
 	cmd := &SendCommand{}
-	assert.Equal(t, "\\send message", cmd.Usage())
+	usage := cmd.Usage()
+	assert.NotEmpty(t, usage)
+	assert.Contains(t, usage, "\\send")
+	assert.Contains(t, usage, "message")
 }
 
 func TestSendCommand_HelpInfo(t *testing.T) {
 	cmd := &SendCommand{}
-	help := cmd.HelpInfo()
+	helpInfo := cmd.HelpInfo()
 
-	assert.Equal(t, "send", help.Command)
-	assert.Equal(t, "Send message to LLM agent", help.Description)
-	assert.Equal(t, neurotypes.ParseModeKeyValue, help.ParseMode)
-	assert.Contains(t, help.Notes, "Routes to send-stream or send-sync based on _reply_way variable")
+	assert.Equal(t, "send", helpInfo.Command)
+	assert.NotEmpty(t, helpInfo.Description)
+	assert.NotEmpty(t, helpInfo.Usage)
+	assert.Equal(t, neurotypes.ParseModeRaw, helpInfo.ParseMode)
+	assert.Empty(t, helpInfo.Options) // Send command has no options
+	assert.NotEmpty(t, helpInfo.Examples)
+	assert.NotEmpty(t, helpInfo.Notes)
+
+	// Check that examples contain expected commands
+	expectedCommands := []string{
+		"\\send Hello, how are you?",
+		"\\send Analyze this data: ${data_variable}",
+		"\\send ${_output}",
+		"\\send Please review this code:\\n${code_content}",
+		"\\set[_reply_way=stream] && \\send Tell me a story",
+		"\\set[_reply_way=sync] && \\send What is 2+2?",
+	}
+
+	for _, expectedCmd := range expectedCommands {
+		found := false
+		for _, example := range helpInfo.Examples {
+			if example.Command == expectedCmd {
+				found = true
+				break
+			}
+		}
+		assert.True(t, found, "Expected example command not found: %s", expectedCmd)
+	}
+
+	// Check that notes contain key information
+	notesText := strings.Join(helpInfo.Notes, " ")
+	assert.Contains(t, notesText, "session")
+	assert.Contains(t, notesText, "model")
+	assert.Contains(t, notesText, "_reply_way")
+	assert.Contains(t, notesText, "API key")
 }
 
 func TestSendCommand_Execute_EmptyInput(t *testing.T) {
 	cmd := &SendCommand{}
-
 	err := cmd.Execute(map[string]string{}, "")
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "Usage:")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Usage")
 }
 
-func TestSendCommand_Execute_PipelineOrchestration(t *testing.T) {
-	// Setup test environment
+func TestSendCommand_Execute_ValidInput(t *testing.T) {
+	cmd := &SendCommand{}
 	ctx := context.New()
-	ctx.SetTestMode(true)
-	context.SetGlobalContext(ctx)
 
-	// Create and setup services
-	serviceRegistry := services.NewRegistry()
+	// Setup test registry with required services
+	setupSendTestRegistry(t, ctx)
 
-	// Variable service
-	varService := services.NewVariableService()
-	err := varService.Initialize()
-	require.NoError(t, err)
-	err = serviceRegistry.RegisterService(varService)
-	require.NoError(t, err)
+	err := cmd.Execute(map[string]string{}, "Hello, world!")
+	assert.NoError(t, err)
 
-	// Chat session service
-	chatSessionService := services.NewChatSessionService()
-	err = chatSessionService.Initialize()
+	// Verify command was pushed to stack
+	stackService, err := services.GetGlobalStackService()
 	require.NoError(t, err)
-	err = serviceRegistry.RegisterService(chatSessionService)
-	require.NoError(t, err)
+	assert.Equal(t, 1, stackService.GetStackSize())
 
-	// Model service
-	modelService := services.NewModelService()
-	err = modelService.Initialize()
-	require.NoError(t, err)
-	err = serviceRegistry.RegisterService(modelService)
-	require.NoError(t, err)
+	// Verify the pushed command
+	command, hasCommand := stackService.PopCommand()
+	require.True(t, hasCommand)
+	assert.Equal(t, "\\_send Hello, world!", command)
+}
 
-	// Client factory service
-	clientFactory := services.NewClientFactoryService()
-	err = clientFactory.Initialize()
-	require.NoError(t, err)
-	err = serviceRegistry.RegisterService(clientFactory)
-	require.NoError(t, err)
-
-	// LLM service (mock)
-	llmService := services.NewMockLLMService()
-	err = llmService.Initialize()
-	require.NoError(t, err)
-	err = serviceRegistry.RegisterService(llmService)
-	require.NoError(t, err)
-
-	// Temporarily replace global service registry
-	originalServiceRegistry := services.GlobalRegistry
-	services.GlobalRegistry = serviceRegistry
-	defer func() { services.GlobalRegistry = originalServiceRegistry }()
-
+func TestSendCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	cmd := &SendCommand{}
 
-	// Test with mock services (should succeed)
-	err = cmd.Execute(map[string]string{}, "hello")
-	require.NoError(t, err)
+	// Set up empty registry to simulate missing services
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(services.NewRegistry()) // Empty registry
 
-	// Test with sync mode (default)
-	_ = varService.Set("_reply_way", "sync")
-	err = cmd.Execute(map[string]string{}, "hello sync")
-	require.NoError(t, err)
+	defer func() {
+		services.SetGlobalRegistry(oldRegistry)
+	}()
 
-	// Test with stream mode
-	_ = varService.Set("_reply_way", "stream")
-	err = cmd.Execute(map[string]string{}, "hello stream")
-	require.NoError(t, err)
+	err := cmd.Execute(map[string]string{}, "test message")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "stack service not available")
 }
 
-// MockSendSyncCommand provides a mock implementation for testing
-type MockSendSyncCommand struct {
-	executed  bool
-	lastInput string
-	lastArgs  map[string]string
-}
+func TestSendCommand_Execute_MultipleMessages(t *testing.T) {
+	cmd := &SendCommand{}
+	ctx := context.New()
 
-func (m *MockSendSyncCommand) Name() string {
-	return "send-sync"
-}
+	// Setup test registry with required services
+	setupSendTestRegistry(t, ctx)
 
-func (m *MockSendSyncCommand) ParseMode() neurotypes.ParseMode {
-	return neurotypes.ParseModeKeyValue
-}
+	messages := []string{
+		"First message",
+		"Second message with ${variable}",
+		"Multi-line\nmessage content",
+	}
 
-func (m *MockSendSyncCommand) Description() string {
-	return "Mock send-sync command"
-}
+	for i, msg := range messages {
+		// Reset context for each test
+		ctx = context.New()
+		setupSendTestRegistry(t, ctx)
 
-func (m *MockSendSyncCommand) Usage() string {
-	return "\\send-sync message"
-}
+		err := cmd.Execute(map[string]string{}, msg)
+		assert.NoError(t, err)
 
-func (m *MockSendSyncCommand) HelpInfo() neurotypes.HelpInfo {
-	return neurotypes.HelpInfo{
-		Command:     "send-sync",
-		Description: "Mock send-sync command",
-		Usage:       "\\send-sync message",
-		ParseMode:   neurotypes.ParseModeKeyValue,
+		// Verify command was pushed to stack
+		stackService, err := services.GetGlobalStackService()
+		require.NoError(t, err)
+		assert.Equal(t, 1, stackService.GetStackSize())
+
+		// Verify the pushed command
+		command, hasCommand := stackService.PopCommand()
+		require.True(t, hasCommand)
+		assert.Equal(t, "\\_send "+msg, command, "Message %d failed", i+1)
 	}
 }
 
-func (m *MockSendSyncCommand) Execute(args map[string]string, input string) error {
-	m.executed = true
-	m.lastInput = input
-	m.lastArgs = args
-	return nil
+func TestSendCommand_Execute_WhitespaceHandling(t *testing.T) {
+	cmd := &SendCommand{}
+	ctx := context.New()
+
+	// Setup test registry with required services
+	setupSendTestRegistry(t, ctx)
+
+	tests := []struct {
+		name  string
+		input string
+	}{
+		{
+			name:  "leading whitespace",
+			input: "   Hello world",
+		},
+		{
+			name:  "trailing whitespace",
+			input: "Hello world   ",
+		},
+		{
+			name:  "both leading and trailing",
+			input: "   Hello world   ",
+		},
+		{
+			name:  "tabs and spaces",
+			input: "\t  Hello world  \t",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Reset context for each test
+			ctx = context.New()
+			setupSendTestRegistry(t, ctx)
+
+			err := cmd.Execute(map[string]string{}, tt.input)
+			assert.NoError(t, err)
+
+			// Verify command was pushed to stack exactly as provided (no trimming in delegation layer)
+			stackService, err := services.GetGlobalStackService()
+			require.NoError(t, err)
+			assert.Equal(t, 1, stackService.GetStackSize())
+
+			command, hasCommand := stackService.PopCommand()
+			require.True(t, hasCommand)
+			assert.Equal(t, "\\_send "+tt.input, command)
+		})
+	}
 }
-*/
+
+// setupSendTestRegistry sets up a test environment with required services for send command tests
+func setupSendTestRegistry(t *testing.T, ctx neurotypes.Context) {
+	// Create a new registry for testing
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
+
+	// Set the test context as global context
+	context.SetGlobalContext(ctx)
+
+	// Register required services
+	err := services.GetGlobalRegistry().RegisterService(services.NewStackService())
+	require.NoError(t, err)
+
+	// Initialize services
+	err = services.GetGlobalRegistry().InitializeAll()
+	require.NoError(t, err)
+
+	// Cleanup function to restore original registry
+	t.Cleanup(func() {
+		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
+	})
+}
+
+// Interface compliance check
+var _ neurotypes.Command = (*SendCommand)(nil)
