@@ -117,3 +117,30 @@ func CaptureOutput(fn func()) string {
 	// Return captured output
 	return <-outputChan
 }
+
+// WithSuppressedOutput suppresses stdout during function execution.
+// This utility function redirects stdout to discard all output, preserving stderr for errors.
+// It's designed for the \silent command to suppress all fmt.Print* output globally.
+func WithSuppressedOutput(fn func() error) error {
+	// Save original stdout
+	oldStdout := os.Stdout
+
+	// Open /dev/null for discarding output
+	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
+	if err != nil {
+		return err
+	}
+
+	// Redirect stdout to /dev/null
+	os.Stdout = devNull
+
+	// Execute function and capture any error
+	fnErr := fn()
+
+	// Restore stdout and close /dev/null
+	_ = devNull.Close()
+	os.Stdout = oldStdout
+
+	// Return the function's error (not redirection errors)
+	return fnErr
+}

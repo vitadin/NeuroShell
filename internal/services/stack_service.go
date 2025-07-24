@@ -163,3 +163,50 @@ func (ss *StackService) IsTryErrorCaptured() bool {
 	ctx := context.GetGlobalContext().(*context.NeuroContext)
 	return ctx.IsTryErrorCaptured()
 }
+
+// Silent block support methods
+
+// PushSilentBoundary pushes silent boundary markers for silent blocks
+func (ss *StackService) PushSilentBoundary(silentID string) {
+	if !ss.initialized {
+		return
+	}
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
+	ctx.PushSilentBoundary(silentID)
+}
+
+// PopSilentBoundary removes the most recent silent block context
+func (ss *StackService) PopSilentBoundary() {
+	if !ss.initialized {
+		return
+	}
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
+	ctx.PopSilentBoundary()
+}
+
+// IsInSilentBlock returns true if currently inside a silent block
+func (ss *StackService) IsInSilentBlock() bool {
+	if !ss.initialized {
+		return false
+	}
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
+	return ctx.IsInSilentBlock()
+}
+
+// GetCurrentSilentID returns the ID of the current silent block
+func (ss *StackService) GetCurrentSilentID() string {
+	if !ss.initialized {
+		return ""
+	}
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
+	return ctx.GetCurrentSilentID()
+}
+
+// GetCurrentSilentDepth returns the current silent block depth
+func (ss *StackService) GetCurrentSilentDepth() int {
+	if !ss.initialized {
+		return 0
+	}
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
+	return ctx.GetCurrentSilentDepth()
+}
