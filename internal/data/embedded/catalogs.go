@@ -52,3 +52,8 @@ var KimiK2MoonshotModelData []byte
 //
 //go:embed models/qwen3-235b-openrouter.yaml
 var Qwen3235BOpenRouterModelData []byte
+
+// Grok4OpenRouterModelData contains the embedded Grok-4 (OpenRouter) model YAML data.
+//
+//go:embed models/grok-4-openrouter.yaml
+var Grok4OpenRouterModelData []byte

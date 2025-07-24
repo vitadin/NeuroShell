@@ -1,6 +1,6 @@
 Setting _echo_command = true
 %%> "\\model-catalog"
-Model Catalog (10 models):
+Model Catalog (11 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
@@ -94,10 +94,19 @@ Openrouter Models:
     Description: Free access to Kimi K2 via OpenRouter, a trillion-parameter MoE model optimized for advanced tool use, reasoning, and code synthesis
   [ORQ3A] Qwen: Qwen3 235B A22B 2507 (qwen/qwen3-235b-a22b-07-25)
     Provider: openrouter
-    Context: 262,144 tokens (max output: 32,768 tokens)
+    Context: 262,144 tokens
     Capabilities: text, reasoning, analysis, coding, writing, math, tool-use, multilingual, thinking-mode, instruction-following
     Modalities: text-input, text-output
     Pricing: $0.12/1M input, $0.59/1M output tokens
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-07-01
     Description: Mixture-of-Experts model with 235B total/22B active parameters via OpenRouter, featuring thinking mode and advanced multilingual capabilities
+  [ORG4] xAI: Grok 4 (x-ai/grok-4)
+    Provider: openrouter
+    Context: 256,000 tokens
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, structured-outputs, parallel-tool-calling, mandatory-reasoning
+    Modalities: text-input, image-input, text-output
+    Pricing: $3.00/1M input, $15.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-07-09
+    Description: Grok 4 is xAI's latest reasoning model with a 256k context window. It supports parallel tool calling, structured outputs, and both image and text inputs with mandatory reasoning capabilities.
