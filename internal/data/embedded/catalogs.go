@@ -57,3 +57,18 @@ var Qwen3235BOpenRouterModelData []byte
 //
 //go:embed models/grok-4-openrouter.yaml
 var Grok4OpenRouterModelData []byte
+
+// GPT41ModelData contains the embedded GPT-4.1 model YAML data.
+//
+//go:embed models/gpt-4-1-openai.yaml
+var GPT41ModelData []byte
+
+// O3ProModelData contains the embedded o3-pro model YAML data.
+//
+//go:embed models/o3-pro-openai.yaml
+var O3ProModelData []byte
+
+// O1ModelData contains the embedded o1 model YAML data.
+//
+//go:embed models/o1-openai.yaml
+var O1ModelData []byte

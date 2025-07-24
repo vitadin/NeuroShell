@@ -1,6 +1,25 @@
 Setting _echo_command = true
 %%> "\\model-catalog[provider=\"openai\"]"
-Model Catalog (Openai) (2 models):
+Model Catalog (Openai) (5 models):
+  [G41] GPT-4.1 (gpt-4.1-2025-04-14)
+    Context: 1,047,576 tokens (max output: 32,768 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs
+    Modalities: text-input, image-input, text-output
+    Pricing: $2.00/1M input, $8.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-05-31
+    Description: GPT-4.1 is our flagship model for complex tasks. It is well suited for problem solving across domains.
+  [O1] o1 (o1-2024-12-17)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
+    Modalities: text-input, image-input, text-output
+    Pricing: $15.00/1M input, $60.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: file-search
+    Knowledge cutoff: 2023-09-30
+    Reasoning tokens supported
+    Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O3] O3 (o3)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
@@ -12,6 +31,16 @@ Model Catalog (Openai) (2 models):
     Reasoning tokens supported
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
+  [O3P] o3-pro (o3-pro-2025-06-10)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning
+    Modalities: text-input, image-input, text-output
+    Pricing: $20.00/1M input, $80.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: web-search, file-search, image-generation
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
   [O4M] O4-mini (o4-mini)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
@@ -24,7 +53,26 @@ Model Catalog (Openai) (2 models):
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
 %%> "\\model-catalog[provider=\"openai\"]"
-Model Catalog (Openai) (2 models):
+Model Catalog (Openai) (5 models):
+  [G41] GPT-4.1 (gpt-4.1-2025-04-14)
+    Context: 1,047,576 tokens (max output: 32,768 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs
+    Modalities: text-input, image-input, text-output
+    Pricing: $2.00/1M input, $8.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-05-31
+    Description: GPT-4.1 is our flagship model for complex tasks. It is well suited for problem solving across domains.
+  [O1] o1 (o1-2024-12-17)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
+    Modalities: text-input, image-input, text-output
+    Pricing: $15.00/1M input, $60.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: file-search
+    Knowledge cutoff: 2023-09-30
+    Reasoning tokens supported
+    Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O3] O3 (o3)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
@@ -36,6 +84,16 @@ Model Catalog (Openai) (2 models):
     Reasoning tokens supported
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
+  [O3P] o3-pro (o3-pro-2025-06-10)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning
+    Modalities: text-input, image-input, text-output
+    Pricing: $20.00/1M input, $80.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: web-search, file-search, image-generation
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
   [O4M] O4-mini (o4-mini)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
