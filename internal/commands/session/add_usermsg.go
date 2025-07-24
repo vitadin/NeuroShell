@@ -117,7 +117,7 @@ func (c *AddUserMessageCommand) Execute(args map[string]string, input string) er
 	// Auto-push session activation command to stack service for consistent UX
 	// Use precise ID-based activation to ensure the session becomes active
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		activateCommand := fmt.Sprintf("\\session-activate[id=true] %s", sessionID)
+		activateCommand := fmt.Sprintf("\\silent \\session-activate[id=true] %s", sessionID)
 		stackService.PushCommand(activateCommand)
 	}
 

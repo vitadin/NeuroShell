@@ -1,34 +1,22 @@
 Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"O4M\"] claude-prod-model"
 Created model 'claude-prod-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-Activated model 'claude-prod-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] openai-prod-model"
 Created model 'openai-prod-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-Activated model 'openai-prod-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\"] claude-test-model"
 Created model 'claude-test-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
-Activated model 'claude-test-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[provider=\"openai\", base_model=\"gpt-4\"] openai-test-model"
 Created model 'openai-test-model' (ID: 00000004, Provider: openai, Base: gpt-4)
-%%> "\\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
-Activated model 'openai-test-model' (ID: 00000004, Provider: openai, Base: gpt-4)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-status[name=\"prod\"]"

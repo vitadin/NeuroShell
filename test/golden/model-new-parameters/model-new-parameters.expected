@@ -1,10 +1,7 @@
 Setting _echo_command = true
 %%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\", temperature=\"0.8\", max_tokens=\"2000\", description=\"Advanced model for creative tasks\"] creative-claude"
 Created model 'creative-claude' (ID: 00000001, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-Activated model 'creative-claude' (ID: 00000001, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\get[#model_id]"

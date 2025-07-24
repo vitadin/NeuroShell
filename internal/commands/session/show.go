@@ -293,7 +293,7 @@ func (c *ShowCommand) renderSessionInfo(session *neurotypes.ChatSession, variabl
 	// Auto-push session activation command to stack service to handle active session state
 	// This will activate the shown session for seamless UX
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		activateCommand := fmt.Sprintf("\\session-activate[id=true] %s", session.ID)
+		activateCommand := fmt.Sprintf("\\silent \\session-activate[id=true] %s", session.ID)
 		stackService.PushCommand(activateCommand)
 	}
 

@@ -1,36 +1,24 @@
 Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"O4M\"] test-model-1"
 Created model 'test-model-1' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-Activated model 'test-model-1' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] test-model-2"
 Created model 'test-model-2' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-Activated model 'test-model-2' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\try \\model-delete nonexistent-model"
 %%> "\\model-delete nonexistent-model"
 %%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\"] test-similar"
 Created model 'test-similar' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
-Activated model 'test-similar' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[provider=\"openai\", base_model=\"gpt-4\"] test-different"
 Created model 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
-%%> "\\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
-Activated model 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+%%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
 %%> "\\llm-client-get[provider=openai]"
 LLM client ready: openai:b10394de (configured: true)
 %%> "\\try \\model-delete test"
@@ -41,19 +29,15 @@ LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-delete[id=true] xyz123"
 %%> "\\model-delete test-model-1"
 Deleted model 'test-model-1' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\model-activate"
-Current active model: 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
+%%> "\\silent \\model-activate"
 %%> "\\model-delete test-model-2"
 Deleted model 'test-model-2' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\model-activate"
-Current active model: 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
+%%> "\\silent \\model-activate"
 %%> "\\model-delete test-similar"
 Deleted model 'test-similar' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\model-activate"
-Current active model: 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
+%%> "\\silent \\model-activate"
 %%> "\\model-delete test-different"
 Deleted model 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
-%%> "\\model-activate"
-Current active model: 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4)
+%%> "\\silent \\model-activate"
 %%> "\\try \\model-delete anything"
 %%> "\\model-delete anything"

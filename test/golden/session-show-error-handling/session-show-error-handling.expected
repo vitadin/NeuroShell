@@ -3,30 +3,25 @@ Setting _echo_command = true
 No sessions found. Use \session-new to create a session.
 %%> "\\session-new test_session_one"
 Created session 'test_session_one' (ID: 00000001)
-%%> "\\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
-Activated session 'test_session_one' (ID: 00000001, Messages: 0)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-new test_session_two"
 Created session 'test_session_two' (ID: 00000002)
-%%> "\\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
-Activated session 'test_session_two' (ID: 00000002, Messages: 0)
+%%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\session-new another_session"
 Created session 'another_session' (ID: 00000003)
-%%> "\\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
-Activated session 'another_session' (ID: 00000003, Messages: 0)
+%%> "\\silent \\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\session-activate test_session_one"
 Activated session 'test_session_one' (ID: 00000001, Messages: 0)
 %%> "\\session-delete test_session_one"
 Deleted session 'test_session_one' (ID: 00000001)
-%%> "\\session-activate"
-No active session found. Activated most recent session: another_session (ID: 00000003)
+%%> "\\silent \\session-activate"
 %%> "\\session-show"
 Session: another_session (ID: 00000003)
 System: You are a helpful assistant.
 Created: 2025-01-01 00:00:03
 Updated: 2025-01-01 00:00:03
 Messages: 0 total
-%%> "\\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
-Activated session 'another_session' (ID: 00000003, Messages: 0)
+%%> "\\silent \\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\try \\session-show nonexistent_session_name"
 %%> "\\session-show nonexistent_session_name"
 %%> "\\get[_error]"
@@ -48,8 +43,7 @@ System: You are a helpful assistant.
 Created: 2025-01-01 00:00:02
 Updated: 2025-01-01 00:00:02
 Messages: 0 total
-%%> "\\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
-Activated session 'test_session_two' (ID: 00000002, Messages: 0)
+%%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\get[_error]"
 _error = 
 %%> "\\session-show test_session_two"
@@ -58,15 +52,12 @@ System: You are a helpful assistant.
 Created: 2025-01-01 00:00:02
 Updated: 2025-01-01 00:00:02
 Messages: 0 total
-%%> "\\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
-Activated session 'test_session_two' (ID: 00000002, Messages: 0)
+%%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\session-delete test_session_two"
 Deleted session 'test_session_two' (ID: 00000002)
-%%> "\\session-activate"
-No active session found. Activated most recent session: another_session (ID: 00000003)
+%%> "\\silent \\session-activate"
 %%> "\\session-delete another_session"
 Deleted session 'another_session' (ID: 00000003)
-%%> "\\session-activate"
-No sessions found. Use \session-new to create a session.
+%%> "\\silent \\session-activate"
 %%> "\\session-show"
 No sessions found. Use \session-new to create a session.

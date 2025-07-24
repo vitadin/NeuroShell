@@ -162,7 +162,7 @@ func (c *DeleteCommand) Execute(args map[string]string, input string) error {
 	// Auto-push session activation command to stack service to handle active session state
 	// This will either show current active session, activate latest session, or show "no sessions" message
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		activateCommand := "\\session-activate"
+		activateCommand := "\\silent \\session-activate"
 		stackService.PushCommand(activateCommand)
 	}
 
