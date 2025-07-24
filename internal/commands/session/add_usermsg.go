@@ -108,10 +108,17 @@ func (c *AddUserMessageCommand) Execute(args map[string]string, input string) er
 		sessionID = activeSession.ID
 	}
 
-	// Add user message to session (this will auto-activate the session)
+	// Add user message to session
 	err = chatService.AddMessage(sessionID, "user", input)
 	if err != nil {
 		return fmt.Errorf("failed to add user message to session '%s': %w", sessionID, err)
+	}
+
+	// Auto-push session activation command to stack service for consistent UX
+	// Use precise ID-based activation to ensure the session becomes active
+	if stackService, err := services.GetGlobalStackService(); err == nil {
+		activateCommand := fmt.Sprintf("\\session-activate[id=true] %s", sessionID)
+		stackService.PushCommand(activateCommand)
 	}
 
 	// Output confirmation

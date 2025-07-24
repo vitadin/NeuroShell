@@ -1,6 +1,8 @@
 Setting _echo_command = true
 %%> "\\session-new debug_session"
 Created session 'debug_session' (ID: 00000001)
+%%> "\\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated session 'debug_session' (ID: 00000001, Messages: 0)
 %%> "\\session-list"
 Sessions (1 total):
   debug_session    (ID: 00000001, active, 0 messages, created: 2025-01-01)

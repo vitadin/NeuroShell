@@ -7,6 +7,8 @@ No sessions found. Use \session-new to create a session.
 #active_session_id = 
 %%> "\\session-new test_session"
 Created session 'test_session' (ID: 00000001)
+%%> "\\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+Activated session 'test_session' (ID: 00000001, Messages: 0)
 %%> "\\get[#session_name]"
 #session_name = test_session
 %%> "\\get[#session_id]"
@@ -14,11 +16,13 @@ Created session 'test_session' (ID: 00000001)
 %%> "\\session-activate"
 Active session: test_session (ID: 00000001)
 %%> "\\get[#active_session_name]"
-#active_session_name = 
+#active_session_name = test_session
 %%> "\\get[#active_session_id]"
-#active_session_id = 
+#active_session_id = 00000001-0000-4000-8000-000000000001
 %%> "\\session-new second_session"
 Created session 'second_session' (ID: 00000002)
+%%> "\\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+Activated session 'second_session' (ID: 00000002, Messages: 0)
 %%> "\\get[#session_name]"
 #session_name = second_session
 %%> "\\session-activate test_session"
@@ -27,17 +31,29 @@ Activated session 'test_session' (ID: 00000001, Messages: 0)
 #active_session_name = test_session
 %%> "\\session-new older_session"
 Created session 'older_session' (ID: 00000003)
+%%> "\\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
+Activated session 'older_session' (ID: 00000003, Messages: 0)
 %%> "\\session-new newer_session"
 Created session 'newer_session' (ID: 00000004)
+%%> "\\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
+Activated session 'newer_session' (ID: 00000004, Messages: 0)
 %%> "\\session-delete test_session"
 Deleted session 'test_session' (ID: 00000001)
+%%> "\\session-activate"
+Active session: newer_session (ID: 00000004)
 %%> "\\session-delete second_session"
 Deleted session 'second_session' (ID: 00000002)
+%%> "\\session-activate"
+Active session: newer_session (ID: 00000004)
 %%> "\\session-delete older_session"
 Deleted session 'older_session' (ID: 00000003)
+%%> "\\session-activate"
+Active session: newer_session (ID: 00000004)
 %%> "\\session-delete newer_session"
 Deleted session 'newer_session' (ID: 00000004)
 %%> "\\session-activate"
 No sessions found. Use \session-new to create a session.
+%%> "\\session-activate"
+No sessions found. Use \session-new to create a session.
 %%> "\\get[#active_session_name]"
-#active_session_name = test_session
+#active_session_name = newer_session
