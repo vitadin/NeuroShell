@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"neuroshell/internal/commands"
@@ -167,6 +168,13 @@ func (c *LLMAPIShowCommand) createMarkdownTable(keys []services.APIKeySource, va
 	}
 	result.WriteString(title)
 	result.WriteString("\n\n")
+
+	// Sort keys by variable name for deterministic output
+	sort.Slice(keys, func(i, j int) bool {
+		varI := keys[i].Source + "." + keys[i].OriginalName
+		varJ := keys[j].Source + "." + keys[j].OriginalName
+		return varI < varJ
+	})
 
 	// Create markdown table
 	result.WriteString("| Variable Name | API Key | Status |\n")
