@@ -155,3 +155,21 @@ func (v *VariableService) GetEnv(name string) string {
 	ctx := neuroshellcontext.GetGlobalContext()
 	return ctx.GetEnv(name)
 }
+
+// SetEnvVariable sets an environment variable through the context layer.
+// In test mode, this sets a test environment override.
+// In production mode, this sets an actual OS environment variable.
+func (v *VariableService) SetEnvVariable(name, value string) error {
+	if !v.initialized {
+		return fmt.Errorf("variable service not initialized")
+	}
+
+	ctx := neuroshellcontext.GetGlobalContext()
+	// Cast to NeuroContext to access environment variable methods
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
+	if !ok {
+		return fmt.Errorf("context is not a NeuroContext")
+	}
+
+	return neuroCtx.SetEnvVariable(name, value)
+}

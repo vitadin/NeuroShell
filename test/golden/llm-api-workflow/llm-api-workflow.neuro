@@ -1,0 +1,25 @@
+%% Test complete LLM API workflow: show → activate → show
+%% This test demonstrates the behavior in a clean test environment
+
+%% Step 1: Show initial state (no API keys in clean test environment)
+\echo ═══ Initial State: No API Keys ═══
+\llm-api-show
+
+%% Step 2: Try to activate a non-existent key (should fail)
+\echo ═══ Attempting to Activate Non-existent Key ═══
+\try \llm-api-activate[provider=openai, key=os.OPENAI_API_KEY]
+\get[_error]
+
+%% Step 3: Show state after failed activation attempt
+\echo ═══ State After Failed Activation ═══
+\llm-api-show
+
+%% Step 4: Test provider-specific filtering
+\echo ═══ Testing Provider Filtering ═══
+\llm-api-show[provider=openai]
+\llm-api-show[provider=anthropic]
+
+%% Step 5: Test invalid provider in activate command
+\echo ═══ Testing Invalid Provider ═══
+\try \llm-api-activate[provider=invalid, key=os.TEST_KEY]
+\get[_error]

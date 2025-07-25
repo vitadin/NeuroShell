@@ -935,6 +935,20 @@ func (ctx *NeuroContext) SetTestEnvOverride(key, value string) {
 	ctx.testEnvOverrides[key] = value
 }
 
+// SetEnvVariable sets an environment variable, respecting test mode.
+// In test mode, this sets a test environment override.
+// In production mode, this sets an actual OS environment variable.
+func (ctx *NeuroContext) SetEnvVariable(key, value string) error {
+	if ctx.IsTestMode() {
+		// In test mode, set test environment override
+		ctx.SetTestEnvOverride(key, value)
+		return nil
+	}
+
+	// In production mode, set actual OS environment variable
+	return os.Setenv(key, value)
+}
+
 // ClearTestEnvOverride removes a test-specific environment variable override.
 func (ctx *NeuroContext) ClearTestEnvOverride(key string) {
 	delete(ctx.testEnvOverrides, key)
@@ -1161,16 +1175,17 @@ func (ctx *NeuroContext) loadDotEnvFile(envPath string) error {
 // LoadEnvironmentVariablesWithPrefix loads OS environment variables with a source prefix.
 // Used by Configuration Service for multi-source API key collection.
 func (ctx *NeuroContext) LoadEnvironmentVariablesWithPrefix(sourcePrefix string) error {
-	// In test mode, check test environment overrides first
+	// In test mode, only load test environment overrides for clean testing
 	if ctx.IsTestMode() {
 		testOverrides := ctx.GetTestEnvOverrides()
 		for key, value := range testOverrides {
 			prefixedKey := sourcePrefix + key
 			ctx.SetConfigValue(prefixedKey, value)
 		}
+		return nil // Don't load OS environment variables in test mode
 	}
 
-	// Load actual OS environment variables with prefix
+	// Load actual OS environment variables with prefix (production mode only)
 	environ := os.Environ()
 	for _, env := range environ {
 		parts := strings.SplitN(env, "=", 2)
