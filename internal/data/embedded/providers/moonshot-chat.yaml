@@ -1,0 +1,8 @@
+id: moonshot_chat
+provider: moonshot
+display_name: "Moonshot Chat Completions"
+base_url: "https://api.moonshot.ai/v1"
+endpoint: "/chat/completions"
+client_type: "openai-compatible"
+description: "Moonshot AI chat completions API"
+api_key_env: "MOONSHOT_API_KEY"

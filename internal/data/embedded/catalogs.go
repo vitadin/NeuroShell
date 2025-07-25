@@ -82,3 +82,25 @@ var GPT4oModelData []byte
 //
 //go:embed models/o1-pro-openai.yaml
 var O1ProModelData []byte
+
+// Provider Catalog Data - embedded provider configuration YAML files
+
+// OpenAIChatProviderData contains the embedded OpenAI chat provider YAML data.
+//
+//go:embed providers/openai-chat.yaml
+var OpenAIChatProviderData []byte
+
+// AnthropicChatProviderData contains the embedded Anthropic chat provider YAML data.
+//
+//go:embed providers/anthropic-chat.yaml
+var AnthropicChatProviderData []byte
+
+// MoonshotChatProviderData contains the embedded Moonshot chat provider YAML data.
+//
+//go:embed providers/moonshot-chat.yaml
+var MoonshotChatProviderData []byte
+
+// OpenRouterChatProviderData contains the embedded OpenRouter chat provider YAML data.
+//
+//go:embed providers/openrouter-chat.yaml
+var OpenRouterChatProviderData []byte

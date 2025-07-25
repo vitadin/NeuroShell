@@ -100,6 +100,11 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
+	// Register ProviderCatalogService
+	if err := services.GetGlobalRegistry().RegisterService(services.NewProviderCatalogService()); err != nil {
+		return err
+	}
+
 	// Register ClientFactory service
 	if err := services.GetGlobalRegistry().RegisterService(services.NewClientFactoryService()); err != nil {
 		return err
