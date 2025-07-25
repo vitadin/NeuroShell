@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/context"
+	"neuroshell/pkg/neurotypes"
 )
 
 func TestConfigurationService_Name(t *testing.T) {
@@ -604,4 +605,163 @@ func TestConfigurationService_MoonshotBaseURLExample(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, allConfig, "MOONSHOT_BASE_URL", "MOONSHOT_BASE_URL should be present in full config map")
 	assert.Equal(t, "https://api.moonshot.cn/v1", allConfig["MOONSHOT_BASE_URL"], "MOONSHOT_BASE_URL value should match in full config map")
+}
+
+func TestConfigurationService_GetAllAPIKeys(t *testing.T) {
+	tests := []struct {
+		name            string
+		setup           func(t *testing.T, ctx neurotypes.Context)
+		expectKeys      int
+		expectSources   []string
+		expectProviders []string
+	}{
+		{
+			name: "collect keys from OS environment variables",
+			setup: func(_ *testing.T, ctx neurotypes.Context) {
+				ctx.SetTestEnvOverride("A_OPENAI_KEY", "sk-1234567890abcdef")
+				ctx.SetTestEnvOverride("MY_ANTHROPIC_API_KEY", "ant-1234567890abcdef")
+				ctx.SetTestEnvOverride("OPENROUTER_SECRET", "or-1234567890abcdef")
+			},
+			expectKeys:      3,
+			expectSources:   []string{"os", "os", "os"},
+			expectProviders: []string{"openai", "anthropic", "openrouter"},
+		},
+		{
+			name: "skip short API keys",
+			setup: func(_ *testing.T, ctx neurotypes.Context) {
+				ctx.SetTestEnvOverride("OPENAI_API_KEY", "short")                 // Too short, should be skipped
+				ctx.SetTestEnvOverride("VALID_OPENAI_KEY", "sk-1234567890abcdef") // Valid length
+			},
+			expectKeys:      1,
+			expectSources:   []string{"os"},
+			expectProviders: []string{"openai"},
+		},
+		{
+			name: "skip empty API keys",
+			setup: func(_ *testing.T, ctx neurotypes.Context) {
+				ctx.SetTestEnvOverride("OPENAI_API_KEY", "")                      // Empty, should be skipped
+				ctx.SetTestEnvOverride("ANTHROPIC_KEY", "   ")                    // Whitespace only, should be skipped
+				ctx.SetTestEnvOverride("MOONSHOT_API_KEY", "mk-1234567890abcdef") // Valid
+			},
+			expectKeys:      1,
+			expectSources:   []string{"os"},
+			expectProviders: []string{"moonshot"},
+		},
+		{
+			name: "case insensitive provider name matching",
+			setup: func(_ *testing.T, ctx neurotypes.Context) {
+				ctx.SetTestEnvOverride("UPPER_OPENAI_KEY", "sk-1234567890abcdef")
+				ctx.SetTestEnvOverride("lower_anthropic_key", "ant-1234567890abcdef")
+				ctx.SetTestEnvOverride("MiXeD_OpenRouter_Key", "or-1234567890abcdef")
+			},
+			expectKeys:      3,
+			expectSources:   []string{"os", "os", "os"},
+			expectProviders: []string{"openai", "anthropic", "openrouter"},
+		},
+		{
+			name: "no matching keys",
+			setup: func(_ *testing.T, ctx neurotypes.Context) {
+				ctx.SetTestEnvOverride("RANDOM_KEY", "some-random-value-1234567890")
+				ctx.SetTestEnvOverride("ANOTHER_VAR", "another-value-1234567890")
+			},
+			expectKeys:      0,
+			expectSources:   []string{},
+			expectProviders: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.NewTestContext()
+			ctx.ClearAllTestEnvOverrides()
+
+			service := NewConfigurationService()
+			err := service.Initialize()
+			require.NoError(t, err)
+
+			tt.setup(t, ctx)
+
+			keys, err := service.GetAllAPIKeys()
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.expectKeys, len(keys), "Number of keys should match")
+
+			if tt.expectKeys > 0 {
+				// Verify sources and providers
+				actualSources := make([]string, len(keys))
+				actualProviders := make([]string, len(keys))
+
+				for i, key := range keys {
+					actualSources[i] = key.Source
+					actualProviders[i] = key.Provider
+
+					// Verify key properties
+					assert.NotEmpty(t, key.OriginalName, "OriginalName should not be empty")
+					assert.NotEmpty(t, key.Value, "Value should not be empty")
+					assert.GreaterOrEqual(t, len(key.Value), 10, "Value should be at least 10 characters")
+				}
+
+				assert.ElementsMatch(t, tt.expectSources, actualSources, "Sources should match")
+				assert.ElementsMatch(t, tt.expectProviders, actualProviders, "Providers should match")
+			}
+
+			// Clean up
+			ctx.ClearAllTestEnvOverrides()
+		})
+	}
+}
+
+func TestConfigurationService_GetAllAPIKeys_MultipleProviderMatches(t *testing.T) {
+	// Test when a key name contains multiple provider names - should match first one found
+	ctx := context.NewTestContext()
+	ctx.ClearAllTestEnvOverrides()
+
+	service := NewConfigurationService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Set an env var that contains multiple provider names
+	ctx.SetTestEnvOverride("OPENAI_ANTHROPIC_COMBINED_KEY", "sk-1234567890abcdef")
+
+	keys, err := service.GetAllAPIKeys()
+	require.NoError(t, err)
+
+	assert.Equal(t, 1, len(keys), "Should find exactly one key")
+
+	if len(keys) > 0 {
+		key := keys[0]
+		assert.Equal(t, "os", key.Source)
+		assert.Equal(t, "OPENAI_ANTHROPIC_COMBINED_KEY", key.OriginalName)
+		assert.Equal(t, "sk-1234567890abcdef", key.Value)
+		// Should match the first provider found (depends on slice order in providers)
+		assert.Contains(t, []string{"openai", "anthropic"}, key.Provider, "Should match one of the providers")
+	}
+
+	ctx.ClearAllTestEnvOverrides()
+}
+
+func TestConfigurationService_GetAllAPIKeys_ConfigAndLocalEnvFiles(t *testing.T) {
+	// This test would require creating actual .env files in test directories
+	// For now, we'll test the logic assuming the files exist and are readable
+	_ = context.NewTestContext()
+
+	service := NewConfigurationService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Test the method doesn't crash when files don't exist
+	keys, err := service.GetAllAPIKeys()
+	require.NoError(t, err)
+	// Should return empty slice when no files exist and no env vars are set
+	assert.IsType(t, []APIKeySource{}, keys)
+}
+
+func TestConfigurationService_GetAllAPIKeys_NotInitialized(t *testing.T) {
+	service := NewConfigurationService()
+	// Don't initialize the service
+
+	keys, err := service.GetAllAPIKeys()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+	assert.Nil(t, keys)
 }

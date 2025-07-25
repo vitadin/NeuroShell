@@ -10,6 +10,14 @@ import (
 // Environment variable prefixes that should be loaded from OS
 var envPrefixes = []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_"}
 
+// APIKeySource represents an API key found from a specific source with provider attribution
+type APIKeySource struct {
+	Source       string // "os", "config", "local"
+	OriginalName string // "A_OPENAI_KEY", "OPENAI_API_KEY"
+	Value        string // actual key
+	Provider     string // "openai" (detected)
+}
+
 // ConfigurationService provides configuration management for NeuroShell.
 // It follows the three-layer architecture by being stateless and interacting only with Context.
 // All configuration values are loaded and stored in the context's configuration map.
@@ -189,4 +197,75 @@ func (c *ConfigurationService) GetAllConfigValues() (map[string]string, error) {
 
 	ctx := neuroshellcontext.GetGlobalContext()
 	return ctx.GetConfigMap(), nil
+}
+
+// GetAllAPIKeys scans multiple sources and collects all API keys containing provider names.
+// Sources scanned: (a) OS environment variables, (b) config folder .env, (c) local .env
+// Returns keys with source attribution for transparent user control.
+func (c *ConfigurationService) GetAllAPIKeys() ([]APIKeySource, error) {
+	if !c.initialized {
+		return nil, fmt.Errorf("configuration service not initialized")
+	}
+
+	ctx := neuroshellcontext.GetGlobalContext()
+	providers := []string{"openai", "anthropic", "openrouter", "moonshot"}
+
+	// Load all sources with prefixes into context configuration map
+	if err := ctx.LoadEnvironmentVariablesWithPrefix("os."); err != nil {
+		return nil, fmt.Errorf("failed to load environment variables: %w", err)
+	}
+	if err := ctx.LoadConfigDotEnvWithPrefix("config."); err != nil {
+		return nil, fmt.Errorf("failed to load config .env: %w", err)
+	}
+	if err := ctx.LoadLocalDotEnvWithPrefix("local."); err != nil {
+		return nil, fmt.Errorf("failed to load local .env: %w", err)
+	}
+
+	// Get all config values and scan for API keys
+	configMap, err := c.GetAllConfigValues()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get config values: %w", err)
+	}
+
+	var keys []APIKeySource
+
+	// Scan prefixed configuration values for provider names
+	for configKey, configValue := range configMap {
+		// Skip empty values or very short keys (less than 10 chars)
+		if strings.TrimSpace(configValue) == "" || len(strings.TrimSpace(configValue)) < 10 {
+			continue
+		}
+
+		// Check if this is a prefixed key (os., config., local.)
+		var source, originalName string
+		switch {
+		case strings.HasPrefix(configKey, "os."):
+			source = "os"
+			originalName = configKey[3:] // Remove "os." prefix
+		case strings.HasPrefix(configKey, "config."):
+			source = "config"
+			originalName = configKey[7:] // Remove "config." prefix
+		case strings.HasPrefix(configKey, "local."):
+			source = "local"
+			originalName = configKey[6:] // Remove "local." prefix
+		default:
+			continue // Skip non-prefixed keys
+		}
+
+		// Check if original name contains any provider name
+		originalNameLower := strings.ToLower(originalName)
+		for _, provider := range providers {
+			if strings.Contains(originalNameLower, provider) {
+				keys = append(keys, APIKeySource{
+					Source:       source,
+					OriginalName: originalName,
+					Value:        configValue,
+					Provider:     provider,
+				})
+				break // Only match the first provider found in the name
+			}
+		}
+	}
+
+	return keys, nil
 }

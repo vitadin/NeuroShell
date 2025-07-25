@@ -1157,3 +1157,84 @@ func (ctx *NeuroContext) loadDotEnvFile(envPath string) error {
 
 	return nil
 }
+
+// LoadEnvironmentVariablesWithPrefix loads OS environment variables with a source prefix.
+// Used by Configuration Service for multi-source API key collection.
+func (ctx *NeuroContext) LoadEnvironmentVariablesWithPrefix(sourcePrefix string) error {
+	// In test mode, check test environment overrides first
+	if ctx.IsTestMode() {
+		testOverrides := ctx.GetTestEnvOverrides()
+		for key, value := range testOverrides {
+			prefixedKey := sourcePrefix + key
+			ctx.SetConfigValue(prefixedKey, value)
+		}
+	}
+
+	// Load actual OS environment variables with prefix
+	environ := os.Environ()
+	for _, env := range environ {
+		parts := strings.SplitN(env, "=", 2)
+		if len(parts) == 2 {
+			key := parts[0]
+			value := ctx.GetEnv(key) // Respect test mode overrides
+			prefixedKey := sourcePrefix + key
+			ctx.SetConfigValue(prefixedKey, value)
+		}
+	}
+
+	return nil
+}
+
+// LoadConfigDotEnvWithPrefix loads config .env file with a source prefix.
+// Used by Configuration Service for multi-source API key collection.
+func (ctx *NeuroContext) LoadConfigDotEnvWithPrefix(sourcePrefix string) error {
+	configDir, err := ctx.GetUserConfigDir()
+	if err != nil {
+		return nil // Config directory access failure is not fatal
+	}
+
+	envPath := filepath.Join(configDir, ".env")
+	if !ctx.FileExists(envPath) {
+		return nil // Missing config .env file is not an error
+	}
+
+	return ctx.loadDotEnvFileWithPrefix(envPath, sourcePrefix)
+}
+
+// LoadLocalDotEnvWithPrefix loads local .env file with a source prefix.
+// Used by Configuration Service for multi-source API key collection.
+func (ctx *NeuroContext) LoadLocalDotEnvWithPrefix(sourcePrefix string) error {
+	workDir, err := ctx.GetWorkingDir()
+	if err != nil {
+		return nil // Working directory access failure is not fatal
+	}
+
+	envPath := filepath.Join(workDir, ".env")
+	if !ctx.FileExists(envPath) {
+		return nil // Missing local .env file is not an error
+	}
+
+	return ctx.loadDotEnvFileWithPrefix(envPath, sourcePrefix)
+}
+
+// loadDotEnvFileWithPrefix loads a .env file and stores values with a source prefix.
+func (ctx *NeuroContext) loadDotEnvFileWithPrefix(envPath, sourcePrefix string) error {
+	data, err := ctx.ReadFile(envPath)
+	if err != nil {
+		return fmt.Errorf("failed to read .env file %s: %w", envPath, err)
+	}
+
+	// Parse .env file
+	envMap, err := godotenv.Unmarshal(string(data))
+	if err != nil {
+		return fmt.Errorf("failed to parse .env file %s: %w", envPath, err)
+	}
+
+	// Store all values with source prefix in context configuration map
+	for key, value := range envMap {
+		prefixedKey := sourcePrefix + key
+		ctx.SetConfigValue(prefixedKey, value)
+	}
+
+	return nil
+}
