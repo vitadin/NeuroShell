@@ -4,6 +4,8 @@
 // and command handling.
 package neurotypes
 
+import "os"
+
 // Context provides session state management and variable interpolation for NeuroShell.
 // It maintains variables, message history, session metadata, and chat sessions across command executions.
 type Context interface {
@@ -19,6 +21,7 @@ type Context interface {
 	SetTestEnvOverride(key, value string)
 	ClearTestEnvOverride(key string)
 	ClearAllTestEnvOverrides()
+	GetTestEnvOverrides() map[string]string
 
 	// Chat session storage methods
 	GetChatSessions() map[string]*ChatSession
@@ -53,6 +56,26 @@ type Context interface {
 	// Default command configuration
 	GetDefaultCommand() string
 	SetDefaultCommand(command string)
+
+	// File system operations (for configuration service)
+	ReadFile(path string) ([]byte, error)
+	WriteFile(path string, data []byte, perm os.FileMode) error
+	FileExists(path string) bool
+	GetUserConfigDir() (string, error)
+	GetWorkingDir() (string, error)
+	MkdirAll(path string, perm os.FileMode) error
+
+	// Configuration management
+	GetConfigMap() map[string]string
+	SetConfigMap(configMap map[string]string)
+	GetConfigValue(key string) (string, bool)
+	SetConfigValue(key, value string)
+
+	// Configuration loading (Context layer responsibilities)
+	LoadDefaults() error
+	LoadConfigDotEnv() error
+	LoadLocalDotEnv() error
+	LoadEnvironmentVariables(prefixes []string) error
 }
 
 // Service defines the interface for NeuroShell services that provide specific functionality.

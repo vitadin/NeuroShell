@@ -376,3 +376,23 @@ func GetGlobalMarkdownService() (*MarkdownService, error) {
 	}
 	return service.(*MarkdownService), nil
 }
+
+// GetConfigurationService retrieves the configuration service with proper type casting.
+func (r *Registry) GetConfigurationService() (*ConfigurationService, error) {
+	service, err := r.GetService("configuration")
+	if err != nil {
+		return nil, err
+	}
+
+	configurationService, ok := service.(*ConfigurationService)
+	if !ok {
+		return nil, fmt.Errorf("configuration service has incorrect type")
+	}
+
+	return configurationService, nil
+}
+
+// GetGlobalConfigurationService returns the configuration service from the global registry.
+func GetGlobalConfigurationService() (*ConfigurationService, error) {
+	return GetGlobalRegistry().GetConfigurationService()
+}

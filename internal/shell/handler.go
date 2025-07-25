@@ -51,6 +51,11 @@ func InitializeServices(testMode bool) error {
 	// Register all pure services
 	// NOTE: ScriptService removed - script execution is now handled by state machine
 
+	// Register ConfigurationService first - other services may depend on it
+	if err := services.GetGlobalRegistry().RegisterService(services.NewConfigurationService()); err != nil {
+		return err
+	}
+
 	if err := services.GetGlobalRegistry().RegisterService(services.NewVariableService()); err != nil {
 		return err
 	}
