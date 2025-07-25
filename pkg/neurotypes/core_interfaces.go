@@ -76,6 +76,11 @@ type Context interface {
 	LoadConfigDotEnv() error
 	LoadLocalDotEnv() error
 	LoadEnvironmentVariables(prefixes []string) error
+
+	// Multi-source configuration loading with prefixes (for API key collection)
+	LoadEnvironmentVariablesWithPrefix(sourcePrefix string) error
+	LoadConfigDotEnvWithPrefix(sourcePrefix string) error
+	LoadLocalDotEnvWithPrefix(sourcePrefix string) error
 }
 
 // Service defines the interface for NeuroShell services that provide specific functionality.
