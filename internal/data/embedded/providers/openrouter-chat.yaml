@@ -8,4 +8,3 @@ headers:
   HTTP-Referer: "https://github.com/vitadin/NeuroShell"
   X-Title: "NeuroShell"
 description: "OpenRouter unified API access to multiple LLM providers"
-api_key_env: "OPENROUTER_API_KEY"

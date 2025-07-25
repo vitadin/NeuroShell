@@ -7,4 +7,3 @@ client_type: "openai-compatible"
 headers:
   anthropic-version: "2023-06-01"
 description: "Anthropic Claude chat completions API"
-api_key_env: "ANTHROPIC_API_KEY"

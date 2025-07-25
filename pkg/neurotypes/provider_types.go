@@ -35,10 +35,6 @@ type ProviderCatalogEntry struct {
 
 	// Description provides a brief description of the provider endpoint's capabilities
 	Description string `yaml:"description" json:"description"`
-
-	// APIKeyEnv is the environment variable name where the API key should be found
-	// (e.g., "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "MOONSHOT_API_KEY")
-	APIKeyEnv string `yaml:"api_key_env" json:"api_key_env"`
 }
 
 // ProviderCatalogFile represents the structure of a provider catalog YAML file.
