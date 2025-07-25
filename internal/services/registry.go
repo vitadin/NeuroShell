@@ -396,3 +396,23 @@ func (r *Registry) GetConfigurationService() (*ConfigurationService, error) {
 func GetGlobalConfigurationService() (*ConfigurationService, error) {
 	return GetGlobalRegistry().GetConfigurationService()
 }
+
+// GetProviderCatalogService retrieves the provider catalog service with proper type casting.
+func (r *Registry) GetProviderCatalogService() (*ProviderCatalogService, error) {
+	service, err := r.GetService("provider_catalog")
+	if err != nil {
+		return nil, err
+	}
+
+	providerCatalogService, ok := service.(*ProviderCatalogService)
+	if !ok {
+		return nil, fmt.Errorf("provider catalog service has incorrect type")
+	}
+
+	return providerCatalogService, nil
+}
+
+// GetGlobalProviderCatalogService returns the provider catalog service from the global registry.
+func GetGlobalProviderCatalogService() (*ProviderCatalogService, error) {
+	return GetGlobalRegistry().GetProviderCatalogService()
+}

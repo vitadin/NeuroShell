@@ -14,8 +14,9 @@ Service Status Check:
   [OK] markdown             - available/initialized
   [OK] model                - available/initialized
   [OK] model_catalog        - available/initialized
+  [OK] provider_catalog     - available/initialized
   [OK] queue                - available/initialized
   [OK] stack                - available/initialized
   [OK] theme                - available/initialized
   [OK] variable             - available/initialized
-Summary: 16/16 services healthy
+Summary: 17/17 services healthy

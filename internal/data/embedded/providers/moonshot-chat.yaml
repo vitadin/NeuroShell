@@ -1,0 +1,7 @@
+id: MSC
+provider: moonshot
+display_name: "Moonshot Chat Completions"
+base_url: "https://api.moonshot.ai/v1"
+endpoint: "/chat/completions"
+client_type: "openai-compatible"
+description: "Moonshot AI chat completions API"
