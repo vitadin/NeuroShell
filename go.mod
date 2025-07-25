@@ -9,6 +9,7 @@ require (
 	github.com/charmbracelet/log v0.4.2
 	github.com/chzyer/readline v1.5.1
 	github.com/google/uuid v1.6.0
+	github.com/joho/godotenv v1.5.1
 	github.com/openai/openai-go v1.8.3
 	github.com/sergi/go-diff v1.4.0
 	github.com/spf13/cobra v1.9.1

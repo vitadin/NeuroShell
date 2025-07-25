@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/joho/godotenv"
 
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
@@ -79,6 +82,10 @@ type NeuroContext struct {
 	// Default command configuration
 	defaultCommand string // Command to use when input doesn't start with \\
 
+	// Configuration management
+	configMap   map[string]string // Configuration key-value store
+	configMutex sync.RWMutex      // Protects configMap
+
 	// Script metadata protection
 	scriptMutex sync.RWMutex // Protects scriptMetadata map
 }
@@ -117,6 +124,9 @@ func New() *NeuroContext {
 		// Initialize command registry information
 		registeredCommands: make(map[string]bool),
 		commandHelpInfo:    make(map[string]*neurotypes.HelpInfo),
+
+		// Initialize configuration management
+		configMap: make(map[string]string),
 
 		// Initialize default command
 		defaultCommand: "echo", // Default to echo for development convenience
@@ -933,4 +943,217 @@ func (ctx *NeuroContext) ClearTestEnvOverride(key string) {
 // ClearAllTestEnvOverrides removes all test-specific environment variable overrides.
 func (ctx *NeuroContext) ClearAllTestEnvOverrides() {
 	ctx.testEnvOverrides = make(map[string]string)
+}
+
+// GetTestEnvOverrides returns a copy of all test environment variable overrides.
+func (ctx *NeuroContext) GetTestEnvOverrides() map[string]string {
+	overrides := make(map[string]string)
+	for k, v := range ctx.testEnvOverrides {
+		overrides[k] = v
+	}
+	return overrides
+}
+
+// File system operations for configuration service
+
+// ReadFile reads the contents of a file, supporting test mode isolation.
+func (ctx *NeuroContext) ReadFile(path string) ([]byte, error) {
+	return os.ReadFile(path)
+}
+
+// WriteFile writes data to a file with the specified permissions, supporting test mode isolation.
+func (ctx *NeuroContext) WriteFile(path string, data []byte, perm os.FileMode) error {
+	return os.WriteFile(path, data, perm)
+}
+
+// FileExists checks if a file exists at the given path.
+func (ctx *NeuroContext) FileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+// GetUserConfigDir returns the user's configuration directory.
+// In test mode, returns a temporary directory to avoid polluting the user's system.
+func (ctx *NeuroContext) GetUserConfigDir() (string, error) {
+	if ctx.testMode {
+		// In test mode, return a predictable test path
+		return "/tmp/neuroshell-test-config", nil
+	}
+
+	// Get XDG config home or fall back to ~/.config
+	configHome := os.Getenv("XDG_CONFIG_HOME")
+	if configHome == "" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("failed to get user home directory: %w", err)
+		}
+		configHome = filepath.Join(homeDir, ".config")
+	}
+
+	return filepath.Join(configHome, "neuroshell"), nil
+}
+
+// GetWorkingDir returns the current working directory.
+func (ctx *NeuroContext) GetWorkingDir() (string, error) {
+	if ctx.testMode {
+		return "/tmp/neuroshell-test-workdir", nil
+	}
+	return os.Getwd()
+}
+
+// MkdirAll creates a directory path with the specified permissions, including any necessary parents.
+func (ctx *NeuroContext) MkdirAll(path string, perm os.FileMode) error {
+	return os.MkdirAll(path, perm)
+}
+
+// Configuration management methods
+
+// GetConfigMap returns a copy of the configuration map.
+func (ctx *NeuroContext) GetConfigMap() map[string]string {
+	ctx.configMutex.RLock()
+	defer ctx.configMutex.RUnlock()
+
+	result := make(map[string]string)
+	for key, value := range ctx.configMap {
+		result[key] = value
+	}
+	return result
+}
+
+// SetConfigMap replaces the entire configuration map.
+func (ctx *NeuroContext) SetConfigMap(configMap map[string]string) {
+	ctx.configMutex.Lock()
+	defer ctx.configMutex.Unlock()
+
+	ctx.configMap = make(map[string]string)
+	for key, value := range configMap {
+		ctx.configMap[key] = value
+	}
+}
+
+// GetConfigValue retrieves a configuration value by key.
+func (ctx *NeuroContext) GetConfigValue(key string) (string, bool) {
+	ctx.configMutex.RLock()
+	defer ctx.configMutex.RUnlock()
+
+	value, exists := ctx.configMap[key]
+	return value, exists
+}
+
+// SetConfigValue sets a configuration value.
+func (ctx *NeuroContext) SetConfigValue(key, value string) {
+	ctx.configMutex.Lock()
+	defer ctx.configMutex.Unlock()
+
+	ctx.configMap[key] = value
+}
+
+// Configuration loading methods (Context layer responsibilities)
+
+// LoadDefaults sets up default configuration values.
+func (ctx *NeuroContext) LoadDefaults() error {
+	defaults := map[string]string{
+		"NEURO_LOG_LEVEL": "info",
+		"NEURO_TIMEOUT":   "30s",
+	}
+
+	for key, value := range defaults {
+		ctx.SetConfigValue(key, value)
+	}
+
+	return nil
+}
+
+// LoadConfigDotEnv loads .env file from the user's config directory (~/.config/neuroshell/.env).
+func (ctx *NeuroContext) LoadConfigDotEnv() error {
+	configDir, err := ctx.GetUserConfigDir()
+	if err != nil {
+		// Config directory access failure is not fatal
+		return nil
+	}
+
+	envPath := filepath.Join(configDir, ".env")
+	if !ctx.FileExists(envPath) {
+		// Missing config .env file is not an error
+		return nil
+	}
+
+	return ctx.loadDotEnvFile(envPath)
+}
+
+// LoadLocalDotEnv loads .env file from the current working directory.
+func (ctx *NeuroContext) LoadLocalDotEnv() error {
+	workDir, err := ctx.GetWorkingDir()
+	if err != nil {
+		// Working directory access failure is not fatal
+		return nil
+	}
+
+	envPath := filepath.Join(workDir, ".env")
+	if !ctx.FileExists(envPath) {
+		// Missing local .env file is not an error
+		return nil
+	}
+
+	return ctx.loadDotEnvFile(envPath)
+}
+
+// LoadEnvironmentVariables loads specific prefixed environment variables into context configuration map.
+// This has the highest priority and will override all file-based configuration.
+func (ctx *NeuroContext) LoadEnvironmentVariables(prefixes []string) error {
+	// In test mode, check test environment overrides first
+	if ctx.IsTestMode() {
+		testOverrides := ctx.GetTestEnvOverrides()
+		for key, value := range testOverrides {
+			for _, prefix := range prefixes {
+				if strings.HasPrefix(key, prefix) {
+					ctx.SetConfigValue(key, value)
+					break
+				}
+			}
+		}
+	}
+
+	// Then check actual OS environment variables
+	environ := os.Environ()
+	for _, env := range environ {
+		for _, prefix := range prefixes {
+			if strings.HasPrefix(env, prefix) {
+				parts := strings.SplitN(env, "=", 2)
+				if len(parts) == 2 {
+					key := parts[0]
+					// Use context.GetEnv to respect test mode overrides
+					value := ctx.GetEnv(key)
+
+					// Store in configuration map (highest priority)
+					ctx.SetConfigValue(key, value)
+				}
+				break // Found matching prefix, no need to check others
+			}
+		}
+	}
+
+	return nil
+}
+
+// loadDotEnvFile loads a specific .env file and stores all values in context configuration map.
+// This is a private helper method used by LoadConfigDotEnv and LoadLocalDotEnv.
+func (ctx *NeuroContext) loadDotEnvFile(envPath string) error {
+	data, err := ctx.ReadFile(envPath)
+	if err != nil {
+		return fmt.Errorf("failed to read .env file %s: %w", envPath, err)
+	}
+
+	// Parse .env file
+	envMap, err := godotenv.Unmarshal(string(data))
+	if err != nil {
+		return fmt.Errorf("failed to parse .env file %s: %w", envPath, err)
+	}
+
+	// Store all values in context configuration map
+	for key, value := range envMap {
+		ctx.SetConfigValue(key, value)
+	}
+
+	return nil
 }

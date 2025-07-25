@@ -6,6 +6,7 @@ Service Status Check:
   [OK] bash                 - available/initialized
   [OK] chat_session         - available/initialized
   [OK] client_factory       - available/initialized
+  [OK] configuration        - available/initialized
   [OK] editor               - available/initialized
   [OK] executor             - available/initialized
   [OK] help                 - available/initialized
@@ -17,4 +18,4 @@ Service Status Check:
   [OK] stack                - available/initialized
   [OK] theme                - available/initialized
   [OK] variable             - available/initialized
-Summary: 15/15 services healthy
+Summary: 16/16 services healthy

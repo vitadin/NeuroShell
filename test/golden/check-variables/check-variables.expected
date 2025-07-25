@@ -7,6 +7,7 @@ Output: [OK] autocomplete - available/initialized
 [OK] bash - available/initialized
 [OK] chat_session - available/initialized
 [OK] client_factory - available/initialized
+[OK] configuration - available/initialized
 [OK] editor - available/initialized
 [OK] executor - available/initialized
 [OK] help - available/initialized
@@ -21,7 +22,7 @@ Output: [OK] autocomplete - available/initialized
 %%> "\\echo Failed services: ${_check_failed_services}"
 Failed services:
 %%> "\\echo Total services: ${_check_total_services}"
-Total services: 15
+Total services: 16
 %%> "\\echo Failed count: ${_check_failed_count}"
 Failed count: 0
 %%> "\\check[service=bash, quiet=true]"
