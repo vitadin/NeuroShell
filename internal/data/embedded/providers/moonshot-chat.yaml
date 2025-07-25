@@ -1,4 +1,4 @@
-id: moonshot_chat
+id: MSC
 provider: moonshot
 display_name: "Moonshot Chat Completions"
 base_url: "https://api.moonshot.ai/v1"

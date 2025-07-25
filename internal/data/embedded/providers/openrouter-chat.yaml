@@ -1,4 +1,4 @@
-id: openrouter_chat
+id: ORC
 provider: openrouter
 display_name: "OpenRouter Chat Completions"
 base_url: "https://openrouter.ai/api/v1"

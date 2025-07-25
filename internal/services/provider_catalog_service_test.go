@@ -108,7 +108,7 @@ func TestProviderCatalogService_GetProvidersByProvider(t *testing.T) {
 		assert.Equal(t, 1, len(providers), "Should have exactly 1 OpenAI provider")
 
 		provider := providers[0]
-		assert.Equal(t, "openai_chat", provider.ID)
+		assert.Equal(t, "OAC", provider.ID)
 		assert.Equal(t, "openai", provider.Provider)
 		assert.Equal(t, "openai", provider.ClientType)
 		assert.Contains(t, provider.BaseURL, "api.openai.com")
@@ -122,7 +122,7 @@ func TestProviderCatalogService_GetProvidersByProvider(t *testing.T) {
 		assert.Equal(t, 1, len(providers), "Should have exactly 1 Anthropic provider")
 
 		provider := providers[0]
-		assert.Equal(t, "anthropic_chat", provider.ID)
+		assert.Equal(t, "ANC", provider.ID)
 		assert.Equal(t, "anthropic", provider.Provider)
 		assert.Equal(t, "openai-compatible", provider.ClientType)
 		assert.Contains(t, provider.BaseURL, "api.anthropic.com")
@@ -137,7 +137,7 @@ func TestProviderCatalogService_GetProvidersByProvider(t *testing.T) {
 		assert.Equal(t, 1, len(providers), "Should have exactly 1 Moonshot provider")
 
 		provider := providers[0]
-		assert.Equal(t, "moonshot_chat", provider.ID)
+		assert.Equal(t, "MSC", provider.ID)
 		assert.Equal(t, "moonshot", provider.Provider)
 		assert.Equal(t, "openai-compatible", provider.ClientType)
 		assert.Contains(t, provider.BaseURL, "api.moonshot.ai")
@@ -150,7 +150,7 @@ func TestProviderCatalogService_GetProvidersByProvider(t *testing.T) {
 		assert.Equal(t, 1, len(providers), "Should have exactly 1 OpenRouter provider")
 
 		provider := providers[0]
-		assert.Equal(t, "openrouter_chat", provider.ID)
+		assert.Equal(t, "ORC", provider.ID)
 		assert.Equal(t, "openrouter", provider.Provider)
 		assert.Equal(t, "openai-compatible", provider.ClientType)
 		assert.Contains(t, provider.BaseURL, "openrouter.ai")
@@ -196,13 +196,13 @@ func TestProviderCatalogService_SearchProviderCatalog(t *testing.T) {
 	require.NoError(t, service.Initialize())
 
 	t.Run("search by provider ID", func(t *testing.T) {
-		providers, err := service.SearchProviderCatalog("openai_chat")
+		providers, err := service.SearchProviderCatalog("OAC")
 		require.NoError(t, err)
 		require.NotNil(t, providers)
 		assert.Equal(t, 1, len(providers), "Should find exactly 1 provider")
 
 		provider := providers[0]
-		assert.Equal(t, "openai_chat", provider.ID)
+		assert.Equal(t, "OAC", provider.ID)
 		assert.Equal(t, "openai", provider.Provider)
 	})
 
@@ -214,7 +214,7 @@ func TestProviderCatalogService_SearchProviderCatalog(t *testing.T) {
 
 		provider := providers[0]
 		assert.Equal(t, "anthropic", provider.Provider)
-		assert.Contains(t, strings.ToLower(provider.ID), "anthropic")
+		assert.Equal(t, "ANC", provider.ID)
 	})
 
 	t.Run("search by display name", func(t *testing.T) {
@@ -309,19 +309,19 @@ func TestProviderCatalogService_GetProviderByID(t *testing.T) {
 	require.NoError(t, service.Initialize())
 
 	t.Run("get provider by exact ID", func(t *testing.T) {
-		provider, err := service.GetProviderByID("openai_chat")
+		provider, err := service.GetProviderByID("OAC")
 		require.NoError(t, err)
-		assert.Equal(t, "openai_chat", provider.ID)
+		assert.Equal(t, "OAC", provider.ID)
 		assert.Equal(t, "openai", provider.Provider)
 		assert.Equal(t, "openai", provider.ClientType)
 	})
 
 	t.Run("get provider by case-insensitive ID", func(t *testing.T) {
-		testCases := []string{"openai_chat", "OPENAI_CHAT", "OpenAI_Chat", "openAI_CHAT"}
+		testCases := []string{"oac", "OAC", "Oac", "oAc"}
 		for _, testID := range testCases {
 			provider, err := service.GetProviderByID(testID)
 			require.NoError(t, err, "Should find provider with ID: %s", testID)
-			assert.Equal(t, "openai_chat", provider.ID)
+			assert.Equal(t, "OAC", provider.ID)
 			assert.Equal(t, "openai", provider.Provider)
 		}
 	})
@@ -390,9 +390,9 @@ func TestProviderCatalogService_validateUniqueIDs(t *testing.T) {
 
 	t.Run("unique IDs pass validation", func(t *testing.T) {
 		providers := []neurotypes.ProviderCatalogEntry{
-			{ID: "openai_chat", Provider: "openai", DisplayName: "OpenAI Chat"},
-			{ID: "anthropic_chat", Provider: "anthropic", DisplayName: "Anthropic Chat"},
-			{ID: "moonshot_chat", Provider: "moonshot", DisplayName: "Moonshot Chat"},
+			{ID: "OAC", Provider: "openai", DisplayName: "OpenAI Chat"},
+			{ID: "ANC", Provider: "anthropic", DisplayName: "Anthropic Chat"},
+			{ID: "MSC", Provider: "moonshot", DisplayName: "Moonshot Chat"},
 		}
 		err := service.validateUniqueIDs(providers)
 		assert.NoError(t, err)
@@ -400,19 +400,19 @@ func TestProviderCatalogService_validateUniqueIDs(t *testing.T) {
 
 	t.Run("duplicate IDs fail validation", func(t *testing.T) {
 		providers := []neurotypes.ProviderCatalogEntry{
-			{ID: "openai_chat", Provider: "openai", DisplayName: "OpenAI Chat"},
-			{ID: "openai_chat", Provider: "openai", DisplayName: "OpenAI Chat Duplicate"},
+			{ID: "OAC", Provider: "openai", DisplayName: "OpenAI Chat"},
+			{ID: "OAC", Provider: "openai", DisplayName: "OpenAI Chat Duplicate"},
 		}
 		err := service.validateUniqueIDs(providers)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "duplicate provider ID found")
-		assert.Contains(t, err.Error(), "openai_chat")
+		assert.Contains(t, err.Error(), "OAC")
 	})
 
 	t.Run("case-insensitive duplicate IDs fail validation", func(t *testing.T) {
 		providers := []neurotypes.ProviderCatalogEntry{
-			{ID: "openai_chat", Provider: "openai", DisplayName: "OpenAI Chat"},
-			{ID: "OPENAI_CHAT", Provider: "openai", DisplayName: "OpenAI Chat Uppercase"},
+			{ID: "OAC", Provider: "openai", DisplayName: "OpenAI Chat"},
+			{ID: "oac", Provider: "openai", DisplayName: "OpenAI Chat Lowercase"},
 		}
 		err := service.validateUniqueIDs(providers)
 		assert.Error(t, err)
@@ -444,12 +444,15 @@ func TestProviderCatalogService_normalizeID(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"openai_chat", "OPENAI_CHAT"},
-		{"OPENAI_CHAT", "OPENAI_CHAT"},
-		{"OpenAI_Chat", "OPENAI_CHAT"},
-		{"anthropic_chat", "ANTHROPIC_CHAT"},
-		{"ANTHROPIC_CHAT", "ANTHROPIC_CHAT"},
-		{"moonshot_chat", "MOONSHOT_CHAT"},
+		{"OAC", "OAC"},
+		{"oac", "OAC"},
+		{"Oac", "OAC"},
+		{"ANC", "ANC"},
+		{"anc", "ANC"},
+		{"MSC", "MSC"},
+		{"msc", "MSC"},
+		{"ORC", "ORC"},
+		{"orc", "ORC"},
 		{"", ""},
 	}
 
@@ -484,7 +487,7 @@ func TestProviderCatalogService_IDValidationIntegration(t *testing.T) {
 	})
 
 	t.Run("expected provider IDs exist", func(t *testing.T) {
-		expectedIDs := []string{"openai_chat", "anthropic_chat", "moonshot_chat", "openrouter_chat"}
+		expectedIDs := []string{"OAC", "ANC", "MSC", "ORC"}
 
 		for _, expectedID := range expectedIDs {
 			provider, err := service.GetProviderByID(expectedID)
