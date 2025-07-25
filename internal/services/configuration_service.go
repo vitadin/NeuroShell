@@ -8,7 +8,7 @@ import (
 )
 
 // Environment variable prefixes that should be loaded from OS
-var envPrefixes = []string{"NEURO_", "OPENAI_", "ANTHROPIC_"}
+var envPrefixes = []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_"}
 
 // ConfigurationService provides configuration management for NeuroShell.
 // It follows the three-layer architecture by being stateless and interacting only with Context.

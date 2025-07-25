@@ -70,6 +70,7 @@ func TestConfigurationService_ConfigurationPriority(t *testing.T) {
 OPENAI_API_KEY=config-legacy-key
 NEURO_TIMEOUT=30s
 NEURO_CONFIG_ONLY=config-value
+MOONSHOT_BASE_URL=config-moonshot-url
 RANDOM_KEY=config-random
 `
 	err = os.WriteFile(filepath.Join(tempConfigDir, ".env"), []byte(configEnvContent), 0644)
@@ -80,6 +81,7 @@ RANDOM_KEY=config-random
 ANTHROPIC_API_KEY=local-anthropic-key
 NEURO_LOG_LEVEL=debug
 NEURO_LOCAL_ONLY=local-value
+MOONSHOT_API_KEY=local-moonshot-key
 ANOTHER_RANDOM_KEY=local-random
 `
 	err = os.WriteFile(filepath.Join(tempWorkDir, ".env"), []byte(localEnvContent), 0644)
@@ -88,6 +90,7 @@ ANOTHER_RANDOM_KEY=local-random
 	// Set environment variable (highest priority) - only prefixed ones will be loaded
 	ctx.SetTestEnvOverride("NEURO_OPENAI_API_KEY", "env-key")
 	ctx.SetTestEnvOverride("OPENAI_API_KEY", "env-legacy-key")
+	ctx.SetTestEnvOverride("MOONSHOT_BASE_URL", "env-moonshot-url")
 	defer ctx.ClearAllTestEnvOverrides()
 
 	service := NewConfigurationService()
@@ -127,6 +130,15 @@ ANOTHER_RANDOM_KEY=local-random
 	anotherRandomKey, err := service.GetConfigValue("ANOTHER_RANDOM_KEY")
 	require.NoError(t, err)
 	assert.Equal(t, "local-random", anotherRandomKey)
+
+	// Test MOONSHOT prefix priority: env var > local .env > config .env
+	moonshotBaseURL, err := service.GetConfigValue("MOONSHOT_BASE_URL")
+	require.NoError(t, err)
+	assert.Equal(t, "env-moonshot-url", moonshotBaseURL, "Environment variable should override .env files")
+
+	moonshotAPIKey, err := service.GetConfigValue("MOONSHOT_API_KEY")
+	require.NoError(t, err)
+	assert.Equal(t, "local-moonshot-key", moonshotAPIKey, "Local .env should override config .env when no env var")
 }
 
 func TestConfigurationService_GetAPIKey(t *testing.T) {
@@ -392,6 +404,7 @@ func TestConfigurationService_EnvironmentVariablePrefixFiltering(t *testing.T) {
 	ctx.SetTestEnvOverride("NEURO_SHOULD_LOAD", "loaded")
 	ctx.SetTestEnvOverride("OPENAI_SHOULD_LOAD", "loaded")
 	ctx.SetTestEnvOverride("ANTHROPIC_SHOULD_LOAD", "loaded")
+	ctx.SetTestEnvOverride("MOONSHOT_SHOULD_LOAD", "loaded")
 	ctx.SetTestEnvOverride("RANDOM_SHOULD_NOT_LOAD", "not-loaded")
 	defer ctx.ClearAllTestEnvOverrides()
 
@@ -411,6 +424,10 @@ func TestConfigurationService_EnvironmentVariablePrefixFiltering(t *testing.T) {
 	anthropicValue, err := service.GetConfigValue("ANTHROPIC_SHOULD_LOAD")
 	require.NoError(t, err)
 	assert.Equal(t, "loaded", anthropicValue)
+
+	moonshotValue, err := service.GetConfigValue("MOONSHOT_SHOULD_LOAD")
+	require.NoError(t, err)
+	assert.Equal(t, "loaded", moonshotValue)
 
 	// Should NOT load non-prefixed environment variables
 	randomValue, err := service.GetConfigValue("RANDOM_SHOULD_NOT_LOAD")
@@ -456,4 +473,135 @@ func TestConfigurationService_LoadConfiguration(t *testing.T) {
 	newKey, err := service.GetConfigValue("NEURO_NEW_KEY")
 	require.NoError(t, err)
 	assert.Equal(t, "new-value", newKey)
+}
+
+func TestConfigurationService_EnvironmentVariablePrefixMatching(t *testing.T) {
+	ctx := context.NewTestContext()
+
+	// Test all supported prefixes with various environment variables
+	testCases := []struct {
+		name        string
+		envKey      string
+		envValue    string
+		shouldLoad  bool
+		description string
+	}{
+		// NEURO_ prefix
+		{"NEURO_API_KEY", "NEURO_API_KEY", "neuro-key", true, "NEURO_ prefix should be loaded"},
+		{"NEURO_BASE_URL", "NEURO_BASE_URL", "https://neuro.example.com", true, "NEURO_BASE_URL should be loaded"},
+		{"NEURO_TIMEOUT", "NEURO_TIMEOUT", "60s", true, "NEURO_TIMEOUT should be loaded"},
+
+		// OPENAI_ prefix
+		{"OPENAI_API_KEY", "OPENAI_API_KEY", "sk-openai-key", true, "OPENAI_ prefix should be loaded"},
+		{"OPENAI_BASE_URL", "OPENAI_BASE_URL", "https://api.openai.com", true, "OPENAI_BASE_URL should be loaded"},
+		{"OPENAI_ORG_ID", "OPENAI_ORG_ID", "org-123", true, "OPENAI_ORG_ID should be loaded"},
+
+		// ANTHROPIC_ prefix
+		{"ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY", "ant-anthropic-key", true, "ANTHROPIC_ prefix should be loaded"},
+		{"ANTHROPIC_BASE_URL", "ANTHROPIC_BASE_URL", "https://api.anthropic.com", true, "ANTHROPIC_BASE_URL should be loaded"},
+
+		// MOONSHOT_ prefix
+		{"MOONSHOT_API_KEY", "MOONSHOT_API_KEY", "mk-moonshot-key", true, "MOONSHOT_ prefix should be loaded"},
+		{"MOONSHOT_BASE_URL", "MOONSHOT_BASE_URL", "https://api.moonshot.cn", true, "MOONSHOT_BASE_URL should be loaded"},
+		{"MOONSHOT_MODEL", "MOONSHOT_MODEL", "moonshot-v1-8k", true, "MOONSHOT_MODEL should be loaded"},
+
+		// Non-prefixed variables (should NOT be loaded from env)
+		{"RANDOM_VAR", "RANDOM_VAR", "should-not-load", false, "Non-prefixed env vars should NOT be loaded"},
+		{"PATH", "PATH", "/usr/bin", false, "PATH env var should NOT be loaded"},
+		{"HOME", "HOME", "/home/user", false, "HOME env var should NOT be loaded"},
+		{"USER", "USER", "testuser", false, "USER env var should NOT be loaded"},
+
+		// Partial prefix matches (should NOT be loaded)
+		{"NEUR_API_KEY", "NEUR_API_KEY", "should-not-load", false, "Partial prefix match should NOT be loaded"},
+		{"OPENAI", "OPENAI", "should-not-load", false, "Exact prefix without underscore should NOT be loaded"},
+		{"OPENAI_KEY_TEST", "OPENAIKEY_TEST", "should-not-load", false, "Wrong prefix format should NOT be loaded"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Clear any previous test env overrides
+			ctx.ClearAllTestEnvOverrides()
+
+			// Set the test environment variable
+			ctx.SetTestEnvOverride(tc.envKey, tc.envValue)
+
+			service := NewConfigurationService()
+			err := service.Initialize()
+			require.NoError(t, err)
+
+			value, err := service.GetConfigValue(tc.envKey)
+			require.NoError(t, err)
+
+			if tc.shouldLoad {
+				assert.Equal(t, tc.envValue, value, tc.description)
+			} else {
+				assert.Equal(t, "", value, tc.description)
+			}
+
+			// Clean up
+			ctx.ClearTestEnvOverride(tc.envKey)
+		})
+	}
+}
+
+func TestConfigurationService_AllSupportedPrefixes(t *testing.T) {
+	ctx := context.NewTestContext()
+
+	// Test that all expected prefixes are supported
+	expectedPrefixes := []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_"}
+
+	// Set one environment variable for each prefix
+	testVars := map[string]string{
+		"NEURO_TEST":     "neuro-value",
+		"OPENAI_TEST":    "openai-value",
+		"ANTHROPIC_TEST": "anthropic-value",
+		"MOONSHOT_TEST":  "moonshot-value",
+	}
+
+	// Set all test environment variables
+	for key, value := range testVars {
+		ctx.SetTestEnvOverride(key, value)
+	}
+
+	service := NewConfigurationService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Verify all prefixed variables were loaded
+	for key, expectedValue := range testVars {
+		value, err := service.GetConfigValue(key)
+		require.NoError(t, err)
+		assert.Equal(t, expectedValue, value, "Variable %s should be loaded with prefix matching", key)
+	}
+
+	// Clean up
+	ctx.ClearAllTestEnvOverrides()
+
+	// Verify the expected prefixes list matches what's used internally
+	assert.ElementsMatch(t, expectedPrefixes, envPrefixes, "envPrefixes should match expected supported prefixes")
+}
+
+func TestConfigurationService_MoonshotBaseURLExample(t *testing.T) {
+	// This test specifically verifies the example mentioned by the user:
+	// MOONSHOT_BASE_URL should be stored in the config map when present as OS env var
+	ctx := context.NewTestContext()
+
+	// Set the specific example environment variable
+	ctx.SetTestEnvOverride("MOONSHOT_BASE_URL", "https://api.moonshot.cn/v1")
+	defer ctx.ClearAllTestEnvOverrides()
+
+	service := NewConfigurationService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Verify that MOONSHOT_BASE_URL was loaded and stored in config map
+	baseURL, err := service.GetConfigValue("MOONSHOT_BASE_URL")
+	require.NoError(t, err)
+	assert.Equal(t, "https://api.moonshot.cn/v1", baseURL, "MOONSHOT_BASE_URL should be loaded from environment variables")
+
+	// Also verify it appears in the full config map
+	allConfig, err := service.GetAllConfigValues()
+	require.NoError(t, err)
+	assert.Contains(t, allConfig, "MOONSHOT_BASE_URL", "MOONSHOT_BASE_URL should be present in full config map")
+	assert.Equal(t, "https://api.moonshot.cn/v1", allConfig["MOONSHOT_BASE_URL"], "MOONSHOT_BASE_URL value should match in full config map")
 }
