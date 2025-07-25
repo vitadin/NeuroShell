@@ -1,0 +1,4 @@
+%% Basic provider catalog test
+\set[_echo_command="true"]
+%% Tests the basic functionality of the provider-catalog command
+\provider-catalog
