@@ -72,7 +72,7 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 	case "moonshot":
 		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
 	case "anthropic":
-		client = f.createAnthropicCompatibleClient(apiKey)
+		client = NewAnthropicClient(apiKey)
 	case "gemini":
 		client = NewGeminiClient(apiKey)
 	default:
@@ -138,7 +138,7 @@ func (f *ClientFactoryService) GetClientWithID(provider, apiKey string) (neuroty
 	case "moonshot":
 		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
 	case "anthropic":
-		client = f.createAnthropicCompatibleClient(apiKey)
+		client = NewAnthropicClient(apiKey)
 	case "gemini":
 		client = NewGeminiClient(apiKey)
 	default:
@@ -258,25 +258,5 @@ func (f *ClientFactoryService) createOpenAICompatibleClient(apiKey, providerName
 	}
 
 	logger.Debug("Creating OpenAI-compatible client", "provider", providerName, "baseURL", baseURL, "headerCount", len(headers))
-	return NewOpenAICompatibleClient(config)
-}
-
-// createAnthropicCompatibleClient creates a new Anthropic-compatible client using the OpenAI-compatible client infrastructure.
-func (f *ClientFactoryService) createAnthropicCompatibleClient(apiKey string) neurotypes.LLMClient {
-	// Create Anthropic-specific headers
-	headers := map[string]string{
-		"anthropic-version": "2023-06-01",
-	}
-
-	// Create client configuration for Anthropic
-	config := OpenAICompatibleConfig{
-		ProviderName: "anthropic",
-		APIKey:       apiKey,
-		BaseURL:      "https://api.anthropic.com/v1",
-		Headers:      headers,
-		Endpoint:     "/messages",
-	}
-
-	logger.Debug("Creating Anthropic-compatible client", "baseURL", config.BaseURL, "endpoint", config.Endpoint)
 	return NewOpenAICompatibleClient(config)
 }
