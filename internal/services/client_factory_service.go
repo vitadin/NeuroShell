@@ -73,8 +73,10 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
 	case "anthropic":
 		client = f.createAnthropicCompatibleClient(apiKey)
+	case "gemini":
+		client = NewGeminiClient(apiKey)
 	default:
-		return nil, fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic", provider)
+		return nil, fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic, gemini", provider)
 	}
 
 	// Store client in context cache
@@ -137,8 +139,10 @@ func (f *ClientFactoryService) GetClientWithID(provider, apiKey string) (neuroty
 		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
 	case "anthropic":
 		client = f.createAnthropicCompatibleClient(apiKey)
+	case "gemini":
+		client = NewGeminiClient(apiKey)
 	default:
-		return nil, "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic", provider)
+		return nil, "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic, gemini", provider)
 	}
 
 	// Store client in context cache
@@ -205,8 +209,11 @@ func (f *ClientFactoryService) DetermineAPIKeyForProvider(provider string, ctx n
 	case "anthropic":
 		envVarName = "ANTHROPIC_API_KEY"
 		apiKey = ctx.GetEnv(envVarName)
+	case "gemini":
+		envVarName = "GOOGLE_API_KEY"
+		apiKey = ctx.GetEnv(envVarName)
 	default:
-		return "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic", provider)
+		return "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic, gemini", provider)
 	}
 
 	if apiKey == "" {
