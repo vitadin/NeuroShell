@@ -86,13 +86,49 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Create session with interpolated variables in name",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "#session_id",
+				Description: "Unique identifier of the created session",
+				Type:        "system_metadata",
+				Example:     "550e8400-e29b-41d4",
+			},
+			{
+				Name:        "#session_name",
+				Description: "Name of the created session",
+				Type:        "system_metadata",
+				Example:     "work",
+			},
+			{
+				Name:        "#message_count",
+				Description: "Number of messages in the session",
+				Type:        "system_metadata",
+				Example:     "0",
+			},
+			{
+				Name:        "#system_prompt",
+				Description: "System prompt used for the session",
+				Type:        "system_metadata",
+				Example:     "You are a helpful assistant",
+			},
+			{
+				Name:        "#session_created",
+				Description: "Session creation timestamp",
+				Type:        "system_metadata",
+				Example:     "2024-01-15 14:30:25",
+			},
+			{
+				Name:        "_output",
+				Description: "Command result message",
+				Type:        "command_output",
+				Example:     "Created session 'work' (ID: 550e8400)",
+			},
+		},
 		Notes: []string{
 			"Session name is optional. If not provided, an auto-generated name is used",
 			"Use quotes if the name contains special characters or spaces",
 			"Variables in session name and system prompt are interpolated",
 			"Session automatically becomes active after creation via stack service",
-			"Session ID and metadata are stored in system variables (${#session_id}, etc.)",
-			"Initial messages can be added later with \\send command",
 		},
 	}
 }

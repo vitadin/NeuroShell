@@ -169,8 +169,9 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 
 	// Define command categories
 	coreCommands := map[string]bool{
-		"bash": true, "echo": true, "exit": true, "get": true, "help": true,
-		"run": true, "send": true, "set": true, "try": true, "vars": true,
+		"bash": true, "echo": true, "exit": true, "get": true, "get-env": true,
+		"help": true, "run": true, "send": true, "set": true, "set-env": true,
+		"try": true, "vars": true,
 	}
 
 	systemCommands := map[string]bool{
@@ -334,6 +335,31 @@ func (c *HelpCommand) renderHelpInfo(helpInfo neurotypes.HelpInfo, theme *servic
 				result.WriteString(theme.Info.Render("%% " + example.Description))
 				result.WriteString("\n")
 			}
+		}
+	}
+
+	// Stored Variables section
+	if len(helpInfo.StoredVariables) > 0 {
+		result.WriteString("\n")
+		result.WriteString(theme.Warning.Render("Stored Variables:"))
+		result.WriteString("\n")
+
+		for _, storedVar := range helpInfo.StoredVariables {
+			result.WriteString("  ")
+			result.WriteString(theme.Variable.Render("${" + storedVar.Name + "}"))
+			result.WriteString(" - ")
+			result.WriteString(storedVar.Description)
+
+			if storedVar.Type != "" {
+				result.WriteString(" ")
+				result.WriteString(theme.Info.Render("(" + storedVar.Type + ")"))
+			}
+
+			if storedVar.Example != "" {
+				result.WriteString("\n    ")
+				result.WriteString(theme.Info.Render("Example: " + storedVar.Example))
+			}
+			result.WriteString("\n")
 		}
 	}
 
