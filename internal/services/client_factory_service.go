@@ -72,9 +72,11 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 	case "moonshot":
 		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
 	case "anthropic":
-		client = f.createAnthropicCompatibleClient(apiKey)
+		client = NewAnthropicClient(apiKey)
+	case "gemini":
+		client = NewGeminiClient(apiKey)
 	default:
-		return nil, fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic", provider)
+		return nil, fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic, gemini", provider)
 	}
 
 	// Store client in context cache
@@ -136,9 +138,11 @@ func (f *ClientFactoryService) GetClientWithID(provider, apiKey string) (neuroty
 	case "moonshot":
 		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
 	case "anthropic":
-		client = f.createAnthropicCompatibleClient(apiKey)
+		client = NewAnthropicClient(apiKey)
+	case "gemini":
+		client = NewGeminiClient(apiKey)
 	default:
-		return nil, "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic", provider)
+		return nil, "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic, gemini", provider)
 	}
 
 	// Store client in context cache
@@ -205,8 +209,11 @@ func (f *ClientFactoryService) DetermineAPIKeyForProvider(provider string, ctx n
 	case "anthropic":
 		envVarName = "ANTHROPIC_API_KEY"
 		apiKey = ctx.GetEnv(envVarName)
+	case "gemini":
+		envVarName = "GOOGLE_API_KEY"
+		apiKey = ctx.GetEnv(envVarName)
 	default:
-		return "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic", provider)
+		return "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic, gemini", provider)
 	}
 
 	if apiKey == "" {
@@ -251,25 +258,5 @@ func (f *ClientFactoryService) createOpenAICompatibleClient(apiKey, providerName
 	}
 
 	logger.Debug("Creating OpenAI-compatible client", "provider", providerName, "baseURL", baseURL, "headerCount", len(headers))
-	return NewOpenAICompatibleClient(config)
-}
-
-// createAnthropicCompatibleClient creates a new Anthropic-compatible client using the OpenAI-compatible client infrastructure.
-func (f *ClientFactoryService) createAnthropicCompatibleClient(apiKey string) neurotypes.LLMClient {
-	// Create Anthropic-specific headers
-	headers := map[string]string{
-		"anthropic-version": "2023-06-01",
-	}
-
-	// Create client configuration for Anthropic
-	config := OpenAICompatibleConfig{
-		ProviderName: "anthropic",
-		APIKey:       apiKey,
-		BaseURL:      "https://api.anthropic.com/v1",
-		Headers:      headers,
-		Endpoint:     "/messages",
-	}
-
-	logger.Debug("Creating Anthropic-compatible client", "baseURL", config.BaseURL, "endpoint", config.Endpoint)
 	return NewOpenAICompatibleClient(config)
 }
