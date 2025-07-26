@@ -949,6 +949,12 @@ func (ctx *NeuroContext) SetEnvVariable(key, value string) error {
 	return os.Setenv(key, value)
 }
 
+// GetEnvVariable retrieves an environment variable value, respecting test mode.
+// This is a pure function that only gets the environment variable without side effects.
+func (ctx *NeuroContext) GetEnvVariable(key string) string {
+	return ctx.GetEnv(key)
+}
+
 // ClearTestEnvOverride removes a test-specific environment variable override.
 func (ctx *NeuroContext) ClearTestEnvOverride(key string) {
 	delete(ctx.testEnvOverrides, key)

@@ -1,0 +1,19 @@
+═══ Setting Up Test Environment Variables ═══
+Setting MY_TEST_VAR = hello_world
+Setting PATH_TEST = /test/path/bin
+═══ Testing Bracket Syntax ═══
+MY_TEST_VAR = hello_world
+═══ Testing Space Syntax ═══
+PATH_TEST = /test/path/bin
+═══ Verifying Neuro Variables Were Created ═══
+#os.MY_TEST_VAR = hello_world
+#os.PATH_TEST = /test/path/bin
+═══ Testing Non-Existent Environment Variable ═══
+NONEXISTENT_VAR = 
+#os.NONEXISTENT_VAR = 
+═══ All Variables (showing #os.* pattern) ═══
+System Variables:
+  #os.MY_TEST_VAR      = hello_world
+  #os.NONEXISTENT_VAR  = 
+  #os.PATH_TEST        = /test/path/bin
+Total: 3 variables

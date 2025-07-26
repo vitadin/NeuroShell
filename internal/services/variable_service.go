@@ -173,3 +173,22 @@ func (v *VariableService) SetEnvVariable(name, value string) error {
 
 	return neuroCtx.SetEnvVariable(name, value)
 }
+
+// GetEnvVariable retrieves an environment variable value through the context layer.
+// This is a pure function that only gets the environment variable without side effects.
+// Respects test mode for environment variable retrieval.
+func (v *VariableService) GetEnvVariable(name string) (string, error) {
+	if !v.initialized {
+		return "", fmt.Errorf("variable service not initialized")
+	}
+
+	ctx := neuroshellcontext.GetGlobalContext()
+	// Cast to NeuroContext to access GetEnvVariable method
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
+	if !ok {
+		return "", fmt.Errorf("context is not a NeuroContext")
+	}
+
+	value := neuroCtx.GetEnvVariable(name)
+	return value, nil
+}
