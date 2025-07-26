@@ -68,7 +68,19 @@ func (a *AutoCompleteService) Do(line []rune, pos int) (newLine [][]rune, offset
 }
 
 // findWordStart finds the start position of the word being completed.
+// It handles special cases like variable references (${var}) to provide better completions.
 func (a *AutoCompleteService) findWordStart(line string, pos int) int {
+	// Check if we're in a variable reference context
+	if pos >= 2 && a.isInVariableReference(line, pos) {
+		// Find the start of the variable reference (${)
+		for i := pos - 1; i >= 1; i-- {
+			if i >= 1 && line[i-1] == '$' && line[i] == '{' {
+				return i - 1 // Return position of '$'
+			}
+		}
+	}
+
+	// Standard word boundary detection
 	// Start from cursor position and work backwards
 	for i := pos - 1; i >= 0; i-- {
 		char := line[i]
@@ -80,26 +92,44 @@ func (a *AutoCompleteService) findWordStart(line string, pos int) int {
 	return 0
 }
 
+// isInVariableReference checks if the cursor position is within a variable reference (${...})
+func (a *AutoCompleteService) isInVariableReference(line string, pos int) bool {
+	// Look backwards to find the most recent ${ and }
+	lastDollarBrace := -1
+	lastCloseBrace := -1
+
+	for i := 0; i < pos && i < len(line)-1; i++ {
+		if line[i] == '$' && line[i+1] == '{' {
+			lastDollarBrace = i
+		} else if line[i] == '}' {
+			lastCloseBrace = i
+		}
+	}
+
+	// We're in a variable reference if the last ${ is after the last }
+	return lastDollarBrace > lastCloseBrace
+}
+
 // getCompletions analyzes the input context and returns appropriate completions.
 func (a *AutoCompleteService) getCompletions(line string, pos int, currentWord string) []string {
 	// Analyze the context to determine what kind of completion is needed
 
-	// Check if we're completing a command name (starts with \)
+	// Priority 1: Check if we're in a variable reference context
+	if a.isInVariableReference(line, pos) || strings.HasPrefix(currentWord, "${") {
+		return a.getVariableCompletions(currentWord)
+	}
+
+	// Priority 2: Check if we're completing a command name (starts with \)
 	if strings.HasPrefix(currentWord, "\\") {
 		return a.getCommandCompletions(currentWord)
 	}
 
-	// Check if we're completing a variable reference (${)
-	if strings.Contains(currentWord, "${") {
-		return a.getVariableCompletions(currentWord)
-	}
-
-	// Check if we're inside brackets for option completion
+	// Priority 3: Check if we're inside brackets for option completion
 	if a.isInsideBrackets(line, pos) {
 		return a.getOptionCompletions(line, pos, currentWord)
 	}
 
-	// Check if we're at the beginning of input (no \ prefix)
+	// Priority 4: Check if we're at the beginning of input (no \ prefix)
 	if pos == 0 || (pos > 0 && line[0] != '\\') {
 		// Complete with common commands
 		return a.getCommandCompletions("\\" + currentWord)
@@ -151,7 +181,13 @@ func (a *AutoCompleteService) getVariableCompletions(prefix string) []string {
 		return make([]string, 0)
 	}
 
+	// Extract the partial variable name after ${
 	varPrefix := prefix[varStart+2:] // Skip "${
+
+	// Remove any closing brace if present (for cases like "${abc}" where user is editing)
+	if closeBraceIdx := strings.Index(varPrefix, "}"); closeBraceIdx != -1 {
+		varPrefix = varPrefix[:closeBraceIdx]
+	}
 
 	// Get all variables from context
 	globalCtx := context.GetGlobalContext()
@@ -178,12 +214,13 @@ func (a *AutoCompleteService) getVariableCompletions(prefix string) []string {
 	var completions []string
 	for varName := range allVars {
 		if strings.HasPrefix(varName, varPrefix) {
-			// Return the full variable reference with closing brace
-			completions = append(completions, prefix[:varStart+2]+varName+"}")
+			// Build the complete variable reference with proper formatting
+			completion := prefix[:varStart] + "${" + varName + "}"
+			completions = append(completions, completion)
 		}
 	}
 
-	// Sort completions alphabetically
+	// Sort completions alphabetically for consistent ordering
 	sort.Strings(completions)
 	return completions
 }
