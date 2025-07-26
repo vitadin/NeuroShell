@@ -171,7 +171,7 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 	coreCommands := map[string]bool{
 		"bash": true, "echo": true, "exit": true, "get": true, "get-env": true,
 		"help": true, "run": true, "send": true, "set": true, "set-env": true,
-		"try": true, "vars": true,
+		"silent": true, "try": true, "vars": true,
 	}
 
 	systemCommands := map[string]bool{

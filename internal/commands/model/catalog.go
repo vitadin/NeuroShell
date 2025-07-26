@@ -111,10 +111,17 @@ func (c *CatalogCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "List Anthropic models sorted alphabetically",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "_output",
+				Description: "Formatted catalog listing of available models",
+				Type:        "command_output",
+				Example:     "[CS4] Claude Sonnet 4 (claude-3-sonnet-20240229)\\n[O3] GPT-4 (gpt-4)...",
+			},
+		},
 		Notes: []string{
 			"Options can be combined (e.g., provider=openai,sort=name)",
 			"Default sort is by provider, then by name within each provider",
-			"Model catalog output is stored in ${_output} variable",
 			"Shows model ID, display name, provider, capabilities, context window, and deprecation status",
 			"Model IDs are displayed in format: [ID] Display Name (model_name)",
 			"Embedded catalog includes popular models from OpenAI and Anthropic",

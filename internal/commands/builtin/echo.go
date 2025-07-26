@@ -86,6 +86,20 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Store formatted text with interpreted escape sequences",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "_output",
+				Description: "Command output (default storage location)",
+				Type:        "command_output",
+				Example:     "Hello, World!",
+			},
+			{
+				Name:        "{variable_name}",
+				Description: "Custom variable when using to= option",
+				Type:        "user_variable",
+				Example:     "greeting = \"Hello ${name}!\"",
+			},
+		},
 		Notes: []string{
 			"When raw=true, escape sequences like \\n are shown literally",
 			"When raw=false, escape sequences are interpreted (\\n becomes newline)",

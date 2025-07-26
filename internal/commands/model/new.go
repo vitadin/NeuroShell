@@ -159,6 +159,56 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Create local model with custom token limit",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "#model_id",
+				Description: "Unique identifier of the created model",
+				Type:        "system_metadata",
+				Example:     "550e8400-e29b-41d4",
+			},
+			{
+				Name:        "#model_name",
+				Description: "Name of the created model",
+				Type:        "system_metadata",
+				Example:     "my-claude",
+			},
+			{
+				Name:        "#model_provider",
+				Description: "Provider of the created model",
+				Type:        "system_metadata",
+				Example:     "anthropic",
+			},
+			{
+				Name:        "#model_base",
+				Description: "Base model identifier",
+				Type:        "system_metadata",
+				Example:     "claude-3-sonnet",
+			},
+			{
+				Name:        "#model_created",
+				Description: "Model creation timestamp",
+				Type:        "system_metadata",
+				Example:     "2024-01-15 14:30:25",
+			},
+			{
+				Name:        "#model_param_count",
+				Description: "Number of parameters configured",
+				Type:        "system_metadata",
+				Example:     "3",
+			},
+			{
+				Name:        "#model_description",
+				Description: "Model description (if provided)",
+				Type:        "system_metadata",
+				Example:     "Creative writing model",
+			},
+			{
+				Name:        "_output",
+				Description: "Command result message",
+				Type:        "command_output",
+				Example:     "Created model 'my-claude' (ID: 550e8400, Provider: anthropic, Base: claude-3-sonnet)",
+			},
+		},
 		Notes: []string{
 			"Model name is required and taken from the input parameter",
 			"Model names must be unique and cannot contain spaces",
@@ -167,7 +217,6 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 			"When using catalog_id, provider and base_model are auto-populated from catalog",
 			"Variables in model name and parameters are interpolated",
 			"Additional provider-specific parameters can be included",
-			"Created model ID and metadata are stored in system variables",
 		},
 	}
 }
