@@ -94,13 +94,20 @@ func (c *DeleteCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Delete current session using session ID variable",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "_output",
+				Description: "Deletion result message",
+				Type:        "command_output",
+				Example:     "Deleted session 'work project' (ID: 550e8400)",
+			},
+		},
 		Notes: []string{
 			"Smart search: tries exact name → exact ID → prefix matching",
 			"Prefix matching must result in a unique match or shows all candidates",
 			"Cannot specify both name option and input parameter",
 			"Variables in session identifier are interpolated before search",
 			"Session variables are updated or cleared after deletion",
-			"Deletion result is stored in ${_output} variable",
 		},
 	}
 }

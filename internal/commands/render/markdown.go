@@ -77,11 +77,18 @@ func (c *MarkdownCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Handle multiline input with continuation markers",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "_output",
+				Description: "Rendered markdown with ANSI formatting using Glamour",
+				Type:        "command_output",
+				Example:     "\x1b[1m# Hello World\x1b[0m\n\nThis is \x1b[1mbold\x1b[0m text",
+			},
+		},
 		Notes: []string{
 			"Uses Glamour library for high-quality markdown rendering",
 			"Supports full markdown syntax including tables, code blocks, and links",
 			"Automatically detects terminal theme for optimal styling",
-			"Rendered output is stored in _output variable",
 			"Integrates with NeuroShell's theme system",
 			"Default raw=true treats \\n as literal characters",
 			"Set raw=false to interpret escape sequences: \\n (newline), \\t (tab), \\r (carriage return), \\\\ (backslash)",

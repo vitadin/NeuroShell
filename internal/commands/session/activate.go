@@ -88,6 +88,44 @@ func (c *ActivateCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Activate by partial name match",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "_session_id",
+				Description: "ID of the currently active session",
+				Type:        "system_metadata",
+				Example:     "550e8400-e29b-41d4-8716-446655440000",
+			},
+			{
+				Name:        "#active_session_id",
+				Description: "ID of the currently active session",
+				Type:        "system_metadata",
+				Example:     "550e8400-e29b-41d4-8716-446655440000",
+			},
+			{
+				Name:        "#active_session_name",
+				Description: "Name of the currently active session",
+				Type:        "system_metadata",
+				Example:     "my-project",
+			},
+			{
+				Name:        "#active_session_created",
+				Description: "Creation timestamp of the active session",
+				Type:        "system_metadata",
+				Example:     "2024-01-15 14:30:25",
+			},
+			{
+				Name:        "#active_session_message_count",
+				Description: "Number of messages in the active session",
+				Type:        "system_metadata",
+				Example:     "5",
+			},
+			{
+				Name:        "_output",
+				Description: "Command result message",
+				Type:        "command_output",
+				Example:     "Activated session 'my-project' (ID: 550e8400)",
+			},
+		},
 		Notes: []string{
 			"Without parameters: shows active session or auto-activates most recent",
 			"By default searches session names (partial matching supported)",
