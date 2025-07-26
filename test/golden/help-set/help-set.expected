@@ -14,6 +14,9 @@ Examples:
     %% Set variable 'name' to 'John' using space syntax
   \set[greeting="Hello World"]
     %% Set variable with quoted value containing spaces
+Stored Variables:
+  ${{variable_name}} - The user-defined variable with its assigned value (user_variable)
+    Example: name = "John"
 Notes:
   Supports both bracket syntax (\set[var=value]) and space syntax (\set var value)
   Variable values can contain spaces when properly quoted
