@@ -25,13 +25,14 @@ type CommandArgs struct {
 // HelpInfo represents structured help information for a command.
 // It provides rich help data that can be rendered in both plain text and styled formats.
 type HelpInfo struct {
-	Command     string        `json:"command"`            // Command name
-	Description string        `json:"description"`        // Brief description of what the command does
-	Usage       string        `json:"usage"`              // Usage syntax
-	ParseMode   ParseMode     `json:"parse_mode"`         // How the command parses arguments
-	Options     []HelpOption  `json:"options,omitempty"`  // Command options/parameters
-	Examples    []HelpExample `json:"examples,omitempty"` // Usage examples
-	Notes       []string      `json:"notes,omitempty"`    // Additional notes or warnings
+	Command         string               `json:"command"`                    // Command name
+	Description     string               `json:"description"`                // Brief description of what the command does
+	Usage           string               `json:"usage"`                      // Usage syntax
+	ParseMode       ParseMode            `json:"parse_mode"`                 // How the command parses arguments
+	Options         []HelpOption         `json:"options,omitempty"`          // Command options/parameters
+	Examples        []HelpExample        `json:"examples,omitempty"`         // Usage examples
+	StoredVariables []HelpStoredVariable `json:"stored_variables,omitempty"` // Variables automatically stored by this command
+	Notes           []string             `json:"notes,omitempty"`            // Additional notes or warnings
 }
 
 // HelpOption represents a command option/parameter with detailed information.
@@ -47,4 +48,12 @@ type HelpOption struct {
 type HelpExample struct {
 	Command     string `json:"command"`     // Example command
 	Description string `json:"description"` // What this example demonstrates
+}
+
+// HelpStoredVariable represents a variable that a command automatically stores.
+type HelpStoredVariable struct {
+	Name        string `json:"name"`              // Variable name (e.g., "_output", "#session_id")
+	Description string `json:"description"`       // What this variable contains
+	Type        string `json:"type"`              // Variable type category (e.g., "command_output", "system_metadata")
+	Example     string `json:"example,omitempty"` // Optional example value
 }

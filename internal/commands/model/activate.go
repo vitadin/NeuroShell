@@ -90,6 +90,50 @@ func (c *ActivateCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Show current active model or activate latest model",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "#active_model_id",
+				Description: "ID of the currently active model",
+				Type:        "system_metadata",
+				Example:     "550e8400-e29b-41d4",
+			},
+			{
+				Name:        "#active_model_name",
+				Description: "Name of the currently active model",
+				Type:        "system_metadata",
+				Example:     "my-gpt",
+			},
+			{
+				Name:        "#active_model_provider",
+				Description: "Provider of the currently active model",
+				Type:        "system_metadata",
+				Example:     "openai",
+			},
+			{
+				Name:        "#active_model_base",
+				Description: "Base model identifier of the active model",
+				Type:        "system_metadata",
+				Example:     "gpt-4",
+			},
+			{
+				Name:        "#active_model_param_count",
+				Description: "Number of parameters configured for active model",
+				Type:        "system_metadata",
+				Example:     "2",
+			},
+			{
+				Name:        "#active_model_description",
+				Description: "Description of the active model (if provided)",
+				Type:        "system_metadata",
+				Example:     "Creative writing model",
+			},
+			{
+				Name:        "_output",
+				Description: "Command result message",
+				Type:        "command_output",
+				Example:     "Activated model 'my-gpt' (ID: 550e8400)",
+			},
+		},
 		Notes: []string{
 			"When called with no parameters: shows current active model or activates latest model",
 			"By default searches model names (partial matching supported)",

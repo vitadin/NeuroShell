@@ -66,11 +66,30 @@ func (c *SendCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Send message with synchronous response mode",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "1",
+				Description: "Latest agent response message",
+				Type:        "message_history",
+				Example:     "Hello! I'm Claude, an AI assistant...",
+			},
+			{
+				Name:        "2",
+				Description: "Previous agent response (2nd most recent)",
+				Type:        "message_history",
+				Example:     "I can help you with that...",
+			},
+			{
+				Name:        "#message_count",
+				Description: "Total number of messages in current session",
+				Type:        "system_metadata",
+				Example:     "5",
+			},
+		},
 		Notes: []string{
 			"Automatically creates chat session if none exists",
 			"Uses active model configuration (use \\model-activate to set)",
 			"Variables are interpolated before sending (${var} syntax)",
-			"Response stored in message history variables: ${1} (latest), ${2}, etc.",
 			"Set _reply_way variable to control response mode:",
 			"  • _reply_way=sync: Complete response at once (default)",
 			"  • _reply_way=stream: Real-time streaming response",

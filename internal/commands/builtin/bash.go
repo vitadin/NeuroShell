@@ -62,10 +62,29 @@ func (c *BashCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Execute Python or other language commands",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "_output",
+				Description: "Command's standard output",
+				Type:        "command_output",
+				Example:     "hello world",
+			},
+			{
+				Name:        "_error",
+				Description: "Command's standard error output",
+				Type:        "command_output",
+				Example:     "file not found",
+			},
+			{
+				Name:        "_status",
+				Description: "Command's exit code",
+				Type:        "command_output",
+				Example:     "0",
+			},
+		},
 		Notes: []string{
 			"Commands are executed using bash -c for full shell capabilities",
 			"Variables are interpolated by the state machine before execution",
-			"Output is stored in ${_output}, errors in ${_error}, exit code in ${_status}",
 			"Supports pipes, redirection, and all bash features",
 			"Use quotes to protect special characters from shell expansion",
 			"Commands run with a configurable timeout (default: 2 minutes)",

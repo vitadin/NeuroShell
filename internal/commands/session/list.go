@@ -91,10 +91,17 @@ func (c *ListCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "List all sessions by last update time",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "_output",
+				Description: "Formatted listing of sessions with details",
+				Type:        "command_output",
+				Example:     "my-project (550e8400) [active] 5 messages - 2024-01-15 14:30:25\\nwork-session (abc12345) [inactive] 3 messages - 2024-01-14 10:15:30",
+			},
+		},
 		Notes: []string{
 			"Options can be combined (e.g., sort=name,filter=active)",
 			"Default sort is by creation time with newest sessions first",
-			"Session list output is stored in ${_output} variable",
 			"Shows session name, ID (short), active status, message count, and creation date",
 			"Active session is marked with 'active' status indicator",
 		},

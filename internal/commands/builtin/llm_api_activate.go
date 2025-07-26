@@ -68,11 +68,17 @@ func (c *LLMAPIActivateCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Activate a Moonshot key from local .env file",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "#active_{provider}_key",
+				Description: "Contains the activated API key value for the specified provider",
+				Type:        "system_metadata",
+				Example:     "#active_openai_key = \"sk-1234...\"",
+			},
+		},
 		Notes: []string{
 			"Use \\llm-api-show to see available keys and their source-prefixed names",
 			"The key must exist as a collected variable (run \\llm-api-show first)",
-			"Copies the API key value into ${#active_{provider}_key} system variable",
-			"Active keys can be accessed directly via ${#active_{provider}_key}",
 		},
 	}
 }

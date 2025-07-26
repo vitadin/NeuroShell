@@ -17,10 +17,21 @@ Examples:
     %% Create session with quoted name containing spaces
   \session-new debug-${@date}
     %% Create session with interpolated variables in name
+Stored Variables:
+  ${#session_id} - Unique identifier of the created session (system_metadata)
+    Example: 550e8400-e29b-41d4
+  ${#session_name} - Name of the created session (system_metadata)
+    Example: work
+  ${#message_count} - Number of messages in the session (system_metadata)
+    Example: 0
+  ${#system_prompt} - System prompt used for the session (system_metadata)
+    Example: You are a helpful assistant
+  ${#session_created} - Session creation timestamp (system_metadata)
+    Example: 2024-01-15 14:30:25
+  ${_output} - Command result message (command_output)
+    Example: Created session 'work' (ID: 550e8400)
 Notes:
   Session name is optional. If not provided, an auto-generated name is used
   Use quotes if the name contains special characters or spaces
   Variables in session name and system prompt are interpolated
   Session automatically becomes active after creation via stack service
-  Session ID and metadata are stored in system variables (${#session_id}, etc.)
-  Initial messages can be added later with \send command

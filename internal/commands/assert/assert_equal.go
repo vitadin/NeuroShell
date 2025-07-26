@@ -73,11 +73,34 @@ func (c *EqualCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Check status of previous operation",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "_status",
+				Description: "Exit code: '0' for pass, '1' for fail",
+				Type:        "command_output",
+				Example:     "0",
+			},
+			{
+				Name:        "_assert_result",
+				Description: "Assertion result status",
+				Type:        "command_output",
+				Example:     "PASS",
+			},
+			{
+				Name:        "_assert_expected",
+				Description: "Expected value from comparison",
+				Type:        "command_output",
+				Example:     "hello",
+			},
+			{
+				Name:        "_assert_actual",
+				Description: "Actual value from comparison",
+				Type:        "command_output",
+				Example:     "hello",
+			},
+		},
 		Notes: []string{
 			"Values are compared as strings after variable interpolation by state machine",
-			"Sets ${_assert_result} to 'PASS' or 'FAIL' based on comparison",
-			"Sets ${_assert_expected} and ${_assert_actual} with compared values",
-			"Updates ${_status} to '0' (pass) or '1' (fail) for script automation",
 			"Useful for testing and validation in .neuro scripts",
 			"Supports whitespace and case-sensitive string comparison",
 		},

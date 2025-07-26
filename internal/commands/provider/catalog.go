@@ -111,10 +111,17 @@ func (c *CatalogCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "List Anthropic providers sorted alphabetically",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "_output",
+				Description: "Formatted catalog listing of available providers",
+				Type:        "command_output",
+				Example:     "[OAC] OpenAI Chat API (openai)\\n  Provider: openai\\n  Base URL: https://api.openai.com/v1\\n  Endpoint: /chat/completions...",
+			},
+		},
 		Notes: []string{
 			"Options can be combined (e.g., provider=openai,sort=name)",
 			"Default sort is by provider, then by name within each provider",
-			"Provider catalog output is stored in ${_output} variable",
 			"Shows provider ID, display name, provider type, configuration details",
 			"Provider IDs are displayed in format: [ID] Display Name (provider_type)",
 			"Embedded catalog includes popular providers: OpenAI, Anthropic, OpenRouter, Moonshot",

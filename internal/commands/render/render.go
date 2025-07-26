@@ -102,12 +102,25 @@ func (c *Command) HelpInfo() neurotypes.HelpInfo {
 				Description: "Custom foreground and background colors",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "_output",
+				Description: "Styled text with lipgloss formatting (default storage location)",
+				Type:        "command_output",
+				Example:     "\x1b[1mHello World\x1b[0m",
+			},
+			{
+				Name:        "{variable_name}",
+				Description: "Custom variable when using to= option",
+				Type:        "user_variable",
+				Example:     "styled_output = \"\x1b[32mSuccess!\x1b[0m\"",
+			},
+		},
 		Notes: []string{
 			"Uses lipgloss library for professional terminal styling",
 			"Keywords are highlighted with special colors when specified",
 			"Supports both hex colors (#FF5733) and named colors (red, blue, etc.)",
 			"Style options can be combined (e.g., bold + italic + color)",
-			"Rendered output is stored in specified variable for reuse",
 			"Themes provide coordinated color schemes for consistency",
 		},
 	}

@@ -69,6 +69,14 @@ func (c *SetCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Set variable with quoted value containing spaces",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "{variable_name}",
+				Description: "The user-defined variable with its assigned value",
+				Type:        "user_variable",
+				Example:     "name = \"John\"",
+			},
+		},
 		Notes: []string{
 			"Supports both bracket syntax (\\set[var=value]) and space syntax (\\set var value)",
 			"Variable values can contain spaces when properly quoted",

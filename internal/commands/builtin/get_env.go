@@ -63,9 +63,16 @@ func (c *GetEnvCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Get OPENAI_API_KEY environment variable and create #os.OPENAI_API_KEY",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "#os.VAR",
+				Description: "Contains the retrieved environment variable value (VAR = actual variable name)",
+				Type:        "environment_mirror",
+				Example:     "#os.HOME = \"/Users/username\"",
+			},
+		},
 		Notes: []string{
 			"Supports both bracket syntax (\\get-env[VAR]) and space syntax (\\get-env VAR)",
-			"Automatically creates #os.VAR neuro variable with the retrieved value",
 			"In test mode, retrieves test environment overrides for clean testing",
 			"In production mode, retrieves actual OS environment variables",
 			"Returns empty string if environment variable doesn't exist",
