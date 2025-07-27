@@ -28,7 +28,7 @@ func TestLLMAPIShowCommand_Description(t *testing.T) {
 	desc := cmd.Description()
 	assert.NotEmpty(t, desc)
 	assert.Contains(t, strings.ToLower(desc), "api")
-	assert.Contains(t, strings.ToLower(desc), "key")
+	assert.Contains(t, strings.ToLower(desc), "filtering")
 }
 
 func TestLLMAPIShowCommand_Usage(t *testing.T) {
@@ -414,6 +414,219 @@ func setupLLMAPIShowTestRegistry(t *testing.T) neurotypes.Context {
 	})
 
 	return ctx
+}
+
+func TestLLMAPIShowCommand_isAPIRelated(t *testing.T) {
+
+	tests := []struct {
+		name             string
+		variableName     string
+		expectedIsAPI    bool
+		expectedProvider string
+	}{
+		// Provider names - should match
+		{
+			name:             "openai api key",
+			variableName:     "OPENAI_API_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "openai",
+		},
+		{
+			name:             "anthropic api key",
+			variableName:     "ANTHROPIC_API_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "anthropic",
+		},
+		{
+			name:             "openrouter api key",
+			variableName:     "OPENROUTER_API_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "openrouter",
+		},
+		{
+			name:             "moonshot api key",
+			variableName:     "MOONSHOT_API_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "moonshot",
+		},
+		{
+			name:             "case insensitive provider",
+			variableName:     "OpenAI_Key",
+			expectedIsAPI:    true,
+			expectedProvider: "openai",
+		},
+		{
+			name:             "mixed case with api",
+			variableName:     "My_OpenAI_API_Token",
+			expectedIsAPI:    true,
+			expectedProvider: "openai",
+		},
+		// API keywords without provider - should match as generic
+		{
+			name:             "custom api key",
+			variableName:     "CUSTOM_API_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "secret token",
+			variableName:     "MY_SECRET_TOKEN",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "just key",
+			variableName:     "ACCESS_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "case insensitive api",
+			variableName:     "Service_API_Token",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "case insensitive secret",
+			variableName:     "App_SECRET",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		// API keywords with provider - should detect provider
+		{
+			name:             "custom openai secret",
+			variableName:     "MY_OPENAI_SECRET",
+			expectedIsAPI:    true,
+			expectedProvider: "openai",
+		},
+		{
+			name:             "anthropic api token",
+			variableName:     "WORK_ANTHROPIC_API_TOKEN",
+			expectedIsAPI:    true,
+			expectedProvider: "anthropic",
+		},
+		// Non-API variables - should not match
+		{
+			name:             "openai debug flag",
+			variableName:     "OPENAI_DEBUG",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "openai endpoint url",
+			variableName:     "OPENAI_ENDPOINT",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "database url",
+			variableName:     "DATABASE_URL",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "random config",
+			variableName:     "MY_CONFIG_VALUE",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "anthropic model name",
+			variableName:     "ANTHROPIC_MODEL",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "path variable",
+			variableName:     "PATH",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		// Edge cases
+		{
+			name:             "empty string",
+			variableName:     "",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "just provider name",
+			variableName:     "OPENAI",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "provider in middle",
+			variableName:     "SOME_OPENAI_CONFIG",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			isAPI, provider := stringprocessing.IsAPIRelated(tt.variableName)
+			assert.Equal(t, tt.expectedIsAPI, isAPI, "isAPIRelated result should match expected")
+			assert.Equal(t, tt.expectedProvider, provider, "detected provider should match expected")
+		})
+	}
+}
+
+func TestLLMAPIShowCommand_Execute_WithFiltering(t *testing.T) {
+	cmd := &LLMAPIShowCommand{}
+	ctx := setupLLMAPIShowTestRegistry(t)
+
+	// Clear any existing environment variables and set controlled test data
+	ctx.ClearAllTestEnvOverrides()
+	// API-related variables that should be shown
+	ctx.SetTestEnvOverride("OPENAI_API_KEY", "sk-1234567890abcdef1234567890abcdef")
+	ctx.SetTestEnvOverride("CUSTOM_API_KEY", "custom-1234567890abcdef1234567890")
+	ctx.SetTestEnvOverride("MY_SECRET_TOKEN", "secret-1234567890abcdef1234567890")
+	// Non-API variables that should be filtered out
+	ctx.SetTestEnvOverride("OPENAI_DEBUG", "true")
+	ctx.SetTestEnvOverride("DATABASE_URL", "postgresql://localhost:5432/mydb")
+	ctx.SetTestEnvOverride("ANTHROPIC_MODEL", "claude-3")
+	defer ctx.ClearAllTestEnvOverrides()
+
+	// Register actual configuration service
+	err := services.GetGlobalRegistry().RegisterService(services.NewConfigurationService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().InitializeAll()
+	require.NoError(t, err)
+
+	output := stringprocessing.CaptureOutput(func() {
+		err := cmd.Execute(map[string]string{}, "")
+		assert.NoError(t, err)
+	})
+
+	// Should contain API-related variables
+	assert.Contains(t, output, "os.OPENAI_API_KEY", "Should show OpenAI API key")
+	assert.Contains(t, output, "os.CUSTOM_API_KEY", "Should show custom API key")
+	assert.Contains(t, output, "os.MY_SECRET_TOKEN", "Should show secret token")
+
+	// Should NOT contain non-API variables
+	assert.NotContains(t, output, "os.OPENAI_DEBUG", "Should not show debug flag")
+	assert.NotContains(t, output, "os.DATABASE_URL", "Should not show database URL")
+	assert.NotContains(t, output, "os.ANTHROPIC_MODEL", "Should not show model name")
+
+	// Verify that filtered keys are stored as variables
+	variableService, err := services.GetGlobalVariableService()
+	require.NoError(t, err)
+
+	// API keys should be stored
+	value, err := variableService.Get("os.OPENAI_API_KEY")
+	assert.NoError(t, err)
+	assert.Equal(t, "sk-1234567890abcdef1234567890abcdef", value)
+
+	value, err = variableService.Get("os.CUSTOM_API_KEY")
+	assert.NoError(t, err)
+	assert.Equal(t, "custom-1234567890abcdef1234567890", value)
+
+	// Non-API variables should not be stored (should return empty value)
+	debugValue, err := variableService.Get("os.OPENAI_DEBUG")
+	assert.NoError(t, err, "Variable service should not error on non-existent variables")
+	assert.Empty(t, debugValue, "Debug flag should not be stored (should be empty)")
 }
 
 // Interface compliance check

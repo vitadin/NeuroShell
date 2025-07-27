@@ -199,16 +199,16 @@ func (c *ConfigurationService) GetAllConfigValues() (map[string]string, error) {
 	return ctx.GetConfigMap(), nil
 }
 
-// GetAllAPIKeys scans multiple sources and collects all API keys containing provider names.
+// GetAllAPIKeys scans multiple sources and collects all configuration variables.
 // Sources scanned: (a) OS environment variables, (b) config folder .env, (c) local .env
-// Returns keys with source attribution for transparent user control.
+// Returns all variables with source attribution for transparent user control.
+// Filtering is delegated to the calling command for better separation of concerns.
 func (c *ConfigurationService) GetAllAPIKeys() ([]APIKeySource, error) {
 	if !c.initialized {
 		return nil, fmt.Errorf("configuration service not initialized")
 	}
 
 	ctx := neuroshellcontext.GetGlobalContext()
-	providers := []string{"openai", "anthropic", "openrouter", "moonshot"}
 
 	// Load all sources with prefixes into context configuration map
 	if err := ctx.LoadEnvironmentVariablesWithPrefix("os."); err != nil {
@@ -221,7 +221,7 @@ func (c *ConfigurationService) GetAllAPIKeys() ([]APIKeySource, error) {
 		return nil, fmt.Errorf("failed to load local .env: %w", err)
 	}
 
-	// Get all config values and scan for API keys
+	// Get all config values and collect all variables
 	configMap, err := c.GetAllConfigValues()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get config values: %w", err)
@@ -229,9 +229,9 @@ func (c *ConfigurationService) GetAllAPIKeys() ([]APIKeySource, error) {
 
 	var keys []APIKeySource
 
-	// Scan prefixed configuration values for provider names
+	// Collect all prefixed configuration values
 	for configKey, configValue := range configMap {
-		// Skip empty values or very short keys (less than 10 chars)
+		// Skip empty values or very short values (less than 10 chars)
 		if strings.TrimSpace(configValue) == "" || len(strings.TrimSpace(configValue)) < 10 {
 			continue
 		}
@@ -252,19 +252,14 @@ func (c *ConfigurationService) GetAllAPIKeys() ([]APIKeySource, error) {
 			continue // Skip non-prefixed keys
 		}
 
-		// Check if original name contains any provider name
-		originalNameLower := strings.ToLower(originalName)
-		for _, provider := range providers {
-			if strings.Contains(originalNameLower, provider) {
-				keys = append(keys, APIKeySource{
-					Source:       source,
-					OriginalName: originalName,
-					Value:        configValue,
-					Provider:     provider,
-				})
-				break // Only match the first provider found in the name
-			}
-		}
+		// Collect all variables without provider filtering
+		// Provider detection and API-related filtering will be done by the calling command
+		keys = append(keys, APIKeySource{
+			Source:       source,
+			OriginalName: originalName,
+			Value:        configValue,
+			Provider:     "", // Will be determined by the calling command
+		})
 	}
 
 	return keys, nil

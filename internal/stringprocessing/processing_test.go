@@ -167,3 +167,232 @@ func TestProcessTextForMarkdown(t *testing.T) {
 		})
 	}
 }
+
+func TestIsAPIRelated(t *testing.T) {
+	tests := []struct {
+		name             string
+		variableName     string
+		expectedIsAPI    bool
+		expectedProvider string
+	}{
+		// Provider names with API keywords - should match with provider
+		{
+			name:             "openai api key",
+			variableName:     "OPENAI_API_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "openai",
+		},
+		{
+			name:             "anthropic api key",
+			variableName:     "ANTHROPIC_API_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "anthropic",
+		},
+		{
+			name:             "openrouter api key",
+			variableName:     "OPENROUTER_API_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "openrouter",
+		},
+		{
+			name:             "moonshot api key",
+			variableName:     "MOONSHOT_API_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "moonshot",
+		},
+		{
+			name:             "case insensitive provider with key",
+			variableName:     "OpenAI_Key",
+			expectedIsAPI:    true,
+			expectedProvider: "openai",
+		},
+		{
+			name:             "mixed case with api",
+			variableName:     "My_OpenAI_API_Token",
+			expectedIsAPI:    true,
+			expectedProvider: "openai",
+		},
+		{
+			name:             "custom openai secret",
+			variableName:     "MY_OPENAI_SECRET",
+			expectedIsAPI:    true,
+			expectedProvider: "openai",
+		},
+		{
+			name:             "anthropic api token",
+			variableName:     "WORK_ANTHROPIC_API_TOKEN",
+			expectedIsAPI:    true,
+			expectedProvider: "anthropic",
+		},
+
+		// API keywords without provider - should match as generic
+		{
+			name:             "custom api key",
+			variableName:     "CUSTOM_API_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "secret token",
+			variableName:     "MY_SECRET_TOKEN",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "just key",
+			variableName:     "ACCESS_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "case insensitive api",
+			variableName:     "Service_API_Token",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "case insensitive secret",
+			variableName:     "App_SECRET",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+
+		// Provider names without API keywords - should NOT match
+		{
+			name:             "openai debug flag",
+			variableName:     "OPENAI_DEBUG",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "openai endpoint url",
+			variableName:     "OPENAI_ENDPOINT",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "anthropic model name",
+			variableName:     "ANTHROPIC_MODEL",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "just provider name",
+			variableName:     "OPENAI",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "provider in middle without api keywords",
+			variableName:     "SOME_OPENAI_CONFIG",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "moonshot timeout setting",
+			variableName:     "MOONSHOT_TIMEOUT",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+
+		// Non-API variables - should not match
+		{
+			name:             "database url",
+			variableName:     "DATABASE_URL",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "random config",
+			variableName:     "MY_CONFIG_VALUE",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "path variable",
+			variableName:     "PATH",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "home directory",
+			variableName:     "HOME",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+
+		// Edge cases
+		{
+			name:             "empty string",
+			variableName:     "",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "only spaces",
+			variableName:     "   ",
+			expectedIsAPI:    false,
+			expectedProvider: "",
+		},
+		{
+			name:             "api keyword at end",
+			variableName:     "MYAPI",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "key keyword at start",
+			variableName:     "KEYCHAIN_CONFIG",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "secret keyword in middle",
+			variableName:     "MYSECRETCONFIG",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+
+		// Provider detection with multiple providers in name
+		{
+			name:             "multiple providers with api keyword",
+			variableName:     "OPENAI_ANTHROPIC_API_KEY",
+			expectedIsAPI:    true,
+			expectedProvider: "openai", // First provider found
+		},
+
+		// Case sensitivity tests
+		{
+			name:             "uppercase api",
+			variableName:     "MY_API_TOKEN",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "lowercase key",
+			variableName:     "my_access_key",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "mixed case secret",
+			variableName:     "My_Secret_Value",
+			expectedIsAPI:    true,
+			expectedProvider: "generic",
+		},
+		{
+			name:             "uppercase provider with lowercase api",
+			variableName:     "OPENAI_api_key",
+			expectedIsAPI:    true,
+			expectedProvider: "openai",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			isAPI, provider := IsAPIRelated(tt.variableName)
+			assert.Equal(t, tt.expectedIsAPI, isAPI, "IsAPIRelated result should match expected")
+			assert.Equal(t, tt.expectedProvider, provider, "detected provider should match expected")
+		})
+	}
+}

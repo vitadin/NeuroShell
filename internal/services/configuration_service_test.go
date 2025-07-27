@@ -616,7 +616,7 @@ func TestConfigurationService_GetAllAPIKeys(t *testing.T) {
 		expectProviders []string
 	}{
 		{
-			name: "collect keys from OS environment variables",
+			name: "collect variables from OS environment variables",
 			setup: func(_ *testing.T, ctx neurotypes.Context) {
 				ctx.SetTestEnvOverride("A_OPENAI_KEY", "sk-1234567890abcdef")
 				ctx.SetTestEnvOverride("MY_ANTHROPIC_API_KEY", "ant-1234567890abcdef")
@@ -624,20 +624,20 @@ func TestConfigurationService_GetAllAPIKeys(t *testing.T) {
 			},
 			expectKeys:      3,
 			expectSources:   []string{"os", "os", "os"},
-			expectProviders: []string{"openai", "anthropic", "openrouter"},
+			expectProviders: []string{"", "", ""}, // Provider detection moved to command layer
 		},
 		{
-			name: "skip short API keys",
+			name: "skip short variables",
 			setup: func(_ *testing.T, ctx neurotypes.Context) {
 				ctx.SetTestEnvOverride("OPENAI_API_KEY", "short")                 // Too short, should be skipped
 				ctx.SetTestEnvOverride("VALID_OPENAI_KEY", "sk-1234567890abcdef") // Valid length
 			},
 			expectKeys:      1,
 			expectSources:   []string{"os"},
-			expectProviders: []string{"openai"},
+			expectProviders: []string{""}, // Provider detection moved to command layer
 		},
 		{
-			name: "skip empty API keys",
+			name: "skip empty variables",
 			setup: func(_ *testing.T, ctx neurotypes.Context) {
 				ctx.SetTestEnvOverride("OPENAI_API_KEY", "")                      // Empty, should be skipped
 				ctx.SetTestEnvOverride("ANTHROPIC_KEY", "   ")                    // Whitespace only, should be skipped
@@ -645,10 +645,10 @@ func TestConfigurationService_GetAllAPIKeys(t *testing.T) {
 			},
 			expectKeys:      1,
 			expectSources:   []string{"os"},
-			expectProviders: []string{"moonshot"},
+			expectProviders: []string{""}, // Provider detection moved to command layer
 		},
 		{
-			name: "case insensitive provider name matching",
+			name: "case insensitive variable collection",
 			setup: func(_ *testing.T, ctx neurotypes.Context) {
 				ctx.SetTestEnvOverride("UPPER_OPENAI_KEY", "sk-1234567890abcdef")
 				ctx.SetTestEnvOverride("lower_anthropic_key", "ant-1234567890abcdef")
@@ -656,17 +656,17 @@ func TestConfigurationService_GetAllAPIKeys(t *testing.T) {
 			},
 			expectKeys:      3,
 			expectSources:   []string{"os", "os", "os"},
-			expectProviders: []string{"openai", "anthropic", "openrouter"},
+			expectProviders: []string{"", "", ""}, // Provider detection moved to command layer
 		},
 		{
-			name: "no matching keys",
+			name: "collect all variables regardless of content",
 			setup: func(_ *testing.T, ctx neurotypes.Context) {
 				ctx.SetTestEnvOverride("RANDOM_KEY", "some-random-value-1234567890")
 				ctx.SetTestEnvOverride("ANOTHER_VAR", "another-value-1234567890")
 			},
-			expectKeys:      0,
-			expectSources:   []string{},
-			expectProviders: []string{},
+			expectKeys:      2, // Now collects all variables with sufficient length
+			expectSources:   []string{"os", "os"},
+			expectProviders: []string{"", ""}, // Provider detection moved to command layer
 		},
 	}
 
@@ -712,7 +712,7 @@ func TestConfigurationService_GetAllAPIKeys(t *testing.T) {
 }
 
 func TestConfigurationService_GetAllAPIKeys_MultipleProviderMatches(t *testing.T) {
-	// Test when a key name contains multiple provider names - should match first one found
+	// Test that configuration service collects variables regardless of provider names
 	ctx := context.NewTestContext()
 	ctx.ClearAllTestEnvOverrides()
 
@@ -733,8 +733,8 @@ func TestConfigurationService_GetAllAPIKeys_MultipleProviderMatches(t *testing.T
 		assert.Equal(t, "os", key.Source)
 		assert.Equal(t, "OPENAI_ANTHROPIC_COMBINED_KEY", key.OriginalName)
 		assert.Equal(t, "sk-1234567890abcdef", key.Value)
-		// Should match the first provider found (depends on slice order in providers)
-		assert.Contains(t, []string{"openai", "anthropic"}, key.Provider, "Should match one of the providers")
+		// Provider detection moved to command layer
+		assert.Equal(t, "", key.Provider, "Provider should be empty string")
 	}
 
 	ctx.ClearAllTestEnvOverrides()
