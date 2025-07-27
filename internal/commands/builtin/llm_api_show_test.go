@@ -72,8 +72,14 @@ func TestLLMAPIShowCommand_Execute_NoKeys(t *testing.T) {
 	ctx.SetTestEnvOverride("ANTHROPIC_API_KEY", "")
 	ctx.SetTestEnvOverride("MOONSHOT_API_KEY", "")
 	ctx.SetTestEnvOverride("OPENROUTER_API_KEY", "")
+	ctx.SetTestEnvOverride("GOOGLE_API_KEY", "")
+	ctx.SetTestEnvOverride("GEMINI_API_KEY", "")
 	ctx.SetTestEnvOverride("NEURO_OPENAI_API_KEY", "")
 	ctx.SetTestEnvOverride("NEURO_ANTHROPIC_API_KEY", "")
+	ctx.SetTestEnvOverride("NEURO_MOONSHOT_API_KEY", "")
+	ctx.SetTestEnvOverride("NEURO_OPENROUTER_API_KEY", "")
+	ctx.SetTestEnvOverride("NEURO_GOOGLE_API_KEY", "")
+	ctx.SetTestEnvOverride("NEURO_GEMINI_API_KEY", "")
 	defer ctx.ClearAllTestEnvOverrides()
 
 	// Register actual configuration service
