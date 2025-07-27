@@ -149,7 +149,7 @@ func WithSuppressedOutput(fn func() error) error {
 // Returns true only if the name contains API-related keywords (api, key, secret).
 // If true, also returns the detected provider name or "generic" if no provider is detected.
 // This implements the filtering criteria: variables must contain API keywords to be considered API-related.
-func IsAPIRelated(variableName string) (bool, string) {
+func IsAPIRelated(variableName string, providers []string) (bool, string) {
 	nameLower := strings.ToLower(variableName)
 
 	// API-related keywords (case-insensitive) - required for API detection
@@ -168,9 +168,14 @@ func IsAPIRelated(variableName string) (bool, string) {
 	}
 
 	// Provider names (case-insensitive) - optional for provider detection
-	providers := []string{"openai", "anthropic", "openrouter", "moonshot"}
 	for _, provider := range providers {
-		if strings.Contains(nameLower, provider) {
+		providerLower := strings.ToLower(provider)
+		if strings.Contains(nameLower, providerLower) {
+			return true, provider
+		}
+
+		// Special case: GOOGLE_API_KEY should be detected as "gemini" provider
+		if provider == "gemini" && strings.Contains(nameLower, "google") {
 			return true, provider
 		}
 	}

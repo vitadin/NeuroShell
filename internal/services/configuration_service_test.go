@@ -549,7 +549,7 @@ func TestConfigurationService_AllSupportedPrefixes(t *testing.T) {
 	ctx := context.NewTestContext()
 
 	// Test that all expected prefixes are supported
-	expectedPrefixes := []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_"}
+	expectedPrefixes := []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_", "GOOGLE_"}
 
 	// Set one environment variable for each prefix
 	testVars := map[string]string{
@@ -557,6 +557,7 @@ func TestConfigurationService_AllSupportedPrefixes(t *testing.T) {
 		"OPENAI_TEST":    "openai-value",
 		"ANTHROPIC_TEST": "anthropic-value",
 		"MOONSHOT_TEST":  "moonshot-value",
+		"GOOGLE_TEST":    "google-value",
 	}
 
 	// Set all test environment variables
@@ -578,8 +579,10 @@ func TestConfigurationService_AllSupportedPrefixes(t *testing.T) {
 	// Clean up
 	ctx.ClearAllTestEnvOverrides()
 
-	// Verify the expected prefixes list matches what's used internally
-	assert.ElementsMatch(t, expectedPrefixes, envPrefixes, "envPrefixes should match expected supported prefixes")
+	// Verify the expected prefixes list matches what's used internally through context
+	globalCtx := context.GetGlobalContext()
+	actualPrefixes := globalCtx.GetProviderEnvPrefixes()
+	assert.ElementsMatch(t, expectedPrefixes, actualPrefixes, "context provider prefixes should match expected supported prefixes")
 }
 
 func TestConfigurationService_MoonshotBaseURLExample(t *testing.T) {

@@ -7,8 +7,7 @@ import (
 	neuroshellcontext "neuroshell/internal/context"
 )
 
-// Environment variable prefixes that should be loaded from OS
-var envPrefixes = []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_"}
+// Note: Environment variable prefixes are now managed centrally in the context layer
 
 // APIKeySource represents an API key found from a specific source with provider attribution
 type APIKeySource struct {
@@ -65,7 +64,7 @@ func (c *ConfigurationService) Initialize() error {
 		return fmt.Errorf("failed to load local .env: %w", err)
 	}
 
-	if err := ctx.LoadEnvironmentVariables(envPrefixes); err != nil {
+	if err := ctx.LoadEnvironmentVariables(ctx.GetProviderEnvPrefixes()); err != nil {
 		return fmt.Errorf("failed to load environment variables: %w", err)
 	}
 
@@ -148,8 +147,12 @@ func (c *ConfigurationService) ValidateConfiguration() error {
 	ctx := neuroshellcontext.GetGlobalContext()
 	configMap := ctx.GetConfigMap()
 
-	// Check for common API key patterns
-	providers := []string{"OPENAI", "ANTHROPIC", "OPENROUTER", "MOONSHOT"}
+	// Check for common API key patterns using context's provider list
+	contextProviders := ctx.GetSupportedProviders()
+	providers := make([]string, len(contextProviders))
+	for i, provider := range contextProviders {
+		providers[i] = strings.ToUpper(provider)
+	}
 	hasAnyAPIKey := false
 
 	for _, provider := range providers {
@@ -263,4 +266,16 @@ func (c *ConfigurationService) GetAllAPIKeys() ([]APIKeySource, error) {
 	}
 
 	return keys, nil
+}
+
+// GetSupportedProviders returns the list of supported provider names from the context.
+// This provides a service-layer interface to the centralized provider registry.
+func (c *ConfigurationService) GetSupportedProviders() []string {
+	if !c.initialized {
+		// Return empty slice if not initialized
+		return []string{}
+	}
+
+	ctx := neuroshellcontext.GetGlobalContext()
+	return ctx.GetSupportedProviders()
 }

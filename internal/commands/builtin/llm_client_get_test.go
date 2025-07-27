@@ -29,7 +29,7 @@ func TestLLMClientGetCommand_Description(t *testing.T) {
 
 func TestLLMClientGetCommand_Usage(t *testing.T) {
 	cmd := &LLMClientGetCommand{}
-	assert.Equal(t, "\\llm-client-get[key=api_key, provider=openai|openrouter|moonshot|anthropic] or \\llm-client-get (uses env vars)", cmd.Usage())
+	assert.Equal(t, "\\llm-client-get[key=api_key, provider=openai|openrouter|moonshot|anthropic|gemini] or \\llm-client-get (uses env vars)", cmd.Usage())
 }
 
 func TestLLMClientGetCommand_HelpInfo(t *testing.T) {
@@ -46,7 +46,7 @@ func TestLLMClientGetCommand_HelpInfo(t *testing.T) {
 	// Check provider option
 	providerOption := help.Options[0]
 	assert.Equal(t, "provider", providerOption.Name)
-	assert.Equal(t, "LLM provider name (openai, openrouter, moonshot, anthropic)", providerOption.Description)
+	assert.Equal(t, "LLM provider name (openai, openrouter, moonshot, anthropic, gemini)", providerOption.Description)
 	assert.False(t, providerOption.Required)
 	assert.Equal(t, "openai", providerOption.Default)
 
@@ -57,13 +57,14 @@ func TestLLMClientGetCommand_HelpInfo(t *testing.T) {
 	assert.False(t, keyOption.Required)
 
 	// Check examples
-	assert.Len(t, help.Examples, 6)
+	assert.Len(t, help.Examples, 7)
 	assert.Contains(t, help.Examples[0].Command, "llm-client-get[provider=openai, key=sk-...]")
 	assert.Contains(t, help.Examples[1].Command, "llm-client-get[provider=openrouter, key=sk-or-...]")
 	assert.Contains(t, help.Examples[2].Command, "llm-client-get[provider=moonshot, key=sk-...]")
 	assert.Contains(t, help.Examples[3].Command, "llm-client-get[provider=anthropic, key=sk-ant-...]")
-	assert.Contains(t, help.Examples[4].Command, "llm-client-get[key=${OPENAI_API_KEY}]")
-	assert.Contains(t, help.Examples[5].Command, "llm-client-get")
+	assert.Contains(t, help.Examples[4].Command, "llm-client-get[provider=gemini, key=AIzaSy...]")
+	assert.Contains(t, help.Examples[5].Command, "llm-client-get[key=${OPENAI_API_KEY}]")
+	assert.Contains(t, help.Examples[6].Command, "llm-client-get")
 
 	// Check notes
 	assert.Greater(t, len(help.Notes), 0)
@@ -317,8 +318,8 @@ func TestLLMClientGetCommand_Execute_UnsupportedProvider(t *testing.T) {
 	err := cmd.Execute(args, "")
 
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to get client for provider unsupported-provider")
-	assert.Contains(t, err.Error(), "unsupported provider")
+	assert.Contains(t, err.Error(), "unsupported provider 'unsupported-provider'")
+	assert.Contains(t, err.Error(), "Supported providers:")
 }
 
 func TestLLMClientGetCommand_Execute_ClientCaching(t *testing.T) {
@@ -458,6 +459,9 @@ func setupLLMClientGetTestRegistry(t *testing.T) {
 
 	// Register required services
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().RegisterService(services.NewConfigurationService())
 	require.NoError(t, err)
 
 	err = services.GetGlobalRegistry().RegisterService(services.NewClientFactoryService())

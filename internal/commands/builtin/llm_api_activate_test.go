@@ -351,7 +351,7 @@ func TestLLMAPIActivateCommand_Execute_VariableServiceError(t *testing.T) {
 
 	err := cmd.Execute(args, "")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "variable service not available")
+	assert.Contains(t, err.Error(), "configuration service not available")
 }
 
 func TestLLMAPIActivateCommand_isValidKeyFormat(t *testing.T) {
@@ -499,6 +499,9 @@ func setupLLMAPIActivateTestRegistry(t *testing.T) neurotypes.Context {
 
 	// Register required services
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().RegisterService(services.NewConfigurationService())
 	require.NoError(t, err)
 
 	// Initialize services

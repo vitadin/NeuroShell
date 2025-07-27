@@ -76,7 +76,9 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 	case "gemini":
 		client = NewGeminiClient(apiKey)
 	default:
-		return nil, fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic, gemini", provider)
+		ctx := neuroshellcontext.GetGlobalContext()
+		supportedProviders := ctx.GetSupportedProviders()
+		return nil, fmt.Errorf("unsupported provider '%s'. Supported providers: %s", provider, strings.Join(supportedProviders, ", "))
 	}
 
 	// Store client in context cache
@@ -142,7 +144,9 @@ func (f *ClientFactoryService) GetClientWithID(provider, apiKey string) (neuroty
 	case "gemini":
 		client = NewGeminiClient(apiKey)
 	default:
-		return nil, "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic, gemini", provider)
+		ctx := neuroshellcontext.GetGlobalContext()
+		supportedProviders := ctx.GetSupportedProviders()
+		return nil, "", fmt.Errorf("unsupported provider '%s'. Supported providers: %s", provider, strings.Join(supportedProviders, ", "))
 	}
 
 	// Store client in context cache
@@ -213,7 +217,9 @@ func (f *ClientFactoryService) DetermineAPIKeyForProvider(provider string, ctx n
 		envVarName = "GOOGLE_API_KEY"
 		apiKey = ctx.GetEnv(envVarName)
 	default:
-		return "", fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic, gemini", provider)
+		ctx := neuroshellcontext.GetGlobalContext()
+		supportedProviders := ctx.GetSupportedProviders()
+		return "", fmt.Errorf("unsupported provider '%s'. Supported providers: %s", provider, strings.Join(supportedProviders, ", "))
 	}
 
 	if apiKey == "" {

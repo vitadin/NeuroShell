@@ -43,7 +43,7 @@ func (c *LLMAPIActivateCommand) HelpInfo() neurotypes.HelpInfo {
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "provider",
-				Description: "Provider name (openai, anthropic, openrouter, moonshot)",
+				Description: "Provider name (openai, anthropic, openrouter, moonshot, gemini)",
 				Required:    true,
 				Type:        "string",
 			},
@@ -66,6 +66,10 @@ func (c *LLMAPIActivateCommand) HelpInfo() neurotypes.HelpInfo {
 			{
 				Command:     "\\llm-api-activate[provider=moonshot, key=local.MOONSHOT_KEY]",
 				Description: "Activate a Moonshot key from local .env file",
+			},
+			{
+				Command:     "\\llm-api-activate[provider=gemini, key=os.GOOGLE_API_KEY]",
+				Description: "Activate a Gemini key from OS environment variables",
 			},
 		},
 		StoredVariables: []neurotypes.HelpStoredVariable{
@@ -97,8 +101,13 @@ func (c *LLMAPIActivateCommand) Execute(args map[string]string, _ string) error 
 		return fmt.Errorf("key is required. Usage: %s", c.Usage())
 	}
 
-	// Validate provider
-	validProviders := []string{"openai", "anthropic", "openrouter", "moonshot"}
+	// Get configuration service to validate provider
+	configService, err := services.GetGlobalConfigurationService()
+	if err != nil {
+		return fmt.Errorf("configuration service not available: %w", err)
+	}
+
+	validProviders := configService.GetSupportedProviders()
 	providerValid := false
 	for _, validProvider := range validProviders {
 		if provider == validProvider {

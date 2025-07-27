@@ -75,7 +75,7 @@ func TestClientFactoryService_GetClientForProvider(t *testing.T) {
 			provider:    "unsupported",
 			apiKey:      "test-key",
 			expectError: true,
-			errorMsg:    "unsupported provider 'unsupported'. Supported providers: openai, openrouter, moonshot, anthropic",
+			errorMsg:    "unsupported provider 'unsupported'. Supported providers: openai, anthropic, openrouter, moonshot, gemini",
 		},
 		{
 			name:        "successful anthropic client creation",
@@ -245,7 +245,7 @@ func TestClientFactoryService_DetermineAPIKeyForProvider(t *testing.T) {
 			name:        "unsupported provider",
 			provider:    "unsupported",
 			expectError: true,
-			errorMsg:    "unsupported provider 'unsupported'. Supported providers: openai, openrouter, moonshot, anthropic",
+			errorMsg:    "unsupported provider 'unsupported'. Supported providers: openai, anthropic, openrouter, moonshot, gemini",
 		},
 	}
 
@@ -357,7 +357,7 @@ func TestClientFactoryService_ErrorMessages(t *testing.T) {
 			name:     "unsupported provider",
 			provider: "gpt",
 			apiKey:   "test-key",
-			expected: "unsupported provider 'gpt'. Supported providers: openai, openrouter, moonshot, anthropic",
+			expected: "unsupported provider 'gpt'. Supported providers: openai, anthropic, openrouter, moonshot, gemini",
 		},
 	}
 
@@ -405,7 +405,7 @@ func TestClientFactoryService_DetermineAPIKeyForProvider_ErrorMessages(t *testin
 		{
 			name:     "unsupported provider",
 			provider: "claude",
-			expected: "unsupported provider 'claude'. Supported providers: openai, openrouter, moonshot, anthropic",
+			expected: "unsupported provider 'claude'. Supported providers: openai, anthropic, openrouter, moonshot, gemini",
 		},
 	}
 

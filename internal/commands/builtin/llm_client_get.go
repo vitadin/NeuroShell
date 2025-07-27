@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"strings"
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
@@ -29,7 +30,7 @@ func (c *LLMClientGetCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the llm-client-get command.
 func (c *LLMClientGetCommand) Usage() string {
-	return "\\llm-client-get[key=api_key, provider=openai|openrouter|moonshot|anthropic] or \\llm-client-get (uses env vars)"
+	return "\\llm-client-get[key=api_key, provider=openai|openrouter|moonshot|anthropic|gemini] or \\llm-client-get (uses env vars)"
 }
 
 // HelpInfo returns structured help information for the llm-client-get command.
@@ -42,7 +43,7 @@ func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "provider",
-				Description: "LLM provider name (openai, openrouter, moonshot, anthropic)",
+				Description: "LLM provider name (openai, openrouter, moonshot, anthropic, gemini)",
 				Required:    false,
 				Type:        "string",
 				Default:     "openai",
@@ -72,6 +73,10 @@ func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Get Anthropic client with explicit API key",
 			},
 			{
+				Command:     "\\llm-client-get[provider=gemini, key=AIzaSy...]",
+				Description: "Get Gemini client with explicit API key",
+			},
+			{
 				Command:     "\\llm-client-get[key=${OPENAI_API_KEY}]",
 				Description: "Get OpenAI client using variable interpolation",
 			},
@@ -88,6 +93,7 @@ func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
 			"  - OPENROUTER_API_KEY for OpenRouter provider",
 			"  - MOONSHOT_API_KEY for Moonshot provider",
 			"  - ANTHROPIC_API_KEY for Anthropic provider",
+			"  - GOOGLE_API_KEY for Gemini provider",
 			"OpenRouter configuration is automatically set for NeuroShell",
 			"Client configuration status stored in ${#client_configured}",
 			"Provider name stored in ${#client_provider}",
@@ -111,6 +117,26 @@ func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
+	// Get configuration service for provider validation
+	configService, err := services.GetGlobalConfigurationService()
+	if err != nil {
+		return fmt.Errorf("configuration service not available: %w", err)
+	}
+
+	// Validate provider
+	supportedProviders := configService.GetSupportedProviders()
+	isValidProvider := false
+	for _, supportedProvider := range supportedProviders {
+		if provider == supportedProvider {
+			isValidProvider = true
+			break
+		}
+	}
+
+	if !isValidProvider {
+		return fmt.Errorf("unsupported provider '%s'. Supported providers: %s", provider, strings.Join(supportedProviders, ", "))
+	}
+
 	// Get API key - first from args, then from environment variable
 	apiKey := args["key"]
 	if apiKey == "" {
@@ -125,8 +151,11 @@ func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
 			apiKey = variableService.GetEnv("MOONSHOT_API_KEY")
 		case "anthropic":
 			apiKey = variableService.GetEnv("ANTHROPIC_API_KEY")
+		case "gemini":
+			apiKey = variableService.GetEnv("GOOGLE_API_KEY")
 		default:
-			return fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic", provider)
+			// This should never happen due to provider validation above
+			return fmt.Errorf("unsupported provider '%s' in switch statement", provider)
 		}
 
 		// If still no API key found, return error
@@ -141,6 +170,8 @@ func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
 				envVarName = "MOONSHOT_API_KEY"
 			case "anthropic":
 				envVarName = "ANTHROPIC_API_KEY"
+			case "gemini":
+				envVarName = "GOOGLE_API_KEY"
 			default:
 				envVarName = "API_KEY"
 			}
