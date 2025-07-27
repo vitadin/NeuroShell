@@ -107,10 +107,13 @@ func (c *LLMAPIShowCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("failed to get configuration variables: %w", err)
 	}
 
+	// Get supported providers from configuration service
+	supportedProviders := configService.GetSupportedProviders()
+
 	// Filter for API-related variables using smart keyword detection
 	var apiKeys []services.APIKeySource
 	for _, key := range allKeys {
-		isAPI, detectedProvider := stringprocessing.IsAPIRelated(key.OriginalName)
+		isAPI, detectedProvider := stringprocessing.IsAPIRelated(key.OriginalName, supportedProviders)
 		if isAPI {
 			// Set the detected provider
 			key.Provider = detectedProvider
@@ -267,7 +270,13 @@ func (c *LLMAPIShowCommand) getKeyStatus(provider, varName string, variableServi
 
 // getActiveKeysInfo returns a list of active key metadata variable names
 func (c *LLMAPIShowCommand) getActiveKeysInfo(variableService *services.VariableService) []string {
-	providers := []string{"openai", "anthropic", "openrouter", "moonshot", "gemini"}
+	// Get configuration service to access provider list
+	configService, err := services.GetGlobalConfigurationService()
+	if err != nil {
+		return []string{} // Return empty slice if service unavailable
+	}
+
+	providers := configService.GetSupportedProviders()
 	var activeKeys []string
 
 	for _, provider := range providers {

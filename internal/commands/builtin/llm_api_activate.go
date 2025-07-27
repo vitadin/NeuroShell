@@ -101,8 +101,13 @@ func (c *LLMAPIActivateCommand) Execute(args map[string]string, _ string) error 
 		return fmt.Errorf("key is required. Usage: %s", c.Usage())
 	}
 
-	// Validate provider
-	validProviders := []string{"openai", "anthropic", "openrouter", "moonshot", "gemini"}
+	// Get configuration service to validate provider
+	configService, err := services.GetGlobalConfigurationService()
+	if err != nil {
+		return fmt.Errorf("configuration service not available: %w", err)
+	}
+
+	validProviders := configService.GetSupportedProviders()
 	providerValid := false
 	for _, validProvider := range validProviders {
 		if provider == validProvider {

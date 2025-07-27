@@ -8,4 +8,4 @@ No API keys found in any source.
 No API keys found for provider 'openai'.
 No API keys found for provider 'anthropic'.
 ═══ Testing Invalid Provider ═══
-_error = invalid provider 'invalid'. Valid providers: openai, anthropic, openrouter, moonshot
+_error = invalid provider 'invalid'. Valid providers: openai, anthropic, openrouter, moonshot, gemini

@@ -81,6 +81,11 @@ type Context interface {
 	LoadEnvironmentVariablesWithPrefix(sourcePrefix string) error
 	LoadConfigDotEnvWithPrefix(sourcePrefix string) error
 	LoadLocalDotEnvWithPrefix(sourcePrefix string) error
+
+	// Provider registry methods - central source of truth for supported providers
+	GetSupportedProviders() []string
+	GetProviderEnvPrefixes() []string
+	IsValidProvider(provider string) bool
 }
 
 // Service defines the interface for NeuroShell services that provide specific functionality.

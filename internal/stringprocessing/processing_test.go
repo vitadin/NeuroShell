@@ -169,6 +169,9 @@ func TestProcessTextForMarkdown(t *testing.T) {
 }
 
 func TestIsAPIRelated(t *testing.T) {
+	// Define the test provider list that matches the standard providers
+	providers := []string{"openai", "anthropic", "openrouter", "moonshot", "gemini"}
+
 	tests := []struct {
 		name             string
 		variableName     string
@@ -390,7 +393,7 @@ func TestIsAPIRelated(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			isAPI, provider := IsAPIRelated(tt.variableName)
+			isAPI, provider := IsAPIRelated(tt.variableName, providers)
 			assert.Equal(t, tt.expectedIsAPI, isAPI, "IsAPIRelated result should match expected")
 			assert.Equal(t, tt.expectedProvider, provider, "detected provider should match expected")
 		})

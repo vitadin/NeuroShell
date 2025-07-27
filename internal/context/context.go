@@ -69,7 +69,11 @@ type NeuroContext struct {
 	// Model storage (bidirectional mapping)
 	models        map[string]*neurotypes.ModelConfig // Model storage by ID
 	modelNameToID map[string]string                  // Name to ID mapping
-	modelIDToName map[string]string                  // ID to name mapping
+
+	// Provider registry - central source of truth for supported providers
+	supportedProviders  []string          // Supported LLM provider names (lowercase)
+	providerEnvPrefixes []string          // Environment variable prefixes for provider detection
+	modelIDToName       map[string]string // ID to name mapping
 
 	// LLM client storage
 	llmClients map[string]neurotypes.LLMClient // LLM client storage by client ID (provider:hash format)
@@ -120,6 +124,10 @@ func New() *NeuroContext {
 
 		// Initialize LLM client storage
 		llmClients: make(map[string]neurotypes.LLMClient),
+
+		// Initialize provider registry
+		supportedProviders:  []string{"openai", "anthropic", "openrouter", "moonshot", "gemini"},
+		providerEnvPrefixes: []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_", "GOOGLE_"},
 
 		// Initialize command registry information
 		registeredCommands: make(map[string]bool),
@@ -1258,4 +1266,36 @@ func (ctx *NeuroContext) loadDotEnvFileWithPrefix(envPath, sourcePrefix string) 
 	}
 
 	return nil
+}
+
+// Provider Registry Methods
+
+// GetSupportedProviders returns the list of supported LLM provider names.
+// This is the central source of truth for all provider-related functionality.
+func (ctx *NeuroContext) GetSupportedProviders() []string {
+	// Return a copy to prevent external modification
+	result := make([]string, len(ctx.supportedProviders))
+	copy(result, ctx.supportedProviders)
+	return result
+}
+
+// GetProviderEnvPrefixes returns the list of environment variable prefixes
+// used for loading provider-specific configuration from the environment.
+func (ctx *NeuroContext) GetProviderEnvPrefixes() []string {
+	// Return a copy to prevent external modification
+	result := make([]string, len(ctx.providerEnvPrefixes))
+	copy(result, ctx.providerEnvPrefixes)
+	return result
+}
+
+// IsValidProvider checks if a given provider name is supported.
+// Provider comparison is case-insensitive.
+func (ctx *NeuroContext) IsValidProvider(provider string) bool {
+	providerLower := strings.ToLower(provider)
+	for _, supportedProvider := range ctx.supportedProviders {
+		if providerLower == supportedProvider {
+			return true
+		}
+	}
+	return false
 }

@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"strings"
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
@@ -116,6 +117,26 @@ func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
+	// Get configuration service for provider validation
+	configService, err := services.GetGlobalConfigurationService()
+	if err != nil {
+		return fmt.Errorf("configuration service not available: %w", err)
+	}
+
+	// Validate provider
+	supportedProviders := configService.GetSupportedProviders()
+	isValidProvider := false
+	for _, supportedProvider := range supportedProviders {
+		if provider == supportedProvider {
+			isValidProvider = true
+			break
+		}
+	}
+
+	if !isValidProvider {
+		return fmt.Errorf("unsupported provider '%s'. Supported providers: %s", provider, strings.Join(supportedProviders, ", "))
+	}
+
 	// Get API key - first from args, then from environment variable
 	apiKey := args["key"]
 	if apiKey == "" {
@@ -133,7 +154,8 @@ func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
 		case "gemini":
 			apiKey = variableService.GetEnv("GOOGLE_API_KEY")
 		default:
-			return fmt.Errorf("unsupported provider '%s'. Supported providers: openai, openrouter, moonshot, anthropic, gemini", provider)
+			// This should never happen due to provider validation above
+			return fmt.Errorf("unsupported provider '%s' in switch statement", provider)
 		}
 
 		// If still no API key found, return error

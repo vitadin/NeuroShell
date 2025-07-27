@@ -579,8 +579,10 @@ func TestConfigurationService_AllSupportedPrefixes(t *testing.T) {
 	// Clean up
 	ctx.ClearAllTestEnvOverrides()
 
-	// Verify the expected prefixes list matches what's used internally
-	assert.ElementsMatch(t, expectedPrefixes, envPrefixes, "envPrefixes should match expected supported prefixes")
+	// Verify the expected prefixes list matches what's used internally through context
+	globalCtx := context.GetGlobalContext()
+	actualPrefixes := globalCtx.GetProviderEnvPrefixes()
+	assert.ElementsMatch(t, expectedPrefixes, actualPrefixes, "context provider prefixes should match expected supported prefixes")
 }
 
 func TestConfigurationService_MoonshotBaseURLExample(t *testing.T) {

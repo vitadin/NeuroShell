@@ -417,6 +417,8 @@ func setupLLMAPIShowTestRegistry(t *testing.T) neurotypes.Context {
 }
 
 func TestLLMAPIShowCommand_isAPIRelated(t *testing.T) {
+	// Define the test provider list that matches the standard providers
+	providers := []string{"openai", "anthropic", "openrouter", "moonshot", "gemini"}
 
 	tests := []struct {
 		name             string
@@ -565,7 +567,7 @@ func TestLLMAPIShowCommand_isAPIRelated(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			isAPI, provider := stringprocessing.IsAPIRelated(tt.variableName)
+			isAPI, provider := stringprocessing.IsAPIRelated(tt.variableName, providers)
 			assert.Equal(t, tt.expectedIsAPI, isAPI, "isAPIRelated result should match expected")
 			assert.Equal(t, tt.expectedProvider, provider, "detected provider should match expected")
 		})

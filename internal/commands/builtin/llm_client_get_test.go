@@ -318,8 +318,8 @@ func TestLLMClientGetCommand_Execute_UnsupportedProvider(t *testing.T) {
 	err := cmd.Execute(args, "")
 
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to get client for provider unsupported-provider")
-	assert.Contains(t, err.Error(), "unsupported provider")
+	assert.Contains(t, err.Error(), "unsupported provider 'unsupported-provider'")
+	assert.Contains(t, err.Error(), "Supported providers:")
 }
 
 func TestLLMClientGetCommand_Execute_ClientCaching(t *testing.T) {
@@ -459,6 +459,9 @@ func setupLLMClientGetTestRegistry(t *testing.T) {
 
 	// Register required services
 	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().RegisterService(services.NewConfigurationService())
 	require.NoError(t, err)
 
 	err = services.GetGlobalRegistry().RegisterService(services.NewClientFactoryService())
