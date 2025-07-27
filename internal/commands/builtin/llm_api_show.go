@@ -32,7 +32,7 @@ func (c *LLMAPIShowCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the llm-api-show command.
 func (c *LLMAPIShowCommand) Usage() string {
-	return "\\llm-api-show[provider=openai|anthropic|all]"
+	return "\\llm-api-show[provider=openai|anthropic|openrouter|moonshot|gemini|all]"
 }
 
 // HelpInfo returns structured help information for the llm-api-show command.
@@ -45,7 +45,7 @@ func (c *LLMAPIShowCommand) HelpInfo() neurotypes.HelpInfo {
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "provider",
-				Description: "Filter by provider (openai, anthropic, openrouter, moonshot, all)",
+				Description: "Filter by provider (openai, anthropic, openrouter, moonshot, gemini, all)",
 				Required:    false,
 				Type:        "string",
 				Default:     "all",
@@ -64,11 +64,15 @@ func (c *LLMAPIShowCommand) HelpInfo() neurotypes.HelpInfo {
 				Command:     "\\llm-api-show[provider=anthropic]",
 				Description: "Show only Anthropic-related API variables",
 			},
+			{
+				Command:     "\\llm-api-show[provider=gemini]",
+				Description: "Show only Gemini-related API variables",
+			},
 		},
 		Notes: []string{
 			"Variables are collected from OS environment variables, config .env, and local .env files",
 			"Only API-related variables are shown based on intelligent filtering:",
-			"  • Variables containing provider names: openai, anthropic, openrouter, moonshot",
+			"  • Variables containing provider names: openai, anthropic, openrouter, moonshot, gemini, google",
 			"  • Variables containing API keywords: api, key, secret (case-insensitive)",
 			"Keys are stored as source-prefixed variables (e.g., os.OPENAI_API_KEY)",
 			"Active keys are marked with ACTIVE status when set via \\llm-api-activate",
@@ -263,7 +267,7 @@ func (c *LLMAPIShowCommand) getKeyStatus(provider, varName string, variableServi
 
 // getActiveKeysInfo returns a list of active key metadata variable names
 func (c *LLMAPIShowCommand) getActiveKeysInfo(variableService *services.VariableService) []string {
-	providers := []string{"openai", "anthropic", "openrouter", "moonshot"}
+	providers := []string{"openai", "anthropic", "openrouter", "moonshot", "gemini"}
 	var activeKeys []string
 
 	for _, provider := range providers {

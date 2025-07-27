@@ -168,7 +168,7 @@ func IsAPIRelated(variableName string) (bool, string) {
 	}
 
 	// Provider names (case-insensitive) - optional for provider detection
-	providers := []string{"openai", "anthropic", "openrouter", "moonshot"}
+	providers := []string{"openai", "anthropic", "openrouter", "moonshot", "gemini", "google"}
 	for _, provider := range providers {
 		if strings.Contains(nameLower, provider) {
 			return true, provider

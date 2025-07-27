@@ -8,7 +8,7 @@ import (
 )
 
 // Environment variable prefixes that should be loaded from OS
-var envPrefixes = []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_"}
+var envPrefixes = []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_", "GOOGLE_"}
 
 // APIKeySource represents an API key found from a specific source with provider attribution
 type APIKeySource struct {
@@ -149,7 +149,7 @@ func (c *ConfigurationService) ValidateConfiguration() error {
 	configMap := ctx.GetConfigMap()
 
 	// Check for common API key patterns
-	providers := []string{"OPENAI", "ANTHROPIC", "OPENROUTER", "MOONSHOT"}
+	providers := []string{"OPENAI", "ANTHROPIC", "OPENROUTER", "MOONSHOT", "GOOGLE"}
 	hasAnyAPIKey := false
 
 	for _, provider := range providers {
