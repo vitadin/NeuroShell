@@ -144,3 +144,37 @@ func WithSuppressedOutput(fn func() error) error {
 	// Return the function's error (not redirection errors)
 	return fnErr
 }
+
+// IsAPIRelated checks if a variable name is API-related based on case-insensitive keyword matching.
+// Returns true only if the name contains API-related keywords (api, key, secret).
+// If true, also returns the detected provider name or "generic" if no provider is detected.
+// This implements the filtering criteria: variables must contain API keywords to be considered API-related.
+func IsAPIRelated(variableName string) (bool, string) {
+	nameLower := strings.ToLower(variableName)
+
+	// API-related keywords (case-insensitive) - required for API detection
+	apiKeywords := []string{"api", "key", "secret"}
+	hasAPIKeyword := false
+	for _, keyword := range apiKeywords {
+		if strings.Contains(nameLower, keyword) {
+			hasAPIKeyword = true
+			break
+		}
+	}
+
+	// If no API keywords found, not API-related regardless of provider names
+	if !hasAPIKeyword {
+		return false, ""
+	}
+
+	// Provider names (case-insensitive) - optional for provider detection
+	providers := []string{"openai", "anthropic", "openrouter", "moonshot"}
+	for _, provider := range providers {
+		if strings.Contains(nameLower, provider) {
+			return true, provider
+		}
+	}
+
+	// Has API keywords but no specific provider detected
+	return true, "generic"
+}

@@ -7,6 +7,7 @@ import (
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
+	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -26,7 +27,7 @@ func (c *LLMAPIShowCommand) ParseMode() neurotypes.ParseMode {
 
 // Description returns a brief description of what the llm-api-show command does.
 func (c *LLMAPIShowCommand) Description() string {
-	return "Show collected API keys from multiple sources with masking"
+	return "Show API-related variables from multiple sources with intelligent filtering and masking"
 }
 
 // Usage returns the syntax and usage examples for the llm-api-show command.
@@ -53,19 +54,22 @@ func (c *LLMAPIShowCommand) HelpInfo() neurotypes.HelpInfo {
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\llm-api-show",
-				Description: "Show all collected API keys from all sources",
+				Description: "Show all API-related variables from all sources and providers",
 			},
 			{
 				Command:     "\\llm-api-show[provider=openai]",
-				Description: "Show only OpenAI API keys",
+				Description: "Show only OpenAI-related API variables",
 			},
 			{
 				Command:     "\\llm-api-show[provider=anthropic]",
-				Description: "Show only Anthropic API keys",
+				Description: "Show only Anthropic-related API variables",
 			},
 		},
 		Notes: []string{
-			"API keys are collected from OS environment variables, config .env, and local .env files",
+			"Variables are collected from OS environment variables, config .env, and local .env files",
+			"Only API-related variables are shown based on intelligent filtering:",
+			"  • Variables containing provider names: openai, anthropic, openrouter, moonshot",
+			"  • Variables containing API keywords: api, key, secret (case-insensitive)",
 			"Keys are stored as source-prefixed variables (e.g., os.OPENAI_API_KEY)",
 			"Active keys are marked with ACTIVE status when set via \\llm-api-activate",
 			"API keys are masked showing only first 3 and last 3 characters for security",
@@ -93,15 +97,26 @@ func (c *LLMAPIShowCommand) Execute(args map[string]string, _ string) error {
 		provider = "all"
 	}
 
-	// Get all API keys from configuration service
+	// Get all configuration variables from configuration service
 	allKeys, err := configService.GetAllAPIKeys()
 	if err != nil {
-		return fmt.Errorf("failed to get API keys: %w", err)
+		return fmt.Errorf("failed to get configuration variables: %w", err)
 	}
 
-	// Filter keys by provider if specified
-	var filteredKeys []services.APIKeySource
+	// Filter for API-related variables using smart keyword detection
+	var apiKeys []services.APIKeySource
 	for _, key := range allKeys {
+		isAPI, detectedProvider := stringprocessing.IsAPIRelated(key.OriginalName)
+		if isAPI {
+			// Set the detected provider
+			key.Provider = detectedProvider
+			apiKeys = append(apiKeys, key)
+		}
+	}
+
+	// Filter by provider if specified
+	var filteredKeys []services.APIKeySource
+	for _, key := range apiKeys {
 		if provider == "all" || key.Provider == provider {
 			filteredKeys = append(filteredKeys, key)
 		}
