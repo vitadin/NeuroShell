@@ -1,0 +1,124 @@
+Setting _echo_command = true
+%%> "\\try \\if[condition=true] \\echo \"If inside try - success\""
+%%> "\\if[condition=true] \\echo \"If inside try - success\""
+%%> "\\echo \"If inside try - success\""
+"If inside try - success"
+%%> "\\get[_status]"
+_status = 0
+%%> "\\get[_error]"
+_error = 
+%%> "\\try \\if[condition=false] \\echo \"This should not appear\""
+%%> "\\if[condition=false] \\echo \"This should not appear\""
+%%> "\\get[_status]"
+_status = 0
+%%> "\\get[_error]"
+_error = 
+%%> "\\try \\if \\echo \"This should fail\""
+%%> "\\if \\echo \"This should fail\""
+%%> "\\get[_status]"
+_status = 1
+%%> "\\get[_error]"
+_error = condition parameter is required
+%%> "\\if[condition=true] \\try \\echo \"Try inside if - success\""
+%%> "\\try \\echo \"Try inside if - success\""
+%%> "\\echo \"Try inside if - success\""
+"Try inside if - success"
+%%> "\\get[_status]"
+_status = 0
+%%> "\\get[_output]"
+_output = "Try inside if - success"
+%%> "\\if[condition=true] \\try \\bash ls /nonexistent_directory_test"
+%%> "\\try \\bash ls /nonexistent_directory_test"
+%%> "\\bash ls /nonexistent_directory_test"
+Error: ls: /nonexistent_directory_test: No such file or directory
+Exit status: 1
+%%> "\\get[_status]"
+_status = 1
+%%> "\\get[_error]"
+_error = ls: /nonexistent_directory_test: No such file or directory
+%%> "\\if[condition=false] \\try \\echo \"This should not execute\""
+%%> "\\get[_status]"
+_status = 1
+%%> "\\try \\bash echo \"success\""
+%%> "\\bash echo \"success\""
+success
+%%> "\\if[condition=${_status}] \\echo \"Command failed (status != 0)\""
+%%> "\\if[condition=${_output}] \\echo \"Command produced output: ${_output}\""
+%%> "\\echo \"Command produced output: success\""
+"Command produced output: success"
+%%> "\\try \\bash ls /does_not_exist"
+%%> "\\bash ls /does_not_exist"
+Error: ls: /does_not_exist: No such file or directory
+Exit status: 1
+%%> "\\if[condition=${_status}] \\echo \"Previous command failed with status: ${_status}\""
+%%> "\\echo \"Previous command failed with status: 1\""
+"Previous command failed with status: 1"
+%%> "\\if[condition=${_error}] \\echo \"Error message exists: ${_error}\""
+%%> "\\echo \"Error message exists: ls: /does_not_exist: No such file or directory\""
+"Error message exists: ls: /does_not_exist: No such file or directory"
+%%> "\\try \\set[test_var=\"success\"]"
+%%> "\\set[test_var=\"success\"]"
+Setting test_var = success
+%%> "\\if[condition=${_status}] \\echo \"Set command failed unexpectedly\""
+%%> "\\get[test_var]"
+test_var = success
+%%> "\\try \\bash echo \"test output\""
+%%> "\\bash echo \"test output\""
+test output
+%%> "\\if[condition=${_output}] \\set[output_captured=\"true\"]"
+%%> "\\set[output_captured=\"true\"]"
+Setting output_captured = true
+%%> "\\get[output_captured]"
+output_captured = true
+%%> "\\if[condition=true] \\try \\set[nested_var=\"nested_success\"]"
+%%> "\\try \\set[nested_var=\"nested_success\"]"
+%%> "\\set[nested_var=\"nested_success\"]"
+Setting nested_var = nested_success
+%%> "\\get[nested_var]"
+nested_var = nested_success
+%%> "\\get[_status]"
+_status = 0
+%%> "\\if[condition=true] \\set[first_result=\"true\"]"
+%%> "\\set[first_result=\"true\"]"
+Setting first_result = true
+%%> "\\if[condition=${first_result}] \\echo \"Chained if conditions work\""
+%%> "\\echo \"Chained if conditions work\""
+"Chained if conditions work"
+%%> "\\set[should_fail=\"false\"]"
+Setting should_fail = false
+%%> "\\if[condition=${should_fail}] \\try \\bash this_command_does_not_exist"
+%%> "\\get[_status]"
+_status = 0
+%%> "\\try \\bash echo \"conditional test\""
+%%> "\\bash echo \"conditional test\""
+conditional test
+%%> "\\set[has_output=\"true\"]"
+Setting has_output = true
+%%> "\\if[condition=${has_output}] \\echo \"Output detected: ${_output}\""
+%%> "\\echo \"Output detected: conditional test\""
+"Output detected: conditional test"
+%%> "\\if[condition=${_status}] \\echo \"Command had error status\""
+%%> "\\if[condition=true] \\set[dummy=\"test\"]"
+%%> "\\set[dummy=\"test\"]"
+Setting dummy = test
+%%> "\\get[#if_result]"
+#if_result = true
+%%> "\\try \\bash echo \"test\""
+%%> "\\bash echo \"test\""
+test
+%%> "\\get[#if_result]"
+#if_result = true
+%%> "\\try \\bash false"
+%%> "\\bash false"
+Exit status: 1
+%%> "\\if[condition=${_status}] \\set[error_detected=\"true\"]"
+%%> "\\set[error_detected=\"true\"]"
+Setting error_detected = true
+%%> "\\get[error_detected]"
+error_detected = true
+%%> "\\try \\bash true"
+%%> "\\bash true"
+%%> "\\if[condition=${_status}] \\echo \"Unexpected error\""
+%%> "\\if[condition=${_output}] \\echo \"Unexpected output\""
+%%> "\\echo \"Success path completed\""
+"Success path completed"

@@ -1,0 +1,14 @@
+%% Test check command variable outputs
+\set[_echo_command="true"]
+%% This test verifies all result variables set by the check command
+\check[quiet=true]
+\echo Status: ${_check_status}
+\echo Output: ${_check_output}
+\echo Failed services: ${_check_failed_services}
+\echo Total services: ${_check_total_services}
+\echo Failed count: ${_check_failed_count}
+
+%% Test with a specific service
+\check[service=bash, quiet=true]
+\echo Bash check status: ${_check_status}
+\echo Bash total services: ${_check_total_services}

@@ -1,0 +1,5 @@
+%% Test check command with specific service
+\set[_echo_command="true"]
+%% This test verifies that \check can check individual services
+\check[service=variable]
+\check[service=help]

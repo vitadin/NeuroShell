@@ -1,0 +1,46 @@
+%% Comprehensive test for _style variable with interpolation
+\set[_echo_command="true"]
+%% This test verifies _style works with various scenarios and interpolation
+
+%% Test default initialization (should be empty)
+\get[_style]
+
+%% Test basic setting
+\set[_style="dark"]
+\get[_style]
+
+%% Test interpolation with regular variables
+\set[theme="light"]
+\set[mode="compact"]
+\set[_style="${theme}-${mode}"]
+\get[_style]
+
+%% Test using _style in other variables
+\set[current_theme="Theme: ${_style}"]
+\get[current_theme]
+
+%% Test complex interpolation chain
+\set[base="material"]
+\set[variant="design"]
+\set[version="v3"]
+\set[_style="${base}-${variant}-${version}"]
+\get[_style]
+
+%% Test space syntax with interpolation
+\set _style ${base}-minimal
+\get[_style]
+
+%% Test bracket syntax with complex value
+\set[_style="${theme}-${mode}-${version}"]
+\get[_style]
+
+%% Test both syntaxes work together
+\set _style modern
+\set[_style="${_style}-enhanced"]
+\get[_style]
+
+%% Final verification - show all variables
+\get[theme]
+\get[mode]
+\get[base]
+\get[_style]

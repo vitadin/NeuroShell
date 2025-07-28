@@ -1,0 +1,74 @@
+Setting _echo_command = true
+%%> "\\cat[path=test/fixtures/simple.txt, silent=invalid_bool]"
+This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\get[_output]"
+_output = This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\cat[path=test/fixtures/simple.txt, lines=invalid_number]"
+This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\get[_output]"
+_output = This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\cat[path=test/fixtures/simple.txt, start=invalid_number]"
+This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\get[_output]"
+_output = This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\cat[path=test/fixtures/simple.txt, lines=-5]"
+This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\get[_output]"
+_output = This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\cat[path=test/fixtures/simple.txt, start=9999, to=large_start]"
+%%> "\\get[large_start]"
+large_start = 
+%%> "\\cat[path=test/fixtures/simple.txt, silent=invalid, lines=abc, start=xyz, to=combined_invalid]"
+This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\get[combined_invalid]"
+combined_invalid = This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\cat[path=test/fixtures/simple.txt, lines=0, start=0, to=zero_values]"
+This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\get[zero_values]"
+zero_values = This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\cat[path=test/fixtures/simple.txt, lines=hello, start=world, to=string_values]"
+This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\get[string_values]"
+string_values = This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.

@@ -1,0 +1,12 @@
+%% Test session list with combined sort and filter options
+\set[_echo_command="true"]
+%% Create sessions with different names and test combined options
+
+%% Create sessions in mixed order
+\session-new zebra_work
+\session-new alpha_project
+\session-new beta_task
+
+%% Use combined options: filter active and sort by name
+%% Should show only the active session (beta_task) even with sort option
+\session-list[sort=name,filter=active]

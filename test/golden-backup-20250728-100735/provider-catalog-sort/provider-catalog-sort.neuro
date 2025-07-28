@@ -1,0 +1,5 @@
+%% Sort functionality test
+\set[_echo_command="true"]
+%% Tests sorting providers by name and provider
+\provider-catalog[sort=name]
+\provider-catalog[sort=provider]

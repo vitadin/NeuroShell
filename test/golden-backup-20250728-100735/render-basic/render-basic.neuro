@@ -1,0 +1,4 @@
+%% Test basic render functionality
+\set[_echo_command="true"]
+\render Hello, this is a basic render test
+\get[_output]

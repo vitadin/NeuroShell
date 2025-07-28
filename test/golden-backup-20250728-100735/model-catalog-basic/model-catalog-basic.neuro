@@ -1,0 +1,4 @@
+%% Basic model catalog test
+\set[_echo_command="true"]
+%% Tests the basic functionality of the model-catalog command
+\model-catalog

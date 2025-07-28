@@ -1,0 +1,37 @@
+%% Test model deletion smart matching functionality
+\set[_echo_command="true"]
+
+%% Create models with different names for partial matching tests
+\model-new[catalog_id="O4M"] my-claude-temp
+\model-new[catalog_id="O3"] my-openai-model
+\model-new[provider="openai", base_model="gpt-3.5-turbo"] permanent-model
+
+%% Test partial name matching (unique substring)
+\model-delete temp
+
+%% Verify correct model was deleted
+\get[#deleted_model_name]
+\get[_output]
+
+%% Create a new model to test ID matching
+\model-new[provider="openai", base_model="gpt-4"] id-test-model
+
+%% Get the model's ID for prefix testing
+\model-activate id-test-model
+\get[#active_model_id]
+\set[short_id="${#active_model_id}"]
+
+%% Test ID prefix matching (use first 8 characters)
+\model-delete[id=true] ${short_id}
+
+%% Verify ID matching worked
+\get[#deleted_model_name]
+
+%% Test case insensitive matching
+\model-delete OPENAI
+
+%% Verify case insensitive deletion worked
+\get[#deleted_model_name]
+
+%% Check final status
+\model-status

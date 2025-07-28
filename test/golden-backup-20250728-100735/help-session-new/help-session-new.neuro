@@ -1,0 +1,3 @@
+%% Test help information for session-new command
+\set[_echo_command="true"]
+\help[session-new]

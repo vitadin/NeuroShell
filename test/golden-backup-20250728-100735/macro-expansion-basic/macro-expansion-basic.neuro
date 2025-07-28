@@ -1,0 +1,34 @@
+%% Basic command-level macro expansion test
+\set[_echo_command="true"]
+
+%% Test 1: Basic command expansion
+\set[cmd="\echo"]
+${cmd} Hello World
+
+%% Test 2: Command with variable parameters  
+\set[greeting="Hello"]
+\set[name="Claude"]
+${cmd} ${greeting}, ${name}!
+
+%% Test 3: Different command expansion
+\set[getcmd="\get"]
+${getcmd}[greeting]
+
+%% Test 4: Command expansion with storage
+\set[setcmd="\set"]
+${setcmd}[result="Success"]
+\get[result]
+
+%% Test 5: Verify expanded commands work correctly
+\set[echocmd="\echo"]
+${echocmd}[to=output] Testing macro expansion
+\get[output]
+
+%% Test 6: Multi-word command expansion
+\set[full_echo_cmd="\echo[style=green]"]
+${full_echo_cmd} This should be green
+
+%% Test 7: Complex command with options
+\set[complex_cmd="\echo[raw=true,to=complex_result]"]
+${complex_cmd} Raw\nOutput\tTest
+\get[complex_result]

@@ -1,0 +1,7 @@
+%% Edge cases test
+\set[_echo_command="true"]
+%% Tests edge cases with no results and case sensitivity
+\provider-catalog[search=nonexistent]
+\provider-catalog[search=OPENAI]
+\provider-catalog[search=""]
+\provider-catalog[provider=openai,search=anthropic]

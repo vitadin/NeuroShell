@@ -1,0 +1,8 @@
+%% Integration test
+\set[_echo_command="true"]
+%% Tests integration with variable system and output storage
+\provider-catalog[search=openai]
+\get[_output]
+\set[provider_count=4]
+\provider-catalog
+%% The _output variable should contain the provider catalog data

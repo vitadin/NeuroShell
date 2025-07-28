@@ -1,0 +1,132 @@
+Setting _echo_command = true
+%%> "\\model-catalog[provider=\"openai\", sort=\"name\"]"
+Model Catalog (Openai) (7 models):
+  [G41] GPT-4.1 (gpt-4.1-2025-04-14)
+    Context: 1,047,576 tokens (max output: 32,768 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs
+    Modalities: text-input, image-input, text-output
+    Pricing: $2.00/1M input, $8.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-05-31
+    Description: GPT-4.1 is our flagship model for complex tasks. It is well suited for problem solving across domains.
+  [G4O] GPT-4o (gpt-4o-2024-11-20)
+    Context: 128,000 tokens (max output: 16,384 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs, omni
+    Modalities: text-input, image-input, text-output
+    Pricing: $2.50/1M input, $10.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2023-09-30
+    Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
+  [O1] o1 (o1-2024-12-17)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
+    Modalities: text-input, image-input, text-output
+    Pricing: $15.00/1M input, $60.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: file-search
+    Knowledge cutoff: 2023-09-30
+    Reasoning tokens supported
+    Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
+  [O1P] o1-pro (o1-pro-2025-03-19)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, reinforcement-learning, complex-reasoning, chain-of-thought
+    Modalities: text-input, image-input, text-output
+    Pricing: $150.00/1M input, $600.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2023-09-30
+    Reasoning tokens supported
+    Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
+  [O3] O3 (o3)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
+    Modalities: text-input, text-output, image-input
+    Pricing: $2.00/1M input, $8.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: web-search, file-search, image-generation, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Snapshots: o3, o3-2025-04-16
+    Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
+  [O3P] o3-pro (o3-pro-2025-06-10)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning
+    Modalities: text-input, image-input, text-output
+    Pricing: $20.00/1M input, $80.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: web-search, file-search, image-generation
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
+  [O4M] O4-mini (o4-mini)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.10/1M input, $4.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Snapshots: o4-mini, o4-mini-2025-04-16
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
+%%> "\\model-new[catalog_id=\"O4M\"] claude-s4-instance"
+Created model 'claude-s4-instance' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\model-new[catalog_id=\"O3\"] openai-o3-instance"
+Created model 'openai-o3-instance' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\model-status"
+Model Configurations (2 models):
+  claude-s4-instance (00000001)
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4M
+    Parameters: none
+    Created: 2025-01-01 00:00:01
+  openai-o3-instance (00000002)
+    Provider: openai
+    Base Model: o3
+    Catalog ID: O3
+    Parameters: none
+    Created: 2025-01-01 00:00:02
+    Active: true
+%%> "\\get[#model_count]"
+#model_count = 2
+%%> "\\model-activate claude-s4-instance"
+Activated model 'claude-s4-instance' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\get[#active_model_base]"
+#active_model_base = o4-mini
+%%> "\\model-activate openai-o3-instance"
+Activated model 'openai-o3-instance' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\get[#active_model_base]"
+#active_model_base = o3
+%%> "\\get[#active_model_provider]"
+#active_model_provider = openai
+%%> "\\try \\model-new[catalog_id=\"INVALID\"] bad-model"
+%%> "\\model-new[catalog_id=\"INVALID\"] bad-model"
+%%> "\\model-status"
+Model Configurations (2 models):
+  claude-s4-instance (00000001)
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4M
+    Parameters: none
+    Created: 2025-01-01 00:00:01
+  openai-o3-instance (00000002)
+    Provider: openai
+    Base Model: o3
+    Catalog ID: O3
+    Parameters: none
+    Created: 2025-01-01 00:00:02
+    Active: true
+%%> "\\get[#model_count]"
+#model_count = 2

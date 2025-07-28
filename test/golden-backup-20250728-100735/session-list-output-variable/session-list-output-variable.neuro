@@ -1,0 +1,12 @@
+%% Test that session-list output is properly stored in ${_output} variable
+\set[_echo_command="true"]
+%% Create a session, list it, then verify the output is in the variable
+
+%% Create a session
+\session-new test_session
+
+%% List sessions (this should store output in _output variable)
+\session-list
+
+%% Retrieve and display the stored output to verify it matches
+\get[_output]

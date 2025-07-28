@@ -1,0 +1,27 @@
+%% Markdown backtick functionality test
+\set[_echo_command="true"]
+%% Verifies that markdown-style code blocks with backticks work correctly
+
+%% Test inline code with single backticks
+\set[inline_code="Use `console.log()` for debugging"]
+\set[function_ref="Call the `getData()` function"]
+
+%% Test code blocks with triple backticks  
+\set[code_block="```\nfunction hello() {\n  console.log('world');\n}\n```"]
+\set[bash_block="```bash\nls -la\ngrep pattern file.txt\n```"]
+
+%% Test nested and mixed backticks
+\set[nested="Inside `code` we can have ```blocks```"]
+\set[complex="Mix `inline`, ```blocks```, and 'quotes'"]
+
+%% Test markdown examples
+\set[readme="# README\n\nInstall with `npm install`\n\n```javascript\nconst app = require('app');\n```"]
+
+%% Retrieve all variables
+\get[inline_code]
+\get[function_ref]
+\get[code_block]
+\get[bash_block]
+\get[nested]
+\get[complex]
+\get[readme]

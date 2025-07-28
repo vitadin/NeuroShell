@@ -1,0 +1,23 @@
+%% Test _style variable whitelist security
+\set[_echo_command="true"]
+%% This test verifies that only _style is whitelisted for global variables
+
+%% Should succeed: _style is whitelisted
+\set[_style="dark"]
+\get[_style]
+
+%% Test that we can overwrite _style
+\set[_style="light"]
+\get[_style]
+
+%% Test empty _style value
+\set[_style=""]
+\get[_style]
+
+%% Test _style with special characters
+\set[_style="dark-modern!"]
+\get[_style]
+
+%% Final verification that _style works properly
+\set[_style="final-test"]
+\get[_style]

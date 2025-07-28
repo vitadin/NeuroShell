@@ -1,0 +1,24 @@
+%% Test complete session lifecycle: create and delete
+\set[_echo_command="true"]
+%% This verifies the bug fix for session-delete command
+
+%% Create a named session
+\session-new[system="You are a test assistant"] lifecycle_test
+\get[#session_name]
+\get[#session_id]
+
+%% Delete the session by name
+\session-delete[name="lifecycle_test"]
+
+%% Verify session is gone by checking if variables are cleared
+\get[#session_name]
+\get[#session_id]
+
+%% Create another session and delete by ID
+\session-new id_test
+\get[#session_id]
+\session-delete ${#session_id}
+
+%% Final verification
+\get[#session_name]
+\get[#session_id]

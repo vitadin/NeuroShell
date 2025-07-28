@@ -1,0 +1,39 @@
+%% Test LLM API commands with multiple provider scenarios using \set-env
+%% This test demonstrates the complete workflow with test API keys
+
+%% Step 1: Set up test API keys using the new \set-env command
+\echo ═══ Setting Up Test API Keys ═══
+\set-env[OPENAI_API_KEY=sk-test1234567890abcdef1234567890abcdef]
+\set-env[ANTHROPIC_API_KEY=ant-test1234567890abcdef1234567890abcdef]
+\set-env[MOONSHOT_API_KEY=moon-test1234567890abcdef1234567890abcdef]
+
+%% Step 2: Show all API keys (should now find the test keys)
+\echo ═══ Showing All API Keys ═══
+\llm-api-show
+
+%% Step 3: Test provider-specific filtering
+\echo ═══ Testing Provider-Specific Filtering ═══
+\llm-api-show[provider=openai]
+\llm-api-show[provider=anthropic]
+\llm-api-show[provider=moonshot]
+
+%% Step 4: Activate keys for different providers
+\echo ═══ Activating OpenAI Key ═══
+\llm-api-activate[provider=openai, key=os.OPENAI_API_KEY]
+
+\echo ═══ Activating Anthropic Key ═══  
+\llm-api-activate[provider=anthropic, key=os.ANTHROPIC_API_KEY]
+
+%% Step 5: Show final state with active keys
+\echo ═══ Final State with Active Keys ═══
+\llm-api-show
+
+%% Step 6: Test activation with moonshot
+\echo ═══ Activating Moonshot Key ═══
+\llm-api-activate[provider=moonshot, key=os.MOONSHOT_API_KEY]
+
+%% Step 7: Verify active key variables are set correctly
+\echo ═══ Active Key Variables ═══
+\get[#active_openai_key]
+\get[#active_anthropic_key]
+\get[#active_moonshot_key]

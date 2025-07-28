@@ -1,0 +1,23 @@
+Setting _echo_command = true
+%%> "\\help[set]"
+Command: set
+Description: Set a variable
+Usage: \set[var=value] or \set var value
+Parse Mode: Key-Value (supports [key=value] syntax)
+Options:
+  var - Variable name to set (required)
+  value - Value to assign to the variable (required)
+Examples:
+  \set[name=John]
+    %% Set variable 'name' to 'John' using bracket syntax
+  \set name John
+    %% Set variable 'name' to 'John' using space syntax
+  \set[greeting="Hello World"]
+    %% Set variable with quoted value containing spaces
+Stored Variables:
+  ${{variable_name}} - The user-defined variable with its assigned value (user_variable)
+    Example: name = "John"
+Notes:
+  Supports both bracket syntax (\set[var=value]) and space syntax (\set var value)
+  Variable values can contain spaces when properly quoted
+  Variables are stored in session context and persist until session ends

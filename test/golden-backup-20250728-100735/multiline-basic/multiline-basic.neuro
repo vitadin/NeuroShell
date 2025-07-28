@@ -1,0 +1,10 @@
+%% Basic multiline continuation test
+\set[_echo_command="true"]
+%% Tests fundamental ... continuation functionality
+
+\echo hello world ...
+this is continued
+
+%% Test with \echo command
+\echo This is a message ...
+that spans two lines

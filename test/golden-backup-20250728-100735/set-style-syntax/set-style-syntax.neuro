@@ -1,0 +1,38 @@
+%% Test _style variable with different syntax variations
+\set[_echo_command="true"]
+%% This test verifies _style works with both bracket and space syntax
+
+%% Test bracket syntax variations
+\set[_style="classic"]
+\get[_style]
+
+\set[_style=minimal]
+\get[_style]
+
+\set[_style=""]
+\get[_style]
+
+%% Test space syntax variations
+\set _style modern
+\get[_style]
+
+\set _style "theme with spaces"
+\get[_style]
+
+\set _style compact-dark
+\get[_style]
+
+%% Test mixed usage in same session
+\set[_style="bracket-set"]
+\get[_style]
+
+\set _style space-set
+\get[_style]
+
+%% Test with extra whitespace
+\set   _style   whitespace-test   
+\get[_style]
+
+%% Final verification
+\set[_style="final-value"]
+\get[_style]

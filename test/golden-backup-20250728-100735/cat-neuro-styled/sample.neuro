@@ -1,0 +1,6 @@
+%% Sample neuro script for styled rendering
+%%> "Auto-generated comment"
+\set[name="Alice", age=25]
+\get[name]
+%% This is a regular comment
+\echo Hello ${name}, you are ${age} years old

@@ -140,8 +140,8 @@ func recordTest(_ *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to run neuro script: %w", err)
 	}
 
-	// Save the output as expected result
-	expectedFile := filepath.Join(testDir, testName, testName+".expected")
+	// Save the output as expected result (flat structure only)
+	expectedFile := filepath.Join(testDir, testName+".expected")
 	if err := os.MkdirAll(filepath.Dir(expectedFile), 0755); err != nil {
 		return fmt.Errorf("failed to create test directory: %w", err)
 	}
@@ -175,8 +175,8 @@ func runTest(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Check if expected file exists
-	expectedFile := filepath.Join(testDir, testName, testName+".expected")
+	// Check if expected file exists (flat structure only)
+	expectedFile := filepath.Join(testDir, testName+".expected")
 	if _, err := os.Stat(expectedFile); os.IsNotExist(err) {
 		return fmt.Errorf("expected output file not found: %s\nRun 'neurotest record %s' first", expectedFile, testName)
 	}
@@ -305,8 +305,8 @@ func diffTest(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Check if expected file exists
-	expectedFile := filepath.Join(testDir, testName, testName+".expected")
+	// Check if expected file exists (flat structure only)
+	expectedFile := filepath.Join(testDir, testName+".expected")
 	if _, err := os.Stat(expectedFile); os.IsNotExist(err) {
 		return fmt.Errorf("expected output file not found: %s", expectedFile)
 	}
@@ -425,12 +425,12 @@ func checkNeuroCommand() error {
 
 // findNeuroScript finds the .neuro script file for a test
 func findNeuroScript(testName string) (string, error) {
-	// Try different possible locations
+	// Try different possible locations (flat structure only)
 	candidates := []string{
-		filepath.Join(testDir, testName, testName+".neuro"),
-		filepath.Join("test/scripts", testName+".neuro"),
-		testName + ".neuro",
-		testName,
+		filepath.Join(testDir, testName+".neuro"),        // Flat structure
+		filepath.Join("test/scripts", testName+".neuro"), // Alternative scripts location
+		testName + ".neuro",                              // Current directory
+		testName,                                         // As provided
 	}
 
 	for _, candidate := range candidates {
@@ -471,8 +471,9 @@ func runNeuroScript(scriptPath string) (string, error) {
 // findAllTests finds all available test cases
 func findAllTests() ([]string, error) {
 	var tests []string
+	testSet := make(map[string]bool) // To avoid duplicates
 
-	// Look for test directories in testDir
+	// Look for entries in testDir
 	entries, err := os.ReadDir(testDir)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -482,11 +483,16 @@ func findAllTests() ([]string, error) {
 	}
 
 	for _, entry := range entries {
-		if entry.IsDir() {
-			// Check if this directory contains a .neuro file
-			neuroFile := filepath.Join(testDir, entry.Name(), entry.Name()+".neuro")
-			if _, err := os.Stat(neuroFile); err == nil {
-				tests = append(tests, entry.Name())
+		if strings.HasSuffix(entry.Name(), ".neuro") {
+			// Check for flat structure .neuro files
+			testName := strings.TrimSuffix(entry.Name(), ".neuro")
+			// Verify corresponding .expected file exists (flat structure only)
+			expectedFile := filepath.Join(testDir, testName+".expected")
+			if _, err := os.Stat(expectedFile); err == nil {
+				if !testSet[testName] {
+					tests = append(tests, testName)
+					testSet[testName] = true
+				}
 			}
 		}
 	}

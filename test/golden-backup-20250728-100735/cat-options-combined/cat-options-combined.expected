@@ -1,0 +1,44 @@
+Setting _echo_command = true
+%%> "\\cat[path=test/fixtures/simple.txt, silent=true, to=test1]"
+%%> "\\get[test1]"
+test1 = This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\cat[path=test/fixtures/multiline.txt, silent=true, lines=3, to=test2]"
+%%> "\\get[test2]"
+test2 = Line 1: First line of content
+Line 2: Second line with data
+Line 3: Third line for testing
+%%> "\\cat[path=test/fixtures/multiline.txt, start=3, lines=2, to=test3]"
+Line 3: Third line for testing
+Line 4: Fourth line here
+%%> "\\get[test3]"
+test3 = Line 3: Third line for testing
+Line 4: Fourth line here
+%%> "\\cat[path=test/fixtures/multiline.txt, silent=true, start=2, lines=3, to=test4]"
+%%> "\\get[test4]"
+test4 = Line 2: Second line with data
+Line 3: Third line for testing
+Line 4: Fourth line here
+%%> "\\cat[path=test/fixtures/multiline.txt, start=5, lines=2, to=test5]"
+Line 5: Fifth line content
+Line 6: Sixth line data
+%%> "\\get[test5]"
+test5 = Line 5: Fifth line content
+Line 6: Sixth line data
+%%> "\\cat[path=test/fixtures/simple.txt, start=3, lines=5, to=test6]"
+Line 3 contains some content.
+Final line of the file.
+%%> "\\get[test6]"
+test6 = Line 3 contains some content.
+Final line of the file.
+%%> "\\cat[path=test/fixtures/simple.txt, silent=true, start=10, to=test7]"
+%%> "\\get[test7]"
+test7 = 
+%%> "\\cat[path=test/fixtures/multiline.txt, silent=true, start=1, lines=1, to=first_line]"
+%%> "\\get[first_line]"
+first_line = Line 1: First line of content
+%%> "\\cat[path=test/fixtures/multiline.txt, silent=true, start=10, lines=1, to=last_line]"
+%%> "\\get[last_line]"
+last_line = Line 10: Tenth and final line

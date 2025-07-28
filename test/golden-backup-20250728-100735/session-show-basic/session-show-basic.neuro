@@ -1,0 +1,26 @@
+%% Test basic session-show functionality
+\set[_echo_command="true"]
+
+%% Create a session with basic system prompt
+\session-new[system="You are a helpful assistant"] basic_session
+\get[#session_name]
+\get[#session_id]
+
+%% Show the active session (no parameters)
+\session-show
+
+%% Create a session with long system prompt to test truncation
+\session-new[system="You are a very comprehensive and detailed assistant that provides thorough explanations and helps users understand complex topics by breaking them down into manageable components"] long_prompt_session
+
+%% Show by name search
+\session-show basic_session
+
+%% Show by partial name match
+\session-show basic
+
+%% Show by ID using [id=true] option
+\session-show[id=true] 00000001
+
+%% Clean up sessions
+\session-delete basic_session
+\session-delete long_prompt_session
