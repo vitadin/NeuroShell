@@ -62,21 +62,9 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
-	// Register QueueService for command queuing
-	if err := services.GetGlobalRegistry().RegisterService(services.NewQueueService()); err != nil {
-		return err
-	}
-
-	// Register StackService for stack-based execution
 	if err := services.GetGlobalRegistry().RegisterService(services.NewStackService()); err != nil {
 		return err
 	}
-
-	if err := services.GetGlobalRegistry().RegisterService(services.NewExecutorService()); err != nil {
-		return err
-	}
-
-	// NOTE: InterpolationService removed - interpolation is now embedded in state machine
 
 	if err := services.GetGlobalRegistry().RegisterService(services.NewBashService()); err != nil {
 		return err

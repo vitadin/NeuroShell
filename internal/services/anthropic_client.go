@@ -1,3 +1,4 @@
+// Package services provides LLM client implementations and core services for the NeuroShell CLI.
 package services
 
 import (
