@@ -1,0 +1,25 @@
+name: google/gemini-2.5-flash-lite
+id: ORGM25FL
+display_name: "Google: Gemini 2.5 Flash Lite"
+provider: openrouter
+description: "Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode."
+capabilities: [text, reasoning, analysis, coding, writing, multimodal, ultra-low-latency, cost-efficient, thinking-mode-optional, structured-outputs, function-calling, code-execution, url-context, search-grounding, caching, batch-mode]
+context_window: 1048576
+knowledge_cutoff: "2025-01"
+modalities: [text-input, image-input, video-input, audio-input, pdf-input, text-output]
+pricing:
+  input_per_m_token: 0.10
+  output_per_m_token: 0.40
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  ultra_low_latency: true
+  optional_thinking: true
+  caching: true
+  code_execution: true
+  url_context: true
+  search_grounding: true
+  batch_mode: true
+  output_token_limit: 65536
+version: "2025-07"

@@ -105,7 +105,7 @@ Model Catalog (Anthropic) (4 models):
     Knowledge cutoff: 2025-03-01
     Description: High intelligence and balanced performance
 %%> "\\model-catalog[provider=all]"
-Model Catalog (20 models):
+Model Catalog (22 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
@@ -155,6 +155,15 @@ Gemini Models:
     Knowledge cutoff: 2025-01-01
     Snapshots: gemini-2.5-flash, gemini-2.5-flash-preview-05-20
     Description: Google's fast and efficient multimodal AI model optimized for speed and performance
+  [GM25FL] Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
+    Provider: gemini
+    Context: 1,048,576 tokens
+    Capabilities: text, reasoning, analysis, coding, writing, multimodal, ultra-low-latency, cost-efficient, thinking-mode-optional, structured-outputs, function-calling, code-execution, url-context, search-grounding, caching, batch-mode
+    Modalities: text-input, image-input, video-input, audio-input, pdf-input, text-output
+    Pricing: $0.10/1M input, $0.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Knowledge cutoff: 2025-01
+    Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
   [GM25P] Gemini 2.5 Pro (gemini-2.5-pro)
     Provider: gemini
     Context: 1,048,576 tokens (max output: 65,536 tokens)
@@ -253,6 +262,15 @@ Openai Models:
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
 Openrouter Models:
+  [ORGM25FL] Google: Gemini 2.5 Flash Lite (google/gemini-2.5-flash-lite)
+    Provider: openrouter
+    Context: 1,048,576 tokens
+    Capabilities: text, reasoning, analysis, coding, writing, multimodal, ultra-low-latency, cost-efficient, thinking-mode-optional, structured-outputs, function-calling, code-execution, url-context, search-grounding, caching, batch-mode
+    Modalities: text-input, image-input, video-input, audio-input, pdf-input, text-output
+    Pricing: $0.10/1M input, $0.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Knowledge cutoff: 2025-01
+    Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
   [ORK2] Kimi K2 (OpenRouter) (moonshotai/kimi-k2)
     Provider: openrouter
     Context: 131,000 tokens (max output: 32,768 tokens)
