@@ -93,6 +93,16 @@ var Gemini25ProModelData []byte
 //go:embed models/gemini-2-5-flash.yaml
 var Gemini25FlashModelData []byte
 
+// Qwen3235BA22BThinkingOpenRouterModelData contains the embedded Qwen3 235B A22B Thinking (OpenRouter) model YAML data.
+//
+//go:embed models/qwen3-235b-a22b-thinking-openrouter.yaml
+var Qwen3235BA22BThinkingOpenRouterModelData []byte
+
+// GLM45OpenRouterModelData contains the embedded GLM 4.5 (OpenRouter) model YAML data.
+//
+//go:embed models/glm-4-5-openrouter.yaml
+var GLM45OpenRouterModelData []byte
+
 // Provider Catalog Data - embedded provider configuration YAML files
 
 // OpenAIChatProviderData contains the embedded OpenAI chat provider YAML data.

@@ -1,6 +1,6 @@
 Setting _echo_command = true
 %%> "\\model-catalog[sort=name]"
-Model Catalog (18 models):
+Model Catalog (20 models):
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
     Context: 200,000 tokens (max output: 4,096 tokens)
@@ -170,6 +170,15 @@ Model Catalog (18 models):
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-07-01
     Description: Mixture-of-Experts model with 235B total/22B active parameters via OpenRouter, featuring thinking mode and advanced multilingual capabilities
+  [ORQ3AT] Qwen: Qwen3 235B A22B Thinking 2507 (qwen/qwen3-235b-a22b-thinking-2507)
+    Provider: openrouter
+    Context: 262,144 tokens (max output: 81,920 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, tool-use, multilingual, thinking-mode, instruction-following, structured-reasoning, agentic
+    Modalities: text-input, text-output
+    Pricing: $0.12/1M input, $0.12/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Knowledge cutoff: 2025-07-25
+    Description: High-performance Mixture-of-Experts model optimized for complex reasoning tasks with thinking mode, activating 22B of 235B parameters per forward pass
   [ORG4] xAI: Grok 4 (x-ai/grok-4)
     Provider: openrouter
     Context: 256,000 tokens
@@ -179,8 +188,17 @@ Model Catalog (18 models):
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2025-07-09
     Description: Grok 4 is xAI's latest reasoning model with a 256k context window. It supports parallel tool calling, structured outputs, and both image and text inputs with mandatory reasoning capabilities.
+  [ORGLM45] Z.AI: GLM 4.5 (z-ai/glm-4.5)
+    Provider: openrouter
+    Context: 128,000 tokens
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, agentic, agent-alignment, thinking-mode, instant-response
+    Modalities: text-input, text-output
+    Pricing: $0.60/1M input, $2.20/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Knowledge cutoff: 2025-07-25
+    Description: Latest flagship foundation model purpose-built for agent-based applications with Mixture-of-Experts architecture and hybrid inference modes
 %%> "\\model-catalog[sort=provider]"
-Model Catalog (18 models):
+Model Catalog (20 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
@@ -355,6 +373,15 @@ Openrouter Models:
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-07-01
     Description: Mixture-of-Experts model with 235B total/22B active parameters via OpenRouter, featuring thinking mode and advanced multilingual capabilities
+  [ORQ3AT] Qwen: Qwen3 235B A22B Thinking 2507 (qwen/qwen3-235b-a22b-thinking-2507)
+    Provider: openrouter
+    Context: 262,144 tokens (max output: 81,920 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, tool-use, multilingual, thinking-mode, instruction-following, structured-reasoning, agentic
+    Modalities: text-input, text-output
+    Pricing: $0.12/1M input, $0.12/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Knowledge cutoff: 2025-07-25
+    Description: High-performance Mixture-of-Experts model optimized for complex reasoning tasks with thinking mode, activating 22B of 235B parameters per forward pass
   [ORG4] xAI: Grok 4 (x-ai/grok-4)
     Provider: openrouter
     Context: 256,000 tokens
@@ -364,3 +391,12 @@ Openrouter Models:
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2025-07-09
     Description: Grok 4 is xAI's latest reasoning model with a 256k context window. It supports parallel tool calling, structured outputs, and both image and text inputs with mandatory reasoning capabilities.
+  [ORGLM45] Z.AI: GLM 4.5 (z-ai/glm-4.5)
+    Provider: openrouter
+    Context: 128,000 tokens
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, agentic, agent-alignment, thinking-mode, instant-response
+    Modalities: text-input, text-output
+    Pricing: $0.60/1M input, $2.20/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Knowledge cutoff: 2025-07-25
+    Description: Latest flagship foundation model purpose-built for agent-based applications with Mixture-of-Experts architecture and hybrid inference modes

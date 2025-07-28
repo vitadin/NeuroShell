@@ -111,6 +111,18 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, grok4Model)
 
+	qwen3235BA22BThinkingModel, err := m.loadModelFile(embedded.Qwen3235BA22BThinkingOpenRouterModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Qwen3 235B A22B Thinking (OpenRouter) model: %w", err)
+	}
+	allModels = append(allModels, qwen3235BA22BThinkingModel)
+
+	glm45Model, err := m.loadModelFile(embedded.GLM45OpenRouterModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GLM 4.5 (OpenRouter) model: %w", err)
+	}
+	allModels = append(allModels, glm45Model)
+
 	gpt41Model, err := m.loadModelFile(embedded.GPT41ModelData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load GPT-4.1 model: %w", err)

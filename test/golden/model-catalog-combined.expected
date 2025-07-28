@@ -105,7 +105,7 @@ Model Catalog (Anthropic) - Search: 'claude' (4 models):
     Knowledge cutoff: 2025-03-01
     Description: High intelligence and balanced performance
 %%> "\\model-catalog[search=reasoning, sort=provider]"
-Model Catalog - Search: 'reasoning' (10 models):
+Model Catalog - Search: 'reasoning' (11 models):
 Gemini Models:
   [GM25P] Gemini 2.5 Pro (gemini-2.5-pro)
     Provider: gemini
@@ -203,6 +203,15 @@ Openrouter Models:
     Features: streaming, function-calling
     Knowledge cutoff: 2024-12-01
     Description: Free access to Kimi K2 via OpenRouter, a trillion-parameter MoE model optimized for advanced tool use, reasoning, and code synthesis
+  [ORQ3AT] Qwen: Qwen3 235B A22B Thinking 2507 (qwen/qwen3-235b-a22b-thinking-2507)
+    Provider: openrouter
+    Context: 262,144 tokens (max output: 81,920 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, tool-use, multilingual, thinking-mode, instruction-following, structured-reasoning, agentic
+    Modalities: text-input, text-output
+    Pricing: $0.12/1M input, $0.12/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Knowledge cutoff: 2025-07-25
+    Description: High-performance Mixture-of-Experts model optimized for complex reasoning tasks with thinking mode, activating 22B of 235B parameters per forward pass
   [ORG4] xAI: Grok 4 (x-ai/grok-4)
     Provider: openrouter
     Context: 256,000 tokens
