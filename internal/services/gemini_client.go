@@ -46,15 +46,18 @@ func (c *GeminiClient) initializeClientIfNeeded() error {
 		return fmt.Errorf("google API key not configured")
 	}
 
-	// Create Gemini client
+	// Create Gemini client with API key configuration
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, nil)
+	clientConfig := &genai.ClientConfig{
+		APIKey: c.apiKey,
+	}
+	client, err := genai.NewClient(ctx, clientConfig)
 	if err != nil {
 		return fmt.Errorf("failed to create Gemini client: %w", err)
 	}
 
 	c.client = client
-	logger.Debug("Gemini client initialized", "provider", "gemini")
+	logger.Debug("Gemini client initialized", "provider", "gemini", "apiKeySet", c.apiKey != "")
 	return nil
 }
 
@@ -222,6 +225,30 @@ func (c *GeminiClient) buildGenerationConfig(modelConfig *neurotypes.ModelConfig
 		if maxTokensInt, ok := maxTokens.(int); ok {
 			maxTokensInt32 := int32(maxTokensInt)
 			config.MaxOutputTokens = maxTokensInt32
+		}
+	}
+
+	// Apply thinking_budget for Gemini models
+	if thinkingBudget, ok := modelConfig.Parameters["thinking_budget"]; ok {
+		if thinkingBudgetInt, ok := thinkingBudget.(int); ok {
+			// Create ThinkingConfig based on thinking_budget value
+			switch {
+			case thinkingBudgetInt == -1:
+				// Dynamic thinking: let the model decide (set to nil for dynamic)
+				config.ThinkingConfig = nil
+			case thinkingBudgetInt == 0:
+				// Thinking disabled: set budget to 0
+				thinkingBudgetInt32 := int32(0)
+				config.ThinkingConfig = &genai.ThinkingConfig{
+					ThinkingBudget: &thinkingBudgetInt32,
+				}
+			case thinkingBudgetInt > 0:
+				// Fixed thinking budget
+				thinkingBudgetInt32 := int32(thinkingBudgetInt)
+				config.ThinkingConfig = &genai.ThinkingConfig{
+					ThinkingBudget: &thinkingBudgetInt32,
+				}
+			}
 		}
 	}
 

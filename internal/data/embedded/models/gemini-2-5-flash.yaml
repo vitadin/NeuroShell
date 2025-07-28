@@ -20,6 +20,10 @@ features:
   search_grounding: true
   thinking: true
   batch_mode: true
+  thinking_supported: true
+  thinking_default: -1
+  thinking_range: "0-24576"
+  thinking_can_disable: true
 tools: [code-execution, search-grounding]
 version: "2025-06-01"
 snapshots: [gemini-2.5-flash, gemini-2.5-flash-preview-05-20]
