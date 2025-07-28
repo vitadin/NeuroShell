@@ -46,7 +46,7 @@ func (c *ExitCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 		},
 		Notes: []string{
-			"Exits NeuroShell immediately with a goodbye message",
+			"Exits NeuroShell immediately",
 			"All unsaved session data will be lost",
 			"Use Ctrl+C as an alternative exit method",
 		},
