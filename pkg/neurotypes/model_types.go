@@ -190,6 +190,21 @@ type ModelFeatures struct {
 
 	// PredictedOutputs indicates whether the model supports predicted outputs
 	PredictedOutputs *bool `yaml:"predicted_outputs,omitempty" json:"predicted_outputs,omitempty"`
+
+	// ThinkingSupported indicates whether the model supports thinking mode (internal reasoning)
+	ThinkingSupported *bool `yaml:"thinking_supported,omitempty" json:"thinking_supported,omitempty"`
+
+	// ThinkingDefault is the default thinking budget (-1 for dynamic, 0 for disabled, positive for fixed)
+	// Only applicable if ThinkingSupported is true
+	ThinkingDefault *int `yaml:"thinking_default,omitempty" json:"thinking_default,omitempty"`
+
+	// ThinkingRange describes the valid range for thinking budget (e.g., "0-24576", "128-32768")
+	// Only applicable if ThinkingSupported is true
+	ThinkingRange *string `yaml:"thinking_range,omitempty" json:"thinking_range,omitempty"`
+
+	// ThinkingCanDisable indicates whether thinking can be disabled (thinking_budget=0)
+	// Only applicable if ThinkingSupported is true
+	ThinkingCanDisable *bool `yaml:"thinking_can_disable,omitempty" json:"thinking_can_disable,omitempty"`
 }
 
 // ModelCatalogFile represents an individual model file loaded from YAML.

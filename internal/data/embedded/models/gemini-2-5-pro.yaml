@@ -20,5 +20,9 @@ features:
   search_grounding: true
   thinking: true
   batch_mode: true
+  thinking_supported: true
+  thinking_default: -1
+  thinking_range: "128-32768"
+  thinking_can_disable: false
 tools: [code-execution, search-grounding]
 version: "2025-06-01"

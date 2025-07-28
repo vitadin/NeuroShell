@@ -225,5 +225,29 @@ func (c *GeminiClient) buildGenerationConfig(modelConfig *neurotypes.ModelConfig
 		}
 	}
 
+	// Apply thinking_budget for Gemini models
+	if thinkingBudget, ok := modelConfig.Parameters["thinking_budget"]; ok {
+		if thinkingBudgetInt, ok := thinkingBudget.(int); ok {
+			// Create ThinkingConfig based on thinking_budget value
+			switch {
+			case thinkingBudgetInt == -1:
+				// Dynamic thinking: let the model decide (set to nil for dynamic)
+				config.ThinkingConfig = nil
+			case thinkingBudgetInt == 0:
+				// Thinking disabled: set budget to 0
+				thinkingBudgetInt32 := int32(0)
+				config.ThinkingConfig = &genai.ThinkingConfig{
+					ThinkingBudget: &thinkingBudgetInt32,
+				}
+			case thinkingBudgetInt > 0:
+				// Fixed thinking budget
+				thinkingBudgetInt32 := int32(thinkingBudgetInt)
+				config.ThinkingConfig = &genai.ThinkingConfig{
+					ThinkingBudget: &thinkingBudgetInt32,
+				}
+			}
+		}
+	}
+
 	return config
 }

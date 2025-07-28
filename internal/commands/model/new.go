@@ -5,6 +5,7 @@ package model
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
@@ -33,11 +34,14 @@ func (c *NewCommand) Description() string {
 // Usage returns the syntax and usage examples for the model-new command.
 func (c *NewCommand) Usage() string {
 	return `\model-new[provider=provider_name, base_model=model_name, temperature=0.7, max_tokens=1000, ...] model_name
-\model-new[catalog_id=<ID>, temperature=0.7, max_tokens=1000, ...] model_name
+\model-new[catalog_id=<ID>, temperature=0.7, max_tokens=1000, thinking_budget=1024, ...] model_name
 
 Examples:
   \model-new[catalog_id=CS4] my-claude                                   %% Create from catalog (Claude Sonnet 4)
   \model-new[catalog_id=O3, temperature=0.8] creative-model              %% Create from catalog with custom parameters
+  \model-new[catalog_id=GM25F, thinking_budget=2048] reasoning-model     %% Create Gemini Flash with thinking mode
+  \model-new[catalog_id=GM25FL, thinking_budget=0] fast-model            %% Create Gemini Flash Lite with thinking disabled
+  \model-new[catalog_id=GM25P, thinking_budget=-1] dynamic-model         %% Create Gemini Pro with dynamic thinking
   \model-new[provider=openai, base_model=gpt-4] my-gpt4                  %% Create OpenAI GPT-4 model (manual)
   \model-new[provider=anthropic, base_model=claude-3-sonnet] claude-work %% Create Anthropic Claude model (manual)
   \model-new[catalog_id=CO4, max_tokens=4000] analysis-opus              %% Create Claude Opus 4 with custom max tokens
@@ -45,8 +49,8 @@ Examples:
 Required Options (choose one):
   Option A: catalog_id - Short model ID from catalog (e.g., CS4, O3, CO37) - auto-populates provider and base_model
   Option B: provider + base_model - Manual specification
-    provider - LLM provider name (e.g., openai, anthropic, local)
-    base_model - Provider's model identifier (e.g., gpt-4, claude-3-sonnet, llama-2)
+    provider - LLM provider name (e.g., openai, anthropic, gemini, local)
+    base_model - Provider's model identifier (e.g., gpt-4, claude-3-sonnet, gemini-2.5-flash)
 
 Optional Parameters:
   temperature - Controls randomness (0.0-1.0, default varies by provider)
@@ -55,12 +59,14 @@ Optional Parameters:
   top_k - Top-k sampling parameter (positive integer)
   presence_penalty - Presence penalty (-2.0 to 2.0)
   frequency_penalty - Frequency penalty (-2.0 to 2.0)
+  thinking_budget - Thinking tokens budget for Gemini models (-1=dynamic, 0=disabled, positive=fixed)
   description - Human-readable description of the model configuration
 
 Note: Model name is required and taken from the input parameter.
       Model names must be unique and cannot contain spaces.
       Use \model-catalog to see available catalog IDs.
       When using catalog_id, provider and base_model are auto-populated from catalog.
+      thinking_budget is only supported by Gemini 2.5 models (Pro, Flash, Flash Lite).
       Additional provider-specific parameters can be passed and will be stored.`
 }
 
@@ -132,6 +138,12 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 				Required:    false,
 				Type:        "string",
 			},
+			{
+				Name:        "thinking_budget",
+				Description: "Thinking tokens budget for Gemini models (-1=dynamic, 0=disabled, positive=fixed)",
+				Required:    false,
+				Type:        "int",
+			},
 		},
 		Examples: []neurotypes.HelpExample{
 			{
@@ -141,6 +153,18 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 			{
 				Command:     "\\model-new[catalog_id=O3, temperature=0.8] creative-model",
 				Description: "Create from catalog with custom parameters",
+			},
+			{
+				Command:     "\\model-new[catalog_id=GM25F, thinking_budget=2048] reasoning-model",
+				Description: "Create Gemini Flash with fixed thinking budget",
+			},
+			{
+				Command:     "\\model-new[catalog_id=GM25FL, thinking_budget=0] fast-model",
+				Description: "Create Gemini Flash Lite with thinking disabled",
+			},
+			{
+				Command:     "\\model-new[catalog_id=GM25P, thinking_budget=-1] dynamic-model",
+				Description: "Create Gemini Pro with dynamic thinking",
 			},
 			{
 				Command:     "\\model-new[provider=openai, base_model=gpt-4] my-gpt4",
@@ -153,10 +177,6 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 			{
 				Command:     "\\model-new[catalog_id=CO4, max_tokens=4000] analysis-opus",
 				Description: "Create Claude Opus 4 with custom max tokens",
-			},
-			{
-				Command:     "\\model-new[provider=local, base_model=llama-2, max_tokens=2048] local-llama",
-				Description: "Create local model with custom token limit",
 			},
 		},
 		StoredVariables: []neurotypes.HelpStoredVariable{
@@ -215,6 +235,9 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 			"Either catalog_id OR both provider and base_model are required",
 			"Use \\model-catalog to see available catalog IDs",
 			"When using catalog_id, provider and base_model are auto-populated from catalog",
+			"thinking_budget is only supported by Gemini 2.5 models (Pro, Flash, Flash Lite)",
+			"thinking_budget values: -1=dynamic, 0=disabled, positive=fixed token count",
+			"Each Gemini model has different thinking_budget ranges (see model catalog)",
 			"Variables in model name and parameters are interpolated",
 			"Additional provider-specific parameters can be included",
 		},
@@ -253,11 +276,13 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	catalogID := args["catalog_id"]
 
 	// Handle catalog_id parameter - auto-populate provider and base_model from catalog
+	var catalogModel *neurotypes.ModelCatalogEntry
 	if catalogID != "" {
-		catalogModel, err := modelCatalogService.GetModelByID(catalogID)
+		model, err := modelCatalogService.GetModelByID(catalogID)
 		if err != nil {
 			return fmt.Errorf("failed to find model with catalog_id '%s': %w", catalogID, err)
 		}
+		catalogModel = &model
 
 		// Auto-populate provider and base_model from catalog (catalog_id overrides manual values)
 		provider = catalogModel.Provider
@@ -297,6 +322,15 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	// Parse numeric parameters
 	if err := c.parseParameters(args, parameters); err != nil {
 		return fmt.Errorf("failed to parse parameters: %w", err)
+	}
+
+	// Validate thinking_budget for Gemini models if provided
+	if thinkingBudgetValue, exists := parameters["thinking_budget"]; exists && catalogModel != nil {
+		if thinkingBudget, ok := thinkingBudgetValue.(int); ok {
+			if err := c.validateThinkingBudget(thinkingBudget, catalogModel); err != nil {
+				return fmt.Errorf("invalid thinking_budget: %w", err)
+			}
+		}
 	}
 
 	// Validate parameters
@@ -399,11 +433,20 @@ func (c *NewCommand) parseParameters(args map[string]string, parameters map[stri
 		parameters["frequency_penalty"] = frequencyPenaltyFloat
 	}
 
+	// Parse thinking_budget (for Gemini models)
+	if thinkingBudget, exists := args["thinking_budget"]; exists {
+		thinkingBudgetInt, err := strconv.Atoi(thinkingBudget)
+		if err != nil {
+			return fmt.Errorf("invalid thinking_budget value: %s", thinkingBudget)
+		}
+		parameters["thinking_budget"] = thinkingBudgetInt
+	}
+
 	// Add any other string parameters that aren't specially handled
 	excludedParams := map[string]bool{
 		"provider": true, "base_model": true, "description": true, "catalog_id": true,
 		"temperature": true, "max_tokens": true, "top_p": true, "top_k": true,
-		"presence_penalty": true, "frequency_penalty": true,
+		"presence_penalty": true, "frequency_penalty": true, "thinking_budget": true,
 	}
 
 	for key, value := range args {
@@ -437,6 +480,49 @@ func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variabl
 	for name, value := range variables {
 		if err := variableService.SetSystemVariable(name, value); err != nil {
 			return fmt.Errorf("failed to set variable %s: %w", name, err)
+		}
+	}
+
+	return nil
+}
+
+// validateThinkingBudget validates thinking_budget parameter for Gemini models using catalog information.
+func (c *NewCommand) validateThinkingBudget(thinkingBudget int, catalogModel *neurotypes.ModelCatalogEntry) error {
+	// Only validate for Gemini models
+	if catalogModel.Provider != "gemini" {
+		return nil
+	}
+
+	// Check if model supports thinking
+	if catalogModel.Features == nil || catalogModel.Features.ThinkingSupported == nil || !*catalogModel.Features.ThinkingSupported {
+		return fmt.Errorf("model %s does not support thinking mode", catalogModel.Name)
+	}
+
+	// Parse thinking range if available
+	if catalogModel.Features.ThinkingRange != nil {
+		rangeParts := strings.Split(*catalogModel.Features.ThinkingRange, "-")
+		if len(rangeParts) == 2 {
+			minRange, err1 := strconv.Atoi(rangeParts[0])
+			maxRange, err2 := strconv.Atoi(rangeParts[1])
+			if err1 == nil && err2 == nil {
+				// Special case for -1 (dynamic thinking)
+				if thinkingBudget == -1 {
+					return nil // Dynamic thinking is always valid
+				}
+
+				// Special case for 0 (disabled thinking)
+				if thinkingBudget == 0 {
+					if catalogModel.Features.ThinkingCanDisable != nil && *catalogModel.Features.ThinkingCanDisable {
+						return nil // Disabling is allowed
+					}
+					return fmt.Errorf("thinking cannot be disabled for model %s (thinking_budget=0 not allowed)", catalogModel.Name)
+				}
+
+				// Validate range for positive values
+				if thinkingBudget < minRange || thinkingBudget > maxRange {
+					return fmt.Errorf("thinking_budget %d is outside valid range %s for model %s", thinkingBudget, *catalogModel.Features.ThinkingRange, catalogModel.Name)
+				}
+			}
 		}
 	}
 
