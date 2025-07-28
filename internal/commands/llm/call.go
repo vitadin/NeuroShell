@@ -1,4 +1,5 @@
-package builtin
+// Package llm contains LLM-related commands for the NeuroShell CLI.
+package llm
 
 import (
 	"fmt"
@@ -9,27 +10,27 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-// LLMCallCommand implements the \llm-call command for orchestrating LLM API calls.
+// CallCommand implements the \llm-call command for orchestrating LLM API calls.
 // It provides pure service orchestration without message manipulation.
-type LLMCallCommand struct{}
+type CallCommand struct{}
 
 // Name returns the command name "llm-call" for registration and lookup.
-func (c *LLMCallCommand) Name() string {
+func (c *CallCommand) Name() string {
 	return "llm-call"
 }
 
 // ParseMode returns ParseModeKeyValue for bracket parameter parsing.
-func (c *LLMCallCommand) ParseMode() neurotypes.ParseMode {
+func (c *CallCommand) ParseMode() neurotypes.ParseMode {
 	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the llm-call command does.
-func (c *LLMCallCommand) Description() string {
+func (c *CallCommand) Description() string {
 	return "Orchestrate LLM API call using client, model, and session services"
 }
 
 // Usage returns the syntax and usage examples for the llm-call command.
-func (c *LLMCallCommand) Usage() string {
+func (c *CallCommand) Usage() string {
 	return `\llm-call[client_id=client_id, model_id=model_id, session_id=session_id, stream=false, dry_run=false]
 
 Examples:
@@ -54,7 +55,7 @@ Notes:
 }
 
 // HelpInfo returns structured help information for the llm-call command.
-func (c *LLMCallCommand) HelpInfo() neurotypes.HelpInfo {
+func (c *CallCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
@@ -123,7 +124,7 @@ func (c *LLMCallCommand) HelpInfo() neurotypes.HelpInfo {
 }
 
 // Execute orchestrates an LLM API call using the three independent services.
-func (c *LLMCallCommand) Execute(args map[string]string, input string) error {
+func (c *CallCommand) Execute(args map[string]string, input string) error {
 	// IMPORTANT: Warn and discard any input message
 	if input != "" {
 		fmt.Printf("⚠️  Warning: \\llm-call does not accept input messages. Use \\session-add-usermsg first.\n")
@@ -234,7 +235,7 @@ func (c *LLMCallCommand) Execute(args map[string]string, input string) error {
 }
 
 // handleDryRun shows the complete API payload that would be sent without making the call.
-func (c *LLMCallCommand) handleDryRun(client neurotypes.LLMClient, model *neurotypes.ModelConfig, session *neurotypes.ChatSession, variableService *services.VariableService) error {
+func (c *CallCommand) handleDryRun(client neurotypes.LLMClient, model *neurotypes.ModelConfig, session *neurotypes.ChatSession, variableService *services.VariableService) error {
 	fmt.Println("=== LLM CALL DRY RUN ===")
 	// Get client ID from variable service for debugging display
 	clientID, _ := variableService.Get("_client_id")
@@ -284,7 +285,7 @@ func (c *LLMCallCommand) handleDryRun(client neurotypes.LLMClient, model *neurot
 }
 
 // handleSyncCall performs a synchronous LLM API call.
-func (c *LLMCallCommand) handleSyncCall(llmService neurotypes.LLMService, client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, variableService *services.VariableService) error {
+func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, variableService *services.VariableService) error {
 	// Pure service orchestration - no message manipulation
 	response, err := llmService.SendCompletion(client, session, model)
 	if err != nil {
@@ -303,7 +304,7 @@ func (c *LLMCallCommand) handleSyncCall(llmService neurotypes.LLMService, client
 }
 
 // handleStreamingCall performs a streaming LLM API call.
-func (c *LLMCallCommand) handleStreamingCall(llmService neurotypes.LLMService, client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, variableService *services.VariableService) error {
+func (c *CallCommand) handleStreamingCall(llmService neurotypes.LLMService, client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, variableService *services.VariableService) error {
 	// Pure service orchestration for streaming
 	stream, err := llmService.StreamCompletion(client, session, model)
 	if err != nil {
@@ -331,7 +332,7 @@ func (c *LLMCallCommand) handleStreamingCall(llmService neurotypes.LLMService, c
 }
 
 func init() {
-	if err := commands.GetGlobalRegistry().Register(&LLMCallCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&CallCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register llm-call command: %v", err))
 	}
 }

@@ -1,4 +1,5 @@
-package builtin
+// Package llm contains tests for LLM-related commands.
+package llm
 
 import (
 	"strings"
@@ -13,18 +14,18 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-func TestLLMAPIActivateCommand_Name(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Name(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	assert.Equal(t, "llm-api-activate", cmd.Name())
 }
 
-func TestLLMAPIActivateCommand_ParseMode(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_ParseMode(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 }
 
-func TestLLMAPIActivateCommand_Description(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Description(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	desc := cmd.Description()
 	assert.NotEmpty(t, desc)
 	assert.Contains(t, strings.ToLower(desc), "activate")
@@ -32,8 +33,8 @@ func TestLLMAPIActivateCommand_Description(t *testing.T) {
 	assert.Contains(t, strings.ToLower(desc), "key")
 }
 
-func TestLLMAPIActivateCommand_Usage(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Usage(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	usage := cmd.Usage()
 	assert.NotEmpty(t, usage)
 	assert.Contains(t, usage, "\\llm-api-activate")
@@ -41,8 +42,8 @@ func TestLLMAPIActivateCommand_Usage(t *testing.T) {
 	assert.Contains(t, usage, "key")
 }
 
-func TestLLMAPIActivateCommand_HelpInfo(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_HelpInfo(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	helpInfo := cmd.HelpInfo()
 
 	assert.Equal(t, "llm-api-activate", helpInfo.Command)
@@ -70,8 +71,8 @@ func TestLLMAPIActivateCommand_HelpInfo(t *testing.T) {
 	assert.True(t, keyFound, "key option should exist")
 }
 
-func TestLLMAPIActivateCommand_Execute_Success(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Execute_Success(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	ctx := setupLLMAPIActivateTestRegistry(t)
 
 	// Clear any existing environment variables to avoid interference
@@ -158,8 +159,8 @@ func TestLLMAPIActivateCommand_Execute_Success(t *testing.T) {
 	}
 }
 
-func TestLLMAPIActivateCommand_Execute_MissingRequiredArgs(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Execute_MissingRequiredArgs(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	setupLLMAPIActivateTestRegistry(t)
 
 	tests := []struct {
@@ -203,8 +204,8 @@ func TestLLMAPIActivateCommand_Execute_MissingRequiredArgs(t *testing.T) {
 	}
 }
 
-func TestLLMAPIActivateCommand_Execute_InvalidProvider(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Execute_InvalidProvider(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	setupLLMAPIActivateTestRegistry(t)
 
 	tests := []struct {
@@ -243,8 +244,8 @@ func TestLLMAPIActivateCommand_Execute_InvalidProvider(t *testing.T) {
 	}
 }
 
-func TestLLMAPIActivateCommand_Execute_KeyNotFound(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Execute_KeyNotFound(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	ctx := setupLLMAPIActivateTestRegistry(t)
 
 	// Clear any existing environment variables to avoid interference
@@ -261,8 +262,8 @@ func TestLLMAPIActivateCommand_Execute_KeyNotFound(t *testing.T) {
 	assert.Contains(t, err.Error(), "key 'os.NONEXISTENT_KEY'")
 }
 
-func TestLLMAPIActivateCommand_Execute_EmptyKey(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Execute_EmptyKey(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	setupLLMAPIActivateTestRegistry(t)
 
 	variableService, err := services.GetGlobalVariableService()
@@ -282,8 +283,8 @@ func TestLLMAPIActivateCommand_Execute_EmptyKey(t *testing.T) {
 	assert.Contains(t, err.Error(), "key 'os.EMPTY_KEY' is empty")
 }
 
-func TestLLMAPIActivateCommand_Execute_InvalidKeyFormat(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Execute_InvalidKeyFormat(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	setupLLMAPIActivateTestRegistry(t)
 
 	variableService, err := services.GetGlobalVariableService()
@@ -331,8 +332,8 @@ func TestLLMAPIActivateCommand_Execute_InvalidKeyFormat(t *testing.T) {
 	}
 }
 
-func TestLLMAPIActivateCommand_Execute_VariableServiceError(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Execute_VariableServiceError(t *testing.T) {
+	cmd := &APIActivateCommand{}
 
 	// Don't set up variable service to simulate error
 	ctx := context.NewTestContext()
@@ -354,8 +355,8 @@ func TestLLMAPIActivateCommand_Execute_VariableServiceError(t *testing.T) {
 	assert.Contains(t, err.Error(), "configuration service not available")
 }
 
-func TestLLMAPIActivateCommand_isValidKeyFormat(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_isValidKeyFormat(t *testing.T) {
+	cmd := &APIActivateCommand{}
 
 	tests := []struct {
 		name     string
@@ -417,8 +418,8 @@ func TestLLMAPIActivateCommand_isValidKeyFormat(t *testing.T) {
 	}
 }
 
-func TestLLMAPIActivateCommand_Execute_SystemVariableSetError(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Execute_SystemVariableSetError(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	setupLLMAPIActivateTestRegistry(t)
 
 	variableService, err := services.GetGlobalVariableService()
@@ -451,8 +452,8 @@ func TestLLMAPIActivateCommand_Execute_SystemVariableSetError(t *testing.T) {
 	assert.Equal(t, testKey, activeValue)
 }
 
-func TestLLMAPIActivateCommand_Execute_AllValidProviders(t *testing.T) {
-	cmd := &LLMAPIActivateCommand{}
+func TestAPIActivateCommand_Execute_AllValidProviders(t *testing.T) {
+	cmd := &APIActivateCommand{}
 	setupLLMAPIActivateTestRegistry(t)
 
 	variableService, err := services.GetGlobalVariableService()
@@ -516,4 +517,4 @@ func setupLLMAPIActivateTestRegistry(t *testing.T) neurotypes.Context {
 }
 
 // Interface compliance check
-var _ neurotypes.Command = (*LLMAPIActivateCommand)(nil)
+var _ neurotypes.Command = (*APIActivateCommand)(nil)

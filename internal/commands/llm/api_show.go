@@ -1,4 +1,5 @@
-package builtin
+// Package llm contains LLM-related commands for the NeuroShell CLI.
+package llm
 
 import (
 	"fmt"
@@ -11,32 +12,32 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-// LLMAPIShowCommand implements the \llm-api-show command for displaying collected API keys.
+// APIShowCommand implements the \llm-api-show command for displaying collected API keys.
 // It shows API keys from multiple sources (OS env, config .env, local .env) with source attribution.
-type LLMAPIShowCommand struct{}
+type APIShowCommand struct{}
 
 // Name returns the command name "llm-api-show" for registration and lookup.
-func (c *LLMAPIShowCommand) Name() string {
+func (c *APIShowCommand) Name() string {
 	return "llm-api-show"
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
-func (c *LLMAPIShowCommand) ParseMode() neurotypes.ParseMode {
+func (c *APIShowCommand) ParseMode() neurotypes.ParseMode {
 	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the llm-api-show command does.
-func (c *LLMAPIShowCommand) Description() string {
+func (c *APIShowCommand) Description() string {
 	return "Show API-related variables from multiple sources with intelligent filtering and masking"
 }
 
 // Usage returns the syntax and usage examples for the llm-api-show command.
-func (c *LLMAPIShowCommand) Usage() string {
+func (c *APIShowCommand) Usage() string {
 	return "\\llm-api-show[provider=openai|anthropic|openrouter|moonshot|gemini|all]"
 }
 
 // HelpInfo returns structured help information for the llm-api-show command.
-func (c *LLMAPIShowCommand) HelpInfo() neurotypes.HelpInfo {
+func (c *APIShowCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
@@ -82,7 +83,7 @@ func (c *LLMAPIShowCommand) HelpInfo() neurotypes.HelpInfo {
 }
 
 // Execute displays collected API keys with source attribution and masked values.
-func (c *LLMAPIShowCommand) Execute(args map[string]string, _ string) error {
+func (c *APIShowCommand) Execute(args map[string]string, _ string) error {
 	// Get configuration service
 	configService, err := services.GetGlobalConfigurationService()
 	if err != nil {
@@ -145,7 +146,7 @@ func (c *LLMAPIShowCommand) Execute(args map[string]string, _ string) error {
 }
 
 // displayAPIKeys formats and displays the API keys using markdown table rendered by glamour
-func (c *LLMAPIShowCommand) displayAPIKeys(keys []services.APIKeySource, variableService *services.VariableService, providerFilter string) {
+func (c *APIShowCommand) displayAPIKeys(keys []services.APIKeySource, variableService *services.VariableService, providerFilter string) {
 	if len(keys) == 0 {
 		if providerFilter == "all" {
 			fmt.Println("No API keys found in any source.")
@@ -178,7 +179,7 @@ func (c *LLMAPIShowCommand) displayAPIKeys(keys []services.APIKeySource, variabl
 }
 
 // createMarkdownTable creates a markdown table for API keys with proper formatting
-func (c *LLMAPIShowCommand) createMarkdownTable(keys []services.APIKeySource, variableService *services.VariableService, providerFilter string) string {
+func (c *APIShowCommand) createMarkdownTable(keys []services.APIKeySource, variableService *services.VariableService, providerFilter string) string {
 	var result strings.Builder
 
 	// Title
@@ -240,7 +241,7 @@ func (c *LLMAPIShowCommand) createMarkdownTable(keys []services.APIKeySource, va
 }
 
 // maskAPIKey masks an API key showing only first 3 and last 3 characters
-func (c *LLMAPIShowCommand) maskAPIKey(apiKey string) string {
+func (c *APIShowCommand) maskAPIKey(apiKey string) string {
 	if len(apiKey) <= 6 {
 		return strings.Repeat("*", len(apiKey))
 	}
@@ -248,7 +249,7 @@ func (c *LLMAPIShowCommand) maskAPIKey(apiKey string) string {
 }
 
 // getKeyStatus checks if a key is currently active for its provider
-func (c *LLMAPIShowCommand) getKeyStatus(provider, varName string, variableService *services.VariableService) string {
+func (c *APIShowCommand) getKeyStatus(provider, varName string, variableService *services.VariableService) string {
 	activeVarName := "#active_" + provider + "_key"
 	activeKeyValue, err := variableService.Get(activeVarName)
 	if err != nil || activeKeyValue == "" {
@@ -269,7 +270,7 @@ func (c *LLMAPIShowCommand) getKeyStatus(provider, varName string, variableServi
 }
 
 // getActiveKeysInfo returns a list of active key metadata variable names
-func (c *LLMAPIShowCommand) getActiveKeysInfo(variableService *services.VariableService) []string {
+func (c *APIShowCommand) getActiveKeysInfo(variableService *services.VariableService) []string {
 	// Get configuration service to access provider list
 	configService, err := services.GetGlobalConfigurationService()
 	if err != nil {
@@ -291,7 +292,7 @@ func (c *LLMAPIShowCommand) getActiveKeysInfo(variableService *services.Variable
 }
 
 // getActiveKeyForProvider returns the active key metadata variable for a specific provider
-func (c *LLMAPIShowCommand) getActiveKeyForProvider(provider string, variableService *services.VariableService) string {
+func (c *APIShowCommand) getActiveKeyForProvider(provider string, variableService *services.VariableService) string {
 	activeVarName := "#active_" + provider + "_key"
 	activeKey, err := variableService.Get(activeVarName)
 	if err == nil && activeKey != "" {
@@ -301,7 +302,7 @@ func (c *LLMAPIShowCommand) getActiveKeyForProvider(provider string, variableSer
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&LLMAPIShowCommand{}); err != nil {
+	if err := commands.GlobalRegistry.Register(&APIShowCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register llm-api-show command: %v", err))
 	}
 }

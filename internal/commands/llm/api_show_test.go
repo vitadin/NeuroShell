@@ -1,4 +1,5 @@
-package builtin
+// Package llm contains tests for LLM-related commands.
+package llm
 
 import (
 	"strings"
@@ -13,33 +14,33 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-func TestLLMAPIShowCommand_Name(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_Name(t *testing.T) {
+	cmd := &APIShowCommand{}
 	assert.Equal(t, "llm-api-show", cmd.Name())
 }
 
-func TestLLMAPIShowCommand_ParseMode(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_ParseMode(t *testing.T) {
+	cmd := &APIShowCommand{}
 	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 }
 
-func TestLLMAPIShowCommand_Description(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_Description(t *testing.T) {
+	cmd := &APIShowCommand{}
 	desc := cmd.Description()
 	assert.NotEmpty(t, desc)
 	assert.Contains(t, strings.ToLower(desc), "api")
 	assert.Contains(t, strings.ToLower(desc), "filtering")
 }
 
-func TestLLMAPIShowCommand_Usage(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_Usage(t *testing.T) {
+	cmd := &APIShowCommand{}
 	usage := cmd.Usage()
 	assert.NotEmpty(t, usage)
 	assert.Contains(t, usage, "\\llm-api-show")
 }
 
-func TestLLMAPIShowCommand_HelpInfo(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_HelpInfo(t *testing.T) {
+	cmd := &APIShowCommand{}
 	helpInfo := cmd.HelpInfo()
 
 	assert.Equal(t, "llm-api-show", helpInfo.Command)
@@ -63,8 +64,8 @@ func TestLLMAPIShowCommand_HelpInfo(t *testing.T) {
 	assert.True(t, found, "provider option should exist")
 }
 
-func TestLLMAPIShowCommand_Execute_NoKeys(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_Execute_NoKeys(t *testing.T) {
+	cmd := &APIShowCommand{}
 	ctx := setupLLMAPIShowTestRegistry(t)
 
 	// Override all possible LLM environment variables to empty to simulate no keys
@@ -118,8 +119,8 @@ func TestLLMAPIShowCommand_Execute_NoKeys(t *testing.T) {
 	}
 }
 
-func TestLLMAPIShowCommand_Execute_WithKeys(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_Execute_WithKeys(t *testing.T) {
+	cmd := &APIShowCommand{}
 	ctx := setupLLMAPIShowTestRegistry(t)
 
 	// Clear any existing environment variables and set controlled test data
@@ -205,8 +206,8 @@ func TestLLMAPIShowCommand_Execute_WithKeys(t *testing.T) {
 	}
 }
 
-func TestLLMAPIShowCommand_Execute_WithActiveKeys(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_Execute_WithActiveKeys(t *testing.T) {
+	cmd := &APIShowCommand{}
 	ctx := setupLLMAPIShowTestRegistry(t)
 
 	// Clear any existing environment variables and set controlled test data
@@ -237,8 +238,8 @@ func TestLLMAPIShowCommand_Execute_WithActiveKeys(t *testing.T) {
 	assert.Contains(t, output, "Active keys:")
 }
 
-func TestLLMAPIShowCommand_maskAPIKey(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_maskAPIKey(t *testing.T) {
+	cmd := &APIShowCommand{}
 
 	tests := []struct {
 		name     string
@@ -280,8 +281,8 @@ func TestLLMAPIShowCommand_maskAPIKey(t *testing.T) {
 	}
 }
 
-func TestLLMAPIShowCommand_getKeyStatus(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_getKeyStatus(t *testing.T) {
+	cmd := &APIShowCommand{}
 	setupLLMAPIShowTestRegistry(t)
 
 	variableService, err := services.GetGlobalVariableService()
@@ -340,8 +341,8 @@ func TestLLMAPIShowCommand_getKeyStatus(t *testing.T) {
 	}
 }
 
-func TestLLMAPIShowCommand_Execute_ConfigurationServiceError(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_Execute_ConfigurationServiceError(t *testing.T) {
+	cmd := &APIShowCommand{}
 
 	// Don't set up configuration service to simulate error
 	ctx := context.NewTestContext()
@@ -365,8 +366,8 @@ func TestLLMAPIShowCommand_Execute_ConfigurationServiceError(t *testing.T) {
 	assert.Contains(t, err.Error(), "configuration service not available")
 }
 
-func TestLLMAPIShowCommand_Execute_VariableServiceError(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_Execute_VariableServiceError(t *testing.T) {
+	cmd := &APIShowCommand{}
 
 	// Set up context but not variable service to simulate error
 	ctx := context.NewTestContext()
@@ -422,7 +423,7 @@ func setupLLMAPIShowTestRegistry(t *testing.T) neurotypes.Context {
 	return ctx
 }
 
-func TestLLMAPIShowCommand_isAPIRelated(t *testing.T) {
+func TestAPIShowCommand_isAPIRelated(t *testing.T) {
 	// Define the test provider list that matches the standard providers
 	providers := []string{"openai", "anthropic", "openrouter", "moonshot", "gemini"}
 
@@ -580,8 +581,8 @@ func TestLLMAPIShowCommand_isAPIRelated(t *testing.T) {
 	}
 }
 
-func TestLLMAPIShowCommand_Execute_WithFiltering(t *testing.T) {
-	cmd := &LLMAPIShowCommand{}
+func TestAPIShowCommand_Execute_WithFiltering(t *testing.T) {
+	cmd := &APIShowCommand{}
 	ctx := setupLLMAPIShowTestRegistry(t)
 
 	// Clear any existing environment variables and set controlled test data
@@ -638,4 +639,4 @@ func TestLLMAPIShowCommand_Execute_WithFiltering(t *testing.T) {
 }
 
 // Interface compliance check
-var _ neurotypes.Command = (*LLMAPIShowCommand)(nil)
+var _ neurotypes.Command = (*APIShowCommand)(nil)

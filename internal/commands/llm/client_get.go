@@ -1,4 +1,5 @@
-package builtin
+// Package llm contains LLM-related commands for the NeuroShell CLI.
+package llm
 
 import (
 	"fmt"
@@ -9,32 +10,32 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-// LLMClientGetCommand implements the \llm-client-get command for getting/creating LLM clients.
+// ClientGetCommand implements the \llm-client-get command for getting/creating LLM clients.
 // It provides LLM client creation and caching functionality for the NeuroShell environment.
-type LLMClientGetCommand struct{}
+type ClientGetCommand struct{}
 
 // Name returns the command name "llm-client-get" for registration and lookup.
-func (c *LLMClientGetCommand) Name() string {
+func (c *ClientGetCommand) Name() string {
 	return "llm-client-get"
 }
 
 // ParseMode returns ParseModeKeyValue for bracket parameter parsing.
-func (c *LLMClientGetCommand) ParseMode() neurotypes.ParseMode {
+func (c *ClientGetCommand) ParseMode() neurotypes.ParseMode {
 	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the llm-client-get command does.
-func (c *LLMClientGetCommand) Description() string {
+func (c *ClientGetCommand) Description() string {
 	return "Get or create LLM client for provider"
 }
 
 // Usage returns the syntax and usage examples for the llm-client-get command.
-func (c *LLMClientGetCommand) Usage() string {
+func (c *ClientGetCommand) Usage() string {
 	return "\\llm-client-get[key=api_key, provider=openai|openrouter|moonshot|anthropic|gemini] or \\llm-client-get (uses env vars)"
 }
 
 // HelpInfo returns structured help information for the llm-client-get command.
-func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
+func (c *ClientGetCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
@@ -104,7 +105,7 @@ func (c *LLMClientGetCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute creates or retrieves an LLM client for the specified provider.
 // API key can be provided explicitly or via environment variables.
-func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
+func (c *ClientGetCommand) Execute(args map[string]string, _ string) error {
 	// Determine provider (from args or default to openai)
 	provider := args["provider"]
 	if provider == "" {
@@ -207,7 +208,7 @@ func (c *LLMClientGetCommand) Execute(args map[string]string, _ string) error {
 }
 
 func init() {
-	if err := commands.GetGlobalRegistry().Register(&LLMClientGetCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&ClientGetCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register llm-client-get command: %v", err))
 	}
 }
