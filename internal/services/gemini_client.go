@@ -46,15 +46,18 @@ func (c *GeminiClient) initializeClientIfNeeded() error {
 		return fmt.Errorf("google API key not configured")
 	}
 
-	// Create Gemini client
+	// Create Gemini client with API key configuration
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, nil)
+	clientConfig := &genai.ClientConfig{
+		APIKey: c.apiKey,
+	}
+	client, err := genai.NewClient(ctx, clientConfig)
 	if err != nil {
 		return fmt.Errorf("failed to create Gemini client: %w", err)
 	}
 
 	c.client = client
-	logger.Debug("Gemini client initialized", "provider", "gemini")
+	logger.Debug("Gemini client initialized", "provider", "gemini", "apiKeySet", c.apiKey != "")
 	return nil
 }
 

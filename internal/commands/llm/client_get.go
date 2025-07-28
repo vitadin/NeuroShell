@@ -138,6 +138,11 @@ func (c *ClientGetCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("unsupported provider '%s'. Supported providers: %s", provider, strings.Join(supportedProviders, ", "))
 	}
 
+	// For Gemini provider, delegate to specialized command with better key resolution
+	if provider == "gemini" {
+		return c.delegateToGeminiClientNew(args)
+	}
+
 	// Get API key - first from args, then from environment variable
 	apiKey := args["key"]
 	if apiKey == "" {
@@ -203,6 +208,29 @@ func (c *ClientGetCommand) Execute(args map[string]string, _ string) error {
 
 	// Output success message
 	fmt.Printf("LLM client ready: %s (configured: %t)\n", clientID, client.IsConfigured())
+
+	return nil
+}
+
+// delegateToGeminiClientNew handles Gemini provider by delegating to the specialized command.
+// This leverages the robust key resolution system in gemini-client-new.
+func (c *ClientGetCommand) delegateToGeminiClientNew(args map[string]string) error {
+	// Get stack service to push the command for execution
+	stackService, err := services.GetGlobalStackService()
+	if err != nil {
+		return fmt.Errorf("stack service not available: %w", err)
+	}
+
+	// Build the gemini-client-new command with optional key parameter
+	var commandStr string
+	if key, exists := args["key"]; exists && key != "" {
+		commandStr = fmt.Sprintf("\\gemini-client-new[key=%s]", key)
+	} else {
+		commandStr = "\\gemini-client-new"
+	}
+
+	// Push the command to the stack for execution
+	stackService.PushCommand(commandStr)
 
 	return nil
 }
