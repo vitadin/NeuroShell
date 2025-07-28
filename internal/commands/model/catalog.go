@@ -477,6 +477,47 @@ func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, sh
 		result.WriteString(reasoningLine)
 	}
 
+	// Thinking mode information (for Gemini models)
+	if model.Features != nil && model.Features.ThinkingSupported != nil && *model.Features.ThinkingSupported {
+		var thinkingInfo []string
+
+		// Add thinking range information
+		if model.Features.ThinkingRange != nil {
+			rangeInfo := fmt.Sprintf("range: %s", themeObj.Variable.Render(*model.Features.ThinkingRange))
+			thinkingInfo = append(thinkingInfo, rangeInfo)
+		}
+
+		// Add default setting
+		if model.Features.ThinkingDefault != nil {
+			var defaultText string
+			switch *model.Features.ThinkingDefault {
+			case -1:
+				defaultText = "default: dynamic"
+			case 0:
+				defaultText = "default: disabled"
+			default:
+				defaultText = fmt.Sprintf("default: %d tokens", *model.Features.ThinkingDefault)
+			}
+			thinkingInfo = append(thinkingInfo, themeObj.Variable.Render(defaultText))
+		}
+
+		// Add disable capability
+		if model.Features.ThinkingCanDisable != nil {
+			if *model.Features.ThinkingCanDisable {
+				thinkingInfo = append(thinkingInfo, themeObj.Keyword.Render("can disable"))
+			} else {
+				thinkingInfo = append(thinkingInfo, themeObj.Warning.Render("cannot disable"))
+			}
+		}
+
+		if len(thinkingInfo) > 0 {
+			thinkingLine := fmt.Sprintf("    %s %s\n",
+				themeObj.Info.Render("Thinking mode:"),
+				strings.Join(thinkingInfo, ", "))
+			result.WriteString(thinkingLine)
+		}
+	}
+
 	// Snapshots
 	if len(model.Snapshots) > 0 {
 		snapshotsList := make([]string, len(model.Snapshots))

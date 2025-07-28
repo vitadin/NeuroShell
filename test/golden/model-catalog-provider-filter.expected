@@ -153,6 +153,7 @@ Gemini Models:
     Features: streaming, function-calling, structured-outputs
     Tools: code-execution, search-grounding
     Knowledge cutoff: 2025-01-01
+    Thinking mode: range: 0-24576, default: dynamic, can disable
     Snapshots: gemini-2.5-flash, gemini-2.5-flash-preview-05-20
     Description: Google's fast and efficient multimodal AI model optimized for speed and performance
   [GM25FL] Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
@@ -163,6 +164,7 @@ Gemini Models:
     Pricing: $0.10/1M input, $0.40/1M output tokens
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-01
+    Thinking mode: range: 512-24576, default: disabled, can disable
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
   [GM25P] Gemini 2.5 Pro (gemini-2.5-pro)
     Provider: gemini
@@ -173,6 +175,7 @@ Gemini Models:
     Features: streaming, function-calling, structured-outputs
     Tools: code-execution, search-grounding
     Knowledge cutoff: 2025-01-01
+    Thinking mode: range: 128-32768, default: dynamic, cannot disable
     Description: Google's most capable multimodal AI model with advanced reasoning capabilities
 Moonshot Models:
   [MK2] Kimi K2 (Moonshot) (kimi-k2-0711-preview)
@@ -270,6 +273,7 @@ Openrouter Models:
     Pricing: $0.10/1M input, $0.40/1M output tokens
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-01
+    Thinking mode: range: 512-24576, default: disabled, can disable
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
   [ORK2] Kimi K2 (OpenRouter) (moonshotai/kimi-k2)
     Provider: openrouter
