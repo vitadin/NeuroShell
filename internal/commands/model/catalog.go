@@ -34,7 +34,7 @@ func (c *CatalogCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the model-catalog command.
 func (c *CatalogCommand) Usage() string {
-	return `\model-catalog[provider=openai|anthropic|openrouter|moonshot|all, sort=name|provider, search=query]
+	return `\model-catalog[provider=openai|anthropic|openrouter|moonshot|gemini|all, sort=name|provider, search=query]
 
 Examples:
   \model-catalog                              %% List all available models (default: sorted by provider)
@@ -42,6 +42,7 @@ Examples:
   \model-catalog[provider=anthropic]          %% List Anthropic models only
   \model-catalog[provider=openrouter]         %% List OpenRouter models only
   \model-catalog[provider=moonshot]           %% List Moonshot models only
+  \model-catalog[provider=gemini]             %% List Google Gemini models only
   \model-catalog[sort=name]                   %% Sort models alphabetically by name
   \model-catalog[search=gpt-4]                %% Search for models containing "gpt-4"
   \model-catalog[search=CS4]                  %% Search by model ID (case-insensitive)
@@ -50,7 +51,7 @@ Examples:
   \model-catalog[search=claude,sort=name]     %% Search for Claude models, sorted by name
 
 Options:
-  provider - Filter by provider: openai, anthropic, openrouter, moonshot, all (default: all)
+  provider - Filter by provider: openai, anthropic, openrouter, moonshot, gemini, all (default: all)
   sort     - Sort order: name (alphabetical), provider (by provider then name)
   search   - Search query to filter models by ID, name, display name, or description
 
@@ -65,12 +66,12 @@ func (c *CatalogCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\model-catalog[provider=openai|anthropic|all, sort=name|provider, search=query]",
+		Usage:       "\\model-catalog[provider=openai|anthropic|openrouter|moonshot|gemini|all, sort=name|provider, search=query]",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "provider",
-				Description: "Filter by provider: openai, anthropic, all",
+				Description: "Filter by provider: openai, anthropic, openrouter, moonshot, gemini, all",
 				Required:    false,
 				Type:        "string",
 				Default:     "all",
@@ -109,6 +110,10 @@ func (c *CatalogCommand) HelpInfo() neurotypes.HelpInfo {
 			{
 				Command:     "\\model-catalog[provider=anthropic,sort=name]",
 				Description: "List Anthropic models sorted alphabetically",
+			},
+			{
+				Command:     "\\model-catalog[provider=gemini]",
+				Description: "List Google Gemini models only",
 			},
 		},
 		StoredVariables: []neurotypes.HelpStoredVariable{
@@ -224,9 +229,10 @@ func (c *CatalogCommand) validateArguments(provider, sortBy string) error {
 		"anthropic":  true,
 		"openrouter": true,
 		"moonshot":   true,
+		"gemini":     true,
 	}
 	if !validProviders[provider] {
-		return fmt.Errorf("invalid provider option '%s'. Valid options: all, openai, anthropic, openrouter, moonshot", provider)
+		return fmt.Errorf("invalid provider option '%s'. Valid options: all, openai, anthropic, openrouter, moonshot, gemini", provider)
 	}
 
 	validSorts := map[string]bool{

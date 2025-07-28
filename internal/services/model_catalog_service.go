@@ -111,6 +111,24 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, grok4Model)
 
+	qwen3235BA22BThinkingModel, err := m.loadModelFile(embedded.Qwen3235BA22BThinkingOpenRouterModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Qwen3 235B A22B Thinking (OpenRouter) model: %w", err)
+	}
+	allModels = append(allModels, qwen3235BA22BThinkingModel)
+
+	glm45Model, err := m.loadModelFile(embedded.GLM45OpenRouterModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GLM 4.5 (OpenRouter) model: %w", err)
+	}
+	allModels = append(allModels, glm45Model)
+
+	gemini25FlashLiteOpenRouterModel, err := m.loadModelFile(embedded.Gemini25FlashLiteOpenRouterModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Gemini 2.5 Flash Lite (OpenRouter) model: %w", err)
+	}
+	allModels = append(allModels, gemini25FlashLiteOpenRouterModel)
+
 	gpt41Model, err := m.loadModelFile(embedded.GPT41ModelData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load GPT-4.1 model: %w", err)
@@ -140,6 +158,25 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 		return nil, fmt.Errorf("failed to load o1-pro model: %w", err)
 	}
 	allModels = append(allModels, o1ProModel)
+
+	// Load Gemini models
+	gemini25ProModel, err := m.loadModelFile(embedded.Gemini25ProModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Gemini 2.5 Pro model: %w", err)
+	}
+	allModels = append(allModels, gemini25ProModel)
+
+	gemini25FlashModel, err := m.loadModelFile(embedded.Gemini25FlashModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Gemini 2.5 Flash model: %w", err)
+	}
+	allModels = append(allModels, gemini25FlashModel)
+
+	gemini25FlashLiteModel, err := m.loadModelFile(embedded.Gemini25FlashLiteModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Gemini 2.5 Flash Lite model: %w", err)
+	}
+	allModels = append(allModels, gemini25FlashLiteModel)
 
 	// Validate that all model IDs are unique (case-insensitive)
 	if err := m.validateUniqueIDs(allModels); err != nil {

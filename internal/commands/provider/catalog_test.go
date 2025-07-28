@@ -172,7 +172,7 @@ func TestProviderCatalogCommand_validateArguments(t *testing.T) {
 	cmd := &CatalogCommand{}
 
 	t.Run("valid providers", func(t *testing.T) {
-		validProviders := []string{"all", "openai", "anthropic", "openrouter", "moonshot"}
+		validProviders := []string{"all", "openai", "anthropic", "openrouter", "moonshot", "gemini"}
 		for _, provider := range validProviders {
 			err := cmd.validateArguments(provider, "name")
 			assert.NoError(t, err, "Provider %s should be valid", provider)

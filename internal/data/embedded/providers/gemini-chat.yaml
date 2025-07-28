@@ -1,0 +1,11 @@
+id: GMC
+provider: gemini
+display_name: "Google Gemini Chat"
+base_url: "https://generativelanguage.googleapis.com/v1beta"
+endpoint: "/models/{model}:generateContent"
+client_type: "gemini"
+headers:
+  x-goog-api-key: "{API_KEY}"
+  Content-Type: "application/json"
+description: "Google Gemini generative AI chat completions API"
+implementation_notes: "Natively supported by NeuroShell"

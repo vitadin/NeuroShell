@@ -62,7 +62,7 @@ func TestProviderCatalogService_GetProviderCatalog(t *testing.T) {
 		require.NotNil(t, providers)
 
 		// Verify we get providers from all expected providers
-		assert.Equal(t, 4, len(providers), "Should have exactly 4 providers")
+		assert.Equal(t, 5, len(providers), "Should have exactly 5 providers")
 
 		// Check that we have providers from all expected providers
 		providerNames := make(map[string]bool)
@@ -157,6 +157,24 @@ func TestProviderCatalogService_GetProvidersByProvider(t *testing.T) {
 		assert.NotEmpty(t, provider.Headers, "OpenRouter should have headers")
 		assert.Equal(t, "https://github.com/vitadin/NeuroShell", provider.Headers["HTTP-Referer"])
 		assert.Equal(t, "NeuroShell", provider.Headers["X-Title"])
+	})
+
+	t.Run("get gemini providers", func(t *testing.T) {
+		providers, err := service.GetProvidersByProvider("gemini")
+		require.NoError(t, err)
+		require.NotNil(t, providers)
+		assert.Equal(t, 1, len(providers), "Should have exactly 1 Gemini provider")
+
+		provider := providers[0]
+		assert.Equal(t, "GMC", provider.ID)
+		assert.Equal(t, "gemini", provider.Provider)
+		assert.Equal(t, "gemini", provider.ClientType)
+		assert.Contains(t, provider.BaseURL, "generativelanguage.googleapis.com")
+		assert.Contains(t, provider.Endpoint, "generateContent")
+		assert.NotEmpty(t, provider.Headers, "Gemini should have headers")
+		assert.Equal(t, "{API_KEY}", provider.Headers["x-goog-api-key"])
+		assert.Equal(t, "application/json", provider.Headers["Content-Type"])
+		assert.Equal(t, "Natively supported by NeuroShell", provider.ImplementationNotes)
 	})
 
 	t.Run("case insensitive provider names", func(t *testing.T) {
@@ -277,7 +295,7 @@ func TestProviderCatalogService_SearchProviderCatalog(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, providers)
 		// Should return all providers since empty query matches everything
-		assert.Equal(t, 4, len(providers), "Empty search should return all providers")
+		assert.Equal(t, 5, len(providers), "Empty search should return all providers")
 	})
 }
 
@@ -291,7 +309,8 @@ func TestProviderCatalogService_GetSupportedProviders(t *testing.T) {
 	assert.Contains(t, providers, "anthropic")
 	assert.Contains(t, providers, "moonshot")
 	assert.Contains(t, providers, "openrouter")
-	assert.Equal(t, 4, len(providers), "Should have exactly 4 supported providers")
+	assert.Contains(t, providers, "gemini")
+	assert.Equal(t, 5, len(providers), "Should have exactly 5 supported providers")
 }
 
 func TestProviderCatalogService_GetProviderByID(t *testing.T) {
@@ -470,7 +489,7 @@ func TestProviderCatalogService_IDValidationIntegration(t *testing.T) {
 	t.Run("real catalog has unique IDs", func(t *testing.T) {
 		providers, err := service.GetProviderCatalog()
 		require.NoError(t, err)
-		assert.Equal(t, 4, len(providers), "Should have 4 providers in catalog")
+		assert.Equal(t, 5, len(providers), "Should have 5 providers in catalog")
 
 		// Verify all providers have IDs
 		for _, provider := range providers {
@@ -524,13 +543,18 @@ func TestProviderCatalogService_IDValidationIntegration(t *testing.T) {
 			assert.NotEmpty(t, provider.BaseURL, "Provider should have base URL")
 			assert.NotEmpty(t, provider.ClientType, "Provider should have client type")
 			assert.NotEmpty(t, provider.Description, "Provider should have description")
+			assert.NotEmpty(t, provider.ImplementationNotes, "Provider should have implementation notes")
 
 			// Validate client types
-			validClientTypes := []string{"openai", "openai-compatible"}
+			validClientTypes := []string{"openai", "openai-compatible", "gemini"}
 			assert.Contains(t, validClientTypes, provider.ClientType, "Provider should have valid client type")
 
 			// Validate base URLs start with https
 			assert.True(t, strings.HasPrefix(provider.BaseURL, "https://"), "Provider base URL should use HTTPS")
+
+			// Validate implementation notes values
+			validImplementationNotes := []string{"Natively supported by NeuroShell", "Uses OpenAI-compatible API"}
+			assert.Contains(t, validImplementationNotes, provider.ImplementationNotes, "Provider should have valid implementation notes")
 		}
 	})
 }

@@ -35,6 +35,10 @@ type ProviderCatalogEntry struct {
 
 	// Description provides a brief description of the provider endpoint's capabilities
 	Description string `yaml:"description" json:"description"`
+
+	// ImplementationNotes provides information about how the provider connection is handled
+	// (e.g., "Natively supported by NeuroShell", "Uses OpenAI-compatible API")
+	ImplementationNotes string `yaml:"implementation_notes" json:"implementation_notes"`
 }
 
 // ProviderCatalogFile represents the structure of a provider catalog YAML file.

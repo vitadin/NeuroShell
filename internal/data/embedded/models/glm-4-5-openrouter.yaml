@@ -1,0 +1,20 @@
+name: z-ai/glm-4.5
+id: ORGLM45
+display_name: "Z.AI: GLM 4.5"
+provider: openrouter
+description: "Latest flagship foundation model purpose-built for agent-based applications with Mixture-of-Experts architecture and hybrid inference modes"
+capabilities: [text, reasoning, analysis, coding, writing, tool-use, agentic, agent-alignment, thinking-mode, instant-response]
+context_window: 128000
+knowledge_cutoff: "2025-07-25"
+modalities: [text-input, text-output]
+pricing:
+  input_per_m_token: 0.60
+  output_per_m_token: 2.20
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  thinking_mode: true
+  agent_alignment: true
+  hybrid_inference: true
+version: "2025-07-25"

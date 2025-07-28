@@ -6,6 +6,7 @@ Provider Catalog (Openai) (1 providers):
     Endpoint: /chat/completions
     Client Type: openai
     Description: OpenAI's chat completion API for GPT models
+    Implementation: Natively supported by NeuroShell
 %%> "\\provider-catalog[provider=anthropic]"
 Provider Catalog (Anthropic) (1 providers):
   [ANC] Anthropic Claude Chat (openai-compatible)
@@ -14,6 +15,7 @@ Provider Catalog (Anthropic) (1 providers):
     Client Type: openai-compatible
     Headers: anthropic-version: 2023-06-01
     Description: Anthropic Claude chat completions API
+    Implementation: Natively supported by NeuroShell
 %%> "\\provider-catalog[provider=moonshot]"
 Provider Catalog (Moonshot) (1 providers):
   [MSC] Moonshot Chat Completions (openai-compatible)
@@ -21,6 +23,7 @@ Provider Catalog (Moonshot) (1 providers):
     Endpoint: /chat/completions
     Client Type: openai-compatible
     Description: Moonshot AI chat completions API
+    Implementation: Uses OpenAI-compatible API
 %%> "\\provider-catalog[provider=openrouter]"
 Provider Catalog (Openrouter) (1 providers):
   [ORC] OpenRouter Chat Completions (openai-compatible)
@@ -29,8 +32,9 @@ Provider Catalog (Openrouter) (1 providers):
     Client Type: openai-compatible
     Headers: HTTP-Referer: https://github.com/vitadin/NeuroShell, X-Title: NeuroShell
     Description: OpenRouter unified API access to multiple LLM providers
+    Implementation: Uses OpenAI-compatible API
 %%> "\\provider-catalog[provider=all]"
-Provider Catalog (4 providers):
+Provider Catalog (5 providers):
 Anthropic Providers:
   [ANC] Anthropic Claude Chat (openai-compatible)
     Provider: anthropic
@@ -39,6 +43,16 @@ Anthropic Providers:
     Client Type: openai-compatible
     Headers: anthropic-version: 2023-06-01
     Description: Anthropic Claude chat completions API
+    Implementation: Natively supported by NeuroShell
+Gemini Providers:
+  [GMC] Google Gemini Chat (gemini)
+    Provider: gemini
+    Base URL: https://generativelanguage.googleapis.com/v1beta
+    Endpoint: /models/{model}:generateContent
+    Client Type: gemini
+    Headers: Content-Type: application/json, x-goog-api-key: {API_KEY}
+    Description: Google Gemini generative AI chat completions API
+    Implementation: Natively supported by NeuroShell
 Moonshot Providers:
   [MSC] Moonshot Chat Completions (openai-compatible)
     Provider: moonshot
@@ -46,6 +60,7 @@ Moonshot Providers:
     Endpoint: /chat/completions
     Client Type: openai-compatible
     Description: Moonshot AI chat completions API
+    Implementation: Uses OpenAI-compatible API
 Openai Providers:
   [OAC] OpenAI Chat Completions (openai)
     Provider: openai
@@ -53,6 +68,7 @@ Openai Providers:
     Endpoint: /chat/completions
     Client Type: openai
     Description: OpenAI's chat completion API for GPT models
+    Implementation: Natively supported by NeuroShell
 Openrouter Providers:
   [ORC] OpenRouter Chat Completions (openai-compatible)
     Provider: openrouter
@@ -61,3 +77,4 @@ Openrouter Providers:
     Client Type: openai-compatible
     Headers: HTTP-Referer: https://github.com/vitadin/NeuroShell, X-Title: NeuroShell
     Description: OpenRouter unified API access to multiple LLM providers
+    Implementation: Uses OpenAI-compatible API
