@@ -17,6 +17,7 @@ Service Status Check:
   [OK] provider_catalog     - available/initialized
   [OK] queue                - available/initialized
   [OK] stack                - available/initialized
+  [OK] temporal-display     - available/initialized
   [OK] theme                - available/initialized
   [OK] variable             - available/initialized
-Summary: 17/17 services healthy
+Summary: 18/18 services healthy
