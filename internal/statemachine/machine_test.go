@@ -42,9 +42,6 @@ func setupTestEnvironment(t *testing.T) func() {
 	if err := services.GetGlobalRegistry().RegisterService(services.NewStackService()); err != nil {
 		t.Fatalf("Failed to register stack service: %v", err)
 	}
-	if err := services.GetGlobalRegistry().RegisterService(services.NewExecutorService()); err != nil {
-		t.Fatalf("Failed to register executor service: %v", err)
-	}
 	if err := services.GetGlobalRegistry().RegisterService(services.NewMockLLMService()); err != nil {
 		t.Fatalf("Failed to register LLM service: %v", err)
 	}

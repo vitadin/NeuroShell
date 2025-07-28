@@ -131,21 +131,6 @@ func (r *Registry) GetBashService() (*BashService, error) {
 	return bashService, nil
 }
 
-// GetExecutorService retrieves the executor service with proper type casting.
-func (r *Registry) GetExecutorService() (*ExecutorService, error) {
-	service, err := r.GetService("executor")
-	if err != nil {
-		return nil, err
-	}
-
-	executorService, ok := service.(*ExecutorService)
-	if !ok {
-		return nil, fmt.Errorf("executor service has incorrect type")
-	}
-
-	return executorService, nil
-}
-
 // GetHelpService retrieves the help service with proper type casting.
 func (r *Registry) GetHelpService() (*HelpService, error) {
 	service, err := r.GetService("help")
@@ -288,11 +273,6 @@ func GetGlobalBashService() (*BashService, error) {
 	return GetGlobalRegistry().GetBashService()
 }
 
-// GetGlobalExecutorService returns the executor service from the global registry.
-func GetGlobalExecutorService() (*ExecutorService, error) {
-	return GetGlobalRegistry().GetExecutorService()
-}
-
 // GetGlobalHelpService returns the help service from the global registry.
 func GetGlobalHelpService() (*HelpService, error) {
 	return GetGlobalRegistry().GetHelpService()
@@ -326,26 +306,6 @@ func GetGlobalLLMService() (neurotypes.LLMService, error) {
 // GetGlobalClientFactoryService returns the client factory service from the global registry.
 func GetGlobalClientFactoryService() (*ClientFactoryService, error) {
 	return GetGlobalRegistry().GetClientFactoryService()
-}
-
-// GetQueueService retrieves the queue service with proper type casting.
-func (r *Registry) GetQueueService() (*QueueService, error) {
-	service, err := r.GetService("queue")
-	if err != nil {
-		return nil, err
-	}
-
-	queueService, ok := service.(*QueueService)
-	if !ok {
-		return nil, fmt.Errorf("queue service has incorrect type")
-	}
-
-	return queueService, nil
-}
-
-// GetGlobalQueueService returns the queue service from the global registry.
-func GetGlobalQueueService() (*QueueService, error) {
-	return GetGlobalRegistry().GetQueueService()
 }
 
 // GetStackService retrieves the stack service with proper type casting.

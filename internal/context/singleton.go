@@ -46,10 +46,3 @@ func ResetGlobalContext() {
 	// Reset the sync.Once by creating a new instance
 	globalContextOnce = sync.Once{}
 }
-
-// InitializeGlobalContext ensures the global context is initialized with a new NeuroContext.
-// This is a convenience function that can be called during application startup.
-func InitializeGlobalContext() neurotypes.Context {
-	ResetGlobalContext()
-	return GetGlobalContext()
-}

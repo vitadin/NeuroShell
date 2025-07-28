@@ -20,14 +20,6 @@ func BenchmarkServiceInitialization(b *testing.B) {
 			_ = service.Initialize()
 		}
 	})
-
-	b.Run("ExecutorService", func(b *testing.B) {
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			service := NewExecutorService()
-			_ = service.Initialize()
-		}
-	})
 }
 
 // BenchmarkServiceRegistry_HighLoad tests registry under high load
@@ -116,33 +108,6 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 	})
 }
 
-// BenchmarkExecutorService_CommandParsing tests command parsing performance
-func BenchmarkExecutorService_CommandParsing(b *testing.B) {
-	service := NewExecutorService()
-
-	err := service.Initialize()
-	require.NoError(b, err)
-
-	commands := []string{
-		`\set[name="value"]`,
-		`\get[name]`,
-		`\send[model="gpt-4", temperature=0.7] Hello world`,
-		`\run file.neuro`,
-		`\bash ls -la`,
-		`\send[system="You are helpful", max_tokens=1000] Write a detailed analysis`,
-		`\set[complex_var="${nested_${var}_value}_with_${multiple}_variables"]`,
-		`\get[@user]`,
-		`\get[#session_id]`,
-		`\command[arg1="value1", arg2="value2", arg3="value3", arg4="value4"]`,
-	}
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		cmd := commands[i%len(commands)]
-		_, _ = service.ParseCommand(cmd)
-	}
-}
-
 // BenchmarkConcurrentServiceUsage tests concurrent service operations
 func BenchmarkConcurrentServiceUsage(b *testing.B) {
 	b.Run("VariableService_Concurrent", func(b *testing.B) {
@@ -162,21 +127,6 @@ func BenchmarkConcurrentServiceUsage(b *testing.B) {
 				varValue := fmt.Sprintf("concurrent_value_%d", i)
 				_ = service.Set(varName, varValue)
 				_, _ = service.Get(varName)
-				i++
-			}
-		})
-	})
-
-	b.Run("ExecutorService_Concurrent", func(b *testing.B) {
-		b.RunParallel(func(pb *testing.PB) {
-			i := 0
-			for pb.Next() {
-				// Each goroutine gets its own service to avoid race conditions
-				service := NewExecutorService()
-				_ = service.Initialize()
-
-				cmd := fmt.Sprintf(`\set[var_%d="value_%d"]`, i, i)
-				_, _ = service.ParseCommand(cmd)
 				i++
 			}
 		})
@@ -204,18 +154,6 @@ func BenchmarkConcurrentServiceUsage(b *testing.B) {
 
 // BenchmarkMemoryUsage tests memory allocation patterns
 func BenchmarkMemoryUsage(b *testing.B) {
-	b.Run("ServiceCreation", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			vs := NewVariableService()
-			es := NewExecutorService()
-
-			// Prevent optimization
-			_ = vs.Name()
-			_ = es.Name()
-		}
-	})
 
 	b.Run("RegistryOperations", func(b *testing.B) {
 		b.ReportAllocs()
@@ -228,17 +166,6 @@ func BenchmarkMemoryUsage(b *testing.B) {
 		}
 	})
 
-	b.Run("CommandParsing", func(b *testing.B) {
-		service := NewExecutorService()
-		_ = service.Initialize()
-
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			cmd := fmt.Sprintf(`\set[var_%d="value_%d"]`, i, i)
-			_, _ = service.ParseCommand(cmd)
-		}
-	})
 }
 
 // Note: MockService is defined in registry_test.go

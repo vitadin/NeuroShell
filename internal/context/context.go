@@ -1,5 +1,4 @@
 // Package context provides session state management and variable interpolation for NeuroShell.
-// It maintains variables, message history, execution queues, and system metadata across command executions.
 package context
 
 import (
@@ -40,12 +39,11 @@ type SilentBlockContext struct {
 }
 
 // NeuroContext implements the neurotypes.Context interface providing session state management.
-// It maintains variables, message history, execution queues, metadata, and chat sessions for NeuroShell sessions.
+// It maintains variables, message history, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
 	variables        map[string]string
 	history          []neurotypes.Message
 	sessionID        string
-	executionQueue   []string
 	scriptMetadata   map[string]interface{}
 	testMode         bool
 	testEnvOverrides map[string]string // Test-specific environment variable overrides
@@ -100,7 +98,6 @@ func New() *NeuroContext {
 		variables:        make(map[string]string),
 		history:          make([]neurotypes.Message, 0),
 		sessionID:        "", // Will be set after we know test mode
-		executionQueue:   make([]string, 0),
 		scriptMetadata:   make(map[string]interface{}),
 		testMode:         false,
 		testEnvOverrides: make(map[string]string),
@@ -409,40 +406,6 @@ func (ctx *NeuroContext) interpolateOnce(text string) string {
 
 	// Join all stack elements to form final result
 	return strings.Join(stack, "")
-}
-
-// QueueCommand adds a command to the execution queue.
-func (ctx *NeuroContext) QueueCommand(command string) {
-	ctx.executionQueue = append(ctx.executionQueue, command)
-}
-
-// DequeueCommand removes and returns the first command from the queue.
-func (ctx *NeuroContext) DequeueCommand() (string, bool) {
-	if len(ctx.executionQueue) == 0 {
-		return "", false
-	}
-
-	command := ctx.executionQueue[0]
-	ctx.executionQueue = ctx.executionQueue[1:]
-	return command, true
-}
-
-// GetQueueSize returns the number of commands in the execution queue.
-func (ctx *NeuroContext) GetQueueSize() int {
-	return len(ctx.executionQueue)
-}
-
-// ClearQueue removes all commands from the execution queue.
-func (ctx *NeuroContext) ClearQueue() {
-	ctx.executionQueue = make([]string, 0)
-}
-
-// PeekQueue returns a copy of the execution queue without modifying it.
-func (ctx *NeuroContext) PeekQueue() []string {
-	// Return a copy to prevent external modification
-	result := make([]string, len(ctx.executionQueue))
-	copy(result, ctx.executionQueue)
-	return result
 }
 
 // SetScriptMetadata stores metadata associated with script execution.

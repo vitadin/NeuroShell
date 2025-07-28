@@ -20,7 +20,6 @@ func TestNew(t *testing.T) {
 	assert.NotNil(t, ctx)
 	assert.NotNil(t, ctx.variables)
 	assert.NotNil(t, ctx.history)
-	assert.NotNil(t, ctx.executionQueue)
 	assert.NotNil(t, ctx.scriptMetadata)
 	assert.NotEmpty(t, ctx.sessionID)
 	assert.Contains(t, ctx.sessionID, "session_")
@@ -37,7 +36,6 @@ func TestNew(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "echo", defaultCmd)
 	assert.Equal(t, 0, len(ctx.history))
-	assert.Equal(t, 0, len(ctx.executionQueue))
 	assert.Equal(t, 0, len(ctx.scriptMetadata))
 }
 
@@ -619,94 +617,6 @@ func TestInterpolateOnce(t *testing.T) {
 	}
 }
 
-func TestQueueCommand(t *testing.T) {
-	ctx := New()
-
-	assert.Equal(t, 0, ctx.GetQueueSize())
-
-	ctx.QueueCommand("command1")
-	assert.Equal(t, 1, ctx.GetQueueSize())
-
-	ctx.QueueCommand("command2")
-	ctx.QueueCommand("command3")
-	assert.Equal(t, 3, ctx.GetQueueSize())
-}
-
-func TestDequeueCommand(t *testing.T) {
-	ctx := New()
-
-	// Test empty queue
-	cmd, ok := ctx.DequeueCommand()
-	assert.False(t, ok)
-	assert.Equal(t, "", cmd)
-
-	// Add commands and test FIFO behavior
-	ctx.QueueCommand("first")
-	ctx.QueueCommand("second")
-	ctx.QueueCommand("third")
-
-	cmd, ok = ctx.DequeueCommand()
-	assert.True(t, ok)
-	assert.Equal(t, "first", cmd)
-	assert.Equal(t, 2, ctx.GetQueueSize())
-
-	cmd, ok = ctx.DequeueCommand()
-	assert.True(t, ok)
-	assert.Equal(t, "second", cmd)
-	assert.Equal(t, 1, ctx.GetQueueSize())
-
-	cmd, ok = ctx.DequeueCommand()
-	assert.True(t, ok)
-	assert.Equal(t, "third", cmd)
-	assert.Equal(t, 0, ctx.GetQueueSize())
-
-	// Queue should be empty now
-	cmd, ok = ctx.DequeueCommand()
-	assert.False(t, ok)
-	assert.Equal(t, "", cmd)
-}
-
-func TestClearQueue(t *testing.T) {
-	ctx := New()
-
-	ctx.QueueCommand("command1")
-	ctx.QueueCommand("command2")
-	ctx.QueueCommand("command3")
-	assert.Equal(t, 3, ctx.GetQueueSize())
-
-	ctx.ClearQueue()
-	assert.Equal(t, 0, ctx.GetQueueSize())
-
-	// Should be able to add commands after clearing
-	ctx.QueueCommand("new_command")
-	assert.Equal(t, 1, ctx.GetQueueSize())
-}
-
-func TestPeekQueue(t *testing.T) {
-	ctx := New()
-
-	// Test empty queue
-	queue := ctx.PeekQueue()
-	assert.Equal(t, 0, len(queue))
-
-	// Add commands
-	ctx.QueueCommand("command1")
-	ctx.QueueCommand("command2")
-	ctx.QueueCommand("command3")
-
-	queue = ctx.PeekQueue()
-	expected := []string{"command1", "command2", "command3"}
-	assert.Equal(t, expected, queue)
-
-	// Verify queue size unchanged
-	assert.Equal(t, 3, ctx.GetQueueSize())
-
-	// Verify returned slice is a copy (modifying it shouldn't affect original)
-	queue[0] = "modified"
-	newQueue := ctx.PeekQueue()
-	assert.Equal(t, "command1", newQueue[0]) // Should still be original value
-}
-
 func TestScriptMetadata(t *testing.T) {
 	ctx := New()
 
@@ -979,16 +889,6 @@ func BenchmarkGetVariable_SystemVariable(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_, _ = ctx.GetVariable("#session_id")
-	}
-}
-
-func BenchmarkQueueOperations(b *testing.B) {
-	ctx := New()
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		ctx.QueueCommand("test_command")
-		ctx.DequeueCommand()
 	}
 }
 

@@ -634,7 +634,6 @@ func TestInitializeServices_Success(t *testing.T) {
 			// Verify all services were registered
 			expectedServices := []string{
 				"variable",
-				"executor",
 				"bash",
 				"help",
 			}
