@@ -162,9 +162,11 @@ func (t *TemporalDisplayService) runDisplay(display *Display) {
 		display.ticker.Stop()
 		t.cleanupDisplay(display)
 
-		// Remove from active displays
+		// Remove from active displays only if this is still the current display
 		t.mu.Lock()
-		delete(t.activeDisplays, display.id)
+		if current, exists := t.activeDisplays[display.id]; exists && current == display {
+			delete(t.activeDisplays, display.id)
+		}
 		t.mu.Unlock()
 	}()
 
