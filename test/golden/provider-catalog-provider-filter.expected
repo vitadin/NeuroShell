@@ -30,7 +30,7 @@ Provider Catalog (Openrouter) (1 providers):
     Headers: HTTP-Referer: https://github.com/vitadin/NeuroShell, X-Title: NeuroShell
     Description: OpenRouter unified API access to multiple LLM providers
 %%> "\\provider-catalog[provider=all]"
-Provider Catalog (4 providers):
+Provider Catalog (5 providers):
 Anthropic Providers:
   [ANC] Anthropic Claude Chat (openai-compatible)
     Provider: anthropic
@@ -39,6 +39,14 @@ Anthropic Providers:
     Client Type: openai-compatible
     Headers: anthropic-version: 2023-06-01
     Description: Anthropic Claude chat completions API
+Gemini Providers:
+  [GMC] Google Gemini Chat (gemini)
+    Provider: gemini
+    Base URL: https://generativelanguage.googleapis.com/v1beta
+    Endpoint: /models/{model}:generateContent
+    Client Type: gemini
+    Headers: Content-Type: application/json, x-goog-api-key: {API_KEY}
+    Description: Google Gemini generative AI chat completions API
 Moonshot Providers:
   [MSC] Moonshot Chat Completions (openai-compatible)
     Provider: moonshot
