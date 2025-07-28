@@ -174,6 +174,7 @@ func TestProviderCatalogService_GetProvidersByProvider(t *testing.T) {
 		assert.NotEmpty(t, provider.Headers, "Gemini should have headers")
 		assert.Equal(t, "{API_KEY}", provider.Headers["x-goog-api-key"])
 		assert.Equal(t, "application/json", provider.Headers["Content-Type"])
+		assert.Equal(t, "Natively supported by NeuroShell", provider.ImplementationNotes)
 	})
 
 	t.Run("case insensitive provider names", func(t *testing.T) {
@@ -542,6 +543,7 @@ func TestProviderCatalogService_IDValidationIntegration(t *testing.T) {
 			assert.NotEmpty(t, provider.BaseURL, "Provider should have base URL")
 			assert.NotEmpty(t, provider.ClientType, "Provider should have client type")
 			assert.NotEmpty(t, provider.Description, "Provider should have description")
+			assert.NotEmpty(t, provider.ImplementationNotes, "Provider should have implementation notes")
 
 			// Validate client types
 			validClientTypes := []string{"openai", "openai-compatible", "gemini"}
@@ -549,6 +551,10 @@ func TestProviderCatalogService_IDValidationIntegration(t *testing.T) {
 
 			// Validate base URLs start with https
 			assert.True(t, strings.HasPrefix(provider.BaseURL, "https://"), "Provider base URL should use HTTPS")
+
+			// Validate implementation notes values
+			validImplementationNotes := []string{"Natively supported by NeuroShell", "Uses OpenAI-compatible API"}
+			assert.Contains(t, validImplementationNotes, provider.ImplementationNotes, "Provider should have valid implementation notes")
 		}
 	})
 }

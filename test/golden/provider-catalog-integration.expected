@@ -8,6 +8,7 @@ Openai Providers:
     Endpoint: /chat/completions
     Client Type: openai
     Description: OpenAI's chat completion API for GPT models
+    Implementation: Natively supported by NeuroShell
 %%> "\\get[_output]"
 _output = Provider Catalog - Search: 'openai' (1 providers):
 Openai Providers:
@@ -17,6 +18,7 @@ Openai Providers:
     Endpoint: /chat/completions
     Client Type: openai
     Description: OpenAI's chat completion API for GPT models
+    Implementation: Natively supported by NeuroShell
 %%> "\\set[provider_count=4]"
 Setting provider_count = 4
 %%> "\\provider-catalog"
@@ -29,6 +31,7 @@ Anthropic Providers:
     Client Type: openai-compatible
     Headers: anthropic-version: 2023-06-01
     Description: Anthropic Claude chat completions API
+    Implementation: Natively supported by NeuroShell
 Gemini Providers:
   [GMC] Google Gemini Chat (gemini)
     Provider: gemini
@@ -37,6 +40,7 @@ Gemini Providers:
     Client Type: gemini
     Headers: Content-Type: application/json, x-goog-api-key: {API_KEY}
     Description: Google Gemini generative AI chat completions API
+    Implementation: Natively supported by NeuroShell
 Moonshot Providers:
   [MSC] Moonshot Chat Completions (openai-compatible)
     Provider: moonshot
@@ -44,6 +48,7 @@ Moonshot Providers:
     Endpoint: /chat/completions
     Client Type: openai-compatible
     Description: Moonshot AI chat completions API
+    Implementation: Uses OpenAI-compatible API
 Openai Providers:
   [OAC] OpenAI Chat Completions (openai)
     Provider: openai
@@ -51,6 +56,7 @@ Openai Providers:
     Endpoint: /chat/completions
     Client Type: openai
     Description: OpenAI's chat completion API for GPT models
+    Implementation: Natively supported by NeuroShell
 Openrouter Providers:
   [ORC] OpenRouter Chat Completions (openai-compatible)
     Provider: openrouter
@@ -59,3 +65,4 @@ Openrouter Providers:
     Client Type: openai-compatible
     Headers: HTTP-Referer: https://github.com/vitadin/NeuroShell, X-Title: NeuroShell
     Description: OpenRouter unified API access to multiple LLM providers
+    Implementation: Uses OpenAI-compatible API

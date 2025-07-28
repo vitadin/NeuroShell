@@ -8,3 +8,4 @@ headers:
   x-goog-api-key: "{API_KEY}"
   Content-Type: "application/json"
 description: "Google Gemini generative AI chat completions API"
+implementation_notes: "Natively supported by NeuroShell"

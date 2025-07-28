@@ -389,6 +389,14 @@ func (c *CatalogCommand) formatProviderEntry(provider neurotypes.ProviderCatalog
 		result.WriteString(descriptionLine)
 	}
 
+	// Implementation notes
+	if len(provider.ImplementationNotes) > 0 {
+		implementationLine := fmt.Sprintf("    %s %s\n",
+			themeObj.Info.Render("Implementation:"),
+			themeObj.Variable.Render(provider.ImplementationNotes))
+		result.WriteString(implementationLine)
+	}
+
 	return result.String()
 }
 
