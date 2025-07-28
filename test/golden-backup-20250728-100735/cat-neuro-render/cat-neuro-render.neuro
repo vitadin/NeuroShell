@@ -1,0 +1,2 @@
+%% Test enhanced cat command with neuro file rendering
+\cat test/golden/cat-neuro-render/sample.neuro

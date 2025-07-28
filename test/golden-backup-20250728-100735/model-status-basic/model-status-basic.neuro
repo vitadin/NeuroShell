@@ -1,0 +1,15 @@
+%% Test basic model status functionality
+\set[_echo_command="true"]
+
+%% Create multiple models with different providers
+\model-new[catalog_id="O4M"] claude-model
+\model-new[catalog_id="O3"] openai-model
+\model-new[provider="openai", base_model="gpt-3.5-turbo", description="Custom Claude model"] custom-claude
+
+%% Test basic model status command
+\model-status
+
+%% Verify system variables are set correctly
+\get[#model_count]
+\get[#model_filtered_count]
+\get[_output]

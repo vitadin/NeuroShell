@@ -1,0 +1,24 @@
+%% Test model status filtering functionality
+\set[_echo_command="true"]
+
+%% Create models with different providers and names
+\model-new[catalog_id="O4M"] claude-prod-model
+\model-new[catalog_id="O3"] openai-prod-model
+\model-new[provider="openai", base_model="gpt-3.5-turbo"] claude-test-model
+\model-new[provider="openai", base_model="gpt-4"] openai-test-model
+
+%% Test filtering by name pattern
+\model-status[name="prod"]
+
+%% Test filtering by provider
+\model-status[provider="openai"]
+
+%% Test combined filters
+\model-status[name="claude", provider="openai"]
+
+%% Test filter with no matches
+\model-status[provider="nonexistent"]
+
+%% Verify system variables for filtered results
+\get[#model_count]
+\get[#model_filtered_count]

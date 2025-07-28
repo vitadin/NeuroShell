@@ -1,0 +1,42 @@
+Setting _echo_command = true
+%%> "\\model-new[catalog_id=\"O4M\"] my-claude-model"
+Created model 'my-claude-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\model-new[catalog_id=\"O3\"] my-openai-model"
+Created model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\"] another-claude"
+Created model 'another-claude' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\model-activate openai"
+Activated model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\get[#active_model_name]"
+#active_model_name = my-openai-model
+%%> "\\get[_output]"
+_output = LLM client ready: openai:b10394de
+%%> "\\get[#active_model_id]"
+#active_model_id = 00000002-0000-4000-8000-000000000002
+%%> "\\set[id_prefix=\"${#active_model_id}\"]"
+Setting id_prefix = 00000002-0000-4000-8000-000000000002
+%%> "\\model-activate[id=true] ${id_prefix}"
+Activated model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\get[#active_model_name]"
+#active_model_name = my-openai-model
+%%> "\\get[_output]"
+_output = LLM client ready: openai:b10394de
+%%> "\\model-activate MY-CLAUDE"
+Activated model 'my-claude-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\get[#active_model_name]"
+#active_model_name = my-claude-model

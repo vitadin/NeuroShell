@@ -1,0 +1,18 @@
+%% Basic backtick functionality test
+\set[_echo_command="true"]
+%% Verifies that backtick characters can be used in variable values and commands
+
+%% Test simple backtick characters in variable values
+\set[code="`hello`"]
+\set[inline="Use `code` for inline"]
+\set[mixed="Mix 'quotes' and `backticks`"]
+
+%% Test retrieving variables with backticks
+\get[code]
+\get[inline]
+\get[mixed]
+
+%% Test backticks in interpolation
+\set[greeting="Hello"]
+\set[with_backticks="Say `${greeting}` loudly"]
+\get[with_backticks]

@@ -288,6 +288,9 @@ func TestTemporalDisplayService_ReplaceExistingDisplay(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, service.IsActive("timer1"))
 
+	// Give the first timer a moment to fully start its goroutine
+	time.Sleep(50 * time.Millisecond)
+
 	// Start another timer with same ID (should replace)
 	err = service.StartTimer("timer1", 3*time.Second)
 	require.NoError(t, err)
@@ -298,6 +301,9 @@ func TestTemporalDisplayService_ReplaceExistingDisplay(t *testing.T) {
 	count := len(service.activeDisplays)
 	service.mu.RUnlock()
 	assert.Equal(t, 1, count)
+
+	// Give a moment for any old goroutine cleanup to complete
+	time.Sleep(50 * time.Millisecond)
 
 	// Clean up
 	err = service.Stop("timer1")

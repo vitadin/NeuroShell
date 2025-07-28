@@ -1,0 +1,25 @@
+%% Test basic model activation functionality
+\set[_echo_command="true"]
+
+%% Create multiple models
+\model-new[catalog_id="O4M"] first-model
+\model-new[catalog_id="O3"] second-model
+\model-new[provider="openai", base_model="gpt-3.5-turbo"] third-model
+
+%% Test activation by exact name match
+\model-activate first-model
+
+%% Verify activation variables are set correctly
+\get[#active_model_name]
+\get[#active_model_id]
+\get[#active_model_provider]
+\get[#active_model_base]
+\get[_output]
+
+%% Activate a different model
+\model-activate second-model
+
+%% Verify variables updated
+\get[#active_model_name]
+\get[#active_model_provider]
+\get[_output]

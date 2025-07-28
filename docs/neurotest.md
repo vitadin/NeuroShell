@@ -31,8 +31,7 @@ go build -o bin/neurotest ./cmd/neurotest
 
 1. **Create a test script**:
    ```bash
-   mkdir -p test/golden/example
-   cat > test/golden/example/example.neuro << 'EOF'
+   cat > test/golden/example.neuro << 'EOF'
    %% Example test
    \set[greeting="Hello"]
    \set[name="World"]
@@ -163,23 +162,22 @@ Shows version information.
 
 ## Directory Structure
 
-NeuroTest expects the following directory structure:
+NeuroTest uses a clean flat directory structure for test organization:
 
 ```
 test/
 ├── golden/                 # Golden file tests
-│   ├── basic/
-│   │   ├── basic.neuro    # Test script
-│   │   └── basic.expected # Expected output (auto-generated)
-│   ├── variables/
-│   │   ├── variables.neuro
-│   │   └── variables.expected
-│   └── system/
-│       ├── system.neuro
-│       └── system.expected
+│   ├── basic.neuro        # Test script
+│   ├── basic.expected     # Expected output (auto-generated)
+│   ├── variables.neuro
+│   ├── variables.expected
+│   ├── system.neuro
+│   └── system.expected
 ├── scripts/               # Standalone test scripts (optional)
 └── fixtures/              # Test data files (optional)
 ```
+
+This flat structure eliminates redundant directory nesting (no more `echo-basic/echo-basic.neuro`) and provides a cleaner, more maintainable test organization.
 
 ## Smart Comparison and Placeholders
 
@@ -239,8 +237,7 @@ The `diff` command now shows:
 
 1. **Write the test script**:
    ```bash
-   mkdir -p test/golden/interpolation
-   cat > test/golden/interpolation/interpolation.neuro << 'EOF'
+   cat > test/golden/interpolation.neuro << 'EOF'
    %% Test variable interpolation
    \set[first="Hello"]
    \set[second="World"]

@@ -286,7 +286,8 @@ test-e2e: build
 record-all-e2e: build
     #!/bin/bash
     echo "Re-recording all end-to-end test cases..."
-    for test_name in $(find test/golden -mindepth 2 -name "*.neuro" -type f | cut -d'/' -f3 | sort -u); do \
+    for test_file in $(find test/golden -maxdepth 1 -name "*.neuro" -type f | sort); do \
+        test_name=$(basename "$test_file" .neuro); \
         echo "Recording $test_name..."; \
         ./bin/neurotest --neuro-cmd="./bin/neuro" record "$test_name" >/dev/null 2>&1 && echo "✓ $test_name" || echo "✗ $test_name"; \
     done

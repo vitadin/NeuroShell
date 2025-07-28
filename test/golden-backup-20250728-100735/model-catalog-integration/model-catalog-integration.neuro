@@ -1,0 +1,31 @@
+%% Test catalog ID integration across model commands
+\set[_echo_command="true"]
+
+%% First check available catalog models
+\model-catalog[provider="openai", sort="name"]
+
+%% Create models using different catalog IDs
+\model-new[catalog_id="O4M"] claude-s4-instance
+\model-new[catalog_id="O3"] openai-o3-instance
+
+%% Verify catalog information is preserved in status
+\model-status
+
+%% Check that base models match catalog entries
+\get[#model_count]
+
+%% Test that we can find models by their catalog-derived base model names
+\model-activate claude-s4-instance
+\get[#active_model_base]
+
+%% Verify catalog ID mapping worked correctly
+\model-activate openai-o3-instance
+\get[#active_model_base]
+\get[#active_model_provider]
+
+%% Test creating model with invalid catalog ID
+\try \model-new[catalog_id="INVALID"] bad-model
+
+%% Verify system remains stable with existing models
+\model-status
+\get[#model_count]

@@ -1,0 +1,20 @@
+═══ Testing Missing Required Arguments ═══
+Missing key error: key is required. Usage: \llm-api-activate[provider=<name>, key=<source.KEY_NAME>]
+Missing provider error: provider is required. Usage: \llm-api-activate[provider=<name>, key=<source.KEY_NAME>]
+Missing both error: provider is required. Usage: \llm-api-activate[provider=<name>, key=<source.KEY_NAME>]
+═══ Testing Invalid Provider Names ═══
+Invalid provider error: invalid provider 'invalid'. Valid providers: openai, anthropic, openrouter, moonshot, gemini
+Case sensitive error: invalid provider 'OPENAI'. Valid providers: openai, anthropic, openrouter, moonshot, gemini
+Wrong provider name error: invalid provider 'gpt'. Valid providers: openai, anthropic, openrouter, moonshot, gemini
+═══ Testing Invalid Key Formats ═══
+No source prefix error: key 'OPENAI_API_KEY' is empty. Run \llm-api-show to see available keys
+Invalid source error: key 'invalid.TEST_KEY' is empty. Run \llm-api-show to see available keys
+Empty key name error: key 'os.' is empty. Run \llm-api-show to see available keys
+═══ Testing Non-existent Keys ═══
+Non-existent key error: key 'os.NONEXISTENT_KEY' is empty. Run \llm-api-show to see available keys
+Missing config key error: key 'config.MISSING_KEY' is empty. Run \llm-api-show to see available keys
+═══ Testing Show Command with Invalid Provider ═══
+No API keys found for provider 'invalid'.
+═══ Testing Clean Environment ═══
+No API keys found in any source.
+No API keys found in any source.

@@ -1,0 +1,27 @@
+%% Test model activation error handling
+\set[_echo_command="true"]
+
+%% Create models for testing error scenarios
+\model-new[catalog_id="O4M"] test-model-1
+\model-new[catalog_id="O3"] test-model-2
+
+%% Test no matches scenario
+\try \model-activate nonexistent-model
+
+%% Test multiple matches scenario
+\model-new[provider="openai", base_model="gpt-3.5-turbo"] test-similar
+\model-new[provider="openai", base_model="gpt-4"] test-different
+\try \model-activate test
+
+%% Test empty input error
+\try \model-activate 
+
+%% Test non-existent ID prefix
+\try \model-activate[id=true] xyz123
+
+%% Test when no models exist at all
+\model-delete test-model-1
+\model-delete test-model-2  
+\model-delete test-similar
+\model-delete test-different
+\try \model-activate anything

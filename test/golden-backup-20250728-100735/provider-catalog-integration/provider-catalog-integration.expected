@@ -1,0 +1,53 @@
+Setting _echo_command = true
+%%> "\\provider-catalog[search=openai]"
+Provider Catalog - Search: 'openai' (1 providers):
+Openai Providers:
+  [OAC] OpenAI Chat Completions (openai)
+    Provider: openai
+    Base URL: https://api.openai.com/v1
+    Endpoint: /chat/completions
+    Client Type: openai
+    Description: OpenAI's chat completion API for GPT models
+%%> "\\get[_output]"
+_output = Provider Catalog - Search: 'openai' (1 providers):
+Openai Providers:
+  [OAC] OpenAI Chat Completions (openai)
+    Provider: openai
+    Base URL: https://api.openai.com/v1
+    Endpoint: /chat/completions
+    Client Type: openai
+    Description: OpenAI's chat completion API for GPT models
+%%> "\\set[provider_count=4]"
+Setting provider_count = 4
+%%> "\\provider-catalog"
+Provider Catalog (4 providers):
+Anthropic Providers:
+  [ANC] Anthropic Claude Chat (openai-compatible)
+    Provider: anthropic
+    Base URL: https://api.anthropic.com/v1
+    Endpoint: /messages
+    Client Type: openai-compatible
+    Headers: anthropic-version: 2023-06-01
+    Description: Anthropic Claude chat completions API
+Moonshot Providers:
+  [MSC] Moonshot Chat Completions (openai-compatible)
+    Provider: moonshot
+    Base URL: https://api.moonshot.ai/v1
+    Endpoint: /chat/completions
+    Client Type: openai-compatible
+    Description: Moonshot AI chat completions API
+Openai Providers:
+  [OAC] OpenAI Chat Completions (openai)
+    Provider: openai
+    Base URL: https://api.openai.com/v1
+    Endpoint: /chat/completions
+    Client Type: openai
+    Description: OpenAI's chat completion API for GPT models
+Openrouter Providers:
+  [ORC] OpenRouter Chat Completions (openai-compatible)
+    Provider: openrouter
+    Base URL: https://openrouter.ai/api/v1
+    Endpoint: /chat/completions
+    Client Type: openai-compatible
+    Headers: HTTP-Referer: https://github.com/vitadin/NeuroShell, X-Title: NeuroShell
+    Description: OpenRouter unified API access to multiple LLM providers

@@ -1,0 +1,7 @@
+%% Search functionality test
+\set[_echo_command="true"]
+%% Tests searching providers by ID, name, and description
+\provider-catalog[search=OAC]
+\provider-catalog[search=openai]
+\provider-catalog[search=chat]
+\provider-catalog[search=API]

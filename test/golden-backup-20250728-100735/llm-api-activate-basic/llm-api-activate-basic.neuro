@@ -1,0 +1,20 @@
+%% Test basic LLM API key activation functionality
+%% This test verifies that \llm-api-activate handles various scenarios correctly
+
+%% Test 1: Try to activate a key that doesn't exist (should fail gracefully)
+\try \llm-api-activate[provider=openai, key=os.NONEXISTENT_KEY]
+
+%% Check if error was captured
+\get[_error]
+
+%% Test 2: Try to activate with missing required arguments
+\try \llm-api-activate[provider=openai]
+
+%% Check error message
+\get[_error]
+
+%% Test 3: Try to activate with invalid provider
+\try \llm-api-activate[provider=invalid, key=os.TEST_KEY]
+
+%% Check error message
+\get[_error]

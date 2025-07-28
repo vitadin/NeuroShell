@@ -1,0 +1,70 @@
+%% Comprehensive truthiness testing for \if command
+%% Tests all possible truthy and falsy values according to isTruthy logic
+\set[_echo_command="true"]
+
+%% Explicit boolean values (case insensitive)
+\if[condition=true] \echo "true is truthy"
+\if[condition=TRUE] \echo "TRUE is truthy" 
+\if[condition=True] \echo "True is truthy"
+\if[condition=false] \echo "This should not appear - false"
+\if[condition=FALSE] \echo "This should not appear - FALSE"
+\if[condition=False] \echo "This should not appear - False"
+
+%% Numeric values
+\if[condition=1] \echo "1 is truthy"
+\if[condition=0] \echo "This should not appear - 0"
+
+%% Affirmative values
+\if[condition=yes] \echo "yes is truthy"
+\if[condition=YES] \echo "YES is truthy"
+\if[condition=Yes] \echo "Yes is truthy"
+\if[condition=on] \echo "on is truthy"
+\if[condition=ON] \echo "ON is truthy"
+\if[condition=enabled] \echo "enabled is truthy"
+\if[condition=ENABLED] \echo "ENABLED is truthy"
+
+%% Negative values
+\if[condition=no] \echo "This should not appear - no"
+\if[condition=NO] \echo "This should not appear - NO"
+\if[condition=off] \echo "This should not appear - off"
+\if[condition=OFF] \echo "This should not appear - OFF"
+\if[condition=disabled] \echo "This should not appear - disabled"
+\if[condition=DISABLED] \echo "This should not appear - DISABLED"
+
+%% Empty and whitespace conditions
+\if[condition=""] \echo "This should not appear - empty string"
+\if[condition="   "] \echo "This should not appear - whitespace"
+\if[condition="	"] \echo "This should not appear - tab"
+
+%% Any other non-empty string should be truthy
+\if[condition=hello] \echo "hello is truthy"
+\if[condition=world] \echo "world is truthy"
+\if[condition=random_text] \echo "random_text is truthy"
+\if[condition=123abc] \echo "123abc is truthy"
+\if[condition="complex string"] \echo "complex string is truthy"
+
+%% Mixed case and edge cases
+\if[condition=tRuE] \echo "This should not appear - tRuE (not exactly true)"
+\if[condition=YeS] \echo "This should not appear - YeS (not exactly yes)"
+\if[condition=True123] \echo "True123 is truthy (not exactly true)"
+
+%% Special characters
+\if[condition="!@#$"] \echo "!@#$ is truthy"
+\if[condition="-1"] \echo "-1 is truthy"
+
+%% Unicode characters  
+\if[condition="🚀"] \echo "🚀 is truthy"
+\if[condition="café"] \echo "café is truthy"
+
+%% Test with leading/trailing whitespace (should be trimmed)
+\if[condition="  true  "] \echo "Whitespace around true is trimmed"
+\if[condition="  false  "] \echo "This should not appear - whitespace around false"
+\if[condition="  "] \echo "This should not appear - only whitespace"
+
+%% Verify #if_result is set for each evaluation
+\if[condition=true] \set[dummy="test"]
+\get[#if_result]
+\if[condition=false] \set[dummy="test"]
+\get[#if_result]
+\if[condition=maybe] \set[dummy="test"]
+\get[#if_result]

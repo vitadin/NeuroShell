@@ -1,0 +1,41 @@
+%% Backtick interpolation test
+\set[_echo_command="true"]
+%% Verifies that variable interpolation works correctly with backticks
+
+%% Set up base variables with backticks
+\set[function_name="getData"]
+\set[language="javascript"]
+\set[command="npm install"]
+
+%% Test interpolation with backticks around variables
+\set[code_example="Use `${function_name}()` in your code"]
+\set[install_msg="Run `${command}` to install dependencies"]
+\set[lang_ref="This is `${language}` code"]
+
+%% Test variables containing backticks being interpolated
+\set[code_snippet="`console.log('hello')`"]
+\set[shell_cmd="`ls -la`"]
+\set[example_with_backticks="Example: ${code_snippet} and ${shell_cmd}"]
+
+%% Test complex nested interpolation with backticks
+\set[project="myapp"] 
+\set[instruction="Run `cd ${project}` then `${command}`"]
+
+%% Test backticks with multiple interpolations
+\set[full_example="In `${language}`, use `${function_name}()` after running `${command}`"]
+
+%% Test edge case: backticks around interpolation syntax
+\set[meta_example="Use `\${variable}` syntax for interpolation"]
+
+%% Retrieve all interpolated values
+\get[code_example]
+\get[install_msg]
+\get[lang_ref]
+\get[example_with_backticks]
+\get[instruction]
+\get[full_example]
+\get[meta_example]
+
+%% Verify original variables still contain backticks
+\get[code_snippet]
+\get[shell_cmd]

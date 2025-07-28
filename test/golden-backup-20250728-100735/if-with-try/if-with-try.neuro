@@ -1,0 +1,89 @@
+%% Integration testing: \if command with \try command
+%% Tests interaction between conditional execution and error handling
+\set[_echo_command="true"]
+
+%% Test \if inside \try - successful condition
+\try \if[condition=true] \echo "If inside try - success"
+\get[_status]
+\get[_error]
+
+%% Test \if inside \try - false condition (should not execute)
+\try \if[condition=false] \echo "This should not appear"
+\get[_status]
+\get[_error]
+
+%% Test \if inside \try - malformed if command
+\try \if \echo "This should fail"
+\get[_status]
+\get[_error]
+
+%% Test \try inside \if - successful condition with successful try
+\if[condition=true] \try \echo "Try inside if - success"
+\get[_status]
+\get[_output]
+
+%% Test \try inside \if - successful condition with failing try
+\if[condition=true] \try \bash ls /nonexistent_directory_test
+\get[_status]
+\get[_error]
+
+%% Test \try inside \if - false condition (try should not execute)
+\if[condition=false] \try \echo "This should not execute"
+\get[_status]
+
+%% Test using try status variables in if conditions
+\try \bash echo "success"
+\if[condition=${_status}] \echo "Command failed (status != 0)"
+\if[condition=${_output}] \echo "Command produced output: ${_output}"
+
+%% Test conditional error handling based on try results
+\try \bash ls /does_not_exist
+\if[condition=${_status}] \echo "Previous command failed with status: ${_status}"
+\if[condition=${_error}] \echo "Error message exists: ${_error}"
+
+%% Test successful command status
+\try \set[test_var="success"]
+\if[condition=${_status}] \echo "Set command failed unexpectedly"
+\get[test_var]
+
+%% Test chaining try and if for robust error handling
+\try \bash echo "test output"
+\if[condition=${_output}] \set[output_captured="true"]
+\get[output_captured]
+
+%% Test nested scenarios - if containing try containing commands
+\if[condition=true] \try \set[nested_var="nested_success"]
+\get[nested_var]
+\get[_status]
+
+%% Test using if conditions based on previous if results
+\if[condition=true] \set[first_result="true"]
+\if[condition=${first_result}] \echo "Chained if conditions work"
+
+%% Test error propagation through if/try combinations
+\set[should_fail="false"]
+\if[condition=${should_fail}] \try \bash this_command_does_not_exist
+\get[_status]
+
+%% Test complex conditional logic with try/if
+\try \bash echo "conditional test"
+\set[has_output="true"]
+\if[condition=${has_output}] \echo "Output detected: ${_output}"
+\if[condition=${_status}] \echo "Command had error status"
+
+%% Test that #if_result is preserved across try operations
+\if[condition=true] \set[dummy="test"]
+\get[#if_result]
+\try \bash echo "test"
+\get[#if_result]
+
+%% Test if condition based on system error state
+\try \bash false
+\if[condition=${_status}] \set[error_detected="true"]
+\get[error_detected]
+
+%% Test successful path through if/try combination
+\try \bash true  
+\if[condition=${_status}] \echo "Unexpected error"
+\if[condition=${_output}] \echo "Unexpected output"
+\echo "Success path completed"

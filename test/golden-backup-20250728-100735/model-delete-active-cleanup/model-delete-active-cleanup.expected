@@ -1,0 +1,47 @@
+Setting _echo_command = true
+%%> "\\model-new[catalog_id=\"O4M\"] current-model"
+Created model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\model-new[catalog_id=\"O3\"] backup-model"
+Created model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\model-activate current-model"
+Activated model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\get[#active_model_name]"
+#active_model_name = current-model
+%%> "\\get[#active_model_id]"
+#active_model_id = 00000001-0000-4000-8000-000000000001
+%%> "\\model-delete current-model"
+Deleted model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\model-activate"
+%%> "\\get[#active_model_name]"
+#active_model_name = current-model
+%%> "\\get[#active_model_id]"
+#active_model_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#deleted_model_name]"
+#deleted_model_name = current-model
+%%> "\\get[_output]"
+_output = Current active model: 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\model-status"
+Model Configurations (1 models):
+  backup-model (00000002)
+    Provider: openai
+    Base Model: o3
+    Catalog ID: O3
+    Parameters: none
+    Created: 2025-01-01 00:00:02
+    Active: true
+%%> "\\try \\model-activate current-model"
+%%> "\\model-activate current-model"
+%%> "\\model-activate backup-model"
+Activated model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\llm-client-get[provider=openai]"
+LLM client ready: openai:b10394de (configured: true)
+%%> "\\get[#active_model_name]"
+#active_model_name = backup-model
