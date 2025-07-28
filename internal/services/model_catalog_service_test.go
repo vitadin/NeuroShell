@@ -88,7 +88,7 @@ func TestModelCatalogService_GetModelCatalog(t *testing.T) {
 			if model.Name == "o3" {
 				hasOpenAI = true
 			}
-			if model.Name == "gemini-2.5-pro" {
+			if model.Name == "gemini-2.5-pro" || model.Name == "gemini-2.5-flash" {
 				hasGemini = true
 			}
 		}
@@ -151,7 +151,7 @@ func TestModelCatalogService_GetModelCatalogByProvider(t *testing.T) {
 		assert.Greater(t, len(models), 0, "Should have Gemini models")
 
 		// Verify all models are Gemini models
-		expectedGeminiModels := map[string]bool{"gemini-2.5-pro": true}
+		expectedGeminiModels := map[string]bool{"gemini-2.5-pro": true, "gemini-2.5-flash": true}
 		for _, model := range models {
 			assert.True(t,
 				expectedGeminiModels[model.Name],

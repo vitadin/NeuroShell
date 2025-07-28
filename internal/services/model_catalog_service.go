@@ -148,6 +148,12 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, gemini25ProModel)
 
+	gemini25FlashModel, err := m.loadModelFile(embedded.Gemini25FlashModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Gemini 2.5 Flash model: %w", err)
+	}
+	allModels = append(allModels, gemini25FlashModel)
+
 	// Validate that all model IDs are unique (case-insensitive)
 	if err := m.validateUniqueIDs(allModels); err != nil {
 		return nil, fmt.Errorf("model catalog validation failed: %w", err)

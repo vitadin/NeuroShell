@@ -88,6 +88,11 @@ var O1ProModelData []byte
 //go:embed models/gemini-2-5-pro.yaml
 var Gemini25ProModelData []byte
 
+// Gemini25FlashModelData contains the embedded Gemini 2.5 Flash model YAML data.
+//
+//go:embed models/gemini-2-5-flash.yaml
+var Gemini25FlashModelData []byte
+
 // Provider Catalog Data - embedded provider configuration YAML files
 
 // OpenAIChatProviderData contains the embedded OpenAI chat provider YAML data.

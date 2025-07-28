@@ -1,0 +1,25 @@
+name: gemini-2.5-flash
+id: GM25F
+display_name: Gemini 2.5 Flash
+provider: gemini
+description: Google's fast and efficient multimodal AI model optimized for speed and performance
+capabilities: [text, reasoning, analysis, coding, writing, math, multimodal, audio, video, code-execution, search-grounding, thinking]
+context_window: 1048576
+max_output_tokens: 65536
+knowledge_cutoff: "2025-01-01"
+modalities: [text-input, image-input, audio-input, video-input, text-output]
+pricing:
+  input_per_m_token: 0.30
+  output_per_m_token: 2.50
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  caching: true
+  code_execution: true
+  search_grounding: true
+  thinking: true
+  batch_mode: true
+tools: [code-execution, search-grounding]
+version: "2025-06-01"
+snapshots: [gemini-2.5-flash, gemini-2.5-flash-preview-05-20]

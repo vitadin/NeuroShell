@@ -105,7 +105,7 @@ Model Catalog (Anthropic) (4 models):
     Knowledge cutoff: 2025-03-01
     Description: High intelligence and balanced performance
 %%> "\\model-catalog[provider=all]"
-Model Catalog (17 models):
+Model Catalog (18 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic
@@ -144,6 +144,17 @@ Anthropic Models:
     Knowledge cutoff: 2025-03-01
     Description: High intelligence and balanced performance
 Gemini Models:
+  [GM25F] Gemini 2.5 Flash (gemini-2.5-flash)
+    Provider: gemini
+    Context: 1,048,576 tokens (max output: 65,536 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, multimodal, audio, video, code-execution, search-grounding, thinking
+    Modalities: text-input, image-input, audio-input, video-input, text-output
+    Pricing: $0.30/1M input, $2.50/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Tools: code-execution, search-grounding
+    Knowledge cutoff: 2025-01-01
+    Snapshots: gemini-2.5-flash, gemini-2.5-flash-preview-05-20
+    Description: Google's fast and efficient multimodal AI model optimized for speed and performance
   [GM25P] Gemini 2.5 Pro (gemini-2.5-pro)
     Provider: gemini
     Context: 1,048,576 tokens (max output: 65,536 tokens)
