@@ -1,4 +1,5 @@
-package builtin
+// Package llm contains LLM-related commands for the NeuroShell CLI.
+package llm
 
 import (
 	"fmt"
@@ -9,32 +10,32 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-// LLMAPIActivateCommand implements the \llm-api-activate command for setting active API keys.
+// APIActivateCommand implements the \llm-api-activate command for setting active API keys.
 // It allows users to explicitly choose which API key to use for each provider.
-type LLMAPIActivateCommand struct{}
+type APIActivateCommand struct{}
 
 // Name returns the command name "llm-api-activate" for registration and lookup.
-func (c *LLMAPIActivateCommand) Name() string {
+func (c *APIActivateCommand) Name() string {
 	return "llm-api-activate"
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
-func (c *LLMAPIActivateCommand) ParseMode() neurotypes.ParseMode {
+func (c *APIActivateCommand) ParseMode() neurotypes.ParseMode {
 	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the llm-api-activate command does.
-func (c *LLMAPIActivateCommand) Description() string {
+func (c *APIActivateCommand) Description() string {
 	return "Activate an API key for a specific provider"
 }
 
 // Usage returns the syntax and usage examples for the llm-api-activate command.
-func (c *LLMAPIActivateCommand) Usage() string {
+func (c *APIActivateCommand) Usage() string {
 	return "\\llm-api-activate[provider=<name>, key=<source.KEY_NAME>]"
 }
 
 // HelpInfo returns structured help information for the llm-api-activate command.
-func (c *LLMAPIActivateCommand) HelpInfo() neurotypes.HelpInfo {
+func (c *APIActivateCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
@@ -88,7 +89,7 @@ func (c *LLMAPIActivateCommand) HelpInfo() neurotypes.HelpInfo {
 }
 
 // Execute activates the specified API key for the given provider.
-func (c *LLMAPIActivateCommand) Execute(args map[string]string, _ string) error {
+func (c *APIActivateCommand) Execute(args map[string]string, _ string) error {
 	// Validate required arguments
 	provider := args["provider"]
 	key := args["key"]
@@ -157,7 +158,7 @@ func (c *LLMAPIActivateCommand) Execute(args map[string]string, _ string) error 
 }
 
 // isValidKeyFormat checks if the key follows the expected source.ORIGINAL_NAME format
-func (c *LLMAPIActivateCommand) isValidKeyFormat(key string) bool {
+func (c *APIActivateCommand) isValidKeyFormat(key string) bool {
 	// Should have format: source.ORIGINAL_NAME
 	parts := strings.SplitN(key, ".", 2)
 	if len(parts) != 2 {
@@ -190,7 +191,7 @@ func (c *LLMAPIActivateCommand) isValidKeyFormat(key string) bool {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&LLMAPIActivateCommand{}); err != nil {
+	if err := commands.GlobalRegistry.Register(&APIActivateCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register llm-api-activate command: %v", err))
 	}
 }

@@ -1,4 +1,5 @@
-package builtin
+// Package llm contains tests for LLM-related commands.
+package llm
 
 import (
 	"testing"
@@ -12,28 +13,28 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-func TestLLMClientGetCommand_Name(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Name(t *testing.T) {
+	cmd := &ClientGetCommand{}
 	assert.Equal(t, "llm-client-get", cmd.Name())
 }
 
-func TestLLMClientGetCommand_ParseMode(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_ParseMode(t *testing.T) {
+	cmd := &ClientGetCommand{}
 	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 }
 
-func TestLLMClientGetCommand_Description(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Description(t *testing.T) {
+	cmd := &ClientGetCommand{}
 	assert.Equal(t, "Get or create LLM client for provider", cmd.Description())
 }
 
-func TestLLMClientGetCommand_Usage(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Usage(t *testing.T) {
+	cmd := &ClientGetCommand{}
 	assert.Equal(t, "\\llm-client-get[key=api_key, provider=openai|openrouter|moonshot|anthropic|gemini] or \\llm-client-get (uses env vars)", cmd.Usage())
 }
 
-func TestLLMClientGetCommand_HelpInfo(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_HelpInfo(t *testing.T) {
+	cmd := &ClientGetCommand{}
 	help := cmd.HelpInfo()
 
 	assert.Equal(t, "llm-client-get", help.Command)
@@ -71,8 +72,8 @@ func TestLLMClientGetCommand_HelpInfo(t *testing.T) {
 	assert.Contains(t, help.Notes[0], "Creates and caches LLM clients")
 }
 
-func TestLLMClientGetCommand_Execute_Success(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Execute_Success(t *testing.T) {
+	cmd := &ClientGetCommand{}
 
 	tests := []struct {
 		name             string
@@ -151,8 +152,8 @@ func TestLLMClientGetCommand_Execute_Success(t *testing.T) {
 	}
 }
 
-func TestLLMClientGetCommand_Execute_EnvironmentVariableSuccess(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Execute_EnvironmentVariableSuccess(t *testing.T) {
+	cmd := &ClientGetCommand{}
 	setupLLMClientGetTestRegistry(t)
 
 	// Set the context to test mode to get predictable environment variables
@@ -216,8 +217,8 @@ func TestLLMClientGetCommand_Execute_EnvironmentVariableSuccess(t *testing.T) {
 	}
 }
 
-func TestLLMClientGetCommand_Execute_MissingAPIKey(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Execute_MissingAPIKey(t *testing.T) {
+	cmd := &ClientGetCommand{}
 	setupLLMClientGetTestRegistry(t)
 
 	// Set up test context with empty environment variable overrides
@@ -266,8 +267,8 @@ func TestLLMClientGetCommand_Execute_MissingAPIKey(t *testing.T) {
 	}
 }
 
-func TestLLMClientGetCommand_Execute_TestEnvOverride(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Execute_TestEnvOverride(t *testing.T) {
+	cmd := &ClientGetCommand{}
 	setupLLMClientGetTestRegistry(t)
 
 	// Set up test context with custom environment variable override
@@ -306,8 +307,8 @@ func TestLLMClientGetCommand_Execute_TestEnvOverride(t *testing.T) {
 	assert.Contains(t, clientID, "bac8d13c")
 }
 
-func TestLLMClientGetCommand_Execute_UnsupportedProvider(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Execute_UnsupportedProvider(t *testing.T) {
+	cmd := &ClientGetCommand{}
 	setupLLMClientGetTestRegistry(t)
 
 	args := map[string]string{
@@ -322,8 +323,8 @@ func TestLLMClientGetCommand_Execute_UnsupportedProvider(t *testing.T) {
 	assert.Contains(t, err.Error(), "Supported providers:")
 }
 
-func TestLLMClientGetCommand_Execute_ClientCaching(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Execute_ClientCaching(t *testing.T) {
+	cmd := &ClientGetCommand{}
 	setupLLMClientGetTestRegistry(t)
 
 	args := map[string]string{
@@ -358,8 +359,8 @@ func TestLLMClientGetCommand_Execute_ClientCaching(t *testing.T) {
 	assert.Equal(t, initialCount, finalCount)
 }
 
-func TestLLMClientGetCommand_Execute_DifferentAPIKeys(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Execute_DifferentAPIKeys(t *testing.T) {
+	cmd := &ClientGetCommand{}
 	setupLLMClientGetTestRegistry(t)
 
 	// First client with one API key
@@ -397,8 +398,8 @@ func TestLLMClientGetCommand_Execute_DifferentAPIKeys(t *testing.T) {
 	assert.Contains(t, clientID, "59df17ed") // Should have the latest client ID
 }
 
-func TestLLMClientGetCommand_Execute_ServiceNotAvailable(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Execute_ServiceNotAvailable(t *testing.T) {
+	cmd := &ClientGetCommand{}
 
 	// Don't set up test registry - this will cause service not available error
 	oldRegistry := services.GetGlobalRegistry()
@@ -420,8 +421,8 @@ func TestLLMClientGetCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	assert.Contains(t, err.Error(), "variable service not available")
 }
 
-func TestLLMClientGetCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
-	cmd := &LLMClientGetCommand{}
+func TestClientGetCommand_Execute_VariableServiceNotAvailable(t *testing.T) {
+	cmd := &ClientGetCommand{}
 
 	// Set up registry with no services to trigger variable service error
 	oldRegistry := services.GetGlobalRegistry()
@@ -479,8 +480,8 @@ func setupLLMClientGetTestRegistry(t *testing.T) {
 }
 
 // Benchmark tests
-func BenchmarkLLMClientGetCommand_Execute(b *testing.B) {
-	cmd := &LLMClientGetCommand{}
+func BenchmarkClientGetCommand_Execute(b *testing.B) {
+	cmd := &ClientGetCommand{}
 
 	// Set up test registry for benchmarking
 	oldServiceRegistry := services.GetGlobalRegistry()

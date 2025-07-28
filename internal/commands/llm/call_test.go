@@ -1,4 +1,5 @@
-package builtin
+// Package llm contains tests for LLM-related commands.
+package llm
 
 import (
 	"testing"
@@ -11,31 +12,31 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-func TestLLMCallCommand_Name(t *testing.T) {
-	cmd := &LLMCallCommand{}
+func TestCallCommand_Name(t *testing.T) {
+	cmd := &CallCommand{}
 	assert.Equal(t, "llm-call", cmd.Name())
 }
 
-func TestLLMCallCommand_ParseMode(t *testing.T) {
-	cmd := &LLMCallCommand{}
+func TestCallCommand_ParseMode(t *testing.T) {
+	cmd := &CallCommand{}
 	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 }
 
-func TestLLMCallCommand_Description(t *testing.T) {
-	cmd := &LLMCallCommand{}
+func TestCallCommand_Description(t *testing.T) {
+	cmd := &CallCommand{}
 	assert.Contains(t, cmd.Description(), "Orchestrate LLM API call")
 }
 
-func TestLLMCallCommand_Usage(t *testing.T) {
-	cmd := &LLMCallCommand{}
+func TestCallCommand_Usage(t *testing.T) {
+	cmd := &CallCommand{}
 	usage := cmd.Usage()
 	assert.Contains(t, usage, "\\llm-call")
 	assert.Contains(t, usage, "dry_run")
 	assert.Contains(t, usage, "stream")
 }
 
-func TestLLMCallCommand_HelpInfo(t *testing.T) {
-	cmd := &LLMCallCommand{}
+func TestCallCommand_HelpInfo(t *testing.T) {
+	cmd := &CallCommand{}
 	helpInfo := cmd.HelpInfo()
 
 	assert.Equal(t, cmd.Name(), helpInfo.Command)
@@ -58,7 +59,7 @@ func TestLLMCallCommand_HelpInfo(t *testing.T) {
 	assert.True(t, optionNames["dry_run"])
 }
 
-func TestLLMCallCommand_Execute_InputWarning(t *testing.T) {
+func TestCallCommand_Execute_InputWarning(t *testing.T) {
 	// Create test context and services
 	ctx := context.New()
 	ctx.SetTestMode(true)
@@ -82,7 +83,7 @@ func TestLLMCallCommand_Execute_InputWarning(t *testing.T) {
 	defer context.SetGlobalContext(oldCtx)
 
 	// Create command and test with input (should show warning)
-	cmd := &LLMCallCommand{}
+	cmd := &CallCommand{}
 
 	// This should fail due to missing required components, but we're testing the warning
 	err := cmd.Execute(map[string]string{}, "Hello, this should show a warning")
@@ -92,7 +93,7 @@ func TestLLMCallCommand_Execute_InputWarning(t *testing.T) {
 	assert.Contains(t, err.Error(), "client_id not specified")
 }
 
-func TestLLMCallCommand_Execute_DryRun(t *testing.T) {
+func TestCallCommand_Execute_DryRun(t *testing.T) {
 	// Create test context and services
 	ctx := context.New()
 	ctx.SetTestMode(true)
@@ -142,7 +143,7 @@ func TestLLMCallCommand_Execute_DryRun(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test dry run
-	cmd := &LLMCallCommand{}
+	cmd := &CallCommand{}
 	args := map[string]string{
 		"client_id":  clientID,
 		"model_id":   model.Name,
@@ -167,7 +168,7 @@ func TestLLMCallCommand_Execute_DryRun(t *testing.T) {
 	assert.Equal(t, clientID, dryRunClient)
 }
 
-func TestLLMCallCommand_Execute_SyncCall(t *testing.T) {
+func TestCallCommand_Execute_SyncCall(t *testing.T) {
 	// Create test context and services
 	ctx := context.New()
 	ctx.SetTestMode(true)
@@ -213,7 +214,7 @@ func TestLLMCallCommand_Execute_SyncCall(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test sync call
-	cmd := &LLMCallCommand{}
+	cmd := &CallCommand{}
 	args := map[string]string{
 		"client_id":  clientID,
 		"model_id":   model.Name,
@@ -242,7 +243,7 @@ func TestLLMCallCommand_Execute_SyncCall(t *testing.T) {
 	assert.Equal(t, "sync", callMode)
 }
 
-func TestLLMCallCommand_Execute_StreamingCall(t *testing.T) {
+func TestCallCommand_Execute_StreamingCall(t *testing.T) {
 	// Create test context and services
 	ctx := context.New()
 	ctx.SetTestMode(true)
@@ -288,7 +289,7 @@ func TestLLMCallCommand_Execute_StreamingCall(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test streaming call
-	cmd := &LLMCallCommand{}
+	cmd := &CallCommand{}
 	args := map[string]string{
 		"client_id":  clientID,
 		"model_id":   model.Name,
@@ -309,7 +310,7 @@ func TestLLMCallCommand_Execute_StreamingCall(t *testing.T) {
 	assert.Equal(t, "stream", callMode)
 }
 
-func TestLLMCallCommand_Execute_DefaultResolution(t *testing.T) {
+func TestCallCommand_Execute_DefaultResolution(t *testing.T) {
 	// Create test context and services
 	ctx := context.New()
 	ctx.SetTestMode(true)
@@ -361,7 +362,7 @@ func TestLLMCallCommand_Execute_DefaultResolution(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test with no explicit parameters (should use defaults)
-	cmd := &LLMCallCommand{}
+	cmd := &CallCommand{}
 	err = cmd.Execute(map[string]string{}, "")
 	require.NoError(t, err)
 
@@ -371,7 +372,7 @@ func TestLLMCallCommand_Execute_DefaultResolution(t *testing.T) {
 	assert.Equal(t, "true", callSuccess)
 }
 
-func TestLLMCallCommand_Execute_MissingComponents(t *testing.T) {
+func TestCallCommand_Execute_MissingComponents(t *testing.T) {
 	// Create fresh test context and services for isolation
 	ctx := context.New()
 	ctx.SetTestMode(true)
@@ -394,7 +395,7 @@ func TestLLMCallCommand_Execute_MissingComponents(t *testing.T) {
 	context.SetGlobalContext(ctx)
 	defer context.SetGlobalContext(oldCtx)
 
-	cmd := &LLMCallCommand{}
+	cmd := &CallCommand{}
 
 	// Test missing client_id (most basic error)
 	err := cmd.Execute(map[string]string{}, "")
@@ -423,7 +424,7 @@ func TestLLMCallCommand_Execute_MissingComponents(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to get model")
 }
 
-func TestLLMCallCommand_Execute_EmptySession(t *testing.T) {
+func TestCallCommand_Execute_EmptySession(t *testing.T) {
 	// Create test context and services
 	ctx := context.New()
 	ctx.SetTestMode(true)
@@ -465,7 +466,7 @@ func TestLLMCallCommand_Execute_EmptySession(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test that normal llm-call errors out with empty session
-	cmd := &LLMCallCommand{}
+	cmd := &CallCommand{}
 	args := map[string]string{
 		"client_id":  clientID,
 		"model_id":   model.Name,
@@ -479,7 +480,7 @@ func TestLLMCallCommand_Execute_EmptySession(t *testing.T) {
 	assert.Contains(t, err.Error(), "Use \\session-add-usermsg")
 }
 
-func TestLLMCallCommand_Execute_EmptySession_DryRun(t *testing.T) {
+func TestCallCommand_Execute_EmptySession_DryRun(t *testing.T) {
 	// Create test context and services
 	ctx := context.New()
 	ctx.SetTestMode(true)
@@ -523,7 +524,7 @@ func TestLLMCallCommand_Execute_EmptySession_DryRun(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test that dry run works with empty session but shows warnings
-	cmd := &LLMCallCommand{}
+	cmd := &CallCommand{}
 	args := map[string]string{
 		"client_id":  clientID,
 		"model_id":   model.Name,
@@ -544,7 +545,7 @@ func TestLLMCallCommand_Execute_EmptySession_DryRun(t *testing.T) {
 	assert.Equal(t, "true", dryRunMode)
 }
 
-func TestLLMCallCommand_Execute_InvalidComponents(t *testing.T) {
+func TestCallCommand_Execute_InvalidComponents(t *testing.T) {
 	// Create test context and services
 	ctx := context.New()
 	ctx.SetTestMode(true)
@@ -567,7 +568,7 @@ func TestLLMCallCommand_Execute_InvalidComponents(t *testing.T) {
 	context.SetGlobalContext(ctx)
 	defer context.SetGlobalContext(oldCtx)
 
-	cmd := &LLMCallCommand{}
+	cmd := &CallCommand{}
 
 	// Test invalid client_id
 	args := map[string]string{
@@ -603,8 +604,8 @@ func TestLLMCallCommand_Execute_InvalidComponents(t *testing.T) {
 	assert.Contains(t, err.Error(), "failed to get session")
 }
 
-func TestLLMCallCommand_handleDryRun(t *testing.T) {
-	cmd := &LLMCallCommand{}
+func TestCallCommand_handleDryRun(t *testing.T) {
+	cmd := &CallCommand{}
 
 	// Create mock client
 	clientFactory := services.NewClientFactoryService()
@@ -655,8 +656,8 @@ func TestLLMCallCommand_handleDryRun(t *testing.T) {
 	assert.Equal(t, "3", messageCount)
 }
 
-func TestLLMCallCommand_handleSyncCall(t *testing.T) {
-	cmd := &LLMCallCommand{}
+func TestCallCommand_handleSyncCall(t *testing.T) {
+	cmd := &CallCommand{}
 
 	// Create mock services
 	llmService := services.NewMockLLMService()
@@ -699,8 +700,8 @@ func TestLLMCallCommand_handleSyncCall(t *testing.T) {
 	assert.Equal(t, "sync", callMode)
 }
 
-func TestLLMCallCommand_handleStreamingCall(t *testing.T) {
-	cmd := &LLMCallCommand{}
+func TestCallCommand_handleStreamingCall(t *testing.T) {
+	cmd := &CallCommand{}
 
 	// Create mock services
 	llmService := services.NewMockLLMService()
