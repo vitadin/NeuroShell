@@ -9,7 +9,7 @@ Model Catalog (Openai) (7 models):
     Features: streaming, function-calling, structured-outputs, vision, fine-tuning
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
-    Description: GPT-4.1 is our flagship model for complex tasks. It is well suited for problem solving across domains.
+    Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
   [G4O] GPT-4o (gpt-4o-2024-11-20)
     Context: 128,000 tokens (max output: 16,384 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs, omni
@@ -197,7 +197,7 @@ Openai Models:
     Features: streaming, function-calling, structured-outputs, vision, fine-tuning
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
-    Description: GPT-4.1 is our flagship model for complex tasks. It is well suited for problem solving across domains.
+    Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
   [G4O] GPT-4o (gpt-4o-2024-11-20)
     Provider: openai
     Context: 128,000 tokens (max output: 16,384 tokens)

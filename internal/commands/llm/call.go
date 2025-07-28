@@ -34,7 +34,7 @@ func (c *CallCommand) Usage() string {
 	return `\llm-call[client_id=client_id, model_id=model_id, session_id=session_id, stream=false, dry_run=false]
 
 Examples:
-  \llm-call                                                  %% Use defaults (active model, active session, cached client)
+  \llm-call                                                %% Use defaults (active model, active session, cached client)
   \llm-call[client_id=${_client_id}, model_id=my-gpt4]     %% Explicit client and model
   \llm-call[session_id=work-session, stream=true]          %% Use specific session with streaming
   \llm-call[dry_run=true]                                  %% Show what would be sent without API call
