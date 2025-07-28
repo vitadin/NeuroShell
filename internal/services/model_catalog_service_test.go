@@ -67,9 +67,10 @@ func TestModelCatalogService_GetModelCatalog(t *testing.T) {
 		// Verify we get models from both providers
 		assert.Greater(t, len(models), 0, "Should have at least one model")
 
-		// Check that we have models from both providers
+		// Check that we have models from all providers
 		hasAnthropic := false
 		hasOpenAI := false
+		hasGemini := false
 
 		for _, model := range models {
 			// Verify model structure
@@ -87,10 +88,14 @@ func TestModelCatalogService_GetModelCatalog(t *testing.T) {
 			if model.Name == "o3" {
 				hasOpenAI = true
 			}
+			if model.Name == "gemini-2.5-pro" {
+				hasGemini = true
+			}
 		}
 
 		assert.True(t, hasAnthropic, "Should have Anthropic models")
 		assert.True(t, hasOpenAI, "Should have OpenAI models")
+		assert.True(t, hasGemini, "Should have Gemini models")
 	})
 }
 
@@ -134,6 +139,24 @@ func TestModelCatalogService_GetModelCatalogByProvider(t *testing.T) {
 			assert.True(t,
 				expectedOpenAIModels[model.Name],
 				"Should be a known OpenAI model: %s", model.Name)
+			assert.NotEmpty(t, model.DisplayName)
+			assert.Greater(t, model.ContextWindow, 0)
+		}
+	})
+
+	t.Run("get gemini models", func(t *testing.T) {
+		models, err := service.GetModelCatalogByProvider("gemini")
+		require.NoError(t, err)
+		require.NotNil(t, models)
+		assert.Greater(t, len(models), 0, "Should have Gemini models")
+
+		// Verify all models are Gemini models
+		expectedGeminiModels := map[string]bool{"gemini-2.5-pro": true}
+		for _, model := range models {
+			assert.True(t,
+				expectedGeminiModels[model.Name],
+				"Should be a known Gemini model: %s", model.Name)
+			assert.Equal(t, "gemini", model.Provider, "Provider should be gemini")
 			assert.NotEmpty(t, model.DisplayName)
 			assert.Greater(t, model.ContextWindow, 0)
 		}

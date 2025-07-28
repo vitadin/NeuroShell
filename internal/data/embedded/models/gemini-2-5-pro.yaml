@@ -1,0 +1,24 @@
+name: gemini-2.5-pro
+id: GM25P
+display_name: Gemini 2.5 Pro
+provider: gemini
+description: Google's most capable multimodal AI model with advanced reasoning capabilities
+capabilities: [text, reasoning, analysis, coding, writing, math, multimodal, audio, video, pdf, code-execution, search-grounding, thinking]
+context_window: 1048576
+max_output_tokens: 65536
+knowledge_cutoff: "2025-01-01"
+modalities: [text-input, image-input, audio-input, video-input, pdf-input, text-output]
+pricing:
+  input_per_m_token: 2.50
+  output_per_m_token: 15.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  caching: true
+  code_execution: true
+  search_grounding: true
+  thinking: true
+  batch_mode: true
+tools: [code-execution, search-grounding]
+version: "2025-06-01"
