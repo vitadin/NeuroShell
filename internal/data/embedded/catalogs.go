@@ -104,3 +104,8 @@ var MoonshotChatProviderData []byte
 //
 //go:embed providers/openrouter-chat.yaml
 var OpenRouterChatProviderData []byte
+
+// GeminiChatProviderData contains the embedded Gemini chat provider YAML data.
+//
+//go:embed providers/gemini-chat.yaml
+var GeminiChatProviderData []byte

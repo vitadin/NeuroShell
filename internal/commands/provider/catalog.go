@@ -34,7 +34,7 @@ func (c *CatalogCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the provider-catalog command.
 func (c *CatalogCommand) Usage() string {
-	return `\provider-catalog[provider=openai|anthropic|openrouter|moonshot|all, sort=name|provider, search=query]
+	return `\provider-catalog[provider=openai|anthropic|openrouter|moonshot|gemini|all, sort=name|provider, search=query]
 
 Examples:
   \provider-catalog                              %% List all available providers (default: sorted by provider)
@@ -42,15 +42,16 @@ Examples:
   \provider-catalog[provider=anthropic]          %% List Anthropic providers only
   \provider-catalog[provider=openrouter]         %% List OpenRouter providers only
   \provider-catalog[provider=moonshot]           %% List Moonshot providers only
+  \provider-catalog[provider=gemini]             %% List Google Gemini providers only
   \provider-catalog[sort=name]                   %% Sort providers alphabetically by name
   \provider-catalog[search=chat]                 %% Search for providers containing "chat"
-  \provider-catalog[search=OAC]                  %% Search by provider ID (case-insensitive)
+  \provider-catalog[search=GMC]                  %% Search by provider ID (case-insensitive)
   \provider-catalog[search=API]                  %% Search for providers with "API" in description
   \provider-catalog[provider=openai,sort=name]   %% OpenAI providers sorted by name
   \provider-catalog[search=completions,sort=name] %% Search for completion providers, sorted by name
 
 Options:
-  provider - Filter by provider: openai, anthropic, openrouter, moonshot, all (default: all)
+  provider - Filter by provider: openai, anthropic, openrouter, moonshot, gemini, all (default: all)
   sort     - Sort order: name (alphabetical), provider (by provider then name)
   search   - Search query to filter providers by ID, name, display name, or description
 
@@ -65,12 +66,12 @@ func (c *CatalogCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\provider-catalog[provider=openai|anthropic|all, sort=name|provider, search=query]",
+		Usage:       "\\provider-catalog[provider=openai|anthropic|openrouter|moonshot|gemini|all, sort=name|provider, search=query]",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "provider",
-				Description: "Filter by provider: openai, anthropic, openrouter, moonshot, all",
+				Description: "Filter by provider: openai, anthropic, openrouter, moonshot, gemini, all",
 				Required:    false,
 				Type:        "string",
 				Default:     "all",
@@ -212,9 +213,10 @@ func (c *CatalogCommand) validateArguments(provider, sortBy string) error {
 		"anthropic":  true,
 		"openrouter": true,
 		"moonshot":   true,
+		"gemini":     true,
 	}
 	if !validProviders[provider] {
-		return fmt.Errorf("invalid provider option '%s'. Valid options: all, openai, anthropic, openrouter, moonshot", provider)
+		return fmt.Errorf("invalid provider option '%s'. Valid options: all, openai, anthropic, openrouter, moonshot, gemini", provider)
 	}
 
 	validSorts := map[string]bool{

@@ -70,6 +70,13 @@ func (p *ProviderCatalogService) GetProviderCatalog() ([]neurotypes.ProviderCata
 	}
 	allProviders = append(allProviders, openrouterChat)
 
+	// Load Gemini providers
+	geminiChat, err := p.loadProviderFile(embedded.GeminiChatProviderData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Gemini chat provider: %w", err)
+	}
+	allProviders = append(allProviders, geminiChat)
+
 	// Validate that all provider IDs are unique (case-insensitive)
 	if err := p.validateUniqueIDs(allProviders); err != nil {
 		return nil, fmt.Errorf("provider catalog validation failed: %w", err)
@@ -131,7 +138,7 @@ func (p *ProviderCatalogService) SearchProviderCatalog(query string) ([]neurotyp
 
 // GetSupportedProviders returns a list of supported provider names.
 func (p *ProviderCatalogService) GetSupportedProviders() []string {
-	return []string{"openai", "anthropic", "moonshot", "openrouter"}
+	return []string{"openai", "anthropic", "moonshot", "openrouter", "gemini"}
 }
 
 // GetProviderByID returns a provider by its ID (case-insensitive lookup).
