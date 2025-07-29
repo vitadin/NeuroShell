@@ -11,6 +11,13 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
+// ThinkingInfo contains information about thinking blocks found in the response.
+type ThinkingInfo struct {
+	ThinkingBlocks int // Number of thinking blocks processed
+	RedactedBlocks int // Number of redacted thinking blocks processed
+	ThinkingTokens int // Estimated thinking tokens used (if available)
+}
+
 // AnthropicClient implements the LLMClient interface for Anthropic's API.
 // It provides lazy initialization of the Anthropic client and handles
 // all Anthropic-specific communication logic.
@@ -69,8 +76,8 @@ func (c *AnthropicClient) SendChatCompletion(session *neurotypes.ChatSession, mo
 	messages, additionalSystemInstructions := c.convertMessagesToAnthropic(session)
 	logger.Debug("Messages converted", "message_count", len(messages))
 
-	// Build message parameters
-	params := anthropic.MessageNewParams{
+	// Build message parameters - use BetaMessageNewParams for thinking support
+	params := anthropic.BetaMessageNewParams{
 		Model:     anthropic.Model(modelConfig.BaseModel),
 		MaxTokens: 1024, // Default, will be overridden by parameters if set
 		Messages:  messages,
@@ -92,7 +99,7 @@ func (c *AnthropicClient) SendChatCompletion(session *neurotypes.ChatSession, mo
 	}
 
 	if systemPrompt != "" {
-		params.System = []anthropic.TextBlockParam{
+		params.System = []anthropic.BetaTextBlockParam{
 			{Text: systemPrompt},
 		}
 		logger.Debug("System prompt added", "system_prompt", systemPrompt)
@@ -101,9 +108,9 @@ func (c *AnthropicClient) SendChatCompletion(session *neurotypes.ChatSession, mo
 	// Apply other model parameters
 	c.applyModelParameters(&params, modelConfig)
 
-	// Send request
-	logger.Debug("Sending Anthropic request", "model", modelConfig.BaseModel)
-	message, err := c.client.Messages.New(context.Background(), params)
+	// Send request using beta API for thinking support
+	logger.Debug("Sending Anthropic beta request", "model", modelConfig.BaseModel)
+	message, err := c.client.Beta.Messages.New(context.Background(), params)
 	if err != nil {
 		logger.Error("Anthropic request failed", "error", err)
 		return "", fmt.Errorf("anthropic request failed: %w", err)
@@ -115,19 +122,15 @@ func (c *AnthropicClient) SendChatCompletion(session *neurotypes.ChatSession, mo
 		return "", fmt.Errorf("no response content returned")
 	}
 
-	// Concatenate all text blocks
-	var content string
-	for _, block := range message.Content {
-		// Get text content from block
-		content += block.Text
-	}
+	// Process all content blocks (text, thinking, redacted_thinking)
+	content, thinkingInfo := c.processResponseBlocks(message.Content)
 
 	if content == "" {
 		logger.Error("Empty response content")
 		return "", fmt.Errorf("empty response content")
 	}
 
-	logger.Debug("Anthropic response received", "content_length", len(content))
+	logger.Debug("Anthropic response received", "content_length", len(content), "thinking_blocks", thinkingInfo.ThinkingBlocks, "redacted_blocks", thinkingInfo.RedactedBlocks)
 	return content, nil
 }
 
@@ -166,16 +169,21 @@ func (c *AnthropicClient) StreamChatCompletion(session *neurotypes.ChatSession, 
 
 // convertMessagesToAnthropic converts NeuroShell messages to Anthropic format.
 // Returns the conversation messages and any additional system instructions found in the conversation.
-func (c *AnthropicClient) convertMessagesToAnthropic(session *neurotypes.ChatSession) ([]anthropic.MessageParam, string) {
-	messages := make([]anthropic.MessageParam, 0, len(session.Messages))
+func (c *AnthropicClient) convertMessagesToAnthropic(session *neurotypes.ChatSession) ([]anthropic.BetaMessageParam, string) {
+	messages := make([]anthropic.BetaMessageParam, 0, len(session.Messages))
 	var additionalSystemInstructions []string
 
 	for _, msg := range session.Messages {
 		switch msg.Role {
 		case "user":
-			messages = append(messages, anthropic.NewUserMessage(anthropic.NewTextBlock(msg.Content)))
+			messages = append(messages, anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock(msg.Content)))
 		case "assistant":
-			messages = append(messages, anthropic.NewAssistantMessage(anthropic.NewTextBlock(msg.Content)))
+			messages = append(messages, anthropic.BetaMessageParam{
+				Role: anthropic.BetaMessageParamRoleAssistant,
+				Content: []anthropic.BetaContentBlockParamUnion{
+					anthropic.NewBetaTextBlock(msg.Content),
+				},
+			})
 		case "system":
 			// Collect system messages to combine with system prompt
 			additionalSystemInstructions = append(additionalSystemInstructions, msg.Content)
@@ -200,7 +208,7 @@ func (c *AnthropicClient) convertMessagesToAnthropic(session *neurotypes.ChatSes
 }
 
 // applyModelParameters applies model configuration parameters to the Anthropic request.
-func (c *AnthropicClient) applyModelParameters(params *anthropic.MessageNewParams, modelConfig *neurotypes.ModelConfig) {
+func (c *AnthropicClient) applyModelParameters(params *anthropic.BetaMessageNewParams, modelConfig *neurotypes.ModelConfig) {
 	if modelConfig.Parameters == nil {
 		return
 	}
@@ -232,4 +240,80 @@ func (c *AnthropicClient) applyModelParameters(params *anthropic.MessageNewParam
 			params.TopK = anthropic.Int(int64(topKInt))
 		}
 	}
+
+	// Apply extended thinking parameters
+	c.applyThinkingParameters(params, modelConfig)
+}
+
+// applyThinkingParameters applies extended thinking configuration to the Anthropic request.
+func (c *AnthropicClient) applyThinkingParameters(params *anthropic.BetaMessageNewParams, modelConfig *neurotypes.ModelConfig) {
+	if modelConfig.Parameters == nil {
+		return
+	}
+
+	// Check for thinking_budget parameter
+	if budgetRaw, ok := modelConfig.Parameters["thinking_budget"]; ok {
+		var budget int64
+		switch v := budgetRaw.(type) {
+		case int:
+			budget = int64(v)
+		case int64:
+			budget = v
+		case float64:
+			budget = int64(v)
+		default:
+			logger.Debug("Invalid thinking_budget type, ignoring", "type", fmt.Sprintf("%T", v), "value", v)
+			return
+		}
+
+		// Enable thinking if budget > 0
+		if budget > 0 {
+			params.Thinking = anthropic.BetaThinkingConfigParamUnion{
+				OfEnabled: &anthropic.BetaThinkingConfigEnabledParam{
+					BudgetTokens: budget,
+				},
+			}
+			logger.Debug("Extended thinking enabled", "budget_tokens", budget, "model", modelConfig.BaseModel)
+		}
+	}
+}
+
+// processResponseBlocks processes all content blocks from Anthropic beta response.
+// Handles text, thinking, and redacted_thinking blocks appropriately.
+func (c *AnthropicClient) processResponseBlocks(blocks []anthropic.BetaContentBlockUnion) (string, ThinkingInfo) {
+	var content string
+	info := ThinkingInfo{}
+
+	for _, block := range blocks {
+		// Handle text blocks
+		textBlock := block.AsText()
+		if textBlock.Type == "text" {
+			content += textBlock.Text
+			logger.Debug("Text block processed", "text_length", len(textBlock.Text))
+			continue
+		}
+
+		// Handle thinking blocks
+		thinkingBlock := block.AsThinking()
+		if thinkingBlock.Type == "thinking" {
+			info.ThinkingBlocks++
+			logger.Debug("Thinking block processed", "thinking_length", len(thinkingBlock.Thinking))
+			// Note: Thinking content is Claude's internal reasoning - not included in response
+			continue
+		}
+
+		// Handle redacted thinking blocks
+		redactedBlock := block.AsRedactedThinking()
+		if redactedBlock.Type == "redacted_thinking" {
+			info.RedactedBlocks++
+			logger.Debug("Redacted thinking block processed", "data_length", len(redactedBlock.Data))
+			// Note: Redacted blocks contain encrypted content - not included in response
+			continue
+		}
+
+		// Unknown block type - log warning
+		logger.Debug("Unknown content block type encountered")
+	}
+
+	return content, info
 }

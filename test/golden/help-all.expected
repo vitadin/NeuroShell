@@ -1,5 +1,6 @@
 Neuro Shell - Quick Start Guide
 Core Commands:
+  \anthropic-client-new - Create new Anthropic client with automatic key resolution and extended thinking support
   \bash           - Execute system commands via bash
   \cat            - Display file contents with optional line limiting and variable storage
   \echo           - Output text with optional raw mode and variable storage

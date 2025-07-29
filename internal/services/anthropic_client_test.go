@@ -10,6 +10,80 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
+// Test thinking parameter application
+func TestAnthropicClient_ApplyThinkingParameters(t *testing.T) {
+	client := NewAnthropicClient("test-key")
+
+	tests := []struct {
+		name           string
+		parameters     map[string]any
+		expectedBudget *int64
+	}{
+		{
+			name:           "with thinking budget as int",
+			parameters:     map[string]any{"thinking_budget": 5000},
+			expectedBudget: func() *int64 { v := int64(5000); return &v }(),
+		},
+		{
+			name:           "with thinking budget as int64",
+			parameters:     map[string]any{"thinking_budget": int64(8000)},
+			expectedBudget: func() *int64 { v := int64(8000); return &v }(),
+		},
+		{
+			name:           "with thinking budget as float64",
+			parameters:     map[string]any{"thinking_budget": 3000.0},
+			expectedBudget: func() *int64 { v := int64(3000); return &v }(),
+		},
+		{
+			name:           "with zero thinking budget",
+			parameters:     map[string]any{"thinking_budget": 0},
+			expectedBudget: nil, // Should not enable thinking for budget 0
+		},
+		{
+			name:           "with invalid thinking budget type",
+			parameters:     map[string]any{"thinking_budget": "invalid"},
+			expectedBudget: nil, // Should ignore invalid type
+		},
+		{
+			name:           "without thinking budget",
+			parameters:     map[string]any{"temperature": 0.7},
+			expectedBudget: nil, // Should not enable thinking
+		},
+		{
+			name:           "with nil parameters",
+			parameters:     nil,
+			expectedBudget: nil, // Should not enable thinking
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			modelConfig := &neurotypes.ModelConfig{
+				Parameters: tt.parameters,
+			}
+
+			params := anthropic.BetaMessageNewParams{
+				Model:     "claude-3-sonnet-20240229",
+				MaxTokens: 1000,
+				Messages:  []anthropic.BetaMessageParam{},
+			}
+
+			// Apply thinking parameters
+			client.applyThinkingParameters(&params, modelConfig)
+
+			// Check if thinking was configured correctly
+			if tt.expectedBudget == nil {
+				// Should not have thinking enabled
+				assert.Equal(t, anthropic.BetaThinkingConfigParamUnion{}, params.Thinking)
+			} else {
+				// Should have thinking enabled with correct budget
+				assert.NotNil(t, params.Thinking.OfEnabled)
+				assert.Equal(t, *tt.expectedBudget, params.Thinking.OfEnabled.BudgetTokens)
+			}
+		})
+	}
+}
+
 func TestNewAnthropicClient(t *testing.T) {
 	tests := []struct {
 		name     string
