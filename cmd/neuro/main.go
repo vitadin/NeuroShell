@@ -20,13 +20,14 @@ import (
 	"neuroshell/internal/services"
 	"neuroshell/internal/shell"
 	"neuroshell/internal/statemachine"
+	"neuroshell/internal/version"
 )
 
 var (
-	logLevel string
-	logFile  string
-	testMode bool
-	version  = "0.1.0" // This could be set at build time
+	logLevel    string
+	logFile     string
+	testMode    bool
+	showVersion bool
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -35,7 +36,15 @@ var rootCmd = &cobra.Command{
 	Short: "Neuro Shell - LLM-integrated shell environment",
 	Long: `Neuro is a specialized shell environment designed for seamless interaction with LLM agents.
 It bridges the gap between traditional command-line interfaces and modern AI assistants.`,
-	Run: runShell, // Default behavior is to run the interactive shell
+	Run: func(cmd *cobra.Command, args []string) {
+		// Handle --version flag
+		if showVersion {
+			fmt.Println(version.GetFormattedVersion())
+			return
+		}
+		// Default behavior is to run the interactive shell
+		runShell(cmd, args)
+	},
 }
 
 // shellCmd represents the shell command (explicit version of default behavior)
@@ -60,9 +69,14 @@ This is useful for automation, CI/CD pipelines, and running predefined workflows
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version information",
-	Long:  `Display the version of Neuro Shell.`,
-	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Printf("Neuro Shell v%s\n", version)
+	Long:  `Display the version of Neuro Shell with build information.`,
+	Run: func(cmd *cobra.Command, _ []string) {
+		detailed, _ := cmd.Flags().GetBool("detailed")
+		if detailed {
+			fmt.Println(version.GetDetailedVersion())
+		} else {
+			fmt.Println(version.GetFormattedVersion())
+		}
 	},
 }
 
@@ -78,6 +92,10 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "Set log level (debug|info|warn|error) [default: info]")
 	rootCmd.PersistentFlags().StringVar(&logFile, "log-file", "", "Write logs to file instead of stderr")
 	rootCmd.PersistentFlags().BoolVar(&testMode, "test-mode", false, "Run in deterministic test mode")
+	rootCmd.PersistentFlags().BoolVar(&showVersion, "version", false, "Show version information")
+
+	// Add version command flags
+	versionCmd.Flags().Bool("detailed", false, "Show detailed version information")
 
 	// Bind flags to viper
 	if err := viper.BindPFlag("log-level", rootCmd.PersistentFlags().Lookup("log-level")); err != nil {
@@ -190,7 +208,7 @@ func setupAutoComplete(sh *ishell.Shell) error {
 }
 
 func runShell(_ *cobra.Command, _ []string) {
-	logger.Info("Starting NeuroShell", "version", version)
+	logger.Info("Starting NeuroShell", "version", version.GetVersion())
 
 	// Initialize services before starting shell
 	if err := shell.InitializeServices(testMode); err != nil {
@@ -213,7 +231,7 @@ func runShell(_ *cobra.Command, _ []string) {
 	sh.DeleteCmd("exit")
 	sh.DeleteCmd("help")
 
-	sh.Println(fmt.Sprintf("Neuro Shell v%s - LLM-integrated shell environment", version))
+	sh.Println(fmt.Sprintf("Neuro Shell v%s - LLM-integrated shell environment", version.GetVersion()))
 	sh.Println("Type '\\help' for Neuro commands, Ctrl+E for editor, or '\\exit' to quit.")
 
 	sh.NotFound(shell.ProcessInput)
@@ -224,7 +242,7 @@ func runShell(_ *cobra.Command, _ []string) {
 func runBatch(_ *cobra.Command, args []string) {
 	scriptPath := args[0]
 
-	logger.Info("Starting NeuroShell batch mode", "version", version, "script", scriptPath)
+	logger.Info("Starting NeuroShell batch mode", "version", version.GetVersion(), "script", scriptPath)
 
 	// Validate script file exists and has correct extension
 	if err := validateScriptFile(scriptPath); err != nil {

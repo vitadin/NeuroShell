@@ -3,6 +3,7 @@ module neuroshell
 go 1.24.4
 
 require (
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/abiosoft/ishell/v2 v2.0.2
 	github.com/anthropics/anthropic-sdk-go v1.6.2
 	github.com/charmbracelet/glamour v0.10.0
