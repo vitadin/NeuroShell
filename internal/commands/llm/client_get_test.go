@@ -179,6 +179,9 @@ func setupLLMClientGetTestRegistry(t *testing.T) {
 	err = services.GetGlobalRegistry().RegisterService(services.NewStackService())
 	require.NoError(t, err)
 
+	err = services.GetGlobalRegistry().RegisterService(services.NewProviderCatalogService())
+	require.NoError(t, err)
+
 	// Initialize services
 	err = services.GetGlobalRegistry().InitializeAll()
 	require.NoError(t, err)
@@ -205,6 +208,10 @@ func BenchmarkClientGetCommand_Execute(b *testing.B) {
 		b.Fatal(err)
 	}
 	err = services.GetGlobalRegistry().RegisterService(services.NewClientFactoryService())
+	if err != nil {
+		b.Fatal(err)
+	}
+	err = services.GetGlobalRegistry().RegisterService(services.NewProviderCatalogService())
 	if err != nil {
 		b.Fatal(err)
 	}

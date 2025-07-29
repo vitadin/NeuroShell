@@ -62,7 +62,7 @@ func TestProviderCatalogService_GetProviderCatalog(t *testing.T) {
 		require.NotNil(t, providers)
 
 		// Verify we get providers from all expected providers
-		assert.Equal(t, 5, len(providers), "Should have exactly 5 providers")
+		assert.Equal(t, 6, len(providers), "Should have exactly 6 providers")
 
 		// Check that we have providers from all expected providers
 		providerNames := make(map[string]bool)
@@ -80,7 +80,7 @@ func TestProviderCatalogService_GetProviderCatalog(t *testing.T) {
 		}
 
 		// Verify all expected providers are present
-		expectedProviders := []string{"openai", "anthropic", "moonshot", "openrouter"}
+		expectedProviders := []string{"openai", "openai-reasoning", "anthropic", "moonshot", "openrouter", "gemini"}
 		for _, expected := range expectedProviders {
 			assert.True(t, providerNames[expected], "Should have provider: %s", expected)
 		}
@@ -295,7 +295,7 @@ func TestProviderCatalogService_SearchProviderCatalog(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, providers)
 		// Should return all providers since empty query matches everything
-		assert.Equal(t, 5, len(providers), "Empty search should return all providers")
+		assert.Equal(t, 6, len(providers), "Empty search should return all providers")
 	})
 }
 
@@ -489,7 +489,7 @@ func TestProviderCatalogService_IDValidationIntegration(t *testing.T) {
 	t.Run("real catalog has unique IDs", func(t *testing.T) {
 		providers, err := service.GetProviderCatalog()
 		require.NoError(t, err)
-		assert.Equal(t, 5, len(providers), "Should have 5 providers in catalog")
+		assert.Equal(t, 6, len(providers), "Should have 6 providers in catalog")
 
 		// Verify all providers have IDs
 		for _, provider := range providers {
@@ -506,7 +506,7 @@ func TestProviderCatalogService_IDValidationIntegration(t *testing.T) {
 	})
 
 	t.Run("expected provider IDs exist", func(t *testing.T) {
-		expectedIDs := []string{"OAC", "ANC", "MSC", "ORC"}
+		expectedIDs := []string{"OAC", "OAR", "ANC", "MSC", "ORC", "GMC"}
 
 		for _, expectedID := range expectedIDs {
 			provider, err := service.GetProviderByID(expectedID)
@@ -546,14 +546,14 @@ func TestProviderCatalogService_IDValidationIntegration(t *testing.T) {
 			assert.NotEmpty(t, provider.ImplementationNotes, "Provider should have implementation notes")
 
 			// Validate client types
-			validClientTypes := []string{"openai", "openai-compatible", "gemini"}
+			validClientTypes := []string{"openai", "openai_reasoning", "openai-compatible", "gemini"}
 			assert.Contains(t, validClientTypes, provider.ClientType, "Provider should have valid client type")
 
 			// Validate base URLs start with https
 			assert.True(t, strings.HasPrefix(provider.BaseURL, "https://"), "Provider base URL should use HTTPS")
 
 			// Validate implementation notes values
-			validImplementationNotes := []string{"Natively supported by NeuroShell", "Uses OpenAI-compatible API"}
+			validImplementationNotes := []string{"Natively supported by NeuroShell", "Uses OpenAI-compatible API", "Used for models with reasoning_tokens: true"}
 			assert.Contains(t, validImplementationNotes, provider.ImplementationNotes, "Provider should have valid implementation notes")
 		}
 	})

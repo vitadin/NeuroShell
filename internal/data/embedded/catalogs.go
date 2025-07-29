@@ -139,3 +139,8 @@ var OpenRouterChatProviderData []byte
 //
 //go:embed providers/gemini-chat.yaml
 var GeminiChatProviderData []byte
+
+// OpenAIResponsesProviderData contains the embedded OpenAI responses provider YAML data.
+//
+//go:embed providers/openai-responses.yaml
+var OpenAIResponsesProviderData []byte

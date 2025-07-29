@@ -49,6 +49,13 @@ func (p *ProviderCatalogService) GetProviderCatalog() ([]neurotypes.ProviderCata
 	}
 	allProviders = append(allProviders, openaiChat)
 
+	// Load OpenAI Responses provider
+	openaiResponses, err := p.loadProviderFile(embedded.OpenAIResponsesProviderData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load OpenAI responses provider: %w", err)
+	}
+	allProviders = append(allProviders, openaiResponses)
+
 	// Load Anthropic providers
 	anthropicChat, err := p.loadProviderFile(embedded.AnthropicChatProviderData)
 	if err != nil {
@@ -139,6 +146,25 @@ func (p *ProviderCatalogService) SearchProviderCatalog(query string) ([]neurotyp
 // GetSupportedProviders returns a list of supported provider names.
 func (p *ProviderCatalogService) GetSupportedProviders() []string {
 	return []string{"openai", "anthropic", "moonshot", "openrouter", "gemini"}
+}
+
+// GetValidCatalogIDs returns a list of all valid provider catalog IDs dynamically.
+func (p *ProviderCatalogService) GetValidCatalogIDs() ([]string, error) {
+	if !p.initialized {
+		return nil, fmt.Errorf("provider catalog service not initialized")
+	}
+
+	allProviders, err := p.GetProviderCatalog()
+	if err != nil {
+		return nil, err
+	}
+
+	var catalogIDs []string
+	for _, provider := range allProviders {
+		catalogIDs = append(catalogIDs, provider.ID)
+	}
+
+	return catalogIDs, nil
 }
 
 // GetProviderByID returns a provider by its ID (case-insensitive lookup).

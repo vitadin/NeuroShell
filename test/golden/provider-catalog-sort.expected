@@ -1,6 +1,6 @@
 Setting _echo_command = true
 %%> "\\provider-catalog[sort=name]"
-Provider Catalog (5 providers):
+Provider Catalog (6 providers):
   [ANC] Anthropic Claude Chat (openai-compatible)
     Provider: anthropic
     Base URL: https://api.anthropic.com/v1
@@ -31,6 +31,13 @@ Provider Catalog (5 providers):
     Client Type: openai
     Description: OpenAI's chat completion API for GPT models
     Implementation: Natively supported by NeuroShell
+  [OAR] OpenAI Responses API (openai_reasoning)
+    Provider: openai-reasoning
+    Base URL: https://api.openai.com/v1
+    Endpoint: /responses
+    Client Type: openai_reasoning
+    Description: OpenAI's responses API for reasoning models (o3, o4-mini, o1, etc.)
+    Implementation: Used for models with reasoning_tokens: true
   [ORC] OpenRouter Chat Completions (openai-compatible)
     Provider: openrouter
     Base URL: https://openrouter.ai/api/v1
@@ -40,7 +47,7 @@ Provider Catalog (5 providers):
     Description: OpenRouter unified API access to multiple LLM providers
     Implementation: Uses OpenAI-compatible API
 %%> "\\provider-catalog[sort=provider]"
-Provider Catalog (5 providers):
+Provider Catalog (6 providers):
 Anthropic Providers:
   [ANC] Anthropic Claude Chat (openai-compatible)
     Provider: anthropic
@@ -75,6 +82,14 @@ Openai Providers:
     Client Type: openai
     Description: OpenAI's chat completion API for GPT models
     Implementation: Natively supported by NeuroShell
+Openai-reasoning Providers:
+  [OAR] OpenAI Responses API (openai_reasoning)
+    Provider: openai-reasoning
+    Base URL: https://api.openai.com/v1
+    Endpoint: /responses
+    Client Type: openai_reasoning
+    Description: OpenAI's responses API for reasoning models (o3, o4-mini, o1, etc.)
+    Implementation: Used for models with reasoning_tokens: true
 Openrouter Providers:
   [ORC] OpenRouter Chat Completions (openai-compatible)
     Provider: openrouter
