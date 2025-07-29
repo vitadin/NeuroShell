@@ -141,6 +141,25 @@ func (p *ProviderCatalogService) GetSupportedProviders() []string {
 	return []string{"openai", "anthropic", "moonshot", "openrouter", "gemini"}
 }
 
+// GetValidCatalogIDs returns a list of all valid provider catalog IDs dynamically.
+func (p *ProviderCatalogService) GetValidCatalogIDs() ([]string, error) {
+	if !p.initialized {
+		return nil, fmt.Errorf("provider catalog service not initialized")
+	}
+
+	allProviders, err := p.GetProviderCatalog()
+	if err != nil {
+		return nil, err
+	}
+
+	var catalogIDs []string
+	for _, provider := range allProviders {
+		catalogIDs = append(catalogIDs, provider.ID)
+	}
+
+	return catalogIDs, nil
+}
+
 // GetProviderByID returns a provider by its ID (case-insensitive lookup).
 func (p *ProviderCatalogService) GetProviderByID(id string) (neurotypes.ProviderCatalogEntry, error) {
 	if !p.initialized {

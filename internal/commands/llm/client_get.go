@@ -114,8 +114,19 @@ func (c *ClientGetCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
+	// Get provider catalog service to validate catalog ID
+	providerCatalogService, err := services.GetGlobalProviderCatalogService()
+	if err != nil {
+		return fmt.Errorf("provider catalog service not available: %w", err)
+	}
+
+	// Get valid catalog IDs dynamically
+	validCatalogIDs, err := providerCatalogService.GetValidCatalogIDs()
+	if err != nil {
+		return fmt.Errorf("failed to get valid catalog IDs: %w", err)
+	}
+
 	// Validate provider catalog ID
-	validCatalogIDs := []string{"OAC", "OAR", "ORC", "MSC", "ANC", "GMC"}
 	isValid := false
 	for _, valid := range validCatalogIDs {
 		if providerCatalogID == valid {
