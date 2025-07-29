@@ -1,0 +1,45 @@
+%% Test Gemini model creation error handling
+
+%% Test invalid catalog_id
+\try \gemini-model-new[catalog_id="INVALID"] invalid-model
+\get[_status]
+\get[_error]
+
+%% Test non-Gemini catalog_id (should fail with proper error)
+\try \gemini-model-new[catalog_id="CS4"] wrong-provider-model
+\get[_status]
+\get[_error]
+
+%% Test empty model name
+\try \gemini-model-new[catalog_id="GM25F"] 
+\get[_status]
+\get[_error]
+
+%% Test missing catalog_id
+\try \gemini-model-new[] missing-catalog-model
+\get[_status]
+\get[_error]
+
+%% Test Gemini Pro with thinking disabled (should fail - Pro cannot disable thinking)
+\try \gemini-model-new[catalog_id="GM25P", thinking_budget="0"] pro-cannot-disable
+\get[_status]
+\get[_error]
+
+%% Test thinking_budget out of range for Flash
+\try \gemini-model-new[catalog_id="GM25F", thinking_budget="50000"] flash-out-of-range
+\get[_status]
+\get[_error]
+
+%% Test thinking_budget out of range for Pro (below minimum)
+\try \gemini-model-new[catalog_id="GM25P", thinking_budget="50"] pro-below-minimum
+\get[_status]
+\get[_error]
+
+%% Test invalid thinking_budget format
+\try \gemini-model-new[catalog_id="GM25F", thinking_budget="invalid"] flash-invalid-budget
+\get[_status]
+\get[_error]
+
+%% Test valid model after errors to confirm system still works
+\gemini-model-new[catalog_id="GM25F"] recovery-model
+\get[#model_name]

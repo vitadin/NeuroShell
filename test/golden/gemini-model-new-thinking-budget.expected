@@ -1,0 +1,74 @@
+Setting _echo_command = true
+%%> "\\gemini-model-new[catalog_id=\"GM25F\", thinking_budget=\"-1\"] flash-dynamic"
+Created model 'flash-dynamic' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\get[#model_name]"
+#model_name = flash-dynamic
+%%> "\\get[#model_param_count]"
+#model_param_count = 1
+%%> "\\gemini-model-new[catalog_id=\"GM25F\", thinking_budget=\"0\"] flash-no-thinking"
+Created model 'flash-no-thinking' (ID: 00000002, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\get[#model_name]"
+#model_name = flash-no-thinking
+%%> "\\get[#model_param_count]"
+#model_param_count = 1
+%%> "\\gemini-model-new[catalog_id=\"GM25F\", thinking_budget=\"2048\"] flash-fixed-thinking"
+Created model 'flash-fixed-thinking' (ID: 00000003, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
+%%> "\\get[#model_name]"
+#model_name = flash-fixed-thinking
+%%> "\\get[#model_param_count]"
+#model_param_count = 1
+%%> "\\gemini-model-new[catalog_id=\"GM25P\", thinking_budget=\"-1\"] pro-dynamic"
+Created model 'pro-dynamic' (ID: 00000004, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
+%%> "\\get[#model_name]"
+#model_name = pro-dynamic
+%%> "\\get[#model_param_count]"
+#model_param_count = 1
+%%> "\\gemini-model-new[catalog_id=\"GM25P\", thinking_budget=\"16384\"] pro-fixed-thinking"
+Created model 'pro-fixed-thinking' (ID: 00000005, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\silent \\model-activate[id=true] 00000005-0000-4000-8000-000000000005"
+%%> "\\get[#model_name]"
+#model_name = pro-fixed-thinking
+%%> "\\get[#model_param_count]"
+#model_param_count = 1
+%%> "\\model-status"
+Model Configurations (5 models):
+  flash-dynamic (00000001)
+    Provider: gemini
+    Base Model: gemini-2.5-flash
+    Catalog ID: GM25F
+    Parameters: 1 (thinking_budget=-1)
+    Created: 2025-01-01 00:00:01
+    Description: Gemini Gemini 2.5 Flash model
+  flash-fixed-thinking (00000003)
+    Provider: gemini
+    Base Model: gemini-2.5-flash
+    Catalog ID: GM25F
+    Parameters: 1 (thinking_budget=2048)
+    Created: 2025-01-01 00:00:03
+    Description: Gemini Gemini 2.5 Flash model
+  flash-no-thinking (00000002)
+    Provider: gemini
+    Base Model: gemini-2.5-flash
+    Catalog ID: GM25F
+    Parameters: 1 (thinking_budget=0)
+    Created: 2025-01-01 00:00:02
+    Description: Gemini Gemini 2.5 Flash model
+  pro-dynamic (00000004)
+    Provider: gemini
+    Base Model: gemini-2.5-pro
+    Catalog ID: GM25P
+    Parameters: 1 (thinking_budget=-1)
+    Created: 2025-01-01 00:00:04
+    Description: Gemini Gemini 2.5 Pro model
+  pro-fixed-thinking (00000005)
+    Provider: gemini
+    Base Model: gemini-2.5-pro
+    Catalog ID: GM25P
+    Parameters: 1 (thinking_budget=16384)
+    Created: 2025-01-01 00:00:05
+    Description: Gemini Gemini 2.5 Pro model
+    Active: true
