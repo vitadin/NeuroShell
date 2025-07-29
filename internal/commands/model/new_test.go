@@ -80,15 +80,7 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		input       string
 		expectError bool
 	}{
-		{
-			name: "create basic OpenAI model",
-			args: map[string]string{
-				"provider":   "openai",
-				"base_model": "gpt-4",
-			},
-			input:       "my-gpt4",
-			expectError: false,
-		},
+		// OpenAI test case removed - now covered in openai_model_new_test.go
 		{
 			name: "create Anthropic model",
 			args: map[string]string{
@@ -98,28 +90,7 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 			input:       "claude-work",
 			expectError: false,
 		},
-		{
-			name: "create model with temperature",
-			args: map[string]string{
-				"provider":    "openai",
-				"base_model":  "gpt-3.5-turbo",
-				"temperature": "0.7",
-			},
-			input:       "creative-gpt",
-			expectError: false,
-		},
-		{
-			name: "create model with multiple parameters",
-			args: map[string]string{
-				"provider":    "openai",
-				"base_model":  "gpt-4",
-				"temperature": "0.8",
-				"max_tokens":  "2000",
-				"top_p":       "0.9",
-			},
-			input:       "full-config-model",
-			expectError: false,
-		},
+		// OpenAI parameter test cases removed - now covered in openai_model_new_test.go
 		{
 			name: "create model with description",
 			args: map[string]string{
@@ -133,8 +104,8 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		{
 			name: "missing model name",
 			args: map[string]string{
-				"provider":   "openai",
-				"base_model": "gpt-4",
+				"provider":   "anthropic",
+				"base_model": "claude-3-sonnet",
 			},
 			input:       "",
 			expectError: true,
@@ -142,7 +113,7 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		{
 			name: "missing provider",
 			args: map[string]string{
-				"base_model": "gpt-4",
+				"base_model": "claude-3-sonnet",
 			},
 			input:       "test-model",
 			expectError: true,
@@ -150,7 +121,7 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		{
 			name: "missing base_model",
 			args: map[string]string{
-				"provider": "openai",
+				"provider": "anthropic",
 			},
 			input:       "test-model",
 			expectError: true,
@@ -220,95 +191,7 @@ func TestNewCommand_Execute_ParameterValidation(t *testing.T) {
 		expectError bool
 		errorMsg    string
 	}{
-		{
-			name: "invalid temperature - too high",
-			args: map[string]string{
-				"provider":    "openai",
-				"base_model":  "gpt-4",
-				"temperature": "1.5",
-			},
-			input:       "test-model",
-			expectError: true,
-			errorMsg:    "temperature must be between 0.0 and 1.0",
-		},
-		{
-			name: "invalid temperature - negative",
-			args: map[string]string{
-				"provider":    "openai",
-				"base_model":  "gpt-4",
-				"temperature": "-0.1",
-			},
-			input:       "test-model",
-			expectError: true,
-			errorMsg:    "temperature must be between 0.0 and 1.0",
-		},
-		{
-			name: "invalid temperature - not a number",
-			args: map[string]string{
-				"provider":    "openai",
-				"base_model":  "gpt-4",
-				"temperature": "not-a-number",
-			},
-			input:       "test-model",
-			expectError: true,
-			errorMsg:    "invalid temperature value",
-		},
-		{
-			name: "invalid max_tokens - not a number",
-			args: map[string]string{
-				"provider":   "openai",
-				"base_model": "gpt-4",
-				"max_tokens": "abc",
-			},
-			input:       "test-model",
-			expectError: true,
-			errorMsg:    "invalid max_tokens value",
-		},
-		{
-			name: "invalid max_tokens - negative",
-			args: map[string]string{
-				"provider":   "openai",
-				"base_model": "gpt-4",
-				"max_tokens": "-100",
-			},
-			input:       "test-model",
-			expectError: true,
-			errorMsg:    "max_tokens must be positive",
-		},
-		{
-			name: "invalid top_p - too high",
-			args: map[string]string{
-				"provider":   "openai",
-				"base_model": "gpt-4",
-				"top_p":      "1.5",
-			},
-			input:       "test-model",
-			expectError: true,
-			errorMsg:    "top_p must be between 0.0 and 1.0",
-		},
-		{
-			name: "invalid top_k - not a number",
-			args: map[string]string{
-				"provider":   "openai",
-				"base_model": "gpt-4",
-				"top_k":      "not-a-number",
-			},
-			input:       "test-model",
-			expectError: true,
-			errorMsg:    "invalid top_k value",
-		},
-		{
-			name: "valid edge case parameters",
-			args: map[string]string{
-				"provider":    "openai",
-				"base_model":  "gpt-4",
-				"temperature": "0.0",
-				"top_p":       "1.0",
-				"max_tokens":  "1",
-			},
-			input:       "edge-case-model",
-			expectError: false,
-		},
+		// OpenAI temperature validation test cases removed - now covered in openai_model_new_test.go
 	}
 
 	for _, tt := range tests {
@@ -400,8 +283,8 @@ func TestNewCommand_Execute_ModelNameValidation(t *testing.T) {
 	}
 
 	baseArgs := map[string]string{
-		"provider":   "openai",
-		"base_model": "gpt-4",
+		"provider":   "anthropic",
+		"base_model": "claude-3-sonnet",
 	}
 
 	for _, tt := range tests {
@@ -430,8 +313,8 @@ func TestNewCommand_Execute_DuplicateModelNames(t *testing.T) {
 	setupModelTestRegistry(t, ctx)
 
 	baseArgs := map[string]string{
-		"provider":   "openai",
-		"base_model": "gpt-4",
+		"provider":   "anthropic",
+		"base_model": "claude-3-sonnet",
 	}
 
 	// Create first model
@@ -481,8 +364,8 @@ func TestNewCommand_Execute_ServiceNotAvailable(t *testing.T) {
 
 	// Don't setup services - should fail
 	args := map[string]string{
-		"provider":   "openai",
-		"base_model": "gpt-4",
+		"provider":   "anthropic",
+		"base_model": "claude-3-sonnet",
 	}
 
 	err := cmd.Execute(args, "test-model")
@@ -505,8 +388,8 @@ func TestNewCommand_Execute_EdgeCases(t *testing.T) {
 		{
 			name: "model with zero temperature",
 			args: map[string]string{
-				"provider":    "openai",
-				"base_model":  "gpt-4",
+				"provider":    "anthropic",
+				"base_model":  "claude-3-sonnet",
 				"temperature": "0",
 			},
 			input:       "zero-temp-model",
@@ -520,8 +403,8 @@ func TestNewCommand_Execute_EdgeCases(t *testing.T) {
 		{
 			name: "model with maximum valid temperature",
 			args: map[string]string{
-				"provider":    "openai",
-				"base_model":  "gpt-4",
+				"provider":    "anthropic",
+				"base_model":  "claude-3-sonnet",
 				"temperature": "1.0",
 			},
 			input:       "max-temp-model",
@@ -530,8 +413,8 @@ func TestNewCommand_Execute_EdgeCases(t *testing.T) {
 		{
 			name: "model with empty description",
 			args: map[string]string{
-				"provider":    "openai",
-				"base_model":  "gpt-4",
+				"provider":    "anthropic",
+				"base_model":  "claude-3-sonnet",
 				"description": "",
 			},
 			input:       "empty-desc-model",
@@ -609,23 +492,7 @@ func TestNewCommand_Execute_CatalogID(t *testing.T) {
 				assert.Equal(t, "claude-sonnet-4-20250514", baseModel)
 			},
 		},
-		{
-			name: "create model from catalog ID - O3",
-			args: map[string]string{
-				"catalog_id": "O3",
-			},
-			input:       "my-openai",
-			expectError: false,
-			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
-				provider, err := ctx.GetVariable("#model_provider")
-				assert.NoError(t, err)
-				assert.Equal(t, "openai", provider)
-
-				baseModel, err := ctx.GetVariable("#model_base")
-				assert.NoError(t, err)
-				assert.Equal(t, "o3", baseModel)
-			},
-		},
+		// OpenAI O3 catalog test case removed - now covered in openai_model_new_test.go
 		{
 			name: "create model from catalog ID with case insensitive - cs4",
 			args: map[string]string{
@@ -643,29 +510,7 @@ func TestNewCommand_Execute_CatalogID(t *testing.T) {
 				assert.Equal(t, "claude-sonnet-4-20250514", baseModel)
 			},
 		},
-		{
-			name: "create model from catalog ID with additional parameters",
-			args: map[string]string{
-				"catalog_id":  "O3",
-				"temperature": "0.8",
-				"max_tokens":  "2000",
-			},
-			input:       "enhanced-o3",
-			expectError: false,
-			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
-				provider, err := ctx.GetVariable("#model_provider")
-				assert.NoError(t, err)
-				assert.Equal(t, "openai", provider)
-
-				baseModel, err := ctx.GetVariable("#model_base")
-				assert.NoError(t, err)
-				assert.Equal(t, "o3", baseModel)
-
-				paramCount, err := ctx.GetVariable("#model_param_count")
-				assert.NoError(t, err)
-				assert.Equal(t, "2", paramCount) // temperature and max_tokens
-			},
-		},
+		// OpenAI O3 with parameters test case removed - now covered in openai_model_new_test.go
 		{
 			name: "catalog_id overrides manual provider/base_model",
 			args: map[string]string{
@@ -698,8 +543,8 @@ func TestNewCommand_Execute_CatalogID(t *testing.T) {
 			name: "empty catalog ID",
 			args: map[string]string{
 				"catalog_id": "",
-				"provider":   "openai",
-				"base_model": "gpt-4",
+				"provider":   "anthropic",
+				"base_model": "claude-3-sonnet",
 			},
 			input:       "empty-catalog-id",
 			expectError: false, // Should work with manual provider/base_model
@@ -707,7 +552,7 @@ func TestNewCommand_Execute_CatalogID(t *testing.T) {
 		{
 			name: "missing provider when no catalog_id",
 			args: map[string]string{
-				"base_model": "gpt-4",
+				"base_model": "claude-3-sonnet",
 			},
 			input:       "missing-provider",
 			expectError: true,
@@ -716,7 +561,7 @@ func TestNewCommand_Execute_CatalogID(t *testing.T) {
 		{
 			name: "missing base_model when no catalog_id",
 			args: map[string]string{
-				"provider": "openai",
+				"provider": "anthropic",
 			},
 			input:       "missing-base-model",
 			expectError: true,
@@ -802,14 +647,7 @@ func TestNewCommand_Execute_CatalogIDEdgeCases(t *testing.T) {
 			expectError: true, // Will fail because variable doesn't exist
 			errorMsg:    "not found in catalog",
 		},
-		{
-			name: "all catalog IDs work",
-			args: map[string]string{
-				"catalog_id": "O4M", // O4-mini
-			},
-			input:       "o4-mini-test",
-			expectError: false,
-		},
+		// OpenAI O4M catalog test case removed - now covered in openai_model_new_test.go
 	}
 
 	// Set up variable for interpolation test
@@ -859,6 +697,9 @@ func setupModelTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	require.NoError(t, err)
 
 	err = services.GetGlobalRegistry().RegisterService(services.NewModelCatalogService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().RegisterService(services.NewStackService())
 	require.NoError(t, err)
 
 	// Note: InterpolationService removed - state machine handles interpolation

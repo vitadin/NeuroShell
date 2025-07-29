@@ -143,6 +143,11 @@ func (c *ClientGetCommand) Execute(args map[string]string, _ string) error {
 		return c.delegateToGeminiClientNew(args)
 	}
 
+	// For OpenAI provider, delegate to specialized command with reasoning support
+	if provider == "openai" {
+		return c.delegateToOpenAIClientNew(args)
+	}
+
 	// Get API key - first from args, then from environment variable
 	apiKey := args["key"]
 	if apiKey == "" {
@@ -215,24 +220,33 @@ func (c *ClientGetCommand) Execute(args map[string]string, _ string) error {
 // delegateToGeminiClientNew handles Gemini provider by delegating to the specialized command.
 // This leverages the robust key resolution system in gemini-client-new.
 func (c *ClientGetCommand) delegateToGeminiClientNew(args map[string]string) error {
-	// Get stack service to push the command for execution
-	stackService, err := services.GetGlobalStackService()
-	if err != nil {
-		return fmt.Errorf("stack service not available: %w", err)
-	}
+	// Create gemini-client-new command and execute it directly
+	geminiClientNewCmd := &GeminiClientNewCommand{}
 
-	// Build the gemini-client-new command with optional key parameter
-	var commandStr string
+	// Prepare args for the delegated command
+	delegateArgs := make(map[string]string)
 	if key, exists := args["key"]; exists && key != "" {
-		commandStr = fmt.Sprintf("\\gemini-client-new[key=%s]", key)
-	} else {
-		commandStr = "\\gemini-client-new"
+		delegateArgs["key"] = key
 	}
 
-	// Push the command to the stack for execution
-	stackService.PushCommand(commandStr)
+	// Execute the gemini-client-new command directly
+	return geminiClientNewCmd.Execute(delegateArgs, "")
+}
 
-	return nil
+// delegateToOpenAIClientNew handles OpenAI provider by delegating to the specialized command.
+// This leverages the robust key resolution system and reasoning model support in openai-client-new.
+func (c *ClientGetCommand) delegateToOpenAIClientNew(args map[string]string) error {
+	// Create openai-client-new command and execute it directly
+	openaiClientNewCmd := &OpenAIClientNewCommand{}
+
+	// Prepare args for the delegated command
+	delegateArgs := make(map[string]string)
+	if key, exists := args["key"]; exists && key != "" {
+		delegateArgs["key"] = key
+	}
+
+	// Execute the openai-client-new command directly
+	return openaiClientNewCmd.Execute(delegateArgs, "")
 }
 
 func init() {

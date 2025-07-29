@@ -20,5 +20,9 @@ features:
   predicted_outputs: true
   distillation: true
   mcp: true
+  reasoning_supported: true
+  reasoning_effort_levels: ["low", "medium", "high"]
+  reasoning_default_effort: "medium"
+  reasoning_summary_supported: true
 tools: [web-search, file-search, image-generation, code-interpreter]
 version: "2025-04-14"

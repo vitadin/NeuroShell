@@ -205,6 +205,22 @@ type ModelFeatures struct {
 	// ThinkingCanDisable indicates whether thinking can be disabled (thinking_budget=0)
 	// Only applicable if ThinkingSupported is true
 	ThinkingCanDisable *bool `yaml:"thinking_can_disable,omitempty" json:"thinking_can_disable,omitempty"`
+
+	// ReasoningSupported indicates whether the model supports reasoning mode (OpenAI o-series)
+	// Reasoning models use the /responses API endpoint instead of /chat/completions
+	ReasoningSupported *bool `yaml:"reasoning_supported,omitempty" json:"reasoning_supported,omitempty"`
+
+	// ReasoningEffortLevels lists supported reasoning effort levels (e.g., ["low", "medium", "high"])
+	// Only applicable if ReasoningSupported is true
+	ReasoningEffortLevels []string `yaml:"reasoning_effort_levels,omitempty" json:"reasoning_effort_levels,omitempty"`
+
+	// ReasoningDefaultEffort is the default reasoning effort level (e.g., "medium")
+	// Only applicable if ReasoningSupported is true
+	ReasoningDefaultEffort *string `yaml:"reasoning_default_effort,omitempty" json:"reasoning_default_effort,omitempty"`
+
+	// ReasoningSummarySupported indicates whether reasoning summaries are available
+	// Only applicable if ReasoningSupported is true
+	ReasoningSummarySupported *bool `yaml:"reasoning_summary_supported,omitempty" json:"reasoning_summary_supported,omitempty"`
 }
 
 // ModelCatalogFile represents an individual model file loaded from YAML.

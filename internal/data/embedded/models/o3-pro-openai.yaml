@@ -18,6 +18,10 @@ features:
   vision: true
   batch: true
   reinforcement_learning: true
+  reasoning_supported: true
+  reasoning_effort_levels: ["low", "medium", "high"]
+  reasoning_default_effort: "medium"
+  reasoning_summary_supported: true
 tools: [web-search, file-search, image-generation]
 reasoning_tokens: true
 version: "2025-06-10"

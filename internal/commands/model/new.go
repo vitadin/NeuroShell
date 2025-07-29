@@ -38,11 +38,11 @@ func (c *NewCommand) Usage() string {
 
 Examples:
   \model-new[catalog_id=CS4] my-claude                                   %% Create from catalog (Claude Sonnet 4)
-  \model-new[catalog_id=O3, temperature=0.8] creative-model              %% Create from catalog with custom parameters
+  \model-new[catalog_id=CS4, temperature=0.8] creative-claude             %% Create from catalog with custom parameters
   \model-new[catalog_id=GM25F, thinking_budget=2048] reasoning-model     %% Create Gemini Flash with thinking mode
   \model-new[catalog_id=GM25FL, thinking_budget=0] fast-model            %% Create Gemini Flash Lite with thinking disabled
   \model-new[catalog_id=GM25P, thinking_budget=-1] dynamic-model         %% Create Gemini Pro with dynamic thinking
-  \model-new[provider=openai, base_model=gpt-4] my-gpt4                  %% Create OpenAI GPT-4 model (manual)
+  \model-new[catalog_id=O3] my-o3                                       %% Create OpenAI o3 (delegates to \\openai-model-new)
   \model-new[provider=anthropic, base_model=claude-3-sonnet] claude-work %% Create Anthropic Claude model (manual)
   \model-new[catalog_id=CO4, max_tokens=4000] analysis-opus              %% Create Claude Opus 4 with custom max tokens
 
@@ -167,8 +167,8 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Create Gemini Pro with dynamic thinking",
 			},
 			{
-				Command:     "\\model-new[provider=openai, base_model=gpt-4] my-gpt4",
-				Description: "Create OpenAI GPT-4 model configuration (manual)",
+				Command:     "\\model-new[catalog_id=O3] my-o3",
+				Description: "Create OpenAI o3 model (delegates to openai-model-new)",
 			},
 			{
 				Command:     "\\model-new[provider=anthropic, base_model=claude-3-sonnet] claude-work",
@@ -238,6 +238,7 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 			"thinking_budget is only supported by Gemini 2.5 models (Pro, Flash, Flash Lite)",
 			"thinking_budget values: -1=dynamic, 0=disabled, positive=fixed token count",
 			"Each Gemini model has different thinking_budget ranges (see model catalog)",
+			"OpenAI models (provider=openai) are delegated to \\openai-model-new for specialized handling",
 			"Variables in model name and parameters are interpolated",
 			"Additional provider-specific parameters can be included",
 		},
@@ -305,6 +306,11 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	} else if provider == "" || baseModel == "" {
 		// If catalog_id is provided, ensure provider and base_model are populated
 		return fmt.Errorf("failed to auto-populate provider/base_model from catalog_id '%s'", catalogID)
+	}
+
+	// For OpenAI provider, delegate to specialized command with better parameter handling
+	if provider == "openai" {
+		return c.delegateToOpenAIModelNew(args, input)
 	}
 
 	// Note: Variable interpolation for model name, provider, and base_model is handled by state machine
@@ -527,6 +533,24 @@ func (c *NewCommand) validateThinkingBudget(thinkingBudget int, catalogModel *ne
 	}
 
 	return nil
+}
+
+// delegateToOpenAIModelNew handles OpenAI provider by delegating to the specialized command.
+// This leverages the robust reasoning parameter handling in openai-model-new.
+func (c *NewCommand) delegateToOpenAIModelNew(args map[string]string, input string) error {
+	// Create openai-model-new command and execute it directly
+	openaiModelNewCmd := &OpenAIModelNewCommand{}
+
+	// Prepare args for the delegated command (exclude provider since openai-model-new is OpenAI-specific)
+	delegateArgs := make(map[string]string)
+	for key, value := range args {
+		if key != "provider" {
+			delegateArgs[key] = value
+		}
+	}
+
+	// Execute the openai-model-new command directly
+	return openaiModelNewCmd.Execute(delegateArgs, input)
 }
 
 func init() {
