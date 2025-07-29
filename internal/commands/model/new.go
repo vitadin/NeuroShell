@@ -5,7 +5,6 @@ package model
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
@@ -278,6 +277,11 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 		return c.delegateToOpenAIModelNew(args, input)
 	}
 
+	// For Gemini provider, delegate to specialized command with better thinking_budget handling
+	if provider == "gemini" {
+		return c.delegateToGeminiModelNew(args, input)
+	}
+
 	// Note: Variable interpolation for model name, provider, and base_model is handled by state machine
 
 	// Parse optional parameters
@@ -293,15 +297,6 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	// Parse numeric parameters
 	if err := c.parseParameters(args, parameters); err != nil {
 		return fmt.Errorf("failed to parse parameters: %w", err)
-	}
-
-	// Validate thinking_budget for Gemini models if provided
-	if thinkingBudgetValue, exists := parameters["thinking_budget"]; exists && catalogModel != nil {
-		if thinkingBudget, ok := thinkingBudgetValue.(int); ok {
-			if err := c.validateThinkingBudget(thinkingBudget, catalogModel); err != nil {
-				return fmt.Errorf("invalid thinking_budget: %w", err)
-			}
-		}
 	}
 
 	// Validate parameters
@@ -404,20 +399,11 @@ func (c *NewCommand) parseParameters(args map[string]string, parameters map[stri
 		parameters["frequency_penalty"] = frequencyPenaltyFloat
 	}
 
-	// Parse thinking_budget (for Gemini models)
-	if thinkingBudget, exists := args["thinking_budget"]; exists {
-		thinkingBudgetInt, err := strconv.Atoi(thinkingBudget)
-		if err != nil {
-			return fmt.Errorf("invalid thinking_budget value: %s", thinkingBudget)
-		}
-		parameters["thinking_budget"] = thinkingBudgetInt
-	}
-
 	// Add any other string parameters that aren't specially handled
 	excludedParams := map[string]bool{
 		"description": true, "catalog_id": true,
 		"temperature": true, "max_tokens": true, "top_p": true, "top_k": true,
-		"presence_penalty": true, "frequency_penalty": true, "thinking_budget": true,
+		"presence_penalty": true, "frequency_penalty": true,
 	}
 
 	for key, value := range args {
@@ -457,49 +443,6 @@ func (c *NewCommand) updateModelVariables(model *neurotypes.ModelConfig, variabl
 	return nil
 }
 
-// validateThinkingBudget validates thinking_budget parameter for Gemini models using catalog information.
-func (c *NewCommand) validateThinkingBudget(thinkingBudget int, catalogModel *neurotypes.ModelCatalogEntry) error {
-	// Only validate for Gemini models
-	if catalogModel.Provider != "gemini" {
-		return nil
-	}
-
-	// Check if model supports thinking
-	if catalogModel.Features == nil || catalogModel.Features.ThinkingSupported == nil || !*catalogModel.Features.ThinkingSupported {
-		return fmt.Errorf("model %s does not support thinking mode", catalogModel.Name)
-	}
-
-	// Parse thinking range if available
-	if catalogModel.Features.ThinkingRange != nil {
-		rangeParts := strings.Split(*catalogModel.Features.ThinkingRange, "-")
-		if len(rangeParts) == 2 {
-			minRange, err1 := strconv.Atoi(rangeParts[0])
-			maxRange, err2 := strconv.Atoi(rangeParts[1])
-			if err1 == nil && err2 == nil {
-				// Special case for -1 (dynamic thinking)
-				if thinkingBudget == -1 {
-					return nil // Dynamic thinking is always valid
-				}
-
-				// Special case for 0 (disabled thinking)
-				if thinkingBudget == 0 {
-					if catalogModel.Features.ThinkingCanDisable != nil && *catalogModel.Features.ThinkingCanDisable {
-						return nil // Disabling is allowed
-					}
-					return fmt.Errorf("thinking cannot be disabled for model %s (thinking_budget=0 not allowed)", catalogModel.Name)
-				}
-
-				// Validate range for positive values
-				if thinkingBudget < minRange || thinkingBudget > maxRange {
-					return fmt.Errorf("thinking_budget %d is outside valid range %s for model %s", thinkingBudget, *catalogModel.Features.ThinkingRange, catalogModel.Name)
-				}
-			}
-		}
-	}
-
-	return nil
-}
-
 // delegateToOpenAIModelNew handles OpenAI provider by delegating to the specialized command.
 // This leverages the robust reasoning parameter handling in openai-model-new.
 func (c *NewCommand) delegateToOpenAIModelNew(args map[string]string, input string) error {
@@ -516,6 +459,24 @@ func (c *NewCommand) delegateToOpenAIModelNew(args map[string]string, input stri
 
 	// Execute the openai-model-new command directly
 	return openaiModelNewCmd.Execute(delegateArgs, input)
+}
+
+// delegateToGeminiModelNew handles Gemini provider by delegating to the specialized command.
+// This leverages the robust thinking_budget parameter handling in gemini-model-new.
+func (c *NewCommand) delegateToGeminiModelNew(args map[string]string, input string) error {
+	// Create gemini-model-new command and execute it directly
+	geminiModelNewCmd := &GeminiModelNewCommand{}
+
+	// Prepare args for the delegated command (exclude provider since gemini-model-new is Gemini-specific)
+	delegateArgs := make(map[string]string)
+	for key, value := range args {
+		if key != "provider" {
+			delegateArgs[key] = value
+		}
+	}
+
+	// Execute the gemini-model-new command directly
+	return geminiModelNewCmd.Execute(delegateArgs, input)
 }
 
 func init() {
