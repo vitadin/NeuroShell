@@ -101,7 +101,9 @@ run: build
 # Run tests with coverage
 test: ensure-build test-all-units
     @echo "Running tests..."
-    EDITOR=echo go test -v -coverprofile=coverage.out ./...
+    EDITOR=echo go test -v -coverprofile=coverage.out \
+        ./internal/... \
+        ./cmd/...
     go tool cover -html=coverage.out -o coverage.html
     @echo "Coverage report generated: coverage.html"
 

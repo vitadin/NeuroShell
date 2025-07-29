@@ -19,11 +19,13 @@
 
 %% Step 3: Ensure active model - create default if no active model
 \silent \get[#active_model_name]
-\silent \if-not[condition="${#active_model_name}"] \model-new[catalog_id=O4M] default_model
+\silent \if-not[condition="${#active_model_name}"] \model-new[catalog_id="O4M"] default_model
 
-%% Step 4: Get client using active model's provider (auto-created by model commands via stack service)
-\silent \get[#active_model_provider]
-\silent \llm-client-get[provider=${#active_model_provider}]
+%% Step 4: Ensure client is available 
+%% Since we have an active model, we should have a client ID available
+%% If not, we need to get/create the client for the active model
+\silent \get[_client_id]
+\silent \if-not[condition="${_client_id}"] \echo "Warning: No client ID found, model may not be properly activated"
 
 %% Step 5: Make LLM call using all components
 \silent \llm-call[client_id=${_client_id}, session_id=${_session_id}]

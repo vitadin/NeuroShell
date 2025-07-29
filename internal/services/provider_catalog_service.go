@@ -49,6 +49,13 @@ func (p *ProviderCatalogService) GetProviderCatalog() ([]neurotypes.ProviderCata
 	}
 	allProviders = append(allProviders, openaiChat)
 
+	// Load OpenAI Responses provider
+	openaiResponses, err := p.loadProviderFile(embedded.OpenAIResponsesProviderData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load OpenAI responses provider: %w", err)
+	}
+	allProviders = append(allProviders, openaiResponses)
+
 	// Load Anthropic providers
 	anthropicChat, err := p.loadProviderFile(embedded.AnthropicChatProviderData)
 	if err != nil {
