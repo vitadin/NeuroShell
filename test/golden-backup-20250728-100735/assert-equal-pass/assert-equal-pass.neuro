@@ -1,8 +1,0 @@
-%% Test assert-equal command with values that should be equal (PASS case)
-\set[_echo_command="true"]
-\set[test_value="hello world"]
-\assert-equal[expect="hello world", actual="${test_value}"]
-\get[_status]
-\get[_assert_result]
-\get[_assert_expected]
-\get[_assert_actual]

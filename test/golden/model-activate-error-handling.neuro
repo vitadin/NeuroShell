@@ -9,8 +9,8 @@
 \try \model-activate nonexistent-model
 
 %% Test multiple matches scenario
-\model-new[provider="openai", base_model="gpt-3.5-turbo"] test-similar
-\model-new[provider="openai", base_model="gpt-4"] test-different
+\model-new[catalog_id="O4M"] test-similar
+\model-new[catalog_id="G41"] test-different
 \try \model-activate test
 
 %% Test empty input error

@@ -20,5 +20,9 @@ features:
   vision: true
   distillation: false
   predicted_outputs: false
+  reasoning_supported: true
+  reasoning_effort_levels: ["low", "medium", "high"]
+  reasoning_default_effort: "medium"
+  reasoning_summary_supported: true
 tools: [web-search, file-search, code-interpreter, mcp]
 snapshots: [o4-mini, o4-mini-2025-04-16]

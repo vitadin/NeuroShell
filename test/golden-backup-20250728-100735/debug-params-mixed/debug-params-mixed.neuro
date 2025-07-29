@@ -1,4 +1,0 @@
-%% Test debug-params with both named parameters and message
-%% Verifies parameter passing with mixed argument types
-\set[_echo_command="true"]
-\debug-params[style=red,prefix=DEBUG,level=verbose] Test message with parameters

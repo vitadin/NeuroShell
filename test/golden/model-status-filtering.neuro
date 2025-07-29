@@ -4,8 +4,8 @@
 %% Create models with different providers and names
 \model-new[catalog_id="O4M"] claude-prod-model
 \model-new[catalog_id="O3"] openai-prod-model
-\model-new[provider="openai", base_model="gpt-3.5-turbo"] claude-test-model
-\model-new[provider="openai", base_model="gpt-4"] openai-test-model
+\model-new[catalog_id="O4M"] claude-test-model
+\model-new[catalog_id="G41"] openai-test-model
 
 %% Test filtering by name pattern
 \model-status[name="prod"]

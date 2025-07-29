@@ -1,3 +1,0 @@
-%% Test help information for get command
-\set[_echo_command="true"]
-\help[get]

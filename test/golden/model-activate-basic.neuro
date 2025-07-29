@@ -4,7 +4,7 @@
 %% Create multiple models
 \model-new[catalog_id="O4M"] first-model
 \model-new[catalog_id="O3"] second-model
-\model-new[provider="openai", base_model="gpt-3.5-turbo"] third-model
+\model-new[catalog_id="O4M"] third-model
 
 %% Test activation by exact name match
 \model-activate first-model

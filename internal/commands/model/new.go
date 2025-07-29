@@ -33,24 +33,19 @@ func (c *NewCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the model-new command.
 func (c *NewCommand) Usage() string {
-	return `\model-new[provider=provider_name, base_model=model_name, temperature=0.7, max_tokens=1000, ...] model_name
-\model-new[catalog_id=<ID>, temperature=0.7, max_tokens=1000, thinking_budget=1024, ...] model_name
+	return `\model-new[catalog_id=<ID>, temperature=0.7, max_tokens=1000, thinking_budget=1024, ...] model_name
 
 Examples:
   \model-new[catalog_id=CS4] my-claude                                   %% Create from catalog (Claude Sonnet 4)
-  \model-new[catalog_id=O3, temperature=0.8] creative-model              %% Create from catalog with custom parameters
+  \model-new[catalog_id=CS4, temperature=0.8] creative-claude             %% Create from catalog with custom parameters
   \model-new[catalog_id=GM25F, thinking_budget=2048] reasoning-model     %% Create Gemini Flash with thinking mode
   \model-new[catalog_id=GM25FL, thinking_budget=0] fast-model            %% Create Gemini Flash Lite with thinking disabled
   \model-new[catalog_id=GM25P, thinking_budget=-1] dynamic-model         %% Create Gemini Pro with dynamic thinking
-  \model-new[provider=openai, base_model=gpt-4] my-gpt4                  %% Create OpenAI GPT-4 model (manual)
-  \model-new[provider=anthropic, base_model=claude-3-sonnet] claude-work %% Create Anthropic Claude model (manual)
+  \model-new[catalog_id=O3] my-o3                                       %% Create OpenAI o3 (delegates to \\openai-model-new)
   \model-new[catalog_id=CO4, max_tokens=4000] analysis-opus              %% Create Claude Opus 4 with custom max tokens
 
-Required Options (choose one):
-  Option A: catalog_id - Short model ID from catalog (e.g., CS4, O3, CO37) - auto-populates provider and base_model
-  Option B: provider + base_model - Manual specification
-    provider - LLM provider name (e.g., openai, anthropic, gemini, local)
-    base_model - Provider's model identifier (e.g., gpt-4, claude-3-sonnet, gemini-2.5-flash)
+Required Options:
+  catalog_id - Short model ID from catalog (e.g., CS4, O3, CO37, GM25F) - auto-populates provider and base_model
 
 Optional Parameters:
   temperature - Controls randomness (0.0-1.0, default varies by provider)
@@ -65,7 +60,7 @@ Optional Parameters:
 Note: Model name is required and taken from the input parameter.
       Model names must be unique and cannot contain spaces.
       Use \model-catalog to see available catalog IDs.
-      When using catalog_id, provider and base_model are auto-populated from catalog.
+      Provider and base_model are auto-populated from the model catalog.
       thinking_budget is only supported by Gemini 2.5 models (Pro, Flash, Flash Lite).
       Additional provider-specific parameters can be passed and will be stored.`
 }
@@ -75,25 +70,13 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\model-new[catalog_id=<ID>] model_name OR \\model-new[provider=provider_name, base_model=model_name, ...] model_name",
+		Usage:       "\\model-new[catalog_id=<ID>, ...] model_name",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "catalog_id",
-				Description: "Short model ID from catalog (e.g., CS4, O3, CO37) - auto-populates provider and base_model",
-				Required:    false,
-				Type:        "string",
-			},
-			{
-				Name:        "provider",
-				Description: "LLM provider name (e.g., openai, anthropic, local) - required if catalog_id not used",
-				Required:    false,
-				Type:        "string",
-			},
-			{
-				Name:        "base_model",
-				Description: "Provider's model identifier (e.g., gpt-4, claude-3-sonnet) - required if catalog_id not used",
-				Required:    false,
+				Description: "Short model ID from catalog (e.g., CS4, O3, CO37, GM25F) - auto-populates provider and base_model",
+				Required:    true,
 				Type:        "string",
 			},
 			{
@@ -167,12 +150,8 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Create Gemini Pro with dynamic thinking",
 			},
 			{
-				Command:     "\\model-new[provider=openai, base_model=gpt-4] my-gpt4",
-				Description: "Create OpenAI GPT-4 model configuration (manual)",
-			},
-			{
-				Command:     "\\model-new[provider=anthropic, base_model=claude-3-sonnet] claude-work",
-				Description: "Create Anthropic Claude model configuration (manual)",
+				Command:     "\\model-new[catalog_id=O3] my-o3",
+				Description: "Create OpenAI o3 model (delegates to openai-model-new)",
 			},
 			{
 				Command:     "\\model-new[catalog_id=CO4, max_tokens=4000] analysis-opus",
@@ -232,12 +211,12 @@ func (c *NewCommand) HelpInfo() neurotypes.HelpInfo {
 		Notes: []string{
 			"Model name is required and taken from the input parameter",
 			"Model names must be unique and cannot contain spaces",
-			"Either catalog_id OR both provider and base_model are required",
-			"Use \\model-catalog to see available catalog IDs",
-			"When using catalog_id, provider and base_model are auto-populated from catalog",
+			"catalog_id is required - use \\model-catalog to see available catalog IDs",
+			"Provider and base_model are auto-populated from the model catalog",
 			"thinking_budget is only supported by Gemini 2.5 models (Pro, Flash, Flash Lite)",
 			"thinking_budget values: -1=dynamic, 0=disabled, positive=fixed token count",
 			"Each Gemini model has different thinking_budget ranges (see model catalog)",
+			"OpenAI models are delegated to \\openai-model-new for specialized handling",
 			"Variables in model name and parameters are interpolated",
 			"Additional provider-specific parameters can be included",
 		},
@@ -271,40 +250,32 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 
 	// Parse required arguments
 	modelName := input
-	provider := args["provider"]
-	baseModel := args["base_model"]
 	catalogID := args["catalog_id"]
-
-	// Handle catalog_id parameter - auto-populate provider and base_model from catalog
-	var catalogModel *neurotypes.ModelCatalogEntry
-	if catalogID != "" {
-		model, err := modelCatalogService.GetModelByID(catalogID)
-		if err != nil {
-			return fmt.Errorf("failed to find model with catalog_id '%s': %w", catalogID, err)
-		}
-		catalogModel = &model
-
-		// Auto-populate provider and base_model from catalog (catalog_id overrides manual values)
-		provider = catalogModel.Provider
-		baseModel = catalogModel.Name
-	}
 
 	// Validate required parameters
 	if modelName == "" {
 		return fmt.Errorf("model name is required\\n\\nUsage: %s", c.Usage())
 	}
 
-	// Either catalog_id OR both provider and base_model are required
+	// catalog_id is required
 	if catalogID == "" {
-		if provider == "" {
-			return fmt.Errorf("provider is required (or use catalog_id)\\n\\nUsage: %s", c.Usage())
-		}
-		if baseModel == "" {
-			return fmt.Errorf("base_model is required (or use catalog_id)\\n\\nUsage: %s", c.Usage())
-		}
-	} else if provider == "" || baseModel == "" {
-		// If catalog_id is provided, ensure provider and base_model are populated
-		return fmt.Errorf("failed to auto-populate provider/base_model from catalog_id '%s'", catalogID)
+		return fmt.Errorf("catalog_id is required\\n\\nUsage: %s", c.Usage())
+	}
+
+	// Look up model in catalog and auto-populate provider and base_model
+	catalogEntry, err := modelCatalogService.GetModelByID(catalogID)
+	if err != nil {
+		return fmt.Errorf("failed to find model with catalog_id '%s': %w", catalogID, err)
+	}
+	catalogModel := &catalogEntry
+
+	// Auto-populate provider and base_model from catalog
+	provider := catalogModel.Provider
+	baseModel := catalogModel.Name
+
+	// For OpenAI provider, delegate to specialized command with better parameter handling
+	if provider == "openai" {
+		return c.delegateToOpenAIModelNew(args, input)
 	}
 
 	// Note: Variable interpolation for model name, provider, and base_model is handled by state machine
@@ -339,32 +310,32 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	}
 
 	// Create model configuration
-	model, err := modelService.CreateModelWithGlobalContext(modelName, provider, baseModel, parameters, description, catalogID)
+	createdModel, err := modelService.CreateModelWithGlobalContext(modelName, provider, baseModel, parameters, description, catalogID)
 	if err != nil {
 		return fmt.Errorf("failed to create model: %w", err)
 	}
 
 	// Auto-push client creation command to stack service for seamless UX
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		clientCommand := fmt.Sprintf("\\llm-client-get[provider=%s]", model.Provider)
+		clientCommand := fmt.Sprintf("\\llm-client-get[provider=%s]", createdModel.Provider)
 		stackService.PushCommand(clientCommand)
 	}
 
 	// Auto-push model activation command to stack service for seamless UX
 	// Use precise ID-based activation to avoid any ambiguity
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		activateCommand := fmt.Sprintf("\\silent \\model-activate[id=true] %s", model.ID)
+		activateCommand := fmt.Sprintf("\\silent \\model-activate[id=true] %s", createdModel.ID)
 		stackService.PushCommand(activateCommand)
 	}
 
 	// Update model-related variables (not active model variables - that's done by model-activate)
-	if err := c.updateModelVariables(model, variableService); err != nil {
+	if err := c.updateModelVariables(createdModel, variableService); err != nil {
 		return fmt.Errorf("failed to update model variables: %w", err)
 	}
 
 	// Prepare output message
 	outputMsg := fmt.Sprintf("Created model '%s' (ID: %s, Provider: %s, Base: %s)",
-		model.Name, model.ID[:8], model.Provider, model.BaseModel)
+		createdModel.Name, createdModel.ID[:8], createdModel.Provider, createdModel.BaseModel)
 
 	// Store result in _output variable
 	if err := variableService.SetSystemVariable("_output", outputMsg); err != nil {
@@ -444,7 +415,7 @@ func (c *NewCommand) parseParameters(args map[string]string, parameters map[stri
 
 	// Add any other string parameters that aren't specially handled
 	excludedParams := map[string]bool{
-		"provider": true, "base_model": true, "description": true, "catalog_id": true,
+		"description": true, "catalog_id": true,
 		"temperature": true, "max_tokens": true, "top_p": true, "top_k": true,
 		"presence_penalty": true, "frequency_penalty": true, "thinking_budget": true,
 	}
@@ -527,6 +498,24 @@ func (c *NewCommand) validateThinkingBudget(thinkingBudget int, catalogModel *ne
 	}
 
 	return nil
+}
+
+// delegateToOpenAIModelNew handles OpenAI provider by delegating to the specialized command.
+// This leverages the robust reasoning parameter handling in openai-model-new.
+func (c *NewCommand) delegateToOpenAIModelNew(args map[string]string, input string) error {
+	// Create openai-model-new command and execute it directly
+	openaiModelNewCmd := &OpenAIModelNewCommand{}
+
+	// Prepare args for the delegated command (exclude provider since openai-model-new is OpenAI-specific)
+	delegateArgs := make(map[string]string)
+	for key, value := range args {
+		if key != "provider" {
+			delegateArgs[key] = value
+		}
+	}
+
+	// Execute the openai-model-new command directly
+	return openaiModelNewCmd.Execute(delegateArgs, input)
 }
 
 func init() {

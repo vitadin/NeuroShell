@@ -1,9 +1,0 @@
-Setting _echo_command = true
-%%> "\\echo hello world ..."
-hello world ...
-%%> "this is continued"
-this is continued
-%%> "\\echo This is a message ..."
-This is a message ...
-%%> "that spans two lines"
-that spans two lines

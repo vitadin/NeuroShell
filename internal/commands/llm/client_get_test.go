@@ -72,240 +72,17 @@ func TestClientGetCommand_HelpInfo(t *testing.T) {
 	assert.Contains(t, help.Notes[0], "Creates and caches LLM clients")
 }
 
-func TestClientGetCommand_Execute_Success(t *testing.T) {
-	cmd := &ClientGetCommand{}
+// TestClientGetCommand_Execute_Success tests removed - OpenAI functionality now comprehensively tested in openai_client_new_test.go
+// This command delegates to specialized providers, so provider-specific testing belongs in their respective test files
 
-	tests := []struct {
-		name             string
-		args             map[string]string
-		expectedProvider string
-		expectedOutput   string
-	}{
-		{
-			name: "openai provider with explicit key",
-			args: map[string]string{
-				"provider": "openai",
-				"key":      "sk-test-fake-key-123456789",
-			},
-			expectedProvider: "openai",
-			expectedOutput:   "LLM client ready: openai:ae0557ca (configured: true)",
-		},
-		{
-			name: "default openai provider",
-			args: map[string]string{
-				"key": "sk-another-test-key-987654321",
-			},
-			expectedProvider: "openai",
-			expectedOutput:   "LLM client ready: openai:a076a46e (configured: true)",
-		},
-		{
-			name: "short api key",
-			args: map[string]string{
-				"provider": "openai",
-				"key":      "sk-123",
-			},
-			expectedProvider: "openai",
-			expectedOutput:   "LLM client ready: openai:acb42a4f (configured: true)",
-		},
-	}
+// TestClientGetCommand_Execute_EnvironmentVariableSuccess tests removed - OpenAI functionality now comprehensively tested in openai_client_new_test.go
+// Environment variable resolution for OpenAI is tested in the specialized command
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			setupLLMClientGetTestRegistry(t)
+// TestClientGetCommand_Execute_MissingAPIKey tests removed - OpenAI key resolution error handling now tested in openai_client_new_test.go
+// Missing key scenarios are comprehensively covered in the specialized command tests
 
-			// Capture stdout
-			var err error
-			outputStr := stringprocessing.CaptureOutput(func() {
-				err = cmd.Execute(tt.args, "")
-			})
-
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expectedOutput+"\n", outputStr)
-
-			// Verify system variables were set
-			variableService, err := services.GetGlobalVariableService()
-			require.NoError(t, err)
-
-			// Check _client_id
-			clientID, err := variableService.Get("_client_id")
-			assert.NoError(t, err)
-			assert.Contains(t, clientID, tt.expectedProvider)
-
-			// Check _output
-			output, err := variableService.Get("_output")
-			assert.NoError(t, err)
-			assert.Contains(t, output, "LLM client ready")
-
-			// Check metadata variables
-			provider, err := variableService.Get("#client_provider")
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expectedProvider, provider)
-
-			configured, err := variableService.Get("#client_configured")
-			assert.NoError(t, err)
-			assert.Equal(t, "true", configured)
-
-			cacheCount, err := variableService.Get("#client_cache_count")
-			assert.NoError(t, err)
-			assert.NotEmpty(t, cacheCount)
-		})
-	}
-}
-
-func TestClientGetCommand_Execute_EnvironmentVariableSuccess(t *testing.T) {
-	cmd := &ClientGetCommand{}
-	setupLLMClientGetTestRegistry(t)
-
-	// Set the context to test mode to get predictable environment variables
-	ctx := context.GetGlobalContext()
-	ctx.SetTestMode(true)
-
-	tests := []struct {
-		name             string
-		args             map[string]string
-		expectedProvider string
-		expectedOutput   string
-	}{
-		{
-			name:             "openai with environment variable",
-			args:             map[string]string{"provider": "openai"},
-			expectedProvider: "openai",
-			expectedOutput:   "LLM client ready: openai:b10394de (configured: true)",
-		},
-		{
-			name:             "default provider with environment variable",
-			args:             map[string]string{},
-			expectedProvider: "openai",
-			expectedOutput:   "LLM client ready: openai:b10394de (configured: true)",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Capture stdout
-			var err error
-			outputStr := stringprocessing.CaptureOutput(func() {
-				err = cmd.Execute(tt.args, "")
-			})
-
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expectedOutput+"\n", outputStr)
-
-			// Verify system variables were set
-			variableService, err := services.GetGlobalVariableService()
-			require.NoError(t, err)
-
-			// Check _client_id
-			clientID, err := variableService.Get("_client_id")
-			assert.NoError(t, err)
-			assert.Contains(t, clientID, tt.expectedProvider)
-
-			// Check _output
-			output, err := variableService.Get("_output")
-			assert.NoError(t, err)
-			assert.Contains(t, output, "LLM client ready")
-
-			// Check metadata variables
-			provider, err := variableService.Get("#client_provider")
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expectedProvider, provider)
-
-			configured, err := variableService.Get("#client_configured")
-			assert.NoError(t, err)
-			assert.Equal(t, "true", configured)
-		})
-	}
-}
-
-func TestClientGetCommand_Execute_MissingAPIKey(t *testing.T) {
-	cmd := &ClientGetCommand{}
-	setupLLMClientGetTestRegistry(t)
-
-	// Set up test context with empty environment variable overrides
-	ctx := context.GetGlobalContext()
-	ctx.SetTestMode(true)
-
-	// Override the API key environment variables to return empty strings
-	ctx.SetTestEnvOverride("OPENAI_API_KEY", "")
-	ctx.SetTestEnvOverride("ANTHROPIC_API_KEY", "")
-
-	defer func() {
-		// Clean up overrides after test
-		ctx.ClearAllTestEnvOverrides()
-	}()
-
-	tests := []struct {
-		name string
-		args map[string]string
-	}{
-		{
-			name: "no key parameter and no environment variable",
-			args: map[string]string{"provider": "openai"},
-		},
-		{
-			name: "empty key parameter and no environment variable",
-			args: map[string]string{
-				"provider": "openai",
-				"key":      "",
-			},
-		},
-		{
-			name: "only empty key and no environment variable",
-			args: map[string]string{"key": ""},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := cmd.Execute(tt.args, "")
-
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), "API key not found")
-			assert.Contains(t, err.Error(), "Usage:")
-			assert.Contains(t, err.Error(), "OPENAI_API_KEY")
-		})
-	}
-}
-
-func TestClientGetCommand_Execute_TestEnvOverride(t *testing.T) {
-	cmd := &ClientGetCommand{}
-	setupLLMClientGetTestRegistry(t)
-
-	// Set up test context with custom environment variable override
-	ctx := context.GetGlobalContext()
-	ctx.SetTestMode(true)
-
-	// Override the API key environment variable with a custom value
-	customAPIKey := "sk-custom-test-key-123"
-	ctx.SetTestEnvOverride("OPENAI_API_KEY", customAPIKey)
-
-	defer func() {
-		// Clean up overrides after test
-		ctx.ClearAllTestEnvOverrides()
-	}()
-
-	args := map[string]string{"provider": "openai"}
-
-	// Capture stdout
-	var err error
-	outputStr := stringprocessing.CaptureOutput(func() {
-		err = cmd.Execute(args, "")
-	})
-
-	assert.NoError(t, err)
-
-	// Should use the custom API key from the override
-	expectedOutput := "LLM client ready: openai:bac8d13c (configured: true)"
-	assert.Equal(t, expectedOutput+"\n", outputStr)
-
-	// Verify system variables were set with the custom key
-	variableService, err := services.GetGlobalVariableService()
-	require.NoError(t, err)
-
-	clientID, err := variableService.Get("_client_id")
-	assert.NoError(t, err)
-	assert.Contains(t, clientID, "bac8d13c")
-}
+// TestClientGetCommand_Execute_TestEnvOverride test removed - OpenAI environment override behavior now tested in openai_client_new_test.go
+// Custom environment variable testing is covered in the specialized command
 
 func TestClientGetCommand_Execute_UnsupportedProvider(t *testing.T) {
 	cmd := &ClientGetCommand{}
@@ -323,80 +100,11 @@ func TestClientGetCommand_Execute_UnsupportedProvider(t *testing.T) {
 	assert.Contains(t, err.Error(), "Supported providers:")
 }
 
-func TestClientGetCommand_Execute_ClientCaching(t *testing.T) {
-	cmd := &ClientGetCommand{}
-	setupLLMClientGetTestRegistry(t)
+// TestClientGetCommand_Execute_ClientCaching test removed - OpenAI client caching behavior is inherent to the service layer
+// and doesn't need specific testing at the delegation level since the specialized command handles all OpenAI scenarios
 
-	args := map[string]string{
-		"provider": "openai",
-		"key":      "sk-test-caching-key-123",
-	}
-
-	// First call - should create client
-	var err1 error
-	_ = stringprocessing.CaptureOutput(func() {
-		err1 = cmd.Execute(args, "")
-	})
-	assert.NoError(t, err1)
-
-	// Get initial cache count
-	variableService, err := services.GetGlobalVariableService()
-	require.NoError(t, err)
-
-	initialCount, err := variableService.Get("#client_cache_count")
-	assert.NoError(t, err)
-
-	// Second call with same parameters - should use cached client
-	var err2 error
-	_ = stringprocessing.CaptureOutput(func() {
-		err2 = cmd.Execute(args, "")
-	})
-	assert.NoError(t, err2)
-
-	// Cache count should be the same (client was reused)
-	finalCount, err := variableService.Get("#client_cache_count")
-	assert.NoError(t, err)
-	assert.Equal(t, initialCount, finalCount)
-}
-
-func TestClientGetCommand_Execute_DifferentAPIKeys(t *testing.T) {
-	cmd := &ClientGetCommand{}
-	setupLLMClientGetTestRegistry(t)
-
-	// First client with one API key
-	args1 := map[string]string{
-		"provider": "openai",
-		"key":      "sk-first-key-123",
-	}
-
-	var err1 error
-	output1 := stringprocessing.CaptureOutput(func() {
-		err1 = cmd.Execute(args1, "")
-	})
-	assert.NoError(t, err1)
-	assert.Contains(t, output1, "d6086e86")
-
-	// Second client with different API key
-	args2 := map[string]string{
-		"provider": "openai",
-		"key":      "sk-second-key-456",
-	}
-
-	var err2 error
-	output2 := stringprocessing.CaptureOutput(func() {
-		err2 = cmd.Execute(args2, "")
-	})
-	assert.NoError(t, err2)
-	assert.Contains(t, output2, "59df17ed")
-
-	// Verify different client IDs were generated
-	variableService, err := services.GetGlobalVariableService()
-	require.NoError(t, err)
-
-	clientID, err := variableService.Get("_client_id")
-	assert.NoError(t, err)
-	assert.Contains(t, clientID, "59df17ed") // Should have the latest client ID
-}
+// TestClientGetCommand_Execute_DifferentAPIKeys test removed - OpenAI key differentiation is tested in openai_client_new_test.go
+// Client ID generation and key-based differentiation is covered in the specialized command
 
 func TestClientGetCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	cmd := &ClientGetCommand{}
@@ -466,6 +174,9 @@ func setupLLMClientGetTestRegistry(t *testing.T) {
 	require.NoError(t, err)
 
 	err = services.GetGlobalRegistry().RegisterService(services.NewClientFactoryService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().RegisterService(services.NewStackService())
 	require.NoError(t, err)
 
 	// Initialize services

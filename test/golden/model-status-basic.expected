@@ -2,18 +2,12 @@ Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"O4M\"] claude-model"
 Created model 'claude-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] openai-model"
 Created model 'openai-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
-%%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\", description=\"Custom Claude model\"] custom-claude"
-Created model 'custom-claude' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\model-new[catalog_id=\"O4M\", description=\"Custom Claude model\"] custom-claude"
+Created model 'custom-claude' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-status"
 Model Configurations (3 models):
   claude-model (00000001)
@@ -22,10 +16,11 @@ Model Configurations (3 models):
     Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:01
+    Description: OpenAI O4-mini model
   custom-claude (00000003)
     Provider: openai
-    Base Model: gpt-3.5-turbo
-    Catalog ID: none
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:03
     Description: Custom Claude model
@@ -36,6 +31,7 @@ Model Configurations (3 models):
     Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
+    Description: OpenAI O3 model
 %%> "\\get[#model_count]"
 #model_count = 3
 %%> "\\get[#model_filtered_count]"
@@ -48,10 +44,11 @@ _output = Model Configurations (3 models):
     Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:01
+    Description: OpenAI O4-mini model
   custom-claude (00000003)
     Provider: openai
-    Base Model: gpt-3.5-turbo
-    Catalog ID: none
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:03
     Description: Custom Claude model
@@ -62,3 +59,4 @@ _output = Model Configurations (3 models):
     Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
+    Description: OpenAI O3 model

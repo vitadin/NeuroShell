@@ -1,7 +1,0 @@
-%% Combined options test
-\set[_echo_command="true"]
-%% Tests combining multiple options together
-\provider-catalog[provider=openai,sort=name]
-\provider-catalog[search=chat,sort=name]
-\provider-catalog[provider=anthropic,search=claude]
-\provider-catalog[provider=openrouter,sort=name,search=unified]

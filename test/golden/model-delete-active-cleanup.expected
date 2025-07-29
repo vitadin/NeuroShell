@@ -2,17 +2,13 @@ Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"O4M\"] current-model"
 Created model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] backup-model"
 Created model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-activate current-model"
 Activated model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
 %%> "\\get[#active_model_name]"
 #active_model_name = current-model
 %%> "\\get[#active_model_id]"
@@ -36,12 +32,13 @@ Model Configurations (1 models):
     Catalog ID: O3
     Parameters: none
     Created: 2025-01-01 00:00:02
+    Description: OpenAI O3 model
     Active: true
 %%> "\\try \\model-activate current-model"
 %%> "\\model-activate current-model"
 %%> "\\model-activate backup-model"
 Activated model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
 %%> "\\get[#active_model_name]"
 #active_model_name = backup-model

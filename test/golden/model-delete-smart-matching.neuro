@@ -4,7 +4,7 @@
 %% Create models with different names for partial matching tests
 \model-new[catalog_id="O4M"] my-claude-temp
 \model-new[catalog_id="O3"] my-openai-model
-\model-new[provider="openai", base_model="gpt-3.5-turbo"] permanent-model
+\model-new[catalog_id="O4M"] permanent-model
 
 %% Test partial name matching (unique substring)
 \model-delete temp
@@ -14,7 +14,7 @@
 \get[_output]
 
 %% Create a new model to test ID matching
-\model-new[provider="openai", base_model="gpt-4"] id-test-model
+\model-new[catalog_id="G41"] id-test-model
 
 %% Get the model's ID for prefix testing
 \model-activate id-test-model

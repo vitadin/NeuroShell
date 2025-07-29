@@ -2,40 +2,32 @@ Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"O4M\"] my-claude-temp"
 Created model 'my-claude-temp' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-new[catalog_id=\"O3\"] my-openai-model"
 Created model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
-%%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\"] permanent-model"
-Created model 'permanent-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\model-new[catalog_id=\"O4M\"] permanent-model"
+Created model 'permanent-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-delete temp"
 Deleted model 'my-claude-temp' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate"
 %%> "\\get[#deleted_model_name]"
 #deleted_model_name = my-claude-temp
 %%> "\\get[_output]"
-_output = Current active model: 'permanent-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
-%%> "\\model-new[provider=\"openai\", base_model=\"gpt-4\"] id-test-model"
-Created model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4)
+_output = Current active model: 'permanent-model' (ID: 00000003, Provider: openai, Base: o4-mini)
+%%> "\\model-new[catalog_id=\"G41\"] id-test-model"
+Created model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4.1-2025-04-14)
 %%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
-%%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
 %%> "\\model-activate id-test-model"
-Activated model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4)
+Activated model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4.1-2025-04-14)
 %%> "\\llm-client-get[provider=openai]"
-LLM client ready: openai:b10394de (configured: true)
+OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
 %%> "\\get[#active_model_id]"
 #active_model_id = 00000004-0000-4000-8000-000000000004
 %%> "\\set[short_id=\"${#active_model_id}\"]"
 Setting short_id = 00000004-0000-4000-8000-000000000004
 %%> "\\model-delete[id=true] ${short_id}"
-Deleted model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4)
+Deleted model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4.1-2025-04-14)
 %%> "\\silent \\model-activate"
 %%> "\\get[#deleted_model_name]"
 #deleted_model_name = id-test-model
@@ -48,8 +40,9 @@ Deleted model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
 Model Configurations (1 models):
   permanent-model (00000003)
     Provider: openai
-    Base Model: gpt-3.5-turbo
-    Catalog ID: none
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:03
+    Description: OpenAI O4-mini model
     Active: true

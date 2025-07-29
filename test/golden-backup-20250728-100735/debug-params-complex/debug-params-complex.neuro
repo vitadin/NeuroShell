@@ -1,4 +1,0 @@
-%% Test debug-params with complex parameter combinations
-%% Verifies handling of many named parameters with various values
-\set[_echo_command="true"]
-\debug-params[style=blue,prefix=INFO,count=42,debug=true,format=json,level=trace,type=test,mode=dev] Complex parameter testing scenario

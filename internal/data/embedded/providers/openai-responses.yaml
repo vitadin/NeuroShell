@@ -1,0 +1,8 @@
+id: OAR
+provider: openai-reasoning
+display_name: "OpenAI Responses API"
+base_url: "https://api.openai.com/v1"
+endpoint: "/responses"
+client_type: "openai_reasoning"
+description: "OpenAI's responses API for reasoning models (o3, o4-mini, o1, etc.)"
+implementation_notes: "Used for models with reasoning_tokens: true"

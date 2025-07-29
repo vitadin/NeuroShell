@@ -66,7 +66,7 @@ func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (ne
 	var client neurotypes.LLMClient
 	switch provider {
 	case "openai":
-		client = NewOpenAIClient(apiKey)
+		client = NewOpenAIReasoningClient(apiKey)
 	case "openrouter":
 		client = f.createOpenAICompatibleClient(apiKey, "openrouter", "https://openrouter.ai/api/v1")
 	case "moonshot":
@@ -134,7 +134,7 @@ func (f *ClientFactoryService) GetClientWithID(provider, apiKey string) (neuroty
 	var client neurotypes.LLMClient
 	switch provider {
 	case "openai":
-		client = NewOpenAIClient(apiKey)
+		client = NewOpenAIReasoningClient(apiKey)
 	case "openrouter":
 		client = f.createOpenAICompatibleClient(apiKey, "openrouter", "https://openrouter.ai/api/v1")
 	case "moonshot":

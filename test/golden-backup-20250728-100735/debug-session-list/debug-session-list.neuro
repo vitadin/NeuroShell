@@ -1,4 +1,0 @@
-%% Debug test: create one session and list
-\set[_echo_command="true"]
-\session-new debug_session
-\session-list

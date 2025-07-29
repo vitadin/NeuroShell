@@ -1,6 +1,0 @@
-%% Basic functionality test
-\set[_echo_command="true"]
-\set[name="test"]
-\set[status="working"]
-\get[name]
-\get[status]
