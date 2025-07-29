@@ -23,7 +23,7 @@
 \model-activate my-o3-model
 
 %% Create additional model with custom parameters
-\model-new[provider="openai", base_model="gpt-3.5-turbo", temperature="0.8", description="Custom model"] custom-model
+\model-new[catalog_id="O4M", temperature="0.8", description="Custom model"] custom-model
 
 %% Check full status
 \model-status

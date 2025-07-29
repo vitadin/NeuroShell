@@ -5,8 +5,8 @@ Created model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\model-new[catalog_id=\"O3\"] second-model"
 Created model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-%%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\", description=\"Third model\"] third-model"
-Created model 'third-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\model-new[catalog_id=\"O4M\", description=\"Third model\"] third-model"
+Created model 'third-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\get[#model_count]"
 #model_count = 
@@ -51,8 +51,8 @@ Model Configurations (3 models):
     Active: true
   third-model (00000003)
     Provider: openai
-    Base Model: gpt-3.5-turbo
-    Catalog ID: none
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: none
     Created: 2025-01-01 00:00:03
     Description: Third model
@@ -61,7 +61,7 @@ Model Configurations (3 models):
 %%> "\\get[#model_filtered_count]"
 #model_filtered_count = 3
 %%> "\\model-delete third-model"
-Deleted model 'third-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+Deleted model 'third-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate"
 %%> "\\get[#model_count]"
 #model_count = 3

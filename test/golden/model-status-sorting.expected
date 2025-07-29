@@ -5,8 +5,8 @@ Created model 'zebra-model' (ID: 00000001, Provider: openai, Base: o3)
 %%> "\\model-new[catalog_id=\"O4M\"] alpha-model"
 Created model 'alpha-model' (ID: 00000002, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-%%> "\\model-new[provider=\"openai\", base_model=\"gpt-4\"] middle-model"
-Created model 'middle-model' (ID: 00000003, Provider: openai, Base: gpt-4)
+%%> "\\model-new[catalog_id=\"G41\"] middle-model"
+Created model 'middle-model' (ID: 00000003, Provider: openai, Base: gpt-4.1-2025-04-14)
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\model-status[sort=\"name\"]"
 Model Configurations (3 models):
@@ -19,10 +19,11 @@ Model Configurations (3 models):
     Description: OpenAI O4-mini model
   middle-model (00000003)
     Provider: openai
-    Base Model: gpt-4
-    Catalog ID: none
+    Base Model: gpt-4.1-2025-04-14
+    Catalog ID: G41
     Parameters: none
     Created: 2025-01-01 00:00:03
+    Description: OpenAI GPT-4.1 model
     Active: true
   zebra-model (00000001)
     Provider: openai
@@ -42,10 +43,11 @@ Model Configurations (3 models):
     Description: OpenAI O4-mini model
   middle-model (00000003)
     Provider: openai
-    Base Model: gpt-4
-    Catalog ID: none
+    Base Model: gpt-4.1-2025-04-14
+    Catalog ID: G41
     Parameters: none
     Created: 2025-01-01 00:00:03
+    Description: OpenAI GPT-4.1 model
     Active: true
   zebra-model (00000001)
     Provider: openai
@@ -72,10 +74,11 @@ Model Configurations (3 models):
     Description: OpenAI O4-mini model
   middle-model (00000003)
     Provider: openai
-    Base Model: gpt-4
-    Catalog ID: none
+    Base Model: gpt-4.1-2025-04-14
+    Catalog ID: G41
     Parameters: none
     Created: 2025-01-01 00:00:03
+    Description: OpenAI GPT-4.1 model
     Active: true
 %%> "\\try \\model-status[sort=\"invalid\"]"
 %%> "\\model-status[sort=\"invalid\"]"

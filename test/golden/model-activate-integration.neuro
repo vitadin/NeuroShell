@@ -22,7 +22,7 @@
 \get[#active_model_provider]
 
 %% Test that creating a new model doesn't change active model
-\model-new[provider="openai", base_model="gpt-3.5-turbo"] new-model
+\model-new[catalog_id="O4M"] new-model
 
 %% Verify secondary-model is still active
 \get[#active_model_name]

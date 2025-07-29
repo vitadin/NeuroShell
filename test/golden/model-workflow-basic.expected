@@ -176,15 +176,15 @@ OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
 Activated model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\llm-client-get[provider=openai]"
 OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
-%%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\", temperature=\"0.8\", description=\"Custom model\"] custom-model"
-Created model 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\model-new[catalog_id=\"O4M\", temperature=\"0.8\", description=\"Custom model\"] custom-model"
+Created model 'custom-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\model-status"
 Model Configurations (3 models):
   custom-model (00000003)
     Provider: openai
-    Base Model: gpt-3.5-turbo
-    Catalog ID: none
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: 1 (temperature=0.8)
     Created: 2025-01-01 00:00:03
     Description: Custom model
@@ -210,8 +210,8 @@ Deleted model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
 Model Configurations (2 models):
   custom-model (00000003)
     Provider: openai
-    Base Model: gpt-3.5-turbo
-    Catalog ID: none
+    Base Model: o4-mini
+    Catalog ID: O4M
     Parameters: 1 (temperature=0.8)
     Created: 2025-01-01 00:00:03
     Description: Custom model
@@ -229,7 +229,7 @@ Model Configurations (2 models):
 Deleted model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\model-activate"
 %%> "\\model-delete custom-model"
-Deleted model 'custom-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+Deleted model 'custom-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate"
 %%> "\\model-status"
 No model configurations found. Use \model-new to create model configurations.

@@ -51,8 +51,8 @@ Model Configurations (2 models):
 #active_model_name = secondary-model
 %%> "\\get[#active_model_provider]"
 #active_model_provider = openai
-%%> "\\model-new[provider=\"openai\", base_model=\"gpt-3.5-turbo\"] new-model"
-Created model 'new-model' (ID: 00000003, Provider: openai, Base: gpt-3.5-turbo)
+%%> "\\model-new[catalog_id=\"O4M\"] new-model"
+Created model 'new-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\get[#active_model_name]"
 #active_model_name = new-model

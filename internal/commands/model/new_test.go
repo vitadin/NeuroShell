@@ -109,9 +109,9 @@ func TestNewCommand_Execute_BasicFunctionality(t *testing.T) {
 			expectError: true,
 		},
 		{
-			name: "missing catalog_id",
-			args: map[string]string{},
-			input: "test-model",
+			name:        "missing catalog_id",
+			args:        map[string]string{},
+			input:       "test-model",
 			expectError: true,
 		},
 	}

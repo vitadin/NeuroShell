@@ -4,7 +4,7 @@
 %% Create multiple models
 \model-new[catalog_id="O4M"] first-model
 \model-new[catalog_id="O3"] second-model
-\model-new[provider="openai", base_model="gpt-3.5-turbo", description="Third model"] third-model
+\model-new[catalog_id="O4M", description="Third model"] third-model
 
 %% Check initial count
 \get[#model_count]

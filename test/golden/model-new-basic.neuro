@@ -1,6 +1,6 @@
 %% Test basic model creation
 \set[_echo_command="true"]
-\model-new[provider="openai", base_model="gpt-4"] my-gpt4-model
+\model-new[catalog_id="G41"] my-gpt4-model
 \get[#model_id]
 \get[#model_name]
 \get[#model_provider]

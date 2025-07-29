@@ -1,8 +1,0 @@
-%% Provider filtering test
-\set[_echo_command="true"]
-%% Tests filtering providers by provider
-\provider-catalog[provider=openai]
-\provider-catalog[provider=anthropic]
-\provider-catalog[provider=moonshot]
-\provider-catalog[provider=openrouter]
-\provider-catalog[provider=all]
