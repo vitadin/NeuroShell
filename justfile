@@ -16,17 +16,80 @@ default:
     @echo "  record-all-e2e    - Re-record all end-to-end test cases"
     @echo "  test-bench        - Run benchmark tests"
     @echo ""
+    @echo "Build Commands:"
+    @echo "  build             - Build all binaries (clean + lint + build)"
+    @echo "  build-if-needed   - Build binaries only if sources are newer"
+    @echo "  ensure-build      - Ensure binaries are built (alias for build-if-needed)"
+    @echo "  build-all         - Build for multiple platforms"
+    @echo ""
     @echo "CI/CD Commands:"
-    @echo "  check-ci          - Run all CI checks locally (mirrors CI pipeline)"
+    @echo "  check-ci          - Run all CI checks locally (fast, avoids rebuilds)"
+    @echo "  check-ci-clean    - Run all CI checks with clean rebuild"
+    @echo "  check-ci-fast     - Run tests only (skips lint and deps)"
 
-# Build the main binaries
+# Build the main binaries with version injection
 build: clean lint
     @echo "Building neurotest..."
-    go build -o bin/neurotest ./cmd/neurotest
+    go build -ldflags="-X 'neuroshell/internal/version.Version=$(./scripts/version.sh)' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neurotest ./cmd/neurotest
     @echo "Binary built at: bin/neurotest"
     @echo "Building NeuroShell..."
-    go build -o bin/neuro ./cmd/neuro
+    go build -ldflags="-X 'neuroshell/internal/version.Version=$(./scripts/version.sh)' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neuro ./cmd/neuro
     @echo "Binary built at: bin/neuro"
+
+# Build binaries only if they don't exist or sources are newer
+build-if-needed:
+    #!/bin/bash
+    set -euo pipefail
+    
+    # Function to check if binary needs rebuilding
+    needs_rebuild() {
+        local binary="$1"
+        local source_dir="$2"
+        
+        # If binary doesn't exist, rebuild
+        if [ ! -f "$binary" ]; then
+            return 0
+        fi
+        
+        # Check if any source files are newer than the binary
+        if find "$source_dir" -name "*.go" -newer "$binary" | grep -q .; then
+            return 0
+        fi
+        
+        # Check if go.mod or go.sum are newer
+        if [ -f "go.mod" ] && [ "go.mod" -nt "$binary" ]; then
+            return 0
+        fi
+        if [ -f "go.sum" ] && [ "go.sum" -nt "$binary" ]; then
+            return 0
+        fi
+        
+        return 1
+    }
+    
+    # Ensure bin directory exists
+    mkdir -p bin
+    
+    # Build neurotest if needed
+    if needs_rebuild "bin/neurotest" "cmd/neurotest"; then
+        echo "Building neurotest..."
+        go build -ldflags="-X 'neuroshell/internal/version.Version=$(./scripts/version.sh)' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neurotest ./cmd/neurotest
+        echo "Binary built at: bin/neurotest"
+    else
+        echo "neurotest is up to date"
+    fi
+    
+    # Build neuro if needed
+    if needs_rebuild "bin/neuro" "cmd/neuro"; then
+        echo "Building NeuroShell..."
+        go build -ldflags="-X 'neuroshell/internal/version.Version=$(./scripts/version.sh)' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neuro ./cmd/neuro
+        echo "Binary built at: bin/neuro"
+    else
+        echo "neuro is up to date"    
+    fi
+
+# Ensure binaries are built (build if needed, but skip clean and lint)
+ensure-build: build-if-needed
 
 
 # Run the application
@@ -36,7 +99,7 @@ run: build
 
 
 # Run tests with coverage
-test: build test-all-units
+test: ensure-build test-all-units
     @echo "Running tests..."
     EDITOR=echo go test -v -coverprofile=coverage.out ./...
     go tool cover -html=coverage.out -o coverage.html
@@ -123,6 +186,7 @@ test-all-units:
         ./internal/statemachine/... \
         ./internal/shell/... \
         ./internal/stringprocessing/... \
+        ./internal/version/... \
         ./internal/commands/builtin/... \
         ./internal/commands/render/... \
         ./internal/commands/session/... \
@@ -143,6 +207,7 @@ test-all-units-coverage:
         ./internal/statemachine/... \
         ./internal/shell/... \
         ./internal/stringprocessing/... \
+        ./internal/version/... \
         ./internal/commands/builtin/... \
         ./internal/commands/render/... \
         ./internal/commands/session/... \
@@ -237,14 +302,32 @@ dev:
         just run; \
     fi
 
-# Build for multiple platforms
+# Build for multiple platforms with version injection
 build-all:
-    @echo "Building for multiple platforms..."
-    GOOS=linux GOARCH=amd64 go build -o bin/neuro-linux-amd64 ./cmd/neuro
-    GOOS=darwin GOARCH=amd64 go build -o bin/neuro-darwin-amd64 ./cmd/neuro
-    GOOS=darwin GOARCH=arm64 go build -o bin/neuro-darwin-arm64 ./cmd/neuro
-    GOOS=windows GOARCH=amd64 go build -o bin/neuro-windows-amd64.exe ./cmd/neuro
-    @echo "Cross-platform binaries built in bin/"
+    #!/bin/bash
+    set -euo pipefail
+    echo "Building for multiple platforms..."
+    
+    # Get version info
+    VERSION=$(./scripts/version.sh)
+    GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    BUILD_DATE=$(date -u +%Y-%m-%d)
+    
+    LDFLAGS="-X 'neuroshell/internal/version.Version=${VERSION}' -X 'neuroshell/internal/version.GitCommit=${GIT_COMMIT}' -X 'neuroshell/internal/version.BuildDate=${BUILD_DATE}'"
+    
+    echo "Building for Linux amd64..."
+    GOOS=linux GOARCH=amd64 go build -ldflags="${LDFLAGS}" -o bin/neuro-linux-amd64 ./cmd/neuro
+    
+    echo "Building for macOS amd64..."
+    GOOS=darwin GOARCH=amd64 go build -ldflags="${LDFLAGS}" -o bin/neuro-darwin-amd64 ./cmd/neuro
+    
+    echo "Building for macOS arm64..."
+    GOOS=darwin GOARCH=arm64 go build -ldflags="${LDFLAGS}" -o bin/neuro-darwin-arm64 ./cmd/neuro
+    
+    echo "Building for Windows amd64..."
+    GOOS=windows GOARCH=amd64 go build -ldflags="${LDFLAGS}" -o bin/neuro-windows-amd64.exe ./cmd/neuro
+    
+    echo "Cross-platform binaries built in bin/"
 
 # Check project health
 check:
@@ -256,20 +339,46 @@ check:
     fi
     @echo "Project health check complete"
 
-# Run all CI checks locally (mirrors CI pipeline)
+# Run all CI checks locally (fast version - avoids unnecessary rebuilds)
 check-ci:
-    @echo "Running CI checks locally..."
+    @echo "Running CI checks locally (fast)..."
     @echo "1. Updating dependencies..."
     just deps
     @echo "2. Running linter..."
     just lint
     @echo "3. Running all unit tests..."
     just test-all-units
-    @echo "4. Building binary..."
+    @echo "4. Ensuring binaries are built..."
+    just ensure-build
+    @echo "5. Running end-to-end tests..."
+    just test-e2e
+    @echo "✅ CI checks completed"
+
+# Run all CI checks locally (clean version - full rebuild)
+check-ci-clean:
+    @echo "Running CI checks locally (clean)..."
+    @echo "1. Updating dependencies..."
+    just deps
+    @echo "2. Running linter..."
+    just lint
+    @echo "3. Running all unit tests..."
+    just test-all-units
+    @echo "4. Building binary (clean)..."
     just build
     @echo "5. Running end-to-end tests..."
     just test-e2e
     @echo "✅ CI checks completed"
+
+# Run fast CI checks (skips linting and dependency updates)
+check-ci-fast:
+    @echo "Running fast CI checks..."
+    @echo "1. Running all unit tests..."
+    just test-all-units
+    @echo "2. Ensuring binaries are built..."
+    just ensure-build
+    @echo "3. Running end-to-end tests..."
+    just test-e2e
+    @echo "✅ Fast CI checks completed"
 
 # Initialize development environment
 init:
@@ -279,13 +388,13 @@ init:
     @echo "Development environment ready"
 
 # Run end-to-end tests
-test-e2e: build
+test-e2e: ensure-build
     @echo "Running end-to-end tests..."
     ./bin/neurotest --neuro-cmd="./bin/neuro" run-all
     @echo "End-to-end tests complete"
 
 # Re-record all end-to-end test cases
-record-all-e2e: build
+record-all-e2e: ensure-build
     #!/bin/bash
     echo "Re-recording all end-to-end test cases..."
     for test_file in $(find test/golden -maxdepth 1 -name "*.neuro" -type f | sort); do \

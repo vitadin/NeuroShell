@@ -11,10 +11,10 @@ import (
 
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
+	"neuroshell/internal/version"
 )
 
 var (
-	version             = "0.1.0"
 	testDir             = "test/golden"
 	neurocmd            = "neuro"
 	verbose             bool
@@ -83,9 +83,14 @@ and the actual output from running the test.`,
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version information",
-	Long:  `Display the version of neurotest.`,
-	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Printf("neurotest v%s\n", version)
+	Long:  `Display the version of neurotest with build information.`,
+	Run: func(cmd *cobra.Command, _ []string) {
+		detailed, _ := cmd.Flags().GetBool("detailed")
+		if detailed {
+			fmt.Printf("neurotest %s\n", version.GetDetailedVersion())
+		} else {
+			fmt.Printf("neurotest %s\n", version.GetFormattedVersion())
+		}
 	},
 }
 
@@ -105,6 +110,9 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&testDir, "test-dir", "test/golden", "Test directory")
 	rootCmd.PersistentFlags().StringVar(&neurocmd, "neuro-cmd", "./bin/neuro", "Neuro command to test")
 	rootCmd.PersistentFlags().IntVar(&testTimeout, "timeout", 30, "Test timeout in seconds")
+
+	// Add version command flags
+	versionCmd.Flags().Bool("detailed", false, "Show detailed version information")
 
 	// Add subcommands
 	rootCmd.AddCommand(recordCmd)
