@@ -1,0 +1,36 @@
+Command: version
+Description: Show NeuroShell version information and store details in system variables
+Usage: \version
+Parse Mode: Key-Value (supports [key=value] syntax)
+Examples:
+  \version
+    %% Show version information and store details in system variables
+  \version\n\echo Version: ${#version}
+    %% Show version and then display the stored version string
+  \version\n\echo Codename: ${#version_codename}
+    %% Show version and then display the stored codename
+Stored Variables:
+  ${#version} - Full version string with build metadata (version_info)
+    Example: #version = "0.2.0+530.a455fa8"
+  ${#version_base} - Base semantic version (major.minor.patch) (version_info)
+    Example: #version_base = "0.2.0"
+  ${#version_codename} - Version codename based on neural complexity progression (version_info)
+    Example: #version_codename = "Planaria"
+  ${#version_commit} - Git commit hash (short form) (version_info)
+    Example: #version_commit = "a455fa8"
+  ${#version_commit_count} - Number of commits since base version tag (version_info)
+    Example: #version_commit_count = "530"
+  ${#version_build_date} - Date when the binary was built (version_info)
+    Example: #version_build_date = "2025-07-29"
+  ${#version_build_metadata} - Build metadata from semantic version (version_info)
+    Example: #version_build_metadata = "530.a455fa8"
+  ${#version_go_version} - Go version used to build the binary (version_info)
+    Example: #version_go_version = "go1.24.4"
+  ${#version_platform} - Target platform (OS/architecture) (version_info)
+    Example: #version_platform = "darwin/arm64"
+Notes:
+  Displays formatted version information to console
+  Automatically stores detailed version components in system variables with # prefix
+  All version details are accessible via ${#version_*} variables for scripting
+  Codename follows neural complexity progression (Hydra → Planaria → ... → Sapiens → Synthia)
+  Build metadata includes commit count and hash for tracking incremental changes
