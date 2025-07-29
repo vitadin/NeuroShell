@@ -1,0 +1,53 @@
+%% Test comprehensive Gemini model management workflow
+\set[_echo_command="true"]
+
+%% Start with catalog to see available Gemini models
+\model-catalog[provider="gemini"]
+
+%% Create different Gemini models using both direct and delegated commands
+\gemini-model-new[catalog_id="GM25F", thinking_budget="2048"] flash-direct
+\model-new[catalog_id="GM25P", thinking_budget="-1"] pro-delegated
+\gemini-model-new[catalog_id="GM25FL", temperature="0.8"] lite-direct
+
+%% Check status after creation
+\model-status
+
+%% Activate first model and verify
+\model-activate flash-direct
+\get[#active_model_name]
+\get[#active_model_provider]
+
+%% Switch to second model
+\model-activate pro-delegated
+\get[#active_model_name]
+
+%% Create additional models with custom parameters mixing direct and delegated
+\model-new[catalog_id="GM25F", temperature="0.9", thinking_budget="0", description="Fast Flash without thinking"] fast-flash
+\gemini-model-new[catalog_id="GM25P", thinking_budget="16384", max_tokens="3000", description="High-performance Pro"] perf-pro
+
+%% Check full status with all models
+\model-status
+
+%% Test model activation with different patterns
+\model-activate perf-pro
+\get[#active_model_name]
+
+%% Delete some models to test cleanup
+\model-delete flash-direct
+\model-delete lite-direct
+
+%% Verify deletion didn't affect other models and active model is still correct
+\model-status
+\get[#active_model_name]
+
+%% Create one more model to test mixed workflow
+\gemini-model-new[catalog_id="GM25FL", thinking_budget="-1"] final-lite
+
+%% Clean up remaining models
+\model-delete pro-delegated
+\model-delete fast-flash
+\model-delete perf-pro
+\model-delete final-lite
+
+%% Verify all models deleted
+\model-status

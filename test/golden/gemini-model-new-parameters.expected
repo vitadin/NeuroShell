@@ -1,0 +1,18 @@
+Setting _echo_command = true
+%%> "\\gemini-model-new[catalog_id=\"GM25F\", temperature=\"0.8\", max_tokens=\"2000\", top_p=\"0.9\", top_k=\"40\", thinking_budget=\"4096\", description=\"Advanced Gemini Flash model for creative tasks\"] creative-gemini"
+Created model 'creative-gemini' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\get[#model_id]"
+#model_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#model_name]"
+#model_name = creative-gemini
+%%> "\\get[#model_provider]"
+#model_provider = gemini
+%%> "\\get[#model_base]"
+#model_base = gemini-2.5-flash
+%%> "\\get[#model_param_count]"
+#model_param_count = 5
+%%> "\\get[#model_description]"
+#model_description = Advanced Gemini Flash model for creative tasks
+%%> "\\get[_output]"
+_output = Gemini client ready: gemini:cad4bc2c

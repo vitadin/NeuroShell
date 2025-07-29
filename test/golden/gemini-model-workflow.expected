@@ -1,0 +1,179 @@
+Setting _echo_command = true
+%%> "\\model-catalog[provider=\"gemini\"]"
+Model Catalog (Gemini) (3 models):
+  [GM25F] Gemini 2.5 Flash (gemini-2.5-flash)
+    Context: 1,048,576 tokens (max output: 65,536 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, multimodal, audio, video, code-execution, search-grounding, thinking
+    Modalities: text-input, image-input, audio-input, video-input, text-output
+    Pricing: $0.30/1M input, $2.50/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Tools: code-execution, search-grounding
+    Knowledge cutoff: 2025-01-01
+    Thinking mode: range: 0-24576, default: dynamic, can disable
+    Snapshots: gemini-2.5-flash, gemini-2.5-flash-preview-05-20
+    Description: Google's fast and efficient multimodal AI model optimized for speed and performance
+  [GM25FL] Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
+    Context: 1,048,576 tokens
+    Capabilities: text, reasoning, analysis, coding, writing, multimodal, ultra-low-latency, cost-efficient, thinking-mode-optional, structured-outputs, function-calling, code-execution, url-context, search-grounding, caching, batch-mode
+    Modalities: text-input, image-input, video-input, audio-input, pdf-input, text-output
+    Pricing: $0.10/1M input, $0.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Knowledge cutoff: 2025-01
+    Thinking mode: range: 512-24576, default: disabled, can disable
+    Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
+  [GM25P] Gemini 2.5 Pro (gemini-2.5-pro)
+    Context: 1,048,576 tokens (max output: 65,536 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, multimodal, audio, video, pdf, code-execution, search-grounding, thinking
+    Modalities: text-input, image-input, audio-input, video-input, pdf-input, text-output
+    Pricing: $2.50/1M input, $15.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs
+    Tools: code-execution, search-grounding
+    Knowledge cutoff: 2025-01-01
+    Thinking mode: range: 128-32768, default: dynamic, cannot disable
+    Description: Google's most capable multimodal AI model with advanced reasoning capabilities
+%%> "\\gemini-model-new[catalog_id=\"GM25F\", thinking_budget=\"2048\"] flash-direct"
+Created model 'flash-direct' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\model-new[catalog_id=\"GM25P\", thinking_budget=\"-1\"] pro-delegated"
+Created model 'pro-delegated' (ID: 00000002, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\gemini-model-new[catalog_id=\"GM25FL\", temperature=\"0.8\"] lite-direct"
+Created model 'lite-direct' (ID: 00000003, Provider: gemini, Base: gemini-2.5-flash-lite)
+%%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
+%%> "\\model-status"
+Model Configurations (3 models):
+  flash-direct (00000001)
+    Provider: gemini
+    Base Model: gemini-2.5-flash
+    Catalog ID: GM25F
+    Parameters: 1 (thinking_budget=2048)
+    Created: 2025-01-01 00:00:01
+    Description: Gemini Gemini 2.5 Flash model
+  lite-direct (00000003)
+    Provider: gemini
+    Base Model: gemini-2.5-flash-lite
+    Catalog ID: GM25FL
+    Parameters: 1 (temperature=0.8)
+    Created: 2025-01-01 00:00:03
+    Description: Gemini Gemini 2.5 Flash Lite model
+    Active: true
+  pro-delegated (00000002)
+    Provider: gemini
+    Base Model: gemini-2.5-pro
+    Catalog ID: GM25P
+    Parameters: 1 (thinking_budget=-1)
+    Created: 2025-01-01 00:00:02
+    Description: Gemini Gemini 2.5 Pro model
+%%> "\\model-activate flash-direct"
+Activated model 'flash-direct' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\llm-client-get[provider=gemini]"
+Gemini client ready: gemini:cad4bc2c (configured: true)
+%%> "\\get[#active_model_name]"
+#active_model_name = flash-direct
+%%> "\\get[#active_model_provider]"
+#active_model_provider = gemini
+%%> "\\model-activate pro-delegated"
+Activated model 'pro-delegated' (ID: 00000002, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\llm-client-get[provider=gemini]"
+Gemini client ready: gemini:cad4bc2c (configured: true)
+%%> "\\get[#active_model_name]"
+#active_model_name = pro-delegated
+%%> "\\model-new[catalog_id=\"GM25F\", temperature=\"0.9\", thinking_budget=\"0\", description=\"Fast Flash without thinking\"] fast-flash"
+Created model 'fast-flash' (ID: 00000004, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
+%%> "\\gemini-model-new[catalog_id=\"GM25P\", thinking_budget=\"16384\", max_tokens=\"3000\", description=\"High-performance Pro\"] perf-pro"
+Created model 'perf-pro' (ID: 00000005, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\silent \\model-activate[id=true] 00000005-0000-4000-8000-000000000005"
+%%> "\\model-status"
+Model Configurations (5 models):
+  fast-flash (00000004)
+    Provider: gemini
+    Base Model: gemini-2.5-flash
+    Catalog ID: GM25F
+    Parameters: 2 (temperature=0.9, thinking_budget=0)
+    Created: 2025-01-01 00:00:04
+    Description: Fast Flash without thinking
+  flash-direct (00000001)
+    Provider: gemini
+    Base Model: gemini-2.5-flash
+    Catalog ID: GM25F
+    Parameters: 1 (thinking_budget=2048)
+    Created: 2025-01-01 00:00:01
+    Description: Gemini Gemini 2.5 Flash model
+  lite-direct (00000003)
+    Provider: gemini
+    Base Model: gemini-2.5-flash-lite
+    Catalog ID: GM25FL
+    Parameters: 1 (temperature=0.8)
+    Created: 2025-01-01 00:00:03
+    Description: Gemini Gemini 2.5 Flash Lite model
+  perf-pro (00000005)
+    Provider: gemini
+    Base Model: gemini-2.5-pro
+    Catalog ID: GM25P
+    Parameters: 2 (max_tokens=3000, thinking_budget=16384)
+    Created: 2025-01-01 00:00:05
+    Description: High-performance Pro
+    Active: true
+  pro-delegated (00000002)
+    Provider: gemini
+    Base Model: gemini-2.5-pro
+    Catalog ID: GM25P
+    Parameters: 1 (thinking_budget=-1)
+    Created: 2025-01-01 00:00:02
+    Description: Gemini Gemini 2.5 Pro model
+%%> "\\model-activate perf-pro"
+Activated model 'perf-pro' (ID: 00000005, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\llm-client-get[provider=gemini]"
+Gemini client ready: gemini:cad4bc2c (configured: true)
+%%> "\\get[#active_model_name]"
+#active_model_name = perf-pro
+%%> "\\model-delete flash-direct"
+Deleted model 'flash-direct' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\model-activate"
+%%> "\\model-delete lite-direct"
+Deleted model 'lite-direct' (ID: 00000003, Provider: gemini, Base: gemini-2.5-flash-lite)
+%%> "\\silent \\model-activate"
+%%> "\\model-status"
+Model Configurations (3 models):
+  fast-flash (00000004)
+    Provider: gemini
+    Base Model: gemini-2.5-flash
+    Catalog ID: GM25F
+    Parameters: 2 (temperature=0.9, thinking_budget=0)
+    Created: 2025-01-01 00:00:04
+    Description: Fast Flash without thinking
+  perf-pro (00000005)
+    Provider: gemini
+    Base Model: gemini-2.5-pro
+    Catalog ID: GM25P
+    Parameters: 2 (max_tokens=3000, thinking_budget=16384)
+    Created: 2025-01-01 00:00:05
+    Description: High-performance Pro
+    Active: true
+  pro-delegated (00000002)
+    Provider: gemini
+    Base Model: gemini-2.5-pro
+    Catalog ID: GM25P
+    Parameters: 1 (thinking_budget=-1)
+    Created: 2025-01-01 00:00:02
+    Description: Gemini Gemini 2.5 Pro model
+%%> "\\get[#active_model_name]"
+#active_model_name = perf-pro
+%%> "\\gemini-model-new[catalog_id=\"GM25FL\", thinking_budget=\"-1\"] final-lite"
+Created model 'final-lite' (ID: 00000006, Provider: gemini, Base: gemini-2.5-flash-lite)
+%%> "\\silent \\model-activate[id=true] 00000006-0000-4000-8000-000000000006"
+%%> "\\model-delete pro-delegated"
+Deleted model 'pro-delegated' (ID: 00000002, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\silent \\model-activate"
+%%> "\\model-delete fast-flash"
+Deleted model 'fast-flash' (ID: 00000004, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\model-activate"
+%%> "\\model-delete perf-pro"
+Deleted model 'perf-pro' (ID: 00000005, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\silent \\model-activate"
+%%> "\\model-delete final-lite"
+Deleted model 'final-lite' (ID: 00000006, Provider: gemini, Base: gemini-2.5-flash-lite)
+%%> "\\silent \\model-activate"
+%%> "\\model-status"
+No model configurations found. Use \model-new to create model configurations.

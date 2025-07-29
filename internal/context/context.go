@@ -464,6 +464,8 @@ func (ctx *NeuroContext) getTestEnvValue(key string) string {
 		return "test-openai-key"
 	case "ANTHROPIC_API_KEY":
 		return "test-anthropic-key"
+	case "GOOGLE_API_KEY":
+		return "test-google-key"
 	case "EDITOR":
 		return "test-editor"
 	case "GOOS":
