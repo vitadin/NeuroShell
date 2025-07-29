@@ -484,3 +484,143 @@ func TestGetBuildTime(t *testing.T) {
 		})
 	}
 }
+
+func TestGetBaseVersion(t *testing.T) {
+	// Save original version
+	originalVersion := Version
+	defer func() {
+		Version = originalVersion
+	}()
+
+	tests := []struct {
+		name     string
+		version  string
+		expected string
+	}{
+		{
+			name:     "standard version",
+			version:  "1.2.3",
+			expected: "1.2.3",
+		},
+		{
+			name:     "version with build metadata",
+			version:  "0.2.0+123.abc1234",
+			expected: "0.2.0",
+		},
+		{
+			name:     "version with prerelease",
+			version:  "1.2.3-alpha.1",
+			expected: "1.2.3",
+		},
+		{
+			name:     "invalid version",
+			version:  "invalid",
+			expected: "invalid",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			Version = tt.version
+			result := GetBaseVersion()
+			if result != tt.expected {
+				t.Errorf("GetBaseVersion() with version %q = %q, want %q", tt.version, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGetBuildMetadata(t *testing.T) {
+	// Save original version
+	originalVersion := Version
+	defer func() {
+		Version = originalVersion
+	}()
+
+	tests := []struct {
+		name     string
+		version  string
+		expected string
+	}{
+		{
+			name:     "version with build metadata",
+			version:  "0.2.0+123.abc1234",
+			expected: "123.abc1234",
+		},
+		{
+			name:     "version without build metadata",
+			version:  "1.2.3",
+			expected: "",
+		},
+		{
+			name:     "version with complex metadata",
+			version:  "1.0.0+build.1.sha.abc1234",
+			expected: "build.1.sha.abc1234",
+		},
+		{
+			name:     "invalid version",
+			version:  "invalid",
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			Version = tt.version
+			result := GetBuildMetadata()
+			if result != tt.expected {
+				t.Errorf("GetBuildMetadata() with version %q = %q, want %q", tt.version, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestGetCommitCount(t *testing.T) {
+	// Save original version
+	originalVersion := Version
+	defer func() {
+		Version = originalVersion
+	}()
+
+	tests := []struct {
+		name     string
+		version  string
+		expected int
+	}{
+		{
+			name:     "version with commit count",
+			version:  "0.2.0+123.abc1234",
+			expected: 123,
+		},
+		{
+			name:     "version with zero commit count",
+			version:  "0.2.0+0.abc1234",
+			expected: 0,
+		},
+		{
+			name:     "standard version without commit count",
+			version:  "1.2.3",
+			expected: 0,
+		},
+		{
+			name:     "version with non-numeric commit count",
+			version:  "0.2.0+alpha.abc1234",
+			expected: 0,
+		},
+		{
+			name:     "invalid version",
+			version:  "invalid",
+			expected: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			Version = tt.version
+			result := GetCommitCount()
+			if result != tt.expected {
+				t.Errorf("GetCommitCount() with version %q = %d, want %d", tt.version, result, tt.expected)
+			}
+		})
+	}
+}

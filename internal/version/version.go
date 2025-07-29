@@ -60,6 +60,48 @@ func GetCodename() string {
 	return GetCodenameForVersion(Version)
 }
 
+// GetBaseVersion returns the base version (major.minor.patch) without build metadata
+func GetBaseVersion() string {
+	sv, err := semver.NewVersion(Version)
+	if err != nil {
+		return Version
+	}
+	return fmt.Sprintf("%d.%d.%d", sv.Major(), sv.Minor(), sv.Patch())
+}
+
+// GetBuildMetadata returns the build metadata part of the version (after +)
+func GetBuildMetadata() string {
+	sv, err := semver.NewVersion(Version)
+	if err != nil {
+		return ""
+	}
+	return sv.Metadata()
+}
+
+// GetCommitCount returns the commit count from the version build metadata
+func GetCommitCount() int {
+	// For versions like 0.2.0+123.abc1234, parse the build metadata
+	sv, err := semver.NewVersion(Version)
+	if err != nil {
+		return 0
+	}
+
+	metadata := sv.Metadata()
+	if metadata == "" {
+		return 0
+	}
+
+	// Split by dots and try to parse the first part as commit count
+	parts := strings.Split(metadata, ".")
+	if len(parts) > 0 {
+		var commitCount int
+		if _, err := fmt.Sscanf(parts[0], "%d", &commitCount); err == nil && commitCount > 0 {
+			return commitCount
+		}
+	}
+	return 0
+}
+
 // GetCodenameForVersion returns the codename for a specific version
 // Handles patch versions by using the major.minor.0 base version
 func GetCodenameForVersion(version string) string {
@@ -153,6 +195,15 @@ func GetDetailedVersion() string {
 
 	lines = append(lines, fmt.Sprintf("Git Commit: %s", info.GitCommit))
 	lines = append(lines, fmt.Sprintf("Build Date: %s", info.BuildDate))
+
+	// Show commit count and build metadata if available
+	if commitCount := GetCommitCount(); commitCount > 0 {
+		lines = append(lines, fmt.Sprintf("Commit Count: %d", commitCount))
+	}
+	if buildMeta := GetBuildMetadata(); buildMeta != "" {
+		lines = append(lines, fmt.Sprintf("Build Metadata: %s", buildMeta))
+	}
+
 	lines = append(lines, fmt.Sprintf("Go Version: %s", info.GoVersion))
 	lines = append(lines, fmt.Sprintf("Platform: %s", info.Platform))
 

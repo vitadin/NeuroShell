@@ -30,10 +30,10 @@ default:
 # Build the main binaries with version injection
 build: clean lint
     @echo "Building neurotest..."
-    go build -ldflags="-X 'neuroshell/internal/version.Version=0.2.0' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neurotest ./cmd/neurotest
+    go build -ldflags="-X 'neuroshell/internal/version.Version=$(./scripts/version.sh)' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neurotest ./cmd/neurotest
     @echo "Binary built at: bin/neurotest"
     @echo "Building NeuroShell..."
-    go build -ldflags="-X 'neuroshell/internal/version.Version=0.2.0' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neuro ./cmd/neuro
+    go build -ldflags="-X 'neuroshell/internal/version.Version=$(./scripts/version.sh)' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neuro ./cmd/neuro
     @echo "Binary built at: bin/neuro"
 
 # Build binaries only if they don't exist or sources are newer
@@ -73,7 +73,7 @@ build-if-needed:
     # Build neurotest if needed
     if needs_rebuild "bin/neurotest" "cmd/neurotest"; then
         echo "Building neurotest..."
-        go build -ldflags="-X 'neuroshell/internal/version.Version=0.2.0' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neurotest ./cmd/neurotest
+        go build -ldflags="-X 'neuroshell/internal/version.Version=$(./scripts/version.sh)' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neurotest ./cmd/neurotest
         echo "Binary built at: bin/neurotest"
     else
         echo "neurotest is up to date"
@@ -82,7 +82,7 @@ build-if-needed:
     # Build neuro if needed
     if needs_rebuild "bin/neuro" "cmd/neuro"; then
         echo "Building NeuroShell..."
-        go build -ldflags="-X 'neuroshell/internal/version.Version=0.2.0' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neuro ./cmd/neuro
+        go build -ldflags="-X 'neuroshell/internal/version.Version=$(./scripts/version.sh)' -X 'neuroshell/internal/version.GitCommit=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)' -X 'neuroshell/internal/version.BuildDate=$(date -u +%Y-%m-%d)' " -o bin/neuro ./cmd/neuro
         echo "Binary built at: bin/neuro"
     else
         echo "neuro is up to date"    
@@ -309,7 +309,7 @@ build-all:
     echo "Building for multiple platforms..."
     
     # Get version info
-    VERSION="0.2.0"
+    VERSION=$(./scripts/version.sh)
     GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
     BUILD_DATE=$(date -u +%Y-%m-%d)
     
