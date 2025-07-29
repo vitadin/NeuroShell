@@ -118,7 +118,7 @@ func (c *GeminiClientNewCommand) Execute(args map[string]string, _ string) error
 	}
 
 	// Create Gemini client
-	client, clientID, err := clientFactory.GetClientWithID("gemini", apiKey)
+	client, clientID, err := clientFactory.GetClientWithID("GMC", apiKey)
 	if err != nil {
 		return fmt.Errorf("failed to create Gemini client: %w", err)
 	}

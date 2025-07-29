@@ -2,6 +2,7 @@ name: gpt-4o-2024-11-20
 id: G4O
 display_name: GPT-4o
 provider: openai
+provider_catalog_id: [OAC, OAR]
 description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
 capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs, omni]
 context_window: 128000

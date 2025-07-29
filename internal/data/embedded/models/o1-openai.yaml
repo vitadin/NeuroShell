@@ -2,6 +2,7 @@ name: o1-2024-12-17
 id: O1
 display_name: o1
 provider: openai
+provider_catalog_id: [OAR]
 description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
 capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought]
 context_window: 200000

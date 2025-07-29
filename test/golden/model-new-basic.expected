@@ -13,4 +13,4 @@ Created model 'my-gpt4-model' (ID: 00000001, Provider: openai, Base: gpt-4.1-202
 %%> "\\get[#model_param_count]"
 #model_param_count = 0
 %%> "\\get[_output]"
-_output = OpenAI client ready: openai:b10394de
+_output = OpenAI client ready: OAR:b10394de

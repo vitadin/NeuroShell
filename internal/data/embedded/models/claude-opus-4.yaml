@@ -2,6 +2,7 @@ name: claude-opus-4-20250514
 id: CO4
 display_name: Claude Opus 4
 provider: anthropic
+provider_catalog_id: [ANC]
 description: Highest level of intelligence and capability
 capabilities: [text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking]
 context_window: 200000

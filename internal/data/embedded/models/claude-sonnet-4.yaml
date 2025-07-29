@@ -2,6 +2,7 @@ name: claude-sonnet-4-20250514
 id: CS4
 display_name: Claude Sonnet 4
 provider: anthropic
+provider_catalog_id: [ANC]
 description: High intelligence and balanced performance
 capabilities: [text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking]
 context_window: 200000

@@ -124,8 +124,8 @@ func (c *OpenAIClientNewCommand) Execute(args map[string]string, _ string) error
 		return fmt.Errorf("client factory service not available: %w", err)
 	}
 
-	// Create OpenAI client (will use OpenAIReasoningClient with dual endpoint support)
-	client, clientID, err := clientFactory.GetClientWithID("openai", apiKey)
+	// Create OpenAI reasoning client (supports both chat and reasoning endpoints)
+	client, clientID, err := clientFactory.GetClientWithID("OAR", apiKey)
 	if err != nil {
 		return fmt.Errorf("failed to create OpenAI client: %w", err)
 	}

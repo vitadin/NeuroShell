@@ -20,8 +20,8 @@ Created model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4.1-202
 %%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
 %%> "\\model-activate id-test-model"
 Activated model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4.1-2025-04-14)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAC]"
 %%> "\\get[#active_model_id]"
 #active_model_id = 00000004-0000-4000-8000-000000000004
 %%> "\\set[short_id=\"${#active_model_id}\"]"

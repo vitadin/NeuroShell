@@ -2,6 +2,7 @@ name: o1-pro-2025-03-19
 id: O1P
 display_name: o1-pro
 provider: openai
+provider_catalog_id: [OAR]
 description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
 capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, reinforcement-learning, complex-reasoning, chain-of-thought]
 context_window: 200000

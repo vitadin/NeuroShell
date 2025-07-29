@@ -99,7 +99,7 @@ func TestGeminiClientNewCommand_Execute_WithExplicitKey(t *testing.T) {
 			})
 
 			assert.NoError(t, err)
-			assert.Contains(t, outputStr, "Gemini client ready: gemini:")
+			assert.Contains(t, outputStr, "Gemini client ready: GMC:")
 			assert.Contains(t, outputStr, "(configured: true)")
 
 			// Verify system variables were set
@@ -108,7 +108,7 @@ func TestGeminiClientNewCommand_Execute_WithExplicitKey(t *testing.T) {
 
 			clientID, err := variableService.Get("_client_id")
 			assert.NoError(t, err)
-			assert.Contains(t, clientID, "gemini:")
+			assert.Contains(t, clientID, "GMC:")
 
 			output, err := variableService.Get("_output")
 			assert.NoError(t, err)
@@ -154,7 +154,7 @@ func TestGeminiClientNewCommand_Execute_WithActiveKey(t *testing.T) {
 	// Verify client was created successfully
 	clientID, err := variableService.Get("_client_id")
 	assert.NoError(t, err)
-	assert.Contains(t, clientID, "gemini:")
+	assert.Contains(t, clientID, "GMC:")
 
 	output, err := variableService.Get("_output")
 	assert.NoError(t, err)
@@ -192,7 +192,7 @@ func TestGeminiClientNewCommand_Execute_WithEnvironmentKey(t *testing.T) {
 
 	clientID, err := variableService.Get("_client_id")
 	assert.NoError(t, err)
-	assert.Contains(t, clientID, "gemini:")
+	assert.Contains(t, clientID, "GMC:")
 }
 
 func TestGeminiClientNewCommand_Execute_NoKeyAvailable(t *testing.T) {

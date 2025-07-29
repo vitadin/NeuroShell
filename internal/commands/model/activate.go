@@ -281,10 +281,13 @@ func (c *ActivateCommand) activateModel(model *neurotypes.ModelConfig, modelServ
 		return fmt.Errorf("failed to activate model: %w", err)
 	}
 
-	// Auto-push client creation command to stack service for seamless UX
+	// Auto-push client creation commands to stack service for seamless UX
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		clientCommand := fmt.Sprintf("\\llm-client-get[provider=%s]", model.Provider)
-		stackService.PushCommand(clientCommand)
+		providerCatalogIDs := c.getProviderCatalogIDs(model)
+		for _, catalogID := range providerCatalogIDs {
+			clientCommand := fmt.Sprintf("\\silent \\llm-client-get[provider_catalog_id=%s]", catalogID)
+			stackService.PushCommand(clientCommand)
+		}
 	}
 
 	// Prepare success message
@@ -396,6 +399,22 @@ func (c *ActivateCommand) findLatestModel(models map[string]*neurotypes.ModelCon
 	}
 
 	return latestModel
+}
+
+// getProviderCatalogIDs determines the appropriate provider catalog IDs for a model.
+// It uses the model catalog service to get the provider catalog IDs.
+func (c *ActivateCommand) getProviderCatalogIDs(model *neurotypes.ModelConfig) []string {
+	// All models should have catalog IDs and use the catalog service
+	if model.CatalogID != "" {
+		if catalogService, err := services.GetGlobalModelCatalogService(); err == nil {
+			if providerCatalogIDs, err := catalogService.GetProviderCatalogIDsByModelID(model.CatalogID); err == nil {
+				return providerCatalogIDs
+			}
+		}
+	}
+
+	// If catalog lookup fails, return empty slice to avoid creating incorrect clients
+	return []string{}
 }
 
 func init() {

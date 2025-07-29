@@ -37,63 +37,63 @@ func (f *ClientFactoryService) Initialize() error {
 	return nil
 }
 
-// GetClientForProvider returns an LLM client for the specified provider and API key.
-// This allows for explicit provider selection when multiple providers are supported.
-func (f *ClientFactoryService) GetClientForProvider(provider, apiKey string) (neurotypes.LLMClient, error) {
+// GetClientForProvider returns an LLM client for the specified provider catalog ID and API key.
+// This allows for explicit provider catalog selection when multiple endpoints are supported.
+func (f *ClientFactoryService) GetClientForProvider(providerCatalogID, apiKey string) (neurotypes.LLMClient, error) {
 	if !f.initialized {
 		return nil, fmt.Errorf("client factory service not initialized")
 	}
 
-	if provider == "" {
-		return nil, fmt.Errorf("provider cannot be empty")
+	if providerCatalogID == "" {
+		return nil, fmt.Errorf("provider catalog ID cannot be empty")
 	}
 
 	if apiKey == "" {
-		return nil, fmt.Errorf("API key cannot be empty for provider '%s'", provider)
+		return nil, fmt.Errorf("API key cannot be empty for provider catalog ID '%s'", providerCatalogID)
 	}
 
 	// Generate client ID for caching
-	clientID := f.generateClientID(provider, apiKey)
+	clientID := f.generateClientID(providerCatalogID, apiKey)
 	ctx := neuroshellcontext.GetGlobalContext()
 
 	// Check if client exists in context cache
 	if client, exists := ctx.GetLLMClient(clientID); exists {
-		logger.Debug("Returning cached provider client", "provider", provider, "clientID", clientID)
+		logger.Debug("Returning cached provider client", "provider_catalog_id", providerCatalogID, "clientID", clientID)
 		return client, nil
 	}
 
-	// Create client based on provider
+	// Create client based on provider catalog ID
 	var client neurotypes.LLMClient
-	switch provider {
-	case "openai":
+	switch providerCatalogID {
+	case "OAC": // OpenAI Chat Completions
+		client = NewOpenAIClient(apiKey)
+	case "OAR": // OpenAI Reasoning/Responses
 		client = NewOpenAIReasoningClient(apiKey)
-	case "openrouter":
+	case "ORC": // OpenRouter Chat
 		client = f.createOpenAICompatibleClient(apiKey, "openrouter", "https://openrouter.ai/api/v1")
-	case "moonshot":
+	case "MSC": // Moonshot Chat
 		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
-	case "anthropic":
+	case "ANC": // Anthropic Chat
 		client = NewAnthropicClient(apiKey)
-	case "gemini":
+	case "GMC": // Gemini Chat
 		client = NewGeminiClient(apiKey)
 	default:
-		ctx := neuroshellcontext.GetGlobalContext()
-		supportedProviders := ctx.GetSupportedProviders()
-		return nil, fmt.Errorf("unsupported provider '%s'. Supported providers: %s", provider, strings.Join(supportedProviders, ", "))
+		return nil, fmt.Errorf("unsupported provider catalog ID '%s'. Supported catalog IDs: OAC, OAR, ORC, MSC, ANC, GMC", providerCatalogID)
 	}
 
 	// Store client in context cache
 	ctx.SetLLMClient(clientID, client)
 
-	logger.Debug("Created new provider client", "provider", provider, "clientID", clientID)
+	logger.Debug("Created new provider client", "provider_catalog_id", providerCatalogID, "clientID", clientID)
 	return client, nil
 }
 
-// generateClientID creates a unique, secure client ID for the given provider and API key.
+// generateClientID creates a unique, secure client ID for the given provider catalog ID and API key.
 // Uses SHA-256 hash with first 8 hex characters for uniqueness while maintaining usability.
-// Format: "provider:hashed-api-key" (e.g., "openai:a1b2c3d4")
-func (f *ClientFactoryService) generateClientID(provider, apiKey string) string {
+// Format: "catalog_id:hashed-api-key" (e.g., "OAC:a1b2c3d4")
+func (f *ClientFactoryService) generateClientID(providerCatalogID, apiKey string) string {
 	if apiKey == "" {
-		return fmt.Sprintf("%s:empty***", provider)
+		return fmt.Sprintf("%s:empty***", providerCatalogID)
 	}
 
 	// Generate SHA-256 hash of the API key
@@ -102,62 +102,62 @@ func (f *ClientFactoryService) generateClientID(provider, apiKey string) string 
 	// Convert to hex and take first 8 characters for usability
 	hexHash := hex.EncodeToString(hash[:])
 
-	return fmt.Sprintf("%s:%s", provider, hexHash[:8])
+	return fmt.Sprintf("%s:%s", providerCatalogID, hexHash[:8])
 }
 
-// GetClientWithID returns both an LLM client and its unique client ID for the specified provider and API key.
+// GetClientWithID returns both an LLM client and its unique client ID for the specified provider catalog ID and API key.
 // This method provides both client management and consistent ID generation for external use.
-func (f *ClientFactoryService) GetClientWithID(provider, apiKey string) (neurotypes.LLMClient, string, error) {
+func (f *ClientFactoryService) GetClientWithID(providerCatalogID, apiKey string) (neurotypes.LLMClient, string, error) {
 	if !f.initialized {
 		return nil, "", fmt.Errorf("client factory service not initialized")
 	}
 
-	if provider == "" {
-		return nil, "", fmt.Errorf("provider cannot be empty")
+	if providerCatalogID == "" {
+		return nil, "", fmt.Errorf("provider catalog ID cannot be empty")
 	}
 
 	if apiKey == "" {
-		return nil, "", fmt.Errorf("API key cannot be empty for provider '%s'", provider)
+		return nil, "", fmt.Errorf("API key cannot be empty for provider catalog ID '%s'", providerCatalogID)
 	}
 
 	// Generate client ID for external use (also serves as cache key)
-	clientID := f.generateClientID(provider, apiKey)
+	clientID := f.generateClientID(providerCatalogID, apiKey)
 	ctx := neuroshellcontext.GetGlobalContext()
 
 	// Check if client exists in context cache
 	if client, exists := ctx.GetLLMClient(clientID); exists {
-		logger.Debug("Returning cached provider client with ID", "provider", provider, "clientID", clientID)
+		logger.Debug("Returning cached provider client with ID", "provider_catalog_id", providerCatalogID, "clientID", clientID)
 		return client, clientID, nil
 	}
 
-	// Create client based on provider
+	// Create client based on provider catalog ID
 	var client neurotypes.LLMClient
-	switch provider {
-	case "openai":
+	switch providerCatalogID {
+	case "OAC": // OpenAI Chat Completions
+		client = NewOpenAIClient(apiKey)
+	case "OAR": // OpenAI Reasoning/Responses
 		client = NewOpenAIReasoningClient(apiKey)
-	case "openrouter":
+	case "ORC": // OpenRouter Chat
 		client = f.createOpenAICompatibleClient(apiKey, "openrouter", "https://openrouter.ai/api/v1")
-	case "moonshot":
+	case "MSC": // Moonshot Chat
 		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
-	case "anthropic":
+	case "ANC": // Anthropic Chat
 		client = NewAnthropicClient(apiKey)
-	case "gemini":
+	case "GMC": // Gemini Chat
 		client = NewGeminiClient(apiKey)
 	default:
-		ctx := neuroshellcontext.GetGlobalContext()
-		supportedProviders := ctx.GetSupportedProviders()
-		return nil, "", fmt.Errorf("unsupported provider '%s'. Supported providers: %s", provider, strings.Join(supportedProviders, ", "))
+		return nil, "", fmt.Errorf("unsupported provider catalog ID '%s'. Supported catalog IDs: OAC, OAR, ORC, MSC, ANC, GMC", providerCatalogID)
 	}
 
 	// Store client in context cache
 	ctx.SetLLMClient(clientID, client)
 
-	logger.Debug("Created new provider client with ID", "provider", provider, "clientID", clientID)
+	logger.Debug("Created new provider client with ID", "provider_catalog_id", providerCatalogID, "clientID", clientID)
 	return client, clientID, nil
 }
 
 // GetClientByID retrieves a cached LLM client by its client ID.
-// Client ID format: "provider:hashed-api-key" (e.g., "openai:a1b2c3d4...")
+// Client ID format: "catalog_id:hashed-api-key" (e.g., "OAC:a1b2c3d4...")
 // This method enables direct O(1) lookup using the client ID as the cache key.
 func (f *ClientFactoryService) GetClientByID(clientID string) (neurotypes.LLMClient, error) {
 	if !f.initialized {
@@ -170,13 +170,13 @@ func (f *ClientFactoryService) GetClientByID(clientID string) (neurotypes.LLMCli
 
 	// Validate client ID format (must contain colon separator)
 	if !strings.Contains(clientID, ":") {
-		return nil, fmt.Errorf("invalid client ID format: %s (expected 'provider:hash')", clientID)
+		return nil, fmt.Errorf("invalid client ID format: %s (expected 'catalog_id:hash')", clientID)
 	}
 
-	// Ensure both provider and hash parts are non-empty
+	// Ensure both catalog ID and hash parts are non-empty
 	parts := strings.Split(clientID, ":")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return nil, fmt.Errorf("invalid client ID format: %s (expected 'provider:hash')", clientID)
+		return nil, fmt.Errorf("invalid client ID format: %s (expected 'catalog_id:hash')", clientID)
 	}
 
 	// Direct lookup using client ID from context
@@ -187,48 +187,6 @@ func (f *ClientFactoryService) GetClientByID(clientID string) (neurotypes.LLMCli
 	}
 
 	return nil, fmt.Errorf("client with ID '%s' not found in cache", clientID)
-}
-
-// DetermineAPIKeyForProvider determines the API key for a specific provider.
-// It checks provider-specific environment variables through the context layer.
-func (f *ClientFactoryService) DetermineAPIKeyForProvider(provider string, ctx neurotypes.Context) (string, error) {
-	if provider == "" {
-		return "", fmt.Errorf("provider cannot be empty")
-	}
-
-	var apiKey string
-	var envVarName string
-
-	// Check provider-specific environment variables through context
-	switch provider {
-	case "openai":
-		envVarName = "OPENAI_API_KEY"
-		apiKey = ctx.GetEnv(envVarName)
-	case "openrouter":
-		envVarName = "OPENROUTER_API_KEY"
-		apiKey = ctx.GetEnv(envVarName)
-	case "moonshot":
-		envVarName = "MOONSHOT_API_KEY"
-		apiKey = ctx.GetEnv(envVarName)
-	case "anthropic":
-		envVarName = "ANTHROPIC_API_KEY"
-		apiKey = ctx.GetEnv(envVarName)
-	case "gemini":
-		envVarName = "GOOGLE_API_KEY"
-		apiKey = ctx.GetEnv(envVarName)
-	default:
-		ctx := neuroshellcontext.GetGlobalContext()
-		supportedProviders := ctx.GetSupportedProviders()
-		return "", fmt.Errorf("unsupported provider '%s'. Supported providers: %s", provider, strings.Join(supportedProviders, ", "))
-	}
-
-	if apiKey == "" {
-		return "", fmt.Errorf("%s API key not found. Please set the %s environment variable",
-			provider, envVarName)
-	}
-
-	logger.Debug("API key found for provider", "provider", provider, "env_var", envVarName)
-	return apiKey, nil
 }
 
 // GetCachedClientCount returns the number of cached clients (for testing/debugging).

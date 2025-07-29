@@ -38,7 +38,7 @@ Examples:
   \llm-call[client_id=${_client_id}, model_id=my-gpt4]     %% Explicit client and model
   \llm-call[session_id=work-session, stream=true]          %% Use specific session with streaming
   \llm-call[dry_run=true]                                  %% Show what would be sent without API call
-  \llm-call[client_id=openai:a1b2c3d4, model_id=creative-gpt4, session_id=creative-work]
+  \llm-call[client_id=OAR:a1b2c3d4, model_id=creative-gpt4, session_id=creative-work]
 
 Options:
   client_id  - LLM client ID (defaults to ${_client_id})

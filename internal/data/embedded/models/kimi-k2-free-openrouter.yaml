@@ -2,6 +2,7 @@ name: moonshotai/kimi-k2:free
 id: ORK2F
 display_name: Kimi K2 Free (OpenRouter)
 provider: openrouter
+provider_catalog_id: [ORC]
 description: Free access to Kimi K2 via OpenRouter, a trillion-parameter MoE model optimized for advanced tool use, reasoning, and code synthesis
 capabilities: [text, reasoning, analysis, coding, writing, tool-use, agentic]
 context_window: 65536
