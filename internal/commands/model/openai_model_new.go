@@ -33,7 +33,6 @@ func (c *OpenAIModelNewCommand) Description() string {
 // Usage returns the syntax and usage examples for the openai-model-new command.
 func (c *OpenAIModelNewCommand) Usage() string {
 	return `\openai-model-new[catalog_id=<ID>, reasoning_effort=medium, max_output_tokens=10000, ...] model_name
-\openai-model-new[base_model=model_name, reasoning_effort=high, reasoning_summary=detailed, ...] model_name
 
 Examples:
   \openai-model-new[catalog_id=O3] my-o3                                    %% Create o3 model with defaults
@@ -41,11 +40,9 @@ Examples:
   \openai-model-new[catalog_id=O4M, reasoning_effort=low, max_output_tokens=5000] efficient-o4 %% Create efficient o4-mini
   \openai-model-new[catalog_id=G4O, reasoning_effort=medium, reasoning_summary=detailed] reasoning-gpt4o %% Create GPT-4o with reasoning summaries
   \openai-model-new[catalog_id=O1P, max_output_tokens=15000] powerful-o1    %% Create o1-pro with large token limit
-  \openai-model-new[base_model=o3, temperature=0.8, reasoning_effort=medium] custom-o3 %% Manual creation with base model
 
 Options:
   catalog_id - Short model ID from catalog (O3, O4M, O1, O1P, G4O, G41, etc.)
-  base_model - OpenAI model name (o3, o4-mini, o1, gpt-4o, gpt-4.1-2025-04-14, etc.)
   reasoning_effort - Reasoning effort level (low, medium, high) - controls reasoning token usage
   max_output_tokens - Maximum total output tokens including reasoning tokens
   reasoning_summary - Enable reasoning summaries (auto, detailed, concise)
@@ -56,7 +53,7 @@ Options:
   frequency_penalty - Frequency penalty (-2.0 to 2.0)
   description - Human-readable description
 
-Note: Either catalog_id OR base_model is required.
+Note: catalog_id is required.
       Reasoning models (o3, o4-mini, o1 series) automatically use /responses API.
       Non-reasoning models (GPT-4 series without reasoning_effort) use /chat/completions API.
       Use \model-catalog[provider=openai] to see available OpenAI models.`
@@ -67,19 +64,13 @@ func (c *OpenAIModelNewCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\openai-model-new[catalog_id=<ID> OR base_model=<name>, reasoning_effort=<level>, ...] model_name",
+		Usage:       "\\openai-model-new[catalog_id=<ID>, reasoning_effort=<level>, ...] model_name",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "catalog_id",
 				Description: "Short model ID from catalog (O3, O4M, O1, O1P, G4O, etc.)",
-				Required:    false,
-				Type:        "string",
-			},
-			{
-				Name:        "base_model",
-				Description: "OpenAI model name (alternative to catalog_id)",
-				Required:    false,
+				Required:    true,
 				Type:        "string",
 			},
 			{
@@ -155,10 +146,6 @@ func (c *OpenAIModelNewCommand) HelpInfo() neurotypes.HelpInfo {
 				Command:     "\\openai-model-new[catalog_id=G4O, reasoning_effort=medium, reasoning_summary=detailed] reasoning-gpt4o",
 				Description: "Create GPT-4o with reasoning summaries",
 			},
-			{
-				Command:     "\\openai-model-new[base_model=o3, temperature=0.8, reasoning_effort=medium] custom-o3",
-				Description: "Manual creation with base model name",
-			},
 		},
 		StoredVariables: []neurotypes.HelpStoredVariable{
 			{
@@ -193,7 +180,7 @@ func (c *OpenAIModelNewCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 		},
 		Notes: []string{
-			"Either catalog_id OR base_model is required",
+			"catalog_id is required",
 			"Use \\model-catalog[provider=openai] to see available OpenAI models",
 			"Reasoning models automatically use OpenAI Responses API (/responses)",
 			"Non-reasoning models use Chat Completions API (/chat/completions)",
@@ -236,34 +223,23 @@ func (c *OpenAIModelNewCommand) Execute(args map[string]string, input string) er
 	var catalogModel *neurotypes.ModelCatalogEntry
 
 	catalogID := args["catalog_id"]
-	baseModelArg := args["base_model"]
 
-	if catalogID != "" && baseModelArg != "" {
-		return fmt.Errorf("cannot specify both catalog_id and base_model. Choose one")
+	if catalogID == "" {
+		return fmt.Errorf("catalog_id is required")
 	}
 
-	if catalogID == "" && baseModelArg == "" {
-		return fmt.Errorf("either catalog_id or base_model is required")
+	// Look up model in catalog
+	entry, err := catalogService.GetModelByID(catalogID)
+	if err != nil {
+		return fmt.Errorf("failed to find model with catalog_id '%s': %w", catalogID, err)
 	}
 
-	if catalogID != "" {
-		// Look up model in catalog
-		entry, err := catalogService.GetModelByID(catalogID)
-		if err != nil {
-			return fmt.Errorf("failed to find model with catalog_id '%s': %w", catalogID, err)
-		}
-
-		if entry.Provider != "openai" {
-			return fmt.Errorf("catalog_id '%s' is not an OpenAI model (provider: %s). Use \\openai-model-new only for OpenAI models", catalogID, entry.Provider)
-		}
-
-		catalogModel = &entry
-		baseModel = entry.Name
-	} else {
-		// Use provided base model
-		baseModel = baseModelArg
-		// Note: catalog entry will be nil for manual base model specification
+	if entry.Provider != "openai" {
+		return fmt.Errorf("catalog_id '%s' is not an OpenAI model (provider: %s). Use \\openai-model-new only for OpenAI models", catalogID, entry.Provider)
 	}
+
+	catalogModel = &entry
+	baseModel = entry.Name
 
 	// Parse and validate parameters
 	parameters := make(map[string]any)
@@ -362,7 +338,7 @@ func (c *OpenAIModelNewCommand) parseOpenAIParameters(args map[string]string, pa
 
 	// Add any other string parameters that aren't specially handled
 	excludedParams := map[string]bool{
-		"catalog_id": true, "base_model": true, "description": true,
+		"catalog_id": true, "description": true,
 		"reasoning_effort": true, "max_output_tokens": true, "reasoning_summary": true,
 		"temperature": true, "max_tokens": true, "top_p": true,
 		"presence_penalty": true, "frequency_penalty": true,

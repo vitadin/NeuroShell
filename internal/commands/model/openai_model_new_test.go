@@ -90,9 +90,9 @@ func TestOpenAIModelNewCommand_Execute_BasicFunctionality(t *testing.T) {
 			},
 		},
 		{
-			name: "create model with base_model",
+			name: "create model with catalog_id GPT-4",
 			args: map[string]string{
-				"base_model": "gpt-4",
+				"catalog_id": "G41",
 			},
 			input:       "my-gpt4",
 			expectError: false,
@@ -103,7 +103,7 @@ func TestOpenAIModelNewCommand_Execute_BasicFunctionality(t *testing.T) {
 
 				baseModel, err := ctx.GetVariable("#model_base")
 				assert.NoError(t, err)
-				assert.Equal(t, "gpt-4", baseModel)
+				assert.Equal(t, "gpt-4.1-2025-04-14", baseModel)
 			},
 		},
 		{
@@ -129,7 +129,7 @@ func TestOpenAIModelNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		{
 			name: "create model with standard parameters",
 			args: map[string]string{
-				"base_model":  "gpt-4",
+				"catalog_id":  "G41",
 				"temperature": "0.7",
 				"max_tokens":  "2000",
 				"top_p":       "0.9",
@@ -140,23 +140,14 @@ func TestOpenAIModelNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		{
 			name: "missing model name",
 			args: map[string]string{
-				"base_model": "gpt-4",
+				"catalog_id": "G41",
 			},
 			input:       "",
 			expectError: true,
 		},
 		{
-			name:        "missing both catalog_id and base_model",
+			name:        "missing catalog_id",
 			args:        map[string]string{},
-			input:       "test-model",
-			expectError: true,
-		},
-		{
-			name: "both catalog_id and base_model provided",
-			args: map[string]string{
-				"catalog_id": "G4O",
-				"base_model": "gpt-4",
-			},
 			input:       "test-model",
 			expectError: true,
 		},
@@ -204,7 +195,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "invalid temperature - too high",
 			args: map[string]string{
-				"base_model":  "gpt-4",
+				"catalog_id":  "G4O",
 				"temperature": "2.5",
 			},
 			input:       "test-model",
@@ -214,7 +205,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "invalid temperature - negative",
 			args: map[string]string{
-				"base_model":  "gpt-4",
+				"catalog_id":  "G4O",
 				"temperature": "-0.1",
 			},
 			input:       "test-model",
@@ -224,7 +215,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "invalid temperature - not a number",
 			args: map[string]string{
-				"base_model":  "gpt-4",
+				"catalog_id":  "G4O",
 				"temperature": "not-a-number",
 			},
 			input:       "test-model",
@@ -234,7 +225,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "invalid max_tokens - not a number",
 			args: map[string]string{
-				"base_model": "gpt-4",
+				"catalog_id": "G4O",
 				"max_tokens": "abc",
 			},
 			input:       "test-model",
@@ -244,7 +235,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "invalid max_tokens - negative",
 			args: map[string]string{
-				"base_model": "gpt-4",
+				"catalog_id": "G4O",
 				"max_tokens": "-100",
 			},
 			input:       "test-model",
@@ -254,7 +245,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "invalid top_p - too high",
 			args: map[string]string{
-				"base_model": "gpt-4",
+				"catalog_id": "G4O",
 				"top_p":      "1.5",
 			},
 			input:       "test-model",
@@ -264,7 +255,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "invalid reasoning_effort",
 			args: map[string]string{
-				"base_model":       "o3",
+				"catalog_id":       "O3",
 				"reasoning_effort": "invalid",
 			},
 			input:       "test-model",
@@ -274,7 +265,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "invalid max_output_tokens - negative",
 			args: map[string]string{
-				"base_model":        "o3",
+				"catalog_id":        "O3",
 				"max_output_tokens": "-1000",
 			},
 			input:       "test-model",
@@ -284,7 +275,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "invalid reasoning_summary",
 			args: map[string]string{
-				"base_model":        "o3",
+				"catalog_id":        "O3",
 				"reasoning_summary": "invalid",
 			},
 			input:       "test-model",
@@ -294,7 +285,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "valid edge case parameters",
 			args: map[string]string{
-				"base_model":  "gpt-4",
+				"catalog_id":  "G4O",
 				"temperature": "0.0",
 				"top_p":       "1.0",
 				"max_tokens":  "1",
@@ -305,7 +296,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "valid reasoning parameters",
 			args: map[string]string{
-				"base_model":        "o3",
+				"catalog_id":        "O3",
 				"reasoning_effort":  "low",
 				"max_output_tokens": "10000",
 				"reasoning_summary": "concise",
@@ -478,7 +469,7 @@ func TestOpenAIModelNewCommand_Execute_ServiceErrors(t *testing.T) {
 
 			tt.setupFunc(t)
 
-			args := map[string]string{"base_model": "gpt-4"}
+			args := map[string]string{"catalog_id": "G4O"}
 			err := cmd.Execute(args, "test-model")
 
 			assert.Error(t, err)
@@ -494,7 +485,7 @@ func TestOpenAIModelNewCommand_Execute_ActivationBehavior(t *testing.T) {
 
 	// Create a model and verify it gets activated
 	args := map[string]string{
-		"base_model": "gpt-4",
+		"catalog_id": "G4O",
 	}
 
 	var err error
