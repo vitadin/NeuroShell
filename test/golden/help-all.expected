@@ -15,7 +15,7 @@ Core Commands:
   \llm-api-activate - Activate an API key for a specific provider
   \llm-api-show   - Show API-related variables from multiple sources with intelligent filtering and masking
   \llm-call       - Orchestrate LLM API call using client, model, and session services
-  \llm-client-get - Get or create LLM client for provider
+  \llm-client-get - Get or create LLM client for provider catalog ID
   \model-activate - Set active model by name or ID with smart matching
   \model-delete   - Delete model configuration by name or ID with smart matching
   \openai-client-new - Create new OpenAI client with automatic key resolution and reasoning model support

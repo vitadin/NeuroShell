@@ -12,8 +12,8 @@ Created model 'third-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 #model_count = 
 %%> "\\model-activate first-model"
 Activated model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAC]"
 %%> "\\get[#active_model_name]"
 #active_model_name = first-model
 %%> "\\get[#active_model_id]"
@@ -24,8 +24,7 @@ OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
 #active_model_base = o4-mini
 %%> "\\model-activate second-model"
 Activated model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
 %%> "\\get[#active_model_name]"
 #active_model_name = second-model
 %%> "\\get[#active_model_provider]"
@@ -80,8 +79,8 @@ Deleted model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
 #model_count = 3
 %%> "\\model-activate first-model"
 Activated model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAC]"
 %%> "\\get[#active_model_name]"
 #active_model_name = first-model
 %%> "\\model-status"

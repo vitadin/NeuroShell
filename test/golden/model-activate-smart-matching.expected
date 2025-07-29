@@ -10,27 +10,25 @@ Created model 'another-claude' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\model-activate openai"
 Activated model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
 %%> "\\get[#active_model_name]"
 #active_model_name = my-openai-model
 %%> "\\get[_output]"
-_output = OpenAI client ready: openai:b10394de
+_output = OpenAI client ready: OAR:b10394de
 %%> "\\get[#active_model_id]"
 #active_model_id = 00000002-0000-4000-8000-000000000002
 %%> "\\set[id_prefix=\"${#active_model_id}\"]"
 Setting id_prefix = 00000002-0000-4000-8000-000000000002
 %%> "\\model-activate[id=true] ${id_prefix}"
 Activated model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
 %%> "\\get[#active_model_name]"
 #active_model_name = my-openai-model
 %%> "\\get[_output]"
-_output = OpenAI client ready: openai:b10394de
+_output = OpenAI client ready: OAR:b10394de
 %%> "\\model-activate MY-CLAUDE"
 Activated model 'my-claude-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAC]"
 %%> "\\get[#active_model_name]"
 #active_model_name = my-claude-model

@@ -116,6 +116,10 @@ type ModelCatalogEntry struct {
 	// Provider is the LLM provider name (e.g., "openai", "anthropic")
 	Provider string `yaml:"provider" json:"provider"`
 
+	// ProviderCatalogID lists the catalog IDs for provider endpoints this model supports
+	// For example: ["OAC", "OAR"] for OpenAI models supporting both Chat and Reasoning endpoints
+	ProviderCatalogID []string `yaml:"provider_catalog_id" json:"provider_catalog_id"`
+
 	// DisplayName is a human-readable name for the model (e.g., "GPT-4", "Claude 3 Sonnet")
 	DisplayName string `yaml:"display_name" json:"display_name"`
 

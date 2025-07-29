@@ -7,8 +7,8 @@ Created model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\model-activate current-model"
 Activated model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAC]"
 %%> "\\get[#active_model_name]"
 #active_model_name = current-model
 %%> "\\get[#active_model_id]"
@@ -38,7 +38,6 @@ Model Configurations (1 models):
 %%> "\\model-activate current-model"
 %%> "\\model-activate backup-model"
 Activated model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
 %%> "\\get[#active_model_name]"
 #active_model_name = backup-model

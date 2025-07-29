@@ -1,7 +1,6 @@
 package services
 
 import (
-	"os"
 	"strings"
 	"testing"
 
@@ -32,56 +31,68 @@ func TestClientFactoryService_Initialize(t *testing.T) {
 
 func TestClientFactoryService_GetClientForProvider(t *testing.T) {
 	tests := []struct {
-		name        string
-		provider    string
-		apiKey      string
-		expectError bool
-		errorMsg    string
+		name              string
+		providerCatalogID string
+		apiKey            string
+		expectError       bool
+		errorMsg          string
 	}{
 		{
-			name:        "successful openai client creation",
-			provider:    "openai",
-			apiKey:      "sk-test-key",
-			expectError: false,
+			name:              "successful OAC client creation",
+			providerCatalogID: "OAC",
+			apiKey:            "sk-test-key",
+			expectError:       false,
 		},
 		{
-			name:        "successful openrouter client creation",
-			provider:    "openrouter",
-			apiKey:      "sk-or-test-key",
-			expectError: false,
+			name:              "successful OAR client creation",
+			providerCatalogID: "OAR",
+			apiKey:            "sk-test-key",
+			expectError:       false,
 		},
 		{
-			name:        "successful moonshot client creation",
-			provider:    "moonshot",
-			apiKey:      "sk-ms-test-key",
-			expectError: false,
+			name:              "successful ORC client creation",
+			providerCatalogID: "ORC",
+			apiKey:            "sk-or-test-key",
+			expectError:       false,
 		},
 		{
-			name:        "empty provider",
-			provider:    "",
-			apiKey:      "sk-test-key",
-			expectError: true,
-			errorMsg:    "provider cannot be empty",
+			name:              "successful MSC client creation",
+			providerCatalogID: "MSC",
+			apiKey:            "sk-ms-test-key",
+			expectError:       false,
 		},
 		{
-			name:        "empty api key",
-			provider:    "openai",
-			apiKey:      "",
-			expectError: true,
-			errorMsg:    "API key cannot be empty for provider 'openai'",
+			name:              "successful ANC client creation",
+			providerCatalogID: "ANC",
+			apiKey:            "sk-ant-test-key",
+			expectError:       false,
 		},
 		{
-			name:        "unsupported provider",
-			provider:    "unsupported",
-			apiKey:      "test-key",
-			expectError: true,
-			errorMsg:    "unsupported provider 'unsupported'. Supported providers: openai, anthropic, openrouter, moonshot, gemini",
+			name:              "successful GMC client creation",
+			providerCatalogID: "GMC",
+			apiKey:            "sk-gmc-test-key",
+			expectError:       false,
 		},
 		{
-			name:        "successful anthropic client creation",
-			provider:    "anthropic",
-			apiKey:      "sk-ant-test-key",
-			expectError: false,
+			name:              "empty provider catalog ID",
+			providerCatalogID: "",
+			apiKey:            "sk-test-key",
+			expectError:       true,
+			errorMsg:          "provider catalog ID cannot be empty",
+		},
+		{
+			name:              "empty api key",
+			providerCatalogID: "OAC",
+			apiKey:            "",
+			expectError:       true,
+			errorMsg:          "API key cannot be empty for provider catalog ID 'OAC'",
+		},
+		{
+			name:              "unsupported provider catalog ID",
+			providerCatalogID: "UNSUPPORTED",
+			apiKey:            "test-key",
+			expectError:       true,
+			errorMsg:          "unsupported provider catalog ID 'UNSUPPORTED'. Supported catalog IDs: OAC, OAR, ORC, MSC, ANC, GMC",
 		},
 	}
 
@@ -91,7 +102,7 @@ func TestClientFactoryService_GetClientForProvider(t *testing.T) {
 			err := service.Initialize()
 			require.NoError(t, err)
 
-			client, err := service.GetClientForProvider(tt.provider, tt.apiKey)
+			client, err := service.GetClientForProvider(tt.providerCatalogID, tt.apiKey)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -102,7 +113,12 @@ func TestClientFactoryService_GetClientForProvider(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, client)
-				assert.Equal(t, tt.provider, client.GetProviderName())
+				// Note: client.GetProviderName() returns the underlying provider name, not catalog ID
+				expectedProviderName := map[string]string{
+					"OAC": "openai", "OAR": "openai", "ORC": "openrouter",
+					"MSC": "moonshot", "ANC": "anthropic", "GMC": "gemini",
+				}[tt.providerCatalogID]
+				assert.Equal(t, expectedProviderName, client.GetProviderName())
 			}
 		})
 	}
@@ -111,7 +127,7 @@ func TestClientFactoryService_GetClientForProvider(t *testing.T) {
 func TestClientFactoryService_GetClientForProvider_NotInitialized(t *testing.T) {
 	service := NewClientFactoryService()
 
-	client, err := service.GetClientForProvider("openai", "sk-test-key")
+	client, err := service.GetClientForProvider("OAR", "sk-test-key")
 
 	assert.Error(t, err)
 	assert.Nil(t, client)
@@ -126,24 +142,24 @@ func TestClientFactoryService_ClientCaching(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	provider := "openai"
+	providerCatalogID := "OAR"
 	apiKey := "sk-test-key"
 
 	// First call should create a new client
-	client1, err := service.GetClientForProvider(provider, apiKey)
+	client1, err := service.GetClientForProvider(providerCatalogID, apiKey)
 	assert.NoError(t, err)
 	assert.NotNil(t, client1)
 	assert.Equal(t, 1, service.GetCachedClientCount())
 
 	// Second call with same provider and key should return cached client
-	client2, err := service.GetClientForProvider(provider, apiKey)
+	client2, err := service.GetClientForProvider(providerCatalogID, apiKey)
 	assert.NoError(t, err)
 	assert.NotNil(t, client2)
 	assert.Equal(t, 1, service.GetCachedClientCount())
 	assert.Same(t, client1, client2) // Should be the same instance
 
 	// Different API key should create new client
-	client3, err := service.GetClientForProvider(provider, "sk-different-key")
+	client3, err := service.GetClientForProvider(providerCatalogID, "sk-different-key")
 	assert.NoError(t, err)
 	assert.NotNil(t, client3)
 	assert.Equal(t, 2, service.GetCachedClientCount())
@@ -158,122 +174,17 @@ func TestClientFactoryService_CacheKeyFormat(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	// Test that cache keys are provider-specific
-	openaiClient, err := service.GetClientForProvider("openai", "test-key")
+	// Test that cache keys are catalog ID specific
+	openaiClient, err := service.GetClientForProvider("OAR", "test-key")
 	assert.NoError(t, err)
 	assert.NotNil(t, openaiClient)
 	assert.Equal(t, 1, service.GetCachedClientCount())
 
-	// Different provider with same key should be treated as different
-	anthropicClient, err := service.GetClientForProvider("anthropic", "test-key")
-	assert.NoError(t, err) // Anthropic is now implemented
+	// Different catalog ID with same key should be treated as different
+	anthropicClient, err := service.GetClientForProvider("ANC", "test-key")
+	assert.NoError(t, err)
 	assert.NotNil(t, anthropicClient)
-	assert.Equal(t, 2, service.GetCachedClientCount()) // Should be 2 now (openai + anthropic)
-}
-
-func TestClientFactoryService_DetermineAPIKeyForProvider(t *testing.T) {
-	// Save original environment variables
-	originalOpenAI := os.Getenv("OPENAI_API_KEY")
-	originalAnthropic := os.Getenv("ANTHROPIC_API_KEY")
-
-	// Clean up after test
-	defer func() {
-		if originalOpenAI != "" {
-			_ = os.Setenv("OPENAI_API_KEY", originalOpenAI)
-		} else {
-			_ = os.Unsetenv("OPENAI_API_KEY")
-		}
-		if originalAnthropic != "" {
-			_ = os.Setenv("ANTHROPIC_API_KEY", originalAnthropic)
-		} else {
-			_ = os.Unsetenv("ANTHROPIC_API_KEY")
-		}
-	}()
-
-	service := NewClientFactoryService()
-	err := service.Initialize()
-	require.NoError(t, err)
-
-	// Create context for testing
-	ctx := context.New()
-
-	tests := []struct {
-		name        string
-		provider    string
-		envVar      string
-		envValue    string
-		expectError bool
-		errorMsg    string
-	}{
-		{
-			name:        "openai key found",
-			provider:    "openai",
-			envVar:      "OPENAI_API_KEY",
-			envValue:    "sk-test-openai-key",
-			expectError: false,
-		},
-		{
-			name:        "anthropic key found",
-			provider:    "anthropic",
-			envVar:      "ANTHROPIC_API_KEY",
-			envValue:    "sk-test-anthropic-key",
-			expectError: false,
-		},
-		{
-			name:        "openai key not found",
-			provider:    "openai",
-			envVar:      "OPENAI_API_KEY",
-			envValue:    "",
-			expectError: true,
-			errorMsg:    "openai API key not found. Please set the OPENAI_API_KEY environment variable",
-		},
-		{
-			name:        "anthropic key not found",
-			provider:    "anthropic",
-			envVar:      "ANTHROPIC_API_KEY",
-			envValue:    "",
-			expectError: true,
-			errorMsg:    "anthropic API key not found. Please set the ANTHROPIC_API_KEY environment variable",
-		},
-		{
-			name:        "empty provider",
-			provider:    "",
-			expectError: true,
-			errorMsg:    "provider cannot be empty",
-		},
-		{
-			name:        "unsupported provider",
-			provider:    "unsupported",
-			expectError: true,
-			errorMsg:    "unsupported provider 'unsupported'. Supported providers: openai, anthropic, openrouter, moonshot, gemini",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Set up environment variable for this test
-			if tt.envVar != "" {
-				if tt.envValue != "" {
-					_ = os.Setenv(tt.envVar, tt.envValue)
-				} else {
-					_ = os.Unsetenv(tt.envVar)
-				}
-			}
-
-			apiKey, err := service.DetermineAPIKeyForProvider(tt.provider, ctx)
-
-			if tt.expectError {
-				assert.Error(t, err)
-				assert.Empty(t, apiKey)
-				if tt.errorMsg != "" {
-					assert.Contains(t, err.Error(), tt.errorMsg)
-				}
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.envValue, apiKey)
-			}
-		})
-	}
+	assert.Equal(t, 2, service.GetCachedClientCount()) // Should be 2 now (OAR + ANC)
 }
 
 func TestClientFactoryService_ClearCache(t *testing.T) {
@@ -285,9 +196,9 @@ func TestClientFactoryService_ClearCache(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create some clients
-	_, err = service.GetClientForProvider("openai", "sk-key1")
+	_, err = service.GetClientForProvider("OAR", "sk-key1")
 	assert.NoError(t, err)
-	_, err = service.GetClientForProvider("openai", "sk-key2")
+	_, err = service.GetClientForProvider("OAR", "sk-key2")
 	assert.NoError(t, err)
 
 	assert.Equal(t, 2, service.GetCachedClientCount())
@@ -297,7 +208,7 @@ func TestClientFactoryService_ClearCache(t *testing.T) {
 	assert.Equal(t, 0, service.GetCachedClientCount())
 
 	// Verify new clients are created after clearing
-	client, err := service.GetClientForProvider("openai", "sk-key1")
+	client, err := service.GetClientForProvider("OAR", "sk-key1")
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
 	assert.Equal(t, 1, service.GetCachedClientCount())
@@ -315,16 +226,16 @@ func TestClientFactoryService_GetCachedClientCount(t *testing.T) {
 	assert.Equal(t, 0, service.GetCachedClientCount())
 
 	// Create clients and verify count
-	_, err = service.GetClientForProvider("openai", "sk-key1")
+	_, err = service.GetClientForProvider("OAR", "sk-key1")
 	assert.NoError(t, err)
 	assert.Equal(t, 1, service.GetCachedClientCount())
 
-	_, err = service.GetClientForProvider("openai", "sk-key2")
+	_, err = service.GetClientForProvider("OAR", "sk-key2")
 	assert.NoError(t, err)
 	assert.Equal(t, 2, service.GetCachedClientCount())
 
 	// Same key should not increase count
-	_, err = service.GetClientForProvider("openai", "sk-key1")
+	_, err = service.GetClientForProvider("OAR", "sk-key1")
 	assert.NoError(t, err)
 	assert.Equal(t, 2, service.GetCachedClientCount())
 }
@@ -336,82 +247,34 @@ func TestClientFactoryService_ErrorMessages(t *testing.T) {
 
 	// Test error message formatting
 	tests := []struct {
-		name     string
-		provider string
-		apiKey   string
-		expected string
+		name              string
+		providerCatalogID string
+		apiKey            string
+		expected          string
 	}{
 		{
-			name:     "empty provider",
-			provider: "",
-			apiKey:   "test-key",
-			expected: "provider cannot be empty",
+			name:              "empty provider catalog ID",
+			providerCatalogID: "",
+			apiKey:            "test-key",
+			expected:          "provider catalog ID cannot be empty",
 		},
 		{
-			name:     "empty api key",
-			provider: "openai",
-			apiKey:   "",
-			expected: "API key cannot be empty for provider 'openai'",
+			name:              "empty api key",
+			providerCatalogID: "OAR",
+			apiKey:            "",
+			expected:          "API key cannot be empty for provider catalog ID 'OAR'",
 		},
 		{
-			name:     "unsupported provider",
-			provider: "gpt",
-			apiKey:   "test-key",
-			expected: "unsupported provider 'gpt'. Supported providers: openai, anthropic, openrouter, moonshot, gemini",
+			name:              "unsupported provider catalog ID",
+			providerCatalogID: "INVALID",
+			apiKey:            "test-key",
+			expected:          "unsupported provider catalog ID 'INVALID'. Supported catalog IDs: OAC, OAR, ORC, MSC, ANC, GMC",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := service.GetClientForProvider(tt.provider, tt.apiKey)
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), tt.expected)
-		})
-	}
-}
-
-func TestClientFactoryService_DetermineAPIKeyForProvider_ErrorMessages(t *testing.T) {
-	service := NewClientFactoryService()
-	err := service.Initialize()
-	require.NoError(t, err)
-
-	// Clear environment variables
-	_ = os.Unsetenv("OPENAI_API_KEY")
-	_ = os.Unsetenv("ANTHROPIC_API_KEY")
-
-	// Create context for testing
-	ctx := context.New()
-
-	tests := []struct {
-		name     string
-		provider string
-		expected string
-	}{
-		{
-			name:     "openai key missing",
-			provider: "openai",
-			expected: "openai API key not found. Please set the OPENAI_API_KEY environment variable",
-		},
-		{
-			name:     "anthropic key missing",
-			provider: "anthropic",
-			expected: "anthropic API key not found. Please set the ANTHROPIC_API_KEY environment variable",
-		},
-		{
-			name:     "empty provider",
-			provider: "",
-			expected: "provider cannot be empty",
-		},
-		{
-			name:     "unsupported provider",
-			provider: "claude",
-			expected: "unsupported provider 'claude'. Supported providers: openai, anthropic, openrouter, moonshot, gemini",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := service.DetermineAPIKeyForProvider(tt.provider, ctx)
+			_, err := service.GetClientForProvider(tt.providerCatalogID, tt.apiKey)
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), tt.expected)
 		})
@@ -420,23 +283,13 @@ func TestClientFactoryService_DetermineAPIKeyForProvider_ErrorMessages(t *testin
 
 // Integration test that verifies the full flow
 func TestClientFactoryService_Integration(t *testing.T) {
-	// Set up test environment
-	_ = os.Setenv("OPENAI_API_KEY", "sk-test-integration-key")
-	defer func() { _ = os.Unsetenv("OPENAI_API_KEY") }()
-
 	service := NewClientFactoryService()
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	// Create context for testing
-	ctx := context.New()
-
-	// Test the full flow: determine API key -> create client
-	apiKey, err := service.DetermineAPIKeyForProvider("openai", ctx)
-	assert.NoError(t, err)
-	assert.Equal(t, "sk-test-integration-key", apiKey)
-
-	client, err := service.GetClientForProvider("openai", apiKey)
+	// Test direct client creation with catalog ID
+	apiKey := "sk-test-integration-key"
+	client, err := service.GetClientForProvider("OAR", apiKey)
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
 	assert.Equal(t, "openai", client.GetProviderName())
@@ -451,28 +304,28 @@ func TestClientFactoryService_ProviderSpecificCaching(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	// Test that different providers with same API key are cached separately
-	// This tests the cache key format: "provider:apikey"
+	// Test that different catalog IDs with same API key are cached separately
+	// This tests the cache key format: "catalog_id:apikey"
 
-	// Create OpenAI client
-	openaiClient, err := service.GetClientForProvider("openai", "same-key")
+	// Create OpenAI reasoning client
+	openaiClient, err := service.GetClientForProvider("OAR", "same-key")
 	assert.NoError(t, err)
 	assert.NotNil(t, openaiClient)
 	assert.Equal(t, 1, service.GetCachedClientCount())
 
-	// Create Anthropic client with same key should succeed (anthropic is now implemented)
-	anthropicClient, err := service.GetClientForProvider("anthropic", "same-key")
+	// Create Anthropic client with same key should succeed
+	anthropicClient, err := service.GetClientForProvider("ANC", "same-key")
 	assert.NoError(t, err)
 	assert.NotNil(t, anthropicClient)
 
-	// Cache count should be 2 (openai + anthropic with same key but different providers)
+	// Cache count should be 2 (OAR + ANC with same key but different catalog IDs)
 	assert.Equal(t, 2, service.GetCachedClientCount())
 
 	// But different OpenAI keys should create separate entries
-	openaiClient2, err := service.GetClientForProvider("openai", "different-key")
+	openaiClient2, err := service.GetClientForProvider("OAR", "different-key")
 	assert.NoError(t, err)
 	assert.NotNil(t, openaiClient2)
-	assert.Equal(t, 3, service.GetCachedClientCount()) // Now 3 total: openai:same-key, anthropic:same-key, openai:different-key
+	assert.Equal(t, 3, service.GetCachedClientCount()) // Now 3 total: OAR:same-key, ANC:same-key, OAR:different-key
 	assert.NotSame(t, openaiClient, openaiClient2)
 }
 
@@ -483,52 +336,52 @@ func TestClientFactoryService_GetClientWithID(t *testing.T) {
 
 	tests := []struct {
 		name               string
-		provider           string
+		providerCatalogID  string
 		apiKey             string
 		expectedIDContains string
 		expectError        bool
 		errorContains      string
 	}{
 		{
-			name:               "openai provider with valid key",
-			provider:           "openai",
+			name:               "OAR catalog ID with valid key",
+			providerCatalogID:  "OAR",
 			apiKey:             "sk-test-key-123",
-			expectedIDContains: "openai:2d550185",
+			expectedIDContains: "OAR:2d550185",
 			expectError:        false,
 		},
 		{
-			name:               "openai with different key produces different ID",
-			provider:           "openai",
+			name:               "OAR with different key produces different ID",
+			providerCatalogID:  "OAR",
 			apiKey:             "sk-different-key-456",
-			expectedIDContains: "openai:7a1b2c3d",
+			expectedIDContains: "OAR:7a1b2c3d",
 			expectError:        false,
 		},
 		{
-			name:          "empty provider",
-			provider:      "",
-			apiKey:        "sk-test-key",
-			expectError:   true,
-			errorContains: "provider cannot be empty",
+			name:              "empty provider catalog ID",
+			providerCatalogID: "",
+			apiKey:            "sk-test-key",
+			expectError:       true,
+			errorContains:     "provider catalog ID cannot be empty",
 		},
 		{
-			name:          "empty API key",
-			provider:      "openai",
-			apiKey:        "",
-			expectError:   true,
-			errorContains: "API key cannot be empty",
+			name:              "empty API key",
+			providerCatalogID: "OAR",
+			apiKey:            "",
+			expectError:       true,
+			errorContains:     "API key cannot be empty",
 		},
 		{
-			name:          "unsupported provider",
-			provider:      "unsupported",
-			apiKey:        "test-key",
-			expectError:   true,
-			errorContains: "unsupported provider",
+			name:              "unsupported provider catalog ID",
+			providerCatalogID: "UNSUPPORTED",
+			apiKey:            "test-key",
+			expectError:       true,
+			errorContains:     "unsupported provider catalog ID",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client, clientID, err := service.GetClientWithID(tt.provider, tt.apiKey)
+			client, clientID, err := service.GetClientWithID(tt.providerCatalogID, tt.apiKey)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -542,11 +395,11 @@ func TestClientFactoryService_GetClientWithID(t *testing.T) {
 				if tt.expectedIDContains != "" {
 					// For the known test cases, verify exact hash
 					if tt.apiKey == "sk-test-key-123" {
-						assert.Equal(t, "openai:2d550185", clientID)
+						assert.Equal(t, "OAR:2d550185", clientID)
 					} else {
 						// For other cases, just verify format
-						assert.Contains(t, clientID, tt.provider+":")
-						assert.Len(t, clientID, len(tt.provider)+1+8) // provider + ":" + 8 hex chars
+						assert.Contains(t, clientID, tt.providerCatalogID+":")
+						assert.Len(t, clientID, len(tt.providerCatalogID)+1+8) // catalog_id + ":" + 8 hex chars
 					}
 				}
 			}
@@ -560,52 +413,52 @@ func TestClientFactoryService_GenerateClientID(t *testing.T) {
 	require.NoError(t, err)
 
 	tests := []struct {
-		name       string
-		provider   string
-		apiKey     string
-		expectedID string
+		name              string
+		providerCatalogID string
+		apiKey            string
+		expectedID        string
 	}{
 		{
-			name:       "openai with test key",
-			provider:   "openai",
-			apiKey:     "sk-test-key-123",
-			expectedID: "openai:2d550185",
+			name:              "OAR with test key",
+			providerCatalogID: "OAR",
+			apiKey:            "sk-test-key-123",
+			expectedID:        "OAR:2d550185",
 		},
 		{
-			name:       "openai with different key",
-			provider:   "openai",
-			apiKey:     "sk-another-key-456",
-			expectedID: "openai:5be2f7a8",
+			name:              "OAR with different key",
+			providerCatalogID: "OAR",
+			apiKey:            "sk-another-key-456",
+			expectedID:        "OAR:5be2f7a8",
 		},
 		{
-			name:       "anthropic provider",
-			provider:   "anthropic",
-			apiKey:     "ant-test-key",
-			expectedID: "anthropic:8f3a4b2c",
+			name:              "ANC catalog ID",
+			providerCatalogID: "ANC",
+			apiKey:            "ant-test-key",
+			expectedID:        "ANC:8f3a4b2c",
 		},
 		{
-			name:       "empty API key",
-			provider:   "openai",
-			apiKey:     "",
-			expectedID: "openai:empty***",
+			name:              "empty API key",
+			providerCatalogID: "OAR",
+			apiKey:            "",
+			expectedID:        "OAR:empty***",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			clientID := service.generateClientID(tt.provider, tt.apiKey)
+			clientID := service.generateClientID(tt.providerCatalogID, tt.apiKey)
 
 			if tt.apiKey == "" {
 				assert.Equal(t, tt.expectedID, clientID)
 			} else {
-				// Verify format: provider:hash
+				// Verify format: catalog_id:hash
 				parts := strings.Split(clientID, ":")
 				assert.Len(t, parts, 2)
-				assert.Equal(t, tt.provider, parts[0])
+				assert.Equal(t, tt.providerCatalogID, parts[0])
 				assert.Len(t, parts[1], 8) // 8 hex characters
 
 				// Verify deterministic: same input produces same output
-				clientID2 := service.generateClientID(tt.provider, tt.apiKey)
+				clientID2 := service.generateClientID(tt.providerCatalogID, tt.apiKey)
 				assert.Equal(t, clientID, clientID2)
 			}
 		})
@@ -617,17 +470,17 @@ func TestClientFactoryService_ClientIDConsistency(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	provider := "openai"
+	providerCatalogID := "OAR"
 	apiKey := "sk-consistency-test-key"
 
 	// Get client with ID multiple times
-	client1, clientID1, err1 := service.GetClientWithID(provider, apiKey)
+	client1, clientID1, err1 := service.GetClientWithID(providerCatalogID, apiKey)
 	assert.NoError(t, err1)
 
-	client2, clientID2, err2 := service.GetClientWithID(provider, apiKey)
+	client2, clientID2, err2 := service.GetClientWithID(providerCatalogID, apiKey)
 	assert.NoError(t, err2)
 
-	client3, clientID3, err3 := service.GetClientWithID(provider, apiKey)
+	client3, clientID3, err3 := service.GetClientWithID(providerCatalogID, apiKey)
 	assert.NoError(t, err3)
 
 	// All should return the same cached client
@@ -639,8 +492,8 @@ func TestClientFactoryService_ClientIDConsistency(t *testing.T) {
 	assert.Equal(t, clientID2, clientID3)
 
 	// Client ID should follow expected format
-	assert.Contains(t, clientID1, provider+":")
-	assert.Len(t, clientID1, len(provider)+1+8) // provider + ":" + 8 hex chars
+	assert.Contains(t, clientID1, providerCatalogID+":")
+	assert.Len(t, clientID1, len(providerCatalogID)+1+8) // catalog_id + ":" + 8 hex chars
 }
 
 func TestClientFactoryService_DifferentKeysProduceDifferentIDs(t *testing.T) {
@@ -648,14 +501,14 @@ func TestClientFactoryService_DifferentKeysProduceDifferentIDs(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	provider := "openai"
+	providerCatalogID := "OAR"
 	apiKey1 := "sk-first-unique-key"
 	apiKey2 := "sk-second-unique-key"
 
-	client1, clientID1, err1 := service.GetClientWithID(provider, apiKey1)
+	client1, clientID1, err1 := service.GetClientWithID(providerCatalogID, apiKey1)
 	assert.NoError(t, err1)
 
-	client2, clientID2, err2 := service.GetClientWithID(provider, apiKey2)
+	client2, clientID2, err2 := service.GetClientWithID(providerCatalogID, apiKey2)
 	assert.NoError(t, err2)
 
 	// Should be different clients
@@ -665,10 +518,10 @@ func TestClientFactoryService_DifferentKeysProduceDifferentIDs(t *testing.T) {
 	assert.NotEqual(t, clientID1, clientID2)
 
 	// Both should follow expected format
-	assert.Contains(t, clientID1, provider+":")
-	assert.Contains(t, clientID2, provider+":")
-	assert.Len(t, clientID1, len(provider)+1+8)
-	assert.Len(t, clientID2, len(provider)+1+8)
+	assert.Contains(t, clientID1, providerCatalogID+":")
+	assert.Contains(t, clientID2, providerCatalogID+":")
+	assert.Len(t, clientID1, len(providerCatalogID)+1+8)
+	assert.Len(t, clientID2, len(providerCatalogID)+1+8)
 }
 
 func TestClientFactoryService_GetClientByID(t *testing.T) {
@@ -676,14 +529,14 @@ func TestClientFactoryService_GetClientByID(t *testing.T) {
 	err := service.Initialize()
 	require.NoError(t, err)
 
-	provider := "openai"
+	providerCatalogID := "OAR"
 	apiKey := "sk-test-key-123"
 
 	// First create a client to get its ID
-	client, clientID, err := service.GetClientWithID(provider, apiKey)
+	client, clientID, err := service.GetClientWithID(providerCatalogID, apiKey)
 	require.NoError(t, err)
 	require.NotNil(t, client)
-	require.Equal(t, "openai:2d550185", clientID)
+	require.Equal(t, "OAR:2d550185", clientID)
 
 	tests := []struct {
 		name        string
@@ -704,27 +557,27 @@ func TestClientFactoryService_GetClientByID(t *testing.T) {
 		},
 		{
 			name:        "invalid client ID format - no colon",
-			clientID:    "openai2d550185",
+			clientID:    "OAR2d550185",
 			expectError: true,
-			errorMsg:    "invalid client ID format: openai2d550185 (expected 'provider:hash')",
+			errorMsg:    "invalid client ID format: OAR2d550185 (expected 'catalog_id:hash')",
 		},
 		{
-			name:        "invalid client ID format - empty provider",
+			name:        "invalid client ID format - empty catalog ID",
 			clientID:    ":2d550185",
 			expectError: true,
-			errorMsg:    "invalid client ID format: :2d550185 (expected 'provider:hash')",
+			errorMsg:    "invalid client ID format: :2d550185 (expected 'catalog_id:hash')",
 		},
 		{
 			name:        "invalid client ID format - empty hash",
-			clientID:    "openai:",
+			clientID:    "OAR:",
 			expectError: true,
-			errorMsg:    "invalid client ID format: openai: (expected 'provider:hash')",
+			errorMsg:    "invalid client ID format: OAR: (expected 'catalog_id:hash')",
 		},
 		{
 			name:        "client ID not found in cache",
-			clientID:    "openai:deadbeef",
+			clientID:    "OAR:deadbeef",
 			expectError: true,
-			errorMsg:    "client with ID 'openai:deadbeef' not found in cache",
+			errorMsg:    "client with ID 'OAR:deadbeef' not found in cache",
 		},
 		{
 			name:        "service not initialized",

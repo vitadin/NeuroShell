@@ -125,7 +125,7 @@ func (c *AnthropicClientNewCommand) Execute(args map[string]string, _ string) er
 	}
 
 	// Create Anthropic client
-	client, clientID, err := clientFactory.GetClientWithID("anthropic", apiKey)
+	client, clientID, err := clientFactory.GetClientWithID("ANC", apiKey)
 	if err != nil {
 		return fmt.Errorf("failed to create Anthropic client: %w", err)
 	}

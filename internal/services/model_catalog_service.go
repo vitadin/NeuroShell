@@ -262,6 +262,20 @@ func (m *ModelCatalogService) GetModelByID(id string) (neurotypes.ModelCatalogEn
 	return neurotypes.ModelCatalogEntry{}, fmt.Errorf("model with ID '%s' not found in catalog", id)
 }
 
+// GetProviderCatalogIDsByModelID returns the provider catalog IDs for a given model catalog ID.
+func (m *ModelCatalogService) GetProviderCatalogIDsByModelID(id string) ([]string, error) {
+	model, err := m.GetModelByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(model.ProviderCatalogID) == 0 {
+		return nil, fmt.Errorf("model with ID '%s' has no provider catalog IDs defined", id)
+	}
+
+	return model.ProviderCatalogID, nil
+}
+
 // validateUniqueIDs checks for duplicate model IDs (case-insensitive).
 func (m *ModelCatalogService) validateUniqueIDs(models []neurotypes.ModelCatalogEntry) error {
 	seenIDs := make(map[string]string) // normalized_id -> original_id

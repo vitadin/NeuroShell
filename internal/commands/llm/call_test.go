@@ -123,7 +123,7 @@ func TestCallCommand_Execute_DryRun(t *testing.T) {
 	variableService, _ := services.GetGlobalVariableService()
 
 	// Create test client (using mock API key)
-	_, clientID, err := clientFactory.GetClientWithID("openai", "test-api-key")
+	_, clientID, err := clientFactory.GetClientWithID("OAR", "test-api-key")
 	require.NoError(t, err)
 
 	// Store client ID in variable service for dry run display
@@ -198,7 +198,7 @@ func TestCallCommand_Execute_SyncCall(t *testing.T) {
 	variableService, _ := services.GetGlobalVariableService()
 
 	// Create test client
-	_, clientID, err := clientFactory.GetClientWithID("openai", "test-api-key")
+	_, clientID, err := clientFactory.GetClientWithID("OAR", "test-api-key")
 	require.NoError(t, err)
 
 	// Create test model
@@ -273,7 +273,7 @@ func TestCallCommand_Execute_StreamingCall(t *testing.T) {
 	variableService, _ := services.GetGlobalVariableService()
 
 	// Create test client
-	_, clientID, err := clientFactory.GetClientWithID("openai", "test-api-key")
+	_, clientID, err := clientFactory.GetClientWithID("OAR", "test-api-key")
 	require.NoError(t, err)
 
 	// Create test model
@@ -340,7 +340,7 @@ func TestCallCommand_Execute_DefaultResolution(t *testing.T) {
 	variableService, _ := services.GetGlobalVariableService()
 
 	// Create test client and store in variable
-	_, clientID, err := clientFactory.GetClientWithID("openai", "test-api-key")
+	_, clientID, err := clientFactory.GetClientWithID("OAR", "test-api-key")
 	require.NoError(t, err)
 	_ = variableService.SetSystemVariable("_client_id", clientID)
 
@@ -405,7 +405,7 @@ func TestCallCommand_Execute_MissingComponents(t *testing.T) {
 	// Test missing session_id (after providing valid client and using default model)
 	variableService, _ := services.GetGlobalVariableService()
 	clientFactory, _ := services.GetGlobalClientFactoryService()
-	_, clientID, _ := clientFactory.GetClientWithID("openai", "test-api-key")
+	_, clientID, _ := clientFactory.GetClientWithID("OAR", "test-api-key")
 	_ = variableService.SetSystemVariable("_client_id", clientID)
 
 	err = cmd.Execute(map[string]string{}, "")
@@ -453,7 +453,7 @@ func TestCallCommand_Execute_EmptySession(t *testing.T) {
 	sessionService, _ := services.GetGlobalChatSessionService()
 
 	// Create test client
-	_, clientID, err := clientFactory.GetClientWithID("openai", "test-api-key")
+	_, clientID, err := clientFactory.GetClientWithID("OAR", "test-api-key")
 	require.NoError(t, err)
 
 	// Create test model
@@ -510,7 +510,7 @@ func TestCallCommand_Execute_EmptySession_DryRun(t *testing.T) {
 	variableService, _ := services.GetGlobalVariableService()
 
 	// Create test client
-	_, clientID, err := clientFactory.GetClientWithID("openai", "test-api-key")
+	_, clientID, err := clientFactory.GetClientWithID("OAR", "test-api-key")
 	require.NoError(t, err)
 	_ = variableService.SetSystemVariable("_client_id", clientID)
 
@@ -583,7 +583,7 @@ func TestCallCommand_Execute_InvalidComponents(t *testing.T) {
 
 	// Create valid client but test invalid model
 	clientFactory, _ := services.GetGlobalClientFactoryService()
-	_, clientID, _ := clientFactory.GetClientWithID("openai", "test-api-key")
+	_, clientID, _ := clientFactory.GetClientWithID("OAR", "test-api-key")
 
 	args["client_id"] = clientID
 	args["model_id"] = "nonexistent-model"
@@ -610,7 +610,7 @@ func TestCallCommand_handleDryRun(t *testing.T) {
 	// Create mock client
 	clientFactory := services.NewClientFactoryService()
 	_ = clientFactory.Initialize()
-	client, clientID, _ := clientFactory.GetClientWithID("openai", "test-key")
+	client, clientID, _ := clientFactory.GetClientWithID("OAR", "test-key")
 	_ = clientID // Use clientID to avoid unused variable error
 
 	// Create test model
@@ -665,7 +665,7 @@ func TestCallCommand_handleSyncCall(t *testing.T) {
 
 	clientFactory := services.NewClientFactoryService()
 	_ = clientFactory.Initialize()
-	client, clientID, _ := clientFactory.GetClientWithID("openai", "test-key")
+	client, clientID, _ := clientFactory.GetClientWithID("OAR", "test-key")
 	_ = clientID // Use clientID to avoid unused variable error
 
 	model := &neurotypes.ModelConfig{
@@ -709,7 +709,7 @@ func TestCallCommand_handleStreamingCall(t *testing.T) {
 
 	clientFactory := services.NewClientFactoryService()
 	_ = clientFactory.Initialize()
-	client, clientID, _ := clientFactory.GetClientWithID("openai", "test-key")
+	client, clientID, _ := clientFactory.GetClientWithID("OAR", "test-key")
 	_ = clientID // Use clientID to avoid unused variable error
 
 	model := &neurotypes.ModelConfig{

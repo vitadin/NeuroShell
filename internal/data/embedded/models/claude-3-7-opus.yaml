@@ -2,6 +2,7 @@ name: claude-3-7-opus-20240229
 id: CO37
 display_name: Claude 3.7 Opus
 provider: anthropic
+provider_catalog_id: [ANC]
 description: Top-level intelligence, fluency, and understanding
 capabilities: [text, reasoning, analysis, coding, writing, math, research, visual-reasoning]
 context_window: 200000

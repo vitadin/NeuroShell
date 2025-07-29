@@ -120,7 +120,7 @@ func TestOpenAIClientNewCommand_Execute_WithExplicitKey(t *testing.T) {
 			})
 
 			assert.NoError(t, err)
-			assert.Contains(t, outputStr, "OpenAI client ready: openai:")
+			assert.Contains(t, outputStr, "OpenAI client ready: OAR:")
 			assert.Contains(t, outputStr, "(configured: true")
 			assert.Contains(t, outputStr, "reasoning: supported)")
 
@@ -130,7 +130,7 @@ func TestOpenAIClientNewCommand_Execute_WithExplicitKey(t *testing.T) {
 
 			clientID, err := variableService.Get("_client_id")
 			assert.NoError(t, err)
-			assert.Contains(t, clientID, "openai:")
+			assert.Contains(t, clientID, "OAR:")
 
 			output, err := variableService.Get("_output")
 			assert.NoError(t, err)
@@ -181,7 +181,7 @@ func TestOpenAIClientNewCommand_Execute_WithActiveKey(t *testing.T) {
 	// Verify client was created successfully
 	clientID, err := variableService.Get("_client_id")
 	assert.NoError(t, err)
-	assert.Contains(t, clientID, "openai:")
+	assert.Contains(t, clientID, "OAR:")
 
 	output, err := variableService.Get("_output")
 	assert.NoError(t, err)
@@ -225,7 +225,7 @@ func TestOpenAIClientNewCommand_Execute_WithEnvironmentKey(t *testing.T) {
 
 	clientID, err := variableService.Get("_client_id")
 	assert.NoError(t, err)
-	assert.Contains(t, clientID, "openai:")
+	assert.Contains(t, clientID, "OAR:")
 
 	provider, err := variableService.Get("#client_provider")
 	assert.NoError(t, err)

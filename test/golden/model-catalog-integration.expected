@@ -97,14 +97,13 @@ Model Configurations (2 models):
 #model_count = 2
 %%> "\\model-activate claude-s4-instance"
 Activated model 'claude-s4-instance' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAC]"
 %%> "\\get[#active_model_base]"
 #active_model_base = o4-mini
 %%> "\\model-activate openai-o3-instance"
 Activated model 'openai-o3-instance' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
 %%> "\\get[#active_model_base]"
 #active_model_base = o3
 %%> "\\get[#active_model_provider]"

@@ -2,6 +2,7 @@ name: o3-pro-2025-06-10
 id: O3P
 display_name: o3-pro
 provider: openai
+provider_catalog_id: [OAR]
 description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
 capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning]
 context_window: 200000

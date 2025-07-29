@@ -25,12 +25,12 @@ func TestClientGetCommand_ParseMode(t *testing.T) {
 
 func TestClientGetCommand_Description(t *testing.T) {
 	cmd := &ClientGetCommand{}
-	assert.Equal(t, "Get or create LLM client for provider", cmd.Description())
+	assert.Equal(t, "Get or create LLM client for provider catalog ID", cmd.Description())
 }
 
 func TestClientGetCommand_Usage(t *testing.T) {
 	cmd := &ClientGetCommand{}
-	assert.Equal(t, "\\llm-client-get[key=api_key, provider=openai|openrouter|moonshot|anthropic|gemini] or \\llm-client-get (uses env vars)", cmd.Usage())
+	assert.Equal(t, "\\llm-client-get[key=api_key, provider_catalog_id=OAC|OAR|ORC|MSC|ANC|GMC] or \\llm-client-get (uses env vars)", cmd.Usage())
 }
 
 func TestClientGetCommand_HelpInfo(t *testing.T) {
@@ -38,18 +38,18 @@ func TestClientGetCommand_HelpInfo(t *testing.T) {
 	help := cmd.HelpInfo()
 
 	assert.Equal(t, "llm-client-get", help.Command)
-	assert.Equal(t, "Get or create LLM client for provider", help.Description)
+	assert.Equal(t, "Get or create LLM client for provider catalog ID", help.Description)
 	assert.Equal(t, neurotypes.ParseModeKeyValue, help.ParseMode)
 
 	// Check options
 	require.Len(t, help.Options, 2)
 
-	// Check provider option
+	// Check provider_catalog_id option
 	providerOption := help.Options[0]
-	assert.Equal(t, "provider", providerOption.Name)
-	assert.Equal(t, "LLM provider name (openai, openrouter, moonshot, anthropic, gemini)", providerOption.Description)
+	assert.Equal(t, "provider_catalog_id", providerOption.Name)
+	assert.Equal(t, "LLM provider catalog ID (OAC, OAR, ORC, MSC, ANC, GMC)", providerOption.Description)
 	assert.False(t, providerOption.Required)
-	assert.Equal(t, "openai", providerOption.Default)
+	assert.Equal(t, "OAR", providerOption.Default)
 
 	// Check key option
 	keyOption := help.Options[1]
@@ -59,11 +59,11 @@ func TestClientGetCommand_HelpInfo(t *testing.T) {
 
 	// Check examples
 	assert.Len(t, help.Examples, 7)
-	assert.Contains(t, help.Examples[0].Command, "llm-client-get[provider=openai, key=sk-...]")
-	assert.Contains(t, help.Examples[1].Command, "llm-client-get[provider=openrouter, key=sk-or-...]")
-	assert.Contains(t, help.Examples[2].Command, "llm-client-get[provider=moonshot, key=sk-...]")
-	assert.Contains(t, help.Examples[3].Command, "llm-client-get[provider=anthropic, key=sk-ant-...]")
-	assert.Contains(t, help.Examples[4].Command, "llm-client-get[provider=gemini, key=AIzaSy...]")
+	assert.Contains(t, help.Examples[0].Command, "llm-client-get[provider_catalog_id=OAR, key=sk-...]")
+	assert.Contains(t, help.Examples[1].Command, "llm-client-get[provider_catalog_id=OAC, key=sk-...]")
+	assert.Contains(t, help.Examples[2].Command, "llm-client-get[provider_catalog_id=ORC, key=sk-or-...]")
+	assert.Contains(t, help.Examples[3].Command, "llm-client-get[provider_catalog_id=ANC, key=sk-ant-...]")
+	assert.Contains(t, help.Examples[4].Command, "llm-client-get[provider_catalog_id=GMC, key=AIzaSy...]")
 	assert.Contains(t, help.Examples[5].Command, "llm-client-get[key=${OPENAI_API_KEY}]")
 	assert.Contains(t, help.Examples[6].Command, "llm-client-get")
 
@@ -89,15 +89,15 @@ func TestClientGetCommand_Execute_UnsupportedProvider(t *testing.T) {
 	setupLLMClientGetTestRegistry(t)
 
 	args := map[string]string{
-		"provider": "unsupported-provider",
-		"key":      "test-key-123",
+		"provider_catalog_id": "INVALID",
+		"key":                 "test-key-123",
 	}
 
 	err := cmd.Execute(args, "")
 
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "unsupported provider 'unsupported-provider'")
-	assert.Contains(t, err.Error(), "Supported providers:")
+	assert.Contains(t, err.Error(), "unsupported provider catalog ID 'INVALID'")
+	assert.Contains(t, err.Error(), "Supported IDs:")
 }
 
 // TestClientGetCommand_Execute_ClientCaching test removed - OpenAI client caching behavior is inherent to the service layer

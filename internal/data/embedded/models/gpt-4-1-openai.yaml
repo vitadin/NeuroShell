@@ -2,6 +2,7 @@ name: gpt-4.1-2025-04-14
 id: G41
 display_name: GPT-4.1
 provider: openai
+provider_catalog_id: [OAC, OAR]
 description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
 capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs]
 context_window: 1047576

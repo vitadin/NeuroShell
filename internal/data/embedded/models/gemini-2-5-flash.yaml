@@ -2,6 +2,7 @@ name: gemini-2.5-flash
 id: GM25F
 display_name: Gemini 2.5 Flash
 provider: gemini
+provider_catalog_id: [GMC]
 description: Google's fast and efficient multimodal AI model optimized for speed and performance
 capabilities: [text, reasoning, analysis, coding, writing, math, multimodal, audio, video, code-execution, search-grounding, thinking]
 context_window: 1048576

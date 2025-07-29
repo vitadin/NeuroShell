@@ -113,7 +113,7 @@ func TestAnthropicClientNewCommand_Execute_WithKeyParameter(t *testing.T) {
 
 	clientID, err := variableService.Get("_client_id")
 	assert.NoError(t, err)
-	assert.Contains(t, clientID, "anthropic:")
+	assert.Contains(t, clientID, "ANC:")
 
 	output, err := variableService.Get("_output")
 	assert.NoError(t, err)
@@ -166,7 +166,7 @@ func TestAnthropicClientNewCommand_Execute_WithActiveKey(t *testing.T) {
 	// Verify client was created
 	clientID, err := variableService.Get("_client_id")
 	assert.NoError(t, err)
-	assert.Contains(t, clientID, "anthropic:")
+	assert.Contains(t, clientID, "ANC:")
 }
 
 func TestAnthropicClientNewCommand_Execute_WithEnvironmentKey(t *testing.T) {
@@ -202,7 +202,7 @@ func TestAnthropicClientNewCommand_Execute_WithEnvironmentKey(t *testing.T) {
 	require.NoError(t, err)
 	clientID, err := variableService.Get("_client_id")
 	assert.NoError(t, err)
-	assert.Contains(t, clientID, "anthropic:")
+	assert.Contains(t, clientID, "ANC:")
 }
 
 func TestAnthropicClientNewCommand_Execute_NoKeyAvailable(t *testing.T) {

@@ -7,8 +7,8 @@ Created model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\model-activate primary-model"
 Activated model 'primary-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAC]"
 %%> "\\model-status"
 Model Configurations (2 models):
   primary-model (00000001)
@@ -28,8 +28,7 @@ Model Configurations (2 models):
     Description: OpenAI O3 model
 %%> "\\model-activate secondary-model"
 Activated model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\llm-client-get[provider=openai]"
-OpenAI client ready: openai:b10394de (configured: true, reasoning: supported)
+%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
 %%> "\\model-status"
 Model Configurations (2 models):
   primary-model (00000001)

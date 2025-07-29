@@ -2,6 +2,7 @@ name: o4-mini
 id: O4M
 display_name: O4-mini
 provider: openai
+provider_catalog_id: [OAC, OAR]
 description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
 capabilities: [text, reasoning, analysis, coding, writing, visual-reasoning]
 context_window: 200000
