@@ -47,3 +47,6 @@
 \echo "Step 8: Cleanup - deleting the test model..."
 \model-delete basic-chat-model
 \model-status
+
+\vars
+

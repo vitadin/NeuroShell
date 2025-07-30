@@ -1,0 +1,20 @@
+# Test lazy message history resolution
+# This script tests that , , etc. work correctly with the new lazy resolution
+# Start a new session
+Created session 'test_session' (ID: 00000001)
+# Add some messages manually to test the resolution
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+# Test that variables resolve correctly
+"Testing lazy message history resolution:"
+"Latest message (1): "Second assistant response""
+"Previous message (2): "Second user message""
+"Third latest (3): "First assistant response""
+"Fourth latest (4): "First user message""
+"Non-existent (5): "
+"Non-existent (0): "
+"Non-existent (-1): "
+# Test variable interpolation
+"Interpolated: The latest response was: "Second assistant response""
