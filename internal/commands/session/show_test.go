@@ -65,6 +65,8 @@ func setupShowCommandTestRegistry(t *testing.T) {
 	require.NoError(t, err)
 	err = services.GetGlobalRegistry().RegisterService(services.NewChatSessionService())
 	require.NoError(t, err)
+	err = services.GetGlobalRegistry().RegisterService(services.NewThemeService())
+	require.NoError(t, err)
 
 	// Initialize all services
 	err = services.GetGlobalRegistry().InitializeAll()
@@ -170,8 +172,13 @@ func TestShowCommand_RenderMessages_ManyMessages(t *testing.T) {
 		}
 	}
 
+	// Get theme service for test
+	themeService, err := services.GetGlobalThemeService()
+	require.NoError(t, err)
+	theme := themeService.GetThemeByName("")
+
 	outputStr := stringprocessing.CaptureOutput(func() {
-		cmd.renderMessages(messages)
+		cmd.renderMessages(messages, theme)
 	})
 
 	// Should show first 5, separator, and last 5
@@ -193,8 +200,13 @@ func TestShowCommand_RenderSingleMessage_LongContent(t *testing.T) {
 		Timestamp: time.Now(),
 	}
 
+	// Get theme service for test
+	themeService, err := services.GetGlobalThemeService()
+	require.NoError(t, err)
+	theme := themeService.GetThemeByName("")
+
 	outputStr := stringprocessing.CaptureOutput(func() {
-		cmd.renderSingleMessage(1, msg)
+		cmd.renderSingleMessage(1, msg, theme)
 	})
 
 	assert.Contains(t, outputStr, "[1] user")
