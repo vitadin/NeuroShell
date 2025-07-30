@@ -4,6 +4,7 @@ Service Status Check:
 ====================
   [OK] autocomplete         - available/initialized
   [OK] bash                 - available/initialized
+  [OK] change_log           - available/initialized
   [OK] chat_session         - available/initialized
   [OK] client_factory       - available/initialized
   [OK] configuration        - available/initialized
@@ -18,4 +19,4 @@ Service Status Check:
   [OK] temporal-display     - available/initialized
   [OK] theme                - available/initialized
   [OK] variable             - available/initialized
-Summary: 16/16 services healthy
+Summary: 17/17 services healthy

@@ -1,0 +1,23 @@
+# NeuroShell Change Log Data
+# This file contains structured change log entries for the NeuroShell development history
+# Each entry represents a significant change, bug fix, or feature addition
+
+entries:
+  - id: "CL1"
+    version: "0.2.0+550"
+    date: "2025-07-30"
+    type: "feature"
+    title: "Major Architecture Overhaul and Gemini Integration"
+    description: "Comprehensive architectural restructuring with full Google Gemini integration, enhanced provider system, version management, and extensive testing infrastructure. Transformed NeuroShell from basic shell to comprehensive LLM interaction platform with support for OpenAI, Anthropic, and Google Gemini providers."
+    impact: "Users now have access to Google Gemini models with thinking mode, streaming capabilities, provider-specific commands, semantic versioning, and robust model management. The system is more maintainable with better command organization and extensive test coverage."
+    files_changed: [
+      "internal/commands/llm/*", 
+      "internal/commands/model/*", 
+      "internal/commands/builtin/version.go",
+      "internal/services/*_client.go", 
+      "internal/data/embedded/models/gemini-*.yaml",
+      "internal/data/embedded/models/o3*.yaml",
+      "internal/version/version.go",
+      "internal/context/context.go",
+      "test/golden/*.neuro"
+    ]

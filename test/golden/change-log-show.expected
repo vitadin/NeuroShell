@@ -1,0 +1,8 @@
+NeuroShell Change Log (1 entries):
+[CL1] Major Architecture Overhaul and Gemini Integration
+  Version: 0.2.0+550
+  Date: 2025-07-30
+  Type: Feature
+  Description: Comprehensive architectural restructuring with full Google Gemini integration, enhanced provider system, version management, and extensive testing infrastructure. Transformed NeuroShell from basic shell to comprehensive LLM interaction platform with support for OpenAI, Anthropic, and Google Gemini providers.
+  Impact: Users now have access to Google Gemini models with thinking mode, streaming capabilities, provider-specific commands, semantic versioning, and robust model management. The system is more maintainable with better command organization and extensive test coverage.
+  Files: internal/commands/llm/*, internal/commands/model/*, internal/commands/builtin/version.go, internal/services/*_client.go, internal/data/embedded/models/gemini-*.yaml, internal/data/embedded/models/o3*.yaml, internal/version/version.go, internal/context/context.go, test/golden/*.neuro

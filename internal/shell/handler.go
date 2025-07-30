@@ -95,6 +95,11 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
+	// Register ChangeLogService
+	if err := services.GetGlobalRegistry().RegisterService(services.NewChangeLogService()); err != nil {
+		return err
+	}
+
 	// Register ClientFactory service
 	if err := services.GetGlobalRegistry().RegisterService(services.NewClientFactoryService()); err != nil {
 		return err

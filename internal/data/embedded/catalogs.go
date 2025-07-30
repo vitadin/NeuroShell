@@ -144,3 +144,10 @@ var GeminiChatProviderData []byte
 //
 //go:embed providers/openai-responses.yaml
 var OpenAIResponsesProviderData []byte
+
+// Change Log Data - embedded change log YAML file
+
+// ChangeLogData contains the embedded change log YAML data.
+//
+//go:embed change-logs/change-logs.yaml
+var ChangeLogData []byte
