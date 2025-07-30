@@ -1,0 +1,84 @@
+%% OpenAI O4-mini Chat Experiment - Testing Non-Reasoning Mode
+%% Purpose: Test O4-mini model using standard chat completions (not reasoning)
+%% Note: O4-mini supports both chat and reasoning modes - this tests chat mode
+
+\set _style dark1
+
+\echo "=== OpenAI O4-mini Chat Experiment - Step 1 ==="
+\echo "Step 1: Activating OpenAI API key from environment..."
+
+%% Verify API key is activated
+\llm-api-show[provider=openai]
+
+%% First, activate the OpenAI API key from local environment
+\llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
+
+%% Verify API key is activated
+\llm-api-show[provider=openai]
+
+
+%% STEP 2
+\echo "Step 2: Creating OpenAI chat-only client (OAC)..."
+\echo "This will create a dedicated chat client that only uses /chat/completions API"
+\llm-client-get[provider_catalog_id=OAC, key=local.OPENAI_API_KEY]
+\echo "Client type: ${#client_type}"
+\echo "Reasoning support: ${#client_reasoning_support}"
+
+%% STEP 3
+\echo "Step 3: Creating O4-mini model in CHAT mode (no reasoning parameters)..."
+\echo "This should use the OAC client and standard chat completions API"
+\openai-model-new[catalog_id="O4M"] chat-o4mini-model
+
+%% STEP 4
+\echo "Step 4: Check that the chat model was created successfully"
+\model-status
+
+%% STEP 5
+\echo "Step 5: Activate the chat model for use"
+\model-activate chat-o4mini-model
+
+%% STEP 6
+\echo "Step 6: Verify the chat model is active"
+\echo "Active model: ${#active_model_name}"
+\echo "Provider: ${#active_model_provider}"
+
+%% STEP 7: Chat Testing (should be fast, no reasoning delay)
+\echo "Step 7: Testing O4-mini chat mode with simple questions..."
+\echo "This should be fast with no 'Thinking...' delay."
+\echo ""
+
+%% Message 1: Simple math
+\echo ">>>>>>Message 1: Simple arithmetic..."
+\send What is 15 + 27?
+
+\echo ""
+
+%% Message 2: Quick factual question
+\echo ">>>>>>Message 2: Quick factual question..."
+\send What is the capital of France?
+
+\echo ""
+
+%% Message 3: Simple reasoning (should be instant)
+\echo ">>>>>>Message 3: Simple reasoning test..."
+\send If I have 5 apples and eat 2, how many do I have left?
+
+\echo ""
+
+%% Message 4: Creative task
+\echo ">>>>>>Message 4: Creative writing task..."
+\send Write a haiku about coffee.
+
+\echo ""
+
+%% STEP 8
+\echo "Step 8: Chat experiment complete. Reviewing session..."
+\echo "First response: ${.1}"
+\echo "Latest response: ${1}"
+\session-list
+\session-show Session 1
+
+%% STEP 9
+\echo "Step 9: Cleanup - deleting the chat model..."
+\model-delete chat-o4mini-model
+\model-status

@@ -99,23 +99,17 @@ func (c *OpenAIReasoningClient) StreamChatCompletion(session *neurotypes.ChatSes
 	return c.streamChatCompletion(session, modelConfig)
 }
 
-// isReasoningModel determines if a model supports reasoning based on model metadata.
+// isReasoningModel determines if a model should use reasoning mode based on explicit parameters.
+// Only uses reasoning mode when reasoning_effort parameter is explicitly provided.
+// This allows O-series models to use both chat and reasoning modes based on user intent.
 func (c *OpenAIReasoningClient) isReasoningModel(modelConfig *neurotypes.ModelConfig) bool {
-	// Check if reasoning_effort parameter is present (explicit reasoning mode)
+	// Only use reasoning mode if reasoning_effort parameter is explicitly provided
 	if _, hasReasoningEffort := modelConfig.Parameters["reasoning_effort"]; hasReasoningEffort {
 		return true
 	}
 
-	// Check model name patterns for known reasoning models
-	modelName := modelConfig.BaseModel
-	reasoningModels := []string{"o1", "o3", "o4-mini", "o1-pro", "o1-mini", "o3-pro"}
-
-	for _, pattern := range reasoningModels {
-		if len(modelName) >= len(pattern) && modelName[:len(pattern)] == pattern {
-			return true
-		}
-	}
-
+	// Default to chat mode for all models (including O-series)
+	// This allows O-series models to work in both modes based on user parameters
 	return false
 }
 
@@ -174,6 +168,7 @@ func (c *OpenAIReasoningClient) sendReasoningCompletion(session *neurotypes.Chat
 
 	// Build reasoning parameters
 	params := responses.ResponseNewParams{
+		Model: shared.ResponsesModel(modelConfig.BaseModel),
 		Input: input,
 	}
 

@@ -141,7 +141,7 @@ func (c *ClientGetCommand) Execute(args map[string]string, _ string) error {
 	// Delegate to specialized commands for better key resolution
 	switch providerCatalogID {
 	case "OAC", "OAR": // OpenAI endpoints
-		return c.delegateToOpenAIClientNew(args)
+		return c.delegateToOpenAIClientNew(providerCatalogID, args)
 	case "ANC": // Anthropic
 		return c.delegateToAnthropicClientNew(args)
 	case "GMC": // Gemini
@@ -155,7 +155,7 @@ func (c *ClientGetCommand) Execute(args map[string]string, _ string) error {
 
 // delegateToOpenAIClientNew handles OpenAI catalog IDs by delegating to the specialized command.
 // This leverages the robust key resolution system and reasoning model support in openai-client-new.
-func (c *ClientGetCommand) delegateToOpenAIClientNew(args map[string]string) error {
+func (c *ClientGetCommand) delegateToOpenAIClientNew(providerCatalogID string, args map[string]string) error {
 	// Create openai-client-new command and execute it directly
 	openaiClientNewCmd := &OpenAIClientNewCommand{}
 
@@ -164,6 +164,9 @@ func (c *ClientGetCommand) delegateToOpenAIClientNew(args map[string]string) err
 	if key, exists := args["key"]; exists && key != "" {
 		delegateArgs["key"] = key
 	}
+
+	// Pass the provider_catalog_id as client_type to the openai-client-new command
+	delegateArgs["client_type"] = providerCatalogID
 
 	// Execute the openai-client-new command directly
 	return openaiClientNewCmd.Execute(delegateArgs, "")

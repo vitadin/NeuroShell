@@ -14,7 +14,7 @@ Activated model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\get[#active_model_name]"
 #active_model_name = my-openai-model
 %%> "\\get[_output]"
-_output = OpenAI client ready: OAR:b10394de
+_output = OpenAI client ready: OAR:b10394de (type: OAR)
 %%> "\\get[#active_model_id]"
 #active_model_id = 00000002-0000-4000-8000-000000000002
 %%> "\\set[id_prefix=\"${#active_model_id}\"]"
@@ -25,7 +25,7 @@ Activated model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\get[#active_model_name]"
 #active_model_name = my-openai-model
 %%> "\\get[_output]"
-_output = OpenAI client ready: OAR:b10394de
+_output = OpenAI client ready: OAR:b10394de (type: OAR)
 %%> "\\model-activate MY-CLAUDE"
 Activated model 'my-claude-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"

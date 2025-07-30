@@ -30,7 +30,7 @@ func (c *OpenAIClientNewCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the openai-client-new command.
 func (c *OpenAIClientNewCommand) Usage() string {
-	return "\\openai-client-new[key=api_key] or \\openai-client-new (uses active key)"
+	return "\\openai-client-new[key=api_key, client_type=OAC|OAR] or \\openai-client-new (uses active key)"
 }
 
 // HelpInfo returns structured help information for the openai-client-new command.
@@ -47,19 +47,30 @@ func (c *OpenAIClientNewCommand) HelpInfo() neurotypes.HelpInfo {
 				Required:    false,
 				Type:        "string",
 			},
+			{
+				Name:        "client_type",
+				Description: "OpenAI client type: OAC (chat only) or OAR (reasoning/dual-mode)",
+				Required:    false,
+				Type:        "string",
+				Default:     "OAR",
+			},
 		},
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\openai-client-new[key=sk-proj-...]",
-				Description: "Create OpenAI client with explicit API key",
+				Description: "Create OpenAI reasoning client with explicit API key",
 			},
 			{
-				Command:     "\\openai-client-new",
-				Description: "Create OpenAI client using #active_openai_key",
+				Command:     "\\openai-client-new[client_type=OAC, key=sk-proj-...]",
+				Description: "Create OpenAI chat-only client with explicit API key",
+			},
+			{
+				Command:     "\\openai-client-new[client_type=OAR]",
+				Description: "Create OpenAI reasoning client using #active_openai_key",
 			},
 			{
 				Command:     "\\openai-client-new[key=${OPENAI_API_KEY}]",
-				Description: "Create OpenAI client using variable interpolation",
+				Description: "Create OpenAI reasoning client using variable interpolation",
 			},
 		},
 		StoredVariables: []neurotypes.HelpStoredVariable{
@@ -97,9 +108,10 @@ func (c *OpenAIClientNewCommand) HelpInfo() neurotypes.HelpInfo {
 		Notes: []string{
 			"Key resolution priority: 1) key parameter, 2) #active_openai_key, 3) OPENAI_API_KEY env var",
 			"Use \\llm-api-activate[provider=openai, key=...] to set #active_openai_key",
-			"Automatically detects reasoning models and uses appropriate API endpoint",
-			"Supports both /chat/completions (regular) and /responses (reasoning) endpoints",
-			"Client handles o3, o4-mini, o1, and other reasoning models transparently",
+			"Client types: OAC (chat-only /chat/completions), OAR (dual-mode /chat/completions + /responses)",
+			"OAR clients automatically route to appropriate endpoint based on model parameters",
+			"Default client_type is OAR for backward compatibility",
+			"Use OAC for dedicated chat-only testing, OAR for reasoning or dual-mode testing",
 		},
 	}
 }
@@ -124,24 +136,41 @@ func (c *OpenAIClientNewCommand) Execute(args map[string]string, _ string) error
 		return fmt.Errorf("client factory service not available: %w", err)
 	}
 
-	// Create OpenAI reasoning client (supports both chat and reasoning endpoints)
-	client, clientID, err := clientFactory.GetClientWithID("OAR", apiKey)
+	// Determine client type (default to OAR for backward compatibility)
+	clientType := args["client_type"]
+	if clientType == "" {
+		clientType = "OAR"
+	}
+
+	// Validate client type
+	if clientType != "OAC" && clientType != "OAR" {
+		return fmt.Errorf("invalid client_type '%s'. Must be 'OAC' (chat-only) or 'OAR' (reasoning/dual-mode)", clientType)
+	}
+
+	// Create OpenAI client with specified type
+	client, clientID, err := clientFactory.GetClientWithID(clientType, apiKey)
 	if err != nil {
 		return fmt.Errorf("failed to create OpenAI client: %w", err)
 	}
 
 	// Set result variables
 	_ = variableService.SetSystemVariable("_client_id", clientID)
-	_ = variableService.SetSystemVariable("_output", fmt.Sprintf("OpenAI client ready: %s", clientID))
+	_ = variableService.SetSystemVariable("_output", fmt.Sprintf("OpenAI client ready: %s (type: %s)", clientID, clientType))
 
 	// Set metadata variables
 	_ = variableService.SetSystemVariable("#client_provider", "openai")
 	_ = variableService.SetSystemVariable("#client_configured", fmt.Sprintf("%t", client.IsConfigured()))
-	_ = variableService.SetSystemVariable("#client_reasoning_support", "true") // New reasoning client always supports both endpoints
+	_ = variableService.SetSystemVariable("#client_type", clientType)
+	reasoningSupported := clientType == "OAR"
+	_ = variableService.SetSystemVariable("#client_reasoning_support", fmt.Sprintf("%t", reasoningSupported))
 	_ = variableService.SetSystemVariable("#client_cache_count", fmt.Sprintf("%d", clientFactory.GetCachedClientCount()))
 
 	// Output success message
-	fmt.Printf("OpenAI client ready: %s (configured: %t, reasoning: supported)\n", clientID, client.IsConfigured())
+	clientTypeDesc := "chat-only"
+	if clientType == "OAR" {
+		clientTypeDesc = "reasoning/dual-mode"
+	}
+	fmt.Printf("OpenAI client ready: %s (type: %s - %s, configured: %t)\n", clientID, clientType, clientTypeDesc, client.IsConfigured())
 
 	return nil
 }
