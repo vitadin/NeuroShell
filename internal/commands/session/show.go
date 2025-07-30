@@ -12,7 +12,7 @@ import (
 // Display constants for smart content truncation
 const (
 	MaxSystemPromptDisplay = 100 // chars before truncation
-	MaxMessageDisplay      = 200 // chars before truncation
+	MaxMessageDisplay      = 80  // chars before truncation
 	MaxMessagesShown       = 10  // show first 5 + last 5 when > 10
 	TruncationIndicator    = "..."
 )
@@ -347,9 +347,17 @@ func (c *ShowCommand) renderSingleMessage(index int, msg neurotypes.Message) {
 }
 
 // truncateContent truncates text content with ellipsis and character count if needed.
+// Multi-line content is compressed to single line using Go's %q formatting.
 func (c *ShowCommand) truncateContent(content string, maxLength int) string {
-	if len(content) <= maxLength {
-		return content
+	// Use %q to escape newlines and special characters for single-line display
+	quoted := fmt.Sprintf("%q", content)
+	// Remove the surrounding quotes added by %q
+	if len(quoted) >= 2 && quoted[0] == '"' && quoted[len(quoted)-1] == '"' {
+		quoted = quoted[1 : len(quoted)-1]
+	}
+
+	if len(quoted) <= maxLength {
+		return quoted
 	}
 
 	// Calculate split points for showing beginning and end
@@ -368,11 +376,11 @@ func (c *ShowCommand) truncateContent(content string, maxLength int) string {
 		if truncateAt < 0 {
 			return TruncationIndicator
 		}
-		return content[:truncateAt] + TruncationIndicator
+		return quoted[:truncateAt] + TruncationIndicator
 	}
 
-	prefix := content[:prefixLength]
-	suffix := content[len(content)-suffixLength:]
+	prefix := quoted[:prefixLength]
+	suffix := quoted[len(quoted)-suffixLength:]
 
 	return fmt.Sprintf("%s%s%s (%d chars)", prefix, TruncationIndicator, suffix, len(content))
 }
