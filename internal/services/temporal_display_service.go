@@ -28,6 +28,7 @@ type Display struct {
 	renderer  func(elapsed time.Duration) string
 	running   bool
 	lastWidth int // Track width of last output for proper cleanup
+	lastLines int // Track number of lines in last output for multi-line cleanup
 }
 
 // NewTemporalDisplayService creates a new TemporalDisplayService instance.
@@ -93,12 +94,13 @@ func (t *TemporalDisplayService) StartCustomDisplay(id string, condition func(ti
 	display := &Display{
 		id:        id,
 		stopCh:    make(chan struct{}),
-		ticker:    time.NewTicker(100 * time.Millisecond), // Update every 100ms for smooth display
+		ticker:    time.NewTicker(100 * time.Millisecond), // Update every 100ms for responsive timers
 		startTime: time.Now(),
 		condition: condition,
 		renderer:  renderer,
 		running:   true,
 		lastWidth: 0,
+		lastLines: 0,
 	}
 
 	t.activeDisplays[id] = display
@@ -189,28 +191,43 @@ func (t *TemporalDisplayService) runDisplay(display *Display) {
 	}
 }
 
-// displayContent outputs the content to the console, overwriting the previous line.
+// displayContent outputs the content to the console with reliable single-line overwriting.
 func (t *TemporalDisplayService) displayContent(display *Display, content string) {
-	// Clear previous content if it was longer
-	if display.lastWidth > 0 {
-		clearLine := "\r" + strings.Repeat(" ", display.lastWidth) + "\r"
-		_, _ = fmt.Fprint(os.Stdout, clearLine)
+	// Always treat as single-line for reliability - no more multi-line complexity
+	// Clear previous content completely
+	if display.lastWidth > 0 || display.lastLines > 0 {
+		_, _ = fmt.Fprint(os.Stdout, "\r\033[2K") // Clear entire current line
 	}
 
-	// Display new content
-	_, _ = fmt.Fprint(os.Stdout, "\r"+content)
+	// Convert multi-line content to single line for display
+	singleLineContent := strings.ReplaceAll(content, "\n", " ")
+	singleLineContent = strings.ReplaceAll(singleLineContent, "\t", " ")
+
+	// Collapse multiple spaces
+	for strings.Contains(singleLineContent, "  ") {
+		singleLineContent = strings.ReplaceAll(singleLineContent, "  ", " ")
+	}
+
+	// Display the content
+	_, _ = fmt.Fprint(os.Stdout, singleLineContent)
 
 	// Track width for next cleanup
-	display.lastWidth = len(content)
+	display.lastWidth = len(singleLineContent)
+	display.lastLines = 0 // Always single line now
+
+	// Ensure output is flushed immediately
+	_ = os.Stdout.Sync()
 }
 
 // cleanupDisplay clears the display line and restores normal output.
 func (t *TemporalDisplayService) cleanupDisplay(display *Display) {
+	// Simple single-line cleanup only - no more multi-line complexity
 	if display.lastWidth > 0 {
-		// Clear the line completely
-		clearLine := "\r" + strings.Repeat(" ", display.lastWidth) + "\r"
-		_, _ = fmt.Fprint(os.Stdout, clearLine)
+		_, _ = fmt.Fprint(os.Stdout, "\r\033[2K") // Clear current line
 	}
+
+	// Ensure cleanup is flushed
+	_ = os.Stdout.Sync()
 }
 
 // stopDisplayUnsafe stops a display without acquiring locks (internal use only).

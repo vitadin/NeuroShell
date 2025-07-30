@@ -1,0 +1,27 @@
+%% Gemini Thinking Experiment - Complex Reasoning Test
+%% Purpose: Test Gemini's thinking capabilities with progressive logic challenges
+%% Note: Uses thinking_budget parameter to enable deeper reasoning
+
+\set _style dark1
+\set _stream true
+\llm-api-show[provider=gemini]
+\llm-api-activate[provider=gemini, key=local.GEMINI_API_KEY]
+\llm-api-show[provider=gemini]
+
+\echo "Step 2: Creating Gemini model with thinking capabilities..."
+\echo "Using thinking_budget=4096 for complex reasoning tasks"
+\gemini-model-new[catalog_id="GM25F", temperature="0.3"] thinking-experiment-model
+\model-status
+
+\model-activate thinking-experiment-model
+
+\echo "Step 5: Verify the thinking model is active"
+\echo "Active model: ${#active_model_name}"
+\echo "Provider: ${#active_model_provider}"
+
+
+%% some questions may trigger hard thinking
+\send I am considering to apply ECS (Entity-Component-System) framework into LLM agent development. Can you evaluate this idea, think hard, and provide some professional, creative and insightful ideas? 
+
+
+

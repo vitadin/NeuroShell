@@ -24,6 +24,7 @@ var allowedGlobalVariables = []string{
 	"_echo_command",
 	"_render_markdown",
 	"_default_command",
+	"_stream",
 }
 
 // TryBlockContext represents the context for a try block with error boundaries
