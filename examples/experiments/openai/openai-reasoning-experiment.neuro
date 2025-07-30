@@ -1,0 +1,83 @@
+%% OpenAI Reasoning Experiment - Complex Reasoning Test
+%% Purpose: Test OpenAI G41's reasoning capabilities with progressive logic challenges
+%% Note: Uses reasoning_effort=high parameter to enable deeper reasoning
+
+\set _style dark1
+
+\echo "=== OpenAI Reasoning Experiment - Step 1 ==="
+\echo "Step 1: Activating OpenAI API key from environment..."
+
+%% Verify API key is activated
+\llm-api-show[provider=openai]
+
+%% First, activate the OpenAI API key from local environment
+\llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
+
+%% Verify API key is activated
+\llm-api-show[provider=openai]
+
+
+%% STEP 2
+\echo "Step 2: Creating OpenAI O4-mini model with reasoning capabilities..."
+\echo "Using reasoning_effort=high for complex reasoning tasks"
+\openai-model-new[catalog_id="O4M", reasoning_effort="high"] reasoning-experiment-model
+
+%% STEP 3
+\echo "Step 3: Check that the reasoning model was created successfully"
+\model-status
+
+
+%% STEP 4
+\echo "Step 4: Activate the reasoning model for use"
+\model-activate reasoning-experiment-model
+
+%% STEP 5
+\echo "Step 5: Verify the reasoning model is active"
+\echo "Active model: ${#active_model_name}"
+\echo "Provider: ${#active_model_provider}"
+
+%% STEP 6: Progressive Logic Reasoning Test
+\echo "Step 6: Testing OpenAI O4-mini reasoning capabilities with logic puzzle chain..."
+\echo "This tests whether reasoning_effort=high enables deeper reasoning."
+
+%% Message 1: Setup the logic puzzle
+\echo ">>>>>>Message 1: Setting up a logic puzzle foundation..."
+\send I have 3 boxes: red, blue, green. One contains gold, one silver, one copper.
+
+
+%% Message 2: Add logical constraints (requires reasoning)
+\echo ">>>>>>Message 2: Adding logical constraints requiring deduction..."
+\send The red box doesn't contain gold. The blue box contains a metal more valuable than copper. What's in each box?
+
+
+%% Message 3: Increase complexity (requires building on previous logic)
+\echo ">>>>>>Message 3: Expanding puzzle complexity..."
+\send Now I add 2 more boxes: yellow and purple. Yellow has the same metal type as blue. Purple has lower value than green. What's the new arrangement?
+
+
+%% Message 4: Multi-step reasoning (requires complex manipulation)
+\echo ">>>>>>Message 4: Multi-step logical manipulation..."
+\send If I swap the contents of the two most valuable boxes, then move the least valuable to the first position, what's the final order?
+
+
+%% Message 5: Probability reasoning (requires context + analysis)
+\echo ">>>>>>Message 5: Strategic reasoning with uncertainty..."
+\send Based on our original 3-box setup, which box would you open first to maximize expected value?
+
+
+%% Message 6: Meta-cognitive analysis (requires self-reflection)
+\echo ">>>>>>Message 6: Meta-cognitive reasoning test..."
+\send Explain your reasoning process for the previous question. How did you weigh the probabilities?
+
+
+%% STEP 7
+\echo "Step 7: Reasoning experiment complete. Reviewing session..."
+\echo "First puzzle setup: ${.1}"
+\echo "Latest reasoning explanation: ${1}"
+\session-list
+\session-show Session 1
+
+%% STEP 8
+\echo "Step 8: Cleanup - deleting the reasoning experiment model..."
+\model-delete reasoning-experiment-model
+\model-status

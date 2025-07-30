@@ -6,6 +6,8 @@ This directory contains real-world experiment scripts specifically for OpenAI's 
 
 ### Basic Experiments
 - **`openai-basic-chat.neuro`** - Simple model creation and basic chat interaction with GPT-4.1
+- **`openai-o4mini-chat.neuro`** - O4-mini in chat mode (standard completions, no reasoning)
+- **`openai-reasoning-experiment.neuro`** - O4-mini reasoning experiment with logic puzzles
 
 ## Prerequisites
 
@@ -56,7 +58,7 @@ Available OpenAI models in the system:
 
 ### 2. Reasoning Model Pattern (for O-series)
 ```neuro
-%% Create reasoning model with effort control
+%% Create reasoning model with effort control (no temperature for O3)
 \openai-model-new[catalog_id="O3", reasoning_effort="medium", max_output_tokens="10000"] reasoning-model
 \model-activate reasoning-model
 ```
@@ -107,10 +109,18 @@ When running experiments, observe:
 
 ## Model Selection Guide
 
-- **G41 (GPT-4.1)**: Best for general-purpose tasks, balanced performance
-- **G4O (GPT-4o)**: Best for complex tasks requiring high intelligence
-- **O3**: Best for multi-step reasoning and analysis
-- **O1/O1P**: Best for mathematical and logical reasoning
-- **O4M**: Best for cost-effective, simple tasks
+### Reasoning Models (O-series)
+- **O4M (o4-mini)**: Best for cost-effective reasoning tasks (supports both chat & reasoning modes)
+- **O3**: Best for complex multi-step reasoning, math, science (expensive, reasoning only)
+- **O1/O1P**: Best for mathematical and logical reasoning (supports reasoning_effort)
+
+### Chat Models (G-series) 
+- **G41 (GPT-4.1)**: Best for general-purpose tasks, balanced performance (chat only)
+- **G4O (GPT-4o)**: Best for complex tasks requiring high intelligence (chat only)
+
+### Key Differences
+- **O-series models**: Support both `/chat/completions` (fast) and `/responses` (reasoning) APIs
+- **G-series models**: Only support `/chat/completions` API (standard chat)
+- **Cost**: O4M is much cheaper than O3/O1 for reasoning tasks
 
 Choose based on your specific use case, budget, and performance requirements.
