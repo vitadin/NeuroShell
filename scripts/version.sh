@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # Default base version
-BASE_VERSION="${1:-0.2.0}"
+BASE_VERSION="${1:-0.2.1}"
 
 # Get the current commit hash (short)
 COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")

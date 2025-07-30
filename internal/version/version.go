@@ -14,7 +14,8 @@ import (
 // Build information that can be set at compile time via -ldflags
 var (
 	// Version is the semantic version of the application
-	Version = "0.2.0"
+	// This will be overridden at build time via -ldflags from scripts/version.sh
+	Version = "dev"
 
 	// GitCommit is the git commit hash when the binary was built
 	GitCommit = "unknown"
