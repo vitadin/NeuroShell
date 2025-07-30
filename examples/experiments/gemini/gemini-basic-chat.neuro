@@ -34,12 +34,55 @@
 \echo "Active model: ${#active_model_name}"
 \echo "Provider: ${#active_model_provider}"
 
-%% STEP 6 - Uncomment after Step 5 works:
-\echo "Step 6: Send a simple greeting..."
-\send Hello! Can you introduce yourself briefly?
+%% STEP 6: Progressive Session Context Test
+\echo "Step 6: Testing Gemini session context with progressive conversation..."
+\echo "This tests whether Gemini receives and uses the full session context."
+\echo ""
+
+%% Message 1: Setup the scenario
+\echo "Message 1: Setting up a mathematical puzzle..."
+\send I'm thinking of a number between 1 and 10. Let's call it X.
+
+\echo "Response 1: ${1}"
+\echo ""
+
+%% Message 2: Add constraint (requires context)
+\echo "Message 2: Adding constraint that requires context from Message 1..."
+\send X is prime and less than 5. What could X be?
+
+\echo "Response 2: ${1}"
+\echo ""
+
+%% Message 3: Build on previous answer (requires context from both messages)
+\echo "Message 3: Building calculation based on identified X..."
+\send Good! Now X + 4 equals what?
+
+\echo "Response 3: ${1}"
+\echo ""
+
+%% Message 4: Complex calculation (requires full conversation context)
+\echo "Message 4: Complex calculation requiring full context..."
+\send If we multiply that result by 2, what's the final answer?
+
+\echo "Response 4: ${1}"
+\echo ""
+
+%% Message 5: Memory test (tests session memory)
+\echo "Message 5: Testing memory of original context..."
+\send Can you remind me what the original number X was?
+
+\echo "Response 5: ${1}"
+\echo ""
+
+%% Message 6: Full context summary (ultimate test)
+\echo "Message 6: Full context summary test..."
+\send Summarize our entire calculation from X to the final result.
+
+\echo "Response 6: ${1}"
+\echo ""
 
 %% STEP 7
-\echo "Step 7: Check the response"
+\echo "Step 7: Session context test complete. Checking session..."
 \session-list
 \session-show Session 1
 
@@ -47,3 +90,5 @@
 \echo "Step 8: Cleanup - deleting the test model..."
 \model-delete basic-chat-model
 \model-status
+
+

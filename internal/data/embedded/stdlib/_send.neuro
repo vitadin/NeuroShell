@@ -32,5 +32,4 @@
 
 %% Step 6: Add assistant response to session and display
 \silent \session-add-assistantmsg[session=${_session_id}] ${#llm_response}
-\silent \set[1="${#llm_response}"]
 \render-markdown ${#llm_response}

@@ -1,0 +1,24 @@
+# Test lazy message history resolution
+# This script tests that ${1}, ${2}, etc. work correctly with the new lazy resolution
+
+# Start a new session
+\session-new test_session
+
+# Add some messages manually to test the resolution
+\session-add-usermsg[session=${_session_id}] "First user message"
+\session-add-assistantmsg[session=${_session_id}] "First assistant response"
+\session-add-usermsg[session=${_session_id}] "Second user message"
+\session-add-assistantmsg[session=${_session_id}] "Second assistant response"
+
+# Test that variables resolve correctly
+\echo "Testing lazy message history resolution:"
+\echo "Latest message (1): ${1}"
+\echo "Previous message (2): ${2}"
+\echo "Third latest (3): ${3}"
+\echo "Fourth latest (4): ${4}"
+\echo "Non-existent (5): ${5}"
+\echo "Non-existent (0): ${0}"
+\echo "Non-existent (-1): ${-1}"
+
+# Test variable interpolation
+\echo "Interpolated: The latest response was: ${1}"

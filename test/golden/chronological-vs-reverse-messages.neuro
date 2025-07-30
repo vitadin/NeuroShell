@@ -1,0 +1,45 @@
+# Test chronological vs reverse message order access
+# Tests ${.N} (chronological) vs ${N} (reverse) message access patterns
+
+# Start a new session
+\session-new message_order_test
+
+# Add a series of messages to test ordering
+\session-add-usermsg[session=${_session_id}] "Message A: First user message"
+\session-add-assistantmsg[session=${_session_id}] "Message B: First assistant response"  
+\session-add-usermsg[session=${_session_id}] "Message C: Second user message"
+\session-add-assistantmsg[session=${_session_id}] "Message D: Second assistant response"
+\session-add-usermsg[session=${_session_id}] "Message E: Third user message"
+
+# Test reverse order access (${N}) - most recent first
+\echo "=== REVERSE ORDER ACCESS (${N}) - Most Recent First ==="
+\echo "Latest message (1): ${1}"
+\echo "Previous message (2): ${2}"
+\echo "Third latest (3): ${3}"
+\echo "Fourth latest (4): ${4}"
+\echo "Fifth latest (5): ${5}"
+\echo ""
+
+# Test chronological order access (${.N}) - first message first  
+\echo "=== CHRONOLOGICAL ORDER ACCESS (${.N}) - First Message First ==="
+\echo "First message (.1): ${.1}"
+\echo "Second message (.2): ${.2}"
+\echo "Third message (.3): ${.3}"
+\echo "Fourth message (.4): ${.4}"
+\echo "Fifth message (.5): ${.5}"
+\echo ""
+
+# Test edge cases
+\echo "=== EDGE CASES ==="
+\echo "Non-existent reverse (6): ${6}"
+\echo "Non-existent chronological (.6): ${.6}"
+\echo "Invalid reverse (0): ${0}"
+\echo "Invalid chronological (.0): ${.0}"
+\echo ""
+
+# Demonstrate practical usage patterns
+\echo "=== PRACTICAL USAGE EXAMPLES ==="
+\echo "Conversation opener: ${.1}"
+\echo "Latest response: ${1}"
+\echo "Comparing first vs latest: '${.1}' vs '${1}'"
+\echo "Building context from start: Starting with '${.1}', then '${.2}', leading to '${1}'"
