@@ -21,7 +21,7 @@ Activated model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\get[#active_model_base]"
 #active_model_base = o4-mini
 %%> "\\get[_output]"
-_output = OpenAI client ready: OAR:b10394de
+_output = OpenAI client ready: OAC:b10394de (type: OAC)
 %%> "\\model-activate second-model"
 Activated model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
@@ -30,4 +30,4 @@ Activated model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\get[#active_model_provider]"
 #active_model_provider = openai
 %%> "\\get[_output]"
-_output = OpenAI client ready: OAR:b10394de
+_output = OpenAI client ready: OAR:b10394de (type: OAR)

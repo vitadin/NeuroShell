@@ -46,7 +46,9 @@ func TestOpenAIClientNewCommand_HelpInfo(t *testing.T) {
 	assert.Equal(t, neurotypes.ParseModeKeyValue, helpInfo.ParseMode)
 
 	// Check options
-	assert.Len(t, helpInfo.Options, 1)
+	assert.Len(t, helpInfo.Options, 2)
+
+	// Check key option
 	keyOption := helpInfo.Options[0]
 	assert.Equal(t, "key", keyOption.Name)
 	assert.False(t, keyOption.Required)
@@ -54,11 +56,20 @@ func TestOpenAIClientNewCommand_HelpInfo(t *testing.T) {
 	assert.Contains(t, keyOption.Description, "OpenAI API key")
 	assert.Contains(t, keyOption.Description, "#active_openai_key")
 
+	// Check client_type option
+	clientTypeOption := helpInfo.Options[1]
+	assert.Equal(t, "client_type", clientTypeOption.Name)
+	assert.False(t, clientTypeOption.Required)
+	assert.Equal(t, "string", clientTypeOption.Type)
+	assert.Contains(t, clientTypeOption.Description, "OAC")
+	assert.Contains(t, clientTypeOption.Description, "OAR")
+
 	// Check examples
-	assert.Len(t, helpInfo.Examples, 3)
+	assert.Len(t, helpInfo.Examples, 4)
 	assert.Contains(t, helpInfo.Examples[0].Command, "key=sk-proj-")
-	assert.Contains(t, helpInfo.Examples[1].Command, "openai-client-new")
-	assert.Contains(t, helpInfo.Examples[2].Command, "${OPENAI_API_KEY}")
+	assert.Contains(t, helpInfo.Examples[1].Command, "client_type=OAC")
+	assert.Contains(t, helpInfo.Examples[2].Command, "client_type=OAR")
+	assert.Contains(t, helpInfo.Examples[3].Command, "${OPENAI_API_KEY}")
 
 	// Check stored variables
 	assert.Len(t, helpInfo.StoredVariables, 5)
@@ -75,13 +86,15 @@ func TestOpenAIClientNewCommand_HelpInfo(t *testing.T) {
 	assert.True(t, variableNames["#client_reasoning_support"])
 
 	// Check notes
-	assert.Len(t, helpInfo.Notes, 5)
+	assert.Len(t, helpInfo.Notes, 6)
 	assert.Contains(t, helpInfo.Notes[0], "Key resolution priority")
 	assert.Contains(t, helpInfo.Notes[1], "llm-api-activate")
-	assert.Contains(t, helpInfo.Notes[2], "reasoning models")
-	assert.Contains(t, helpInfo.Notes[3], "/chat/completions")
-	assert.Contains(t, helpInfo.Notes[3], "/responses")
-	assert.Contains(t, helpInfo.Notes[4], "o3, o4-mini, o1")
+	assert.Contains(t, helpInfo.Notes[2], "Client types")
+	assert.Contains(t, helpInfo.Notes[2], "OAC")
+	assert.Contains(t, helpInfo.Notes[2], "OAR")
+	assert.Contains(t, helpInfo.Notes[3], "automatically route")
+	assert.Contains(t, helpInfo.Notes[4], "Default client_type")
+	assert.Contains(t, helpInfo.Notes[5], "dedicated chat-only testing")
 }
 
 func TestOpenAIClientNewCommand_Execute_WithExplicitKey(t *testing.T) {
@@ -121,8 +134,8 @@ func TestOpenAIClientNewCommand_Execute_WithExplicitKey(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Contains(t, outputStr, "OpenAI client ready: OAR:")
-			assert.Contains(t, outputStr, "(configured: true")
-			assert.Contains(t, outputStr, "reasoning: supported)")
+			assert.Contains(t, outputStr, "configured: true)")
+			assert.Contains(t, outputStr, "reasoning/dual-mode")
 
 			// Verify system variables were set
 			variableService, err := services.GetGlobalVariableService()
@@ -176,7 +189,7 @@ func TestOpenAIClientNewCommand_Execute_WithActiveKey(t *testing.T) {
 
 	assert.NoError(t, execErr)
 	assert.Contains(t, outputStr, "OpenAI client ready:")
-	assert.Contains(t, outputStr, "reasoning: supported")
+	assert.Contains(t, outputStr, "reasoning/dual-mode")
 
 	// Verify client was created successfully
 	clientID, err := variableService.Get("_client_id")
@@ -217,7 +230,7 @@ func TestOpenAIClientNewCommand_Execute_WithEnvironmentKey(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Contains(t, outputStr, "OpenAI client ready:")
-	assert.Contains(t, outputStr, "reasoning: supported")
+	assert.Contains(t, outputStr, "reasoning/dual-mode")
 
 	// Verify client was created successfully
 	variableService, err := services.GetGlobalVariableService()
@@ -448,6 +461,74 @@ func TestOpenAIClientNewCommand_resolveAPIKey_EdgeCases(t *testing.T) {
 	})
 }
 
+func TestOpenAIClientNewCommand_Execute_WithClientType(t *testing.T) {
+	command := &OpenAIClientNewCommand{}
+	setupOpenAIClientNewTestRegistry(t)
+
+	testCases := []struct {
+		name              string
+		args              map[string]string
+		expectedType      string
+		expectedReasoning string
+	}{
+		{
+			name:              "explicit OAC client type",
+			args:              map[string]string{"client_type": "OAC", "key": "sk-test123"},
+			expectedType:      "OAC",
+			expectedReasoning: "false",
+		},
+		{
+			name:              "explicit OAR client type",
+			args:              map[string]string{"client_type": "OAR", "key": "sk-test123"},
+			expectedType:      "OAR",
+			expectedReasoning: "true",
+		},
+		{
+			name:              "default client type (should be OAR)",
+			args:              map[string]string{"key": "sk-test123"},
+			expectedType:      "OAR",
+			expectedReasoning: "true",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Execute command
+			err := command.Execute(tc.args, "")
+
+			// Verify command succeeded
+			assert.NoError(t, err)
+
+			// Verify system variables
+			variableService, err := services.GetGlobalVariableService()
+			require.NoError(t, err)
+
+			clientType, err := variableService.Get("#client_type")
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedType, clientType)
+
+			reasoningSupport, err := variableService.Get("#client_reasoning_support")
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expectedReasoning, reasoningSupport)
+		})
+	}
+}
+
+func TestOpenAIClientNewCommand_Execute_InvalidClientType(t *testing.T) {
+	command := &OpenAIClientNewCommand{}
+	setupOpenAIClientNewTestRegistry(t)
+
+	args := map[string]string{"client_type": "INVALID", "key": "sk-test123"}
+
+	// Execute command
+	err := command.Execute(args, "")
+
+	// Verify error
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid client_type 'INVALID'")
+	assert.Contains(t, err.Error(), "Must be 'OAC' (chat-only) or 'OAR' (reasoning/dual-mode)")
+}
+
 func TestOpenAIClientNewCommand_Execute_IntegrationWithReasoningSupport(t *testing.T) {
 	cmd := &OpenAIClientNewCommand{}
 	setupOpenAIClientNewTestRegistry(t)
@@ -463,7 +544,7 @@ func TestOpenAIClientNewCommand_Execute_IntegrationWithReasoningSupport(t *testi
 	})
 
 	assert.NoError(t, err)
-	assert.Contains(t, outputStr, "reasoning: supported")
+	assert.Contains(t, outputStr, "reasoning/dual-mode")
 
 	// Verify reasoning support variable
 	variableService, err := services.GetGlobalVariableService()

@@ -15,4 +15,4 @@ Created model 'creative-claude' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\get[#model_description]"
 #model_description = Advanced model for creative tasks
 %%> "\\get[_output]"
-_output = OpenAI client ready: OAR:b10394de
+_output = OpenAI client ready: OAC:b10394de (type: OAC)
