@@ -4,7 +4,9 @@ package llm
 import (
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/charmbracelet/lipgloss"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -286,6 +288,15 @@ func (c *CallCommand) handleDryRun(client neurotypes.LLMClient, model *neurotype
 
 // handleSyncCall performs a synchronous LLM API call.
 func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, variableService *services.VariableService) error {
+	// Start temporal display for thinking indicator
+	displayID := "llm-call-sync"
+	displayStarted := c.startLLMThinkingDisplay(displayID, "Thinking...")
+
+	// Ensure display is stopped on function exit (success or error)
+	if displayStarted {
+		defer c.stopLLMDisplay(displayID)
+	}
+
 	// Pure service orchestration - no message manipulation
 	response, err := llmService.SendCompletion(client, session, model)
 	if err != nil {
@@ -298,17 +309,37 @@ func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client ne
 	_ = variableService.SetSystemVariable("#llm_call_success", "true")
 	_ = variableService.SetSystemVariable("#llm_call_mode", "sync")
 
-	// Output response (read-only display)
-	fmt.Println(response)
+	// Don't output response here - let calling script handle formatting
 	return nil
 }
 
 // handleStreamingCall performs a streaming LLM API call.
 func (c *CallCommand) handleStreamingCall(llmService neurotypes.LLMService, client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, variableService *services.VariableService) error {
+	// Start temporal display for connection indicator
+	displayID := "llm-call-stream"
+	displayStarted := c.startLLMThinkingDisplay(displayID, "Connecting...")
+
+	// Ensure display is stopped if we exit early due to error
+	if displayStarted {
+		defer func() {
+			// Only stop if still active (in case we stopped it manually below)
+			if temporalService := c.getTemporalDisplayService(); temporalService != nil {
+				if temporalService.IsActive(displayID) {
+					c.stopLLMDisplay(displayID)
+				}
+			}
+		}()
+	}
+
 	// Pure service orchestration for streaming
 	stream, err := llmService.StreamCompletion(client, session, model)
 	if err != nil {
 		return fmt.Errorf("streaming LLM call failed: %w", err)
+	}
+
+	// Stop the connecting display once streaming starts
+	if displayStarted {
+		c.stopLLMDisplay(displayID)
 	}
 
 	var fullResponse strings.Builder
@@ -329,6 +360,57 @@ func (c *CallCommand) handleStreamingCall(llmService neurotypes.LLMService, clie
 	_ = variableService.SetSystemVariable("#llm_call_mode", "stream")
 
 	return nil
+}
+
+// getTemporalDisplayService attempts to get the temporal display service.
+// Returns nil if service is not available (graceful degradation).
+func (c *CallCommand) getTemporalDisplayService() *services.TemporalDisplayService {
+	serviceInterface, err := services.GetGlobalRegistry().GetService("temporal-display")
+	if err != nil {
+		return nil // Graceful degradation
+	}
+
+	temporalService, ok := serviceInterface.(*services.TemporalDisplayService)
+	if !ok {
+		return nil // Graceful degradation
+	}
+
+	return temporalService
+}
+
+// startLLMThinkingDisplay starts a temporal display showing "Thinking..." with elapsed time.
+// Returns true if display was started successfully, false otherwise.
+func (c *CallCommand) startLLMThinkingDisplay(id string, message string) bool {
+	temporalService := c.getTemporalDisplayService()
+	if temporalService == nil {
+		return false // Graceful degradation
+	}
+
+	// Create a custom renderer for LLM thinking display
+	renderer := func(elapsed time.Duration) string {
+		seconds := int(elapsed.Seconds())
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color("2")) // Green
+		return style.Render(fmt.Sprintf("%s %ds", message, seconds))
+	}
+
+	// Create a condition that never stops automatically (we'll stop manually)
+	condition := func(_ time.Duration) bool {
+		return false // Never auto-stop, we'll stop manually
+	}
+
+	err := temporalService.StartCustomDisplay(id, condition, renderer)
+	return err == nil
+}
+
+// stopLLMDisplay stops a temporal display and handles any errors gracefully.
+func (c *CallCommand) stopLLMDisplay(id string) {
+	temporalService := c.getTemporalDisplayService()
+	if temporalService == nil {
+		return // Nothing to stop
+	}
+
+	// Stop the display, ignore errors (graceful degradation)
+	_ = temporalService.Stop(id)
 }
 
 func init() {
