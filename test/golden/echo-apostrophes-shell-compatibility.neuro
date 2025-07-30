@@ -1,0 +1,64 @@
+%% Echo command apostrophe handling with shell compatibility test
+\set[_echo_command="true"]
+%% Tests that legitimate shell quoting still works while apostrophes are handled correctly
+
+%% Test legitimate single quotes (should be processed as shell quotes)
+\echo 'This is a properly quoted string'
+\echo 'No contractions here - just quoted text'
+\echo 'Multiple words in single quotes work fine'
+
+%% Test legitimate double quotes
+\echo "This is a double quoted string"
+\echo "No apostrophes here either"
+\echo "Multiple words in double quotes"
+
+%% Test mixed legitimate quotes with apostrophes
+\echo "I'm inside double quotes with apostrophes"
+\echo 'You're inside single quotes with apostrophes'
+\echo "John's text is in double quotes"
+\echo 'Mary's text is in single quotes'
+
+%% Test empty quotes
+\echo ''
+\echo ""
+\echo '' and ""
+\echo 'empty' and "empty"
+
+%% Test quotes with spaces
+\echo 'quoted text with spaces'
+\echo "double quoted text with spaces"
+\echo 'I'm properly quoted with apostrophes'
+
+%% Test nested legitimate quotes
+\echo "He said 'Hello world' to everyone"
+\echo 'She replied "Good morning" cheerfully'
+
+%% Test escape sequences in legitimate quotes
+\echo 'Raw single quotes with \n and \t'
+\echo "Raw double quotes with \n and \t"
+
+%% Test shell-like patterns that should work
+\echo 'PATH=/usr/bin:$PATH'
+\echo "HOME=${HOME}/documents"
+\echo 'command --flag=value'
+
+%% Test apostrophes that are NOT shell quotes (natural language)
+\echo I'm not in quotes - this is natural language
+\echo You're seeing the difference between 'quoted' and natural
+\echo It's clear: 'this is quoted' but this isn't
+
+%% Test complex mixing of both
+\echo 'Quoted text' mixed with I'm natural and 'more quotes'
+\echo "Double quotes" and you're natural and "final quotes"
+
+%% Test problematic cases that used to break
+\echo 'Properly quoted' but I'm natural language that won't break
+\echo "Double quoted" and Mary's natural text that shouldn't fail
+
+%% Test quotes at boundaries
+\echo start 'quoted middle' end with I'm natural
+\echo "quoted start" followed by natural text that's working
+
+%% Test multiple quote types with apostrophes
+\echo 'single' "double" and I'm natural with can't contractions
+\echo "first double" 'then single' and we're done with won't issues

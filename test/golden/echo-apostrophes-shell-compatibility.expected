@@ -1,0 +1,73 @@
+Setting _echo_command = true
+%%> "\\echo 'This is a properly quoted string'"
+'This is a properly quoted string'
+%%> "\\echo 'No contractions here - just quoted text'"
+'No contractions here - just quoted text'
+%%> "\\echo 'Multiple words in single quotes work fine'"
+'Multiple words in single quotes work fine'
+%%> "\\echo \"This is a double quoted string\""
+"This is a double quoted string"
+%%> "\\echo \"No apostrophes here either\""
+"No apostrophes here either"
+%%> "\\echo \"Multiple words in double quotes\""
+"Multiple words in double quotes"
+%%> "\\echo \"I'm inside double quotes with apostrophes\""
+"I'm inside double quotes with apostrophes"
+%%> "\\echo 'You're inside single quotes with apostrophes'"
+'You're inside single quotes with apostrophes'
+%%> "\\echo \"John's text is in double quotes\""
+"John's text is in double quotes"
+%%> "\\echo 'Mary's text is in single quotes'"
+'Mary's text is in single quotes'
+%%> "\\echo ''"
+''
+%%> "\\echo \"\""
+""
+%%> "\\echo '' and \"\""
+'' and ""
+%%> "\\echo 'empty' and \"empty\""
+'empty' and "empty"
+%%> "\\echo 'quoted text with spaces'"
+'quoted text with spaces'
+%%> "\\echo \"double quoted text with spaces\""
+"double quoted text with spaces"
+%%> "\\echo 'I'm properly quoted with apostrophes'"
+'I'm properly quoted with apostrophes'
+%%> "\\echo \"He said 'Hello world' to everyone\""
+"He said 'Hello world' to everyone"
+%%> "\\echo 'She replied \"Good morning\" cheerfully'"
+'She replied "Good morning" cheerfully'
+%%> "\\echo 'Raw single quotes with \\n and \\t'"
+'Raw single quotes with 
+ and 	'
+%%> "\\echo \"Raw double quotes with \\n and \\t\""
+"Raw double quotes with 
+ and 	"
+%%> "\\echo 'PATH=/usr/bin:$PATH'"
+'PATH=/usr/bin:$PATH'
+%%> "\\echo \"HOME=${HOME}/documents\""
+"HOME=/documents"
+%%> "\\echo 'command --flag=value'"
+'command --flag=value'
+%%> "\\echo I'm not in quotes - this is natural language"
+I'm not in quotes - this is natural language
+%%> "\\echo You're seeing the difference between 'quoted' and natural"
+You're seeing the difference between 'quoted' and natural
+%%> "\\echo It's clear: 'this is quoted' but this isn't"
+It's clear: 'this is quoted' but this isn't
+%%> "\\echo 'Quoted text' mixed with I'm natural and 'more quotes'"
+'Quoted text' mixed with I'm natural and 'more quotes'
+%%> "\\echo \"Double quotes\" and you're natural and \"final quotes\""
+"Double quotes" and you're natural and "final quotes"
+%%> "\\echo 'Properly quoted' but I'm natural language that won't break"
+'Properly quoted' but I'm natural language that won't break
+%%> "\\echo \"Double quoted\" and Mary's natural text that shouldn't fail"
+"Double quoted" and Mary's natural text that shouldn't fail
+%%> "\\echo start 'quoted middle' end with I'm natural"
+start 'quoted middle' end with I'm natural
+%%> "\\echo \"quoted start\" followed by natural text that's working"
+"quoted start" followed by natural text that's working
+%%> "\\echo 'single' \"double\" and I'm natural with can't contractions"
+'single' "double" and I'm natural with can't contractions
+%%> "\\echo \"first double\" 'then single' and we're done with won't issues"
+"first double" 'then single' and we're done with won't issues

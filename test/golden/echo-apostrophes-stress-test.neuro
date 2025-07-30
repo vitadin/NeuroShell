@@ -1,0 +1,57 @@
+%% Echo command apostrophe handling stress test
+\set[_echo_command="true"]
+%% Comprehensive stress test with extreme cases
+
+%% Test the original failing case
+\echo If I swap the contents of the two most valuable boxes, then move the least valuable to the first position, what's the final order?
+
+%% Test multiple complex sentences
+\echo I can't believe Mary's computer won't run John's script that's supposed to work with Sarah's database
+\echo The system's administrator said "We're experiencing issues with users' accounts that won't synchronize"
+\echo Here's what happened: Tom's server couldn't connect to Jane's API because it's configured incorrectly
+
+%% Test extreme nesting and mixing
+\echo "John said 'I can't access Mary's files because they're in Sarah's directory and won't open'"
+\echo 'The error message was "Cannot find user\'s home directory at /Users/john\'s folder" which wasn\'t helpful'
+\echo "The command 'grep \"can\'t find\" /var/log/system.log' didn\'t return any results"
+
+%% Test apostrophes with all echo options
+\echo[raw=true] Raw mode: I'm here\nYou're there\tIt's working with John's data\\Won't interpret escapes
+\echo[raw=false] Normal mode: I'm here\nYou're there\tIt's working with Mary's data\\Will interpret escapes
+\echo[silent=true] Silent: This won't show but Sarah's data is stored
+\echo[to=stress_var] Custom var: Tom's computer isn't responding to Jane's requests
+
+%% Test with variable interpolation stress
+\set[complex_name="John's & Mary's Computer"]
+\set[status_msg="won't start because it's broken"]
+\set[user_complaint="I can't believe ${complex_name} ${status_msg}"]
+\echo Problem: ${user_complaint}
+\echo[to=final_msg] Resolution: We're fixing ${complex_name} so it's working again
+\get[stress_var]
+\get[final_msg]
+
+%% Test extreme quote combinations
+\echo """I'm in triple double quotes"""
+\echo '''You're in triple single quotes'''
+\echo "'"'"Mixed quote patterns that won't break"'"'"
+\echo '"'"Double-single-double that's complex"'"'
+
+%% Test apostrophes with special characters and Unicode
+\echo José's résumé won't upload to François's système because it's configured incorrectly
+\echo The naïve user's café receipt shows €50 but the system's database won't accept it
+\echo Here's the issue: María's piñata order can't be processed in the système's workflow
+
+%% Test very long stress case
+\echo This is an extremely long sentence that contains numerous contractions like I'm, you're, it's, we're, they're, won't, can't, shouldn't, wouldn't, couldn't, and possessives like John's, Mary's, Tom's, Sarah's, users', students', teachers', administrators' to thoroughly test the robustness of our apostrophe handling system when dealing with complex natural language input that would have previously caused "unterminated single-quoted string" errors
+
+%% Test edge cases that might break parsers
+\echo ''''Multiple consecutive apostrophes won't break this''''
+\echo I'm testing 'mixed quotes' and "double quotes" with more 'single quotes' in one message that's complex
+\echo Path: /Users/john's files/can't access/it's locked/won't open/system's fault
+
+%% Test regex-like patterns with apostrophes
+\echo Pattern: /I'm|you're|it's|won't|can't/ matches contractions in John's text
+\echo Replacement: s/can't/cannot/g won't work on Mary's system that's configured differently
+
+%% Final extreme test
+\echo "The administrator said 'I can\'t believe the system won\'t handle users\' apostrophes correctly' but we\'re fixing it" - that's the status update from Tom's team

@@ -310,13 +310,15 @@ func (s *Shell) read() ([]string, error) {
 
 	if heredoc {
 		s := strings.SplitN(lines, "<<", 2)
+		// Try shell-style quote parsing first for heredoc command part
 		args, err1 := shellquote.Split(s[0])
+		if err1 != nil {
+			// Fallback to simple field splitting if shell quote parsing fails
+			args = strings.Fields(s[0])
+		}
 
 		arg := strings.TrimSuffix(strings.SplitN(s[1], "\n", 2)[1], eof)
 		args = append(args, arg)
-		if err1 != nil {
-			return args, err1
-		}
 		return args, err
 	}
 
@@ -336,9 +338,13 @@ func (s *Shell) read() ([]string, error) {
 	// Set rawArgs from processed lines (after removing continuation markers)
 	s.rawArgs = strings.Fields(lines)
 
+	// Try shell-style quote parsing first
 	args, err1 := shellquote.Split(lines)
 	if err1 != nil {
-		return args, err1
+		// If shell quote parsing fails (e.g., unterminated quotes in natural language),
+		// fallback to simple field splitting which handles most cases correctly
+		args = strings.Fields(lines)
+		// Don't return the shell quote error - use simple parsing instead
 	}
 
 	return args, err

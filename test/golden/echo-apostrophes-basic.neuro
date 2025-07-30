@@ -1,0 +1,34 @@
+%% Echo command apostrophe handling test - basic cases
+\set[_echo_command="true"]
+%% Tests basic apostrophe handling in natural language
+
+%% Test simple contractions
+\echo I'm working with apostrophes
+\echo You're seeing this correctly
+\echo It's working perfectly
+\echo They're all functioning
+
+%% Test possessives
+\echo John's book is here
+\echo The cat's toy
+\echo Students' assignments
+\echo James' car
+
+%% Test multiple apostrophes in one message
+\echo I can't believe it's John's cat that won't stop meowing
+
+%% Test apostrophes with variable storage
+\echo[to=test_var] Sarah's phone isn't working
+\get[test_var]
+
+%% Test apostrophes in silent mode
+\echo[silent=true] This won't appear but it's stored
+\get[_output]
+
+%% Test apostrophes with special characters
+\echo Mix: I'm #1, you're @home, it's 100% sure!
+
+%% Test apostrophes at different positions
+\echo 'Quote at start
+\echo Middle apos'trophe
+\echo End quote'

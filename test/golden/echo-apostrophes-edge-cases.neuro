@@ -1,0 +1,55 @@
+%% Echo command apostrophe handling test - edge cases
+\set[_echo_command="true"]
+%% Tests extreme edge cases for apostrophe handling
+
+%% Test apostrophes at word boundaries
+\echo ' single quote at start
+\echo single quote at end '
+\echo 'single word'
+\echo ''empty single quotes''
+
+%% Test multiple consecutive apostrophes
+\echo I''m using double apostrophes
+\echo They'''re using triple apostrophes
+\echo Don''''t use quadruple apostrophes
+
+%% Test apostrophes with numbers and symbols
+\echo It's 9:30 o'clock
+\echo The '90s music won't play
+\echo 100% sure it's working @ 3:45 PM
+
+%% Test problematic quote mixing
+\echo "He said 'I can't go' but didn't mean it"
+\echo 'She replied "You won't help" with anger'
+\echo "The quote 'Don't worry' wasn't helpful"
+
+%% Test apostrophes in different contexts
+\echo File path: /Users/john's folder/can't access/it's locked
+\echo Command: git commit -m "Fix: can't parse John's input"
+\echo Regex: match('s|'t|'re|'ll|'ve|'d)
+
+%% Test with variable interpolation and apostrophes
+\set[name="John's Computer"]
+\echo The device ${name} won't start
+\echo I'm using ${name} but it's not working
+
+%% Test apostrophes with brackets and options
+\echo[to=apos_test] Mary's computer isn't responding
+\echo[silent=true] This won't show: it's John's secret
+\echo[raw=true] Don't interpret \n but keep John's apostrophes
+\echo[raw=false] Do interpret \n and keep Mary's apostrophes
+
+%% Test edge case: only apostrophes
+\echo '
+\echo ''
+\echo '''
+\echo ''''
+
+%% Test apostrophes mixed with other quote-like characters
+\echo Smart quotes: "I'm here" and 'You're there'
+\echo Backticks: `echo "I'm in a subshell"` won't work
+\echo Mixed: "It's `complex` but 'doable'"
+
+%% Test very problematic nested cases
+\echo "John said 'I can't believe Mary's computer won't run the command `echo \"It's working\"` properly'"
+\echo 'The error message was "Cannot parse: I\'m confused by John\'s syntax" which wasn\'t helpful'

@@ -1,0 +1,56 @@
+%% Echo command apostrophe handling with variable integration test
+\set[_echo_command="true"]
+%% Tests apostrophes interacting with variable system
+
+%% Set up test variables with apostrophes
+\set[person_name="John's Friend"]
+\set[possessive="Sarah's"]
+\set[contraction="can't"]
+\set[complex_text="I'm using Mary's computer but it won't work"]
+
+%% Test basic variable interpolation with apostrophes
+\echo Hello ${person_name}, how are you?
+\echo The ${possessive} book is on the table
+\echo I ${contraction} believe this is working
+\echo Status: ${complex_text}
+
+%% Test apostrophes in variable names (stored values)
+\echo[to=johns_var] This is John's message that won't fail
+\echo[to=marys_data] Mary's computer isn't working today
+\get[johns_var]
+\get[marys_data]
+
+%% Test complex interpolation with apostrophes
+\set[greeting="Hello, I'm"]
+\set[location="at John's house"]
+\echo ${greeting} currently ${location} and it's working fine
+
+%% Test apostrophes in both variable content and message
+\set[user_status="I'm online but can't respond"]
+\echo User says: "${user_status}" - that's what's happening
+
+%% Test nested variable references with apostrophes
+\set[base_msg="It's working"]
+\set[extended_msg="${base_msg} but John's computer won't cooperate"]
+\echo Final message: ${extended_msg}
+
+%% Test apostrophes with system variables
+\echo Current user's home: ${@user}'s directory
+\echo Today's date: ${@date} - it's ${@os} system
+
+%% Test apostrophes with backtick interpolation (if supported)
+\set[command_with_apos="echo \"I'm in a backtick\""]
+\echo The command ${command_with_apos} won't execute here
+
+%% Test variable interpolation failure handling with apostrophes
+\echo Missing var: ${doesnt_exist} won't cause John's system to fail
+
+%% Test complex nested scenarios
+\set[owner="Mary's"]
+\set[status="won't start"]
+\set[full_msg="The ${owner} computer ${status} today"]
+\echo Problem report: ${full_msg} - that's the issue we're facing
+
+%% Test apostrophes in variable values that get re-interpolated
+\set[recursive_msg="I'm testing ${person_name}'s system"]
+\echo Recursive: ${recursive_msg}

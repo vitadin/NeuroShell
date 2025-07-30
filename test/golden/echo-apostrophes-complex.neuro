@@ -1,0 +1,38 @@
+%% Echo command apostrophe handling test - complex cases
+\set[_echo_command="true"]
+%% Tests complex apostrophe scenarios and edge cases
+
+%% Test nested quotes and apostrophes
+\echo He said "I'm going to Mary's house" and left
+\echo She replied 'You can't go there now'
+\echo "John's response was 'I won't listen'"
+\echo 'The sign read "Don\'t enter" but we didn\'t care'
+
+%% Test apostrophes with escape sequences (raw mode)
+\echo[raw=true] I'm here\nYou're there\tIt's working\\Perfect
+
+%% Test apostrophes with escape sequences (interpreted)
+\echo[raw=false] I'm here\nYou're there\tIt's working\\Perfect
+
+%% Test apostrophes in various quote combinations
+\echo "I'm inside double quotes"
+\echo 'You're inside single quotes'
+\echo Mixed "quotes with I'm apostrophes" and 'more here'
+
+%% Test problematic patterns that used to fail
+\echo If I swap the contents of the two most valuable boxes, then move the least valuable to the first position, what's the final order?
+\echo I can't believe we're testing this complex scenario with Mary's help
+
+%% Test multiple contractions and possessives
+\echo We're testing John's code that won't work with Sarah's computer because it's Tom's turn
+
+%% Test apostrophes with special shell characters
+\echo I'm using $HOME and you're in ${PWD} but it's not `working`
+\echo Sarah's script runs $(echo "it's fine") but won't handle 'complex cases'
+
+%% Test Unicode with apostrophes
+\echo José's café isn't open, but María's is
+\echo The naïve approach won't work in François's system
+
+%% Test very long text with many apostrophes
+\echo This is a very long sentence that contains many contractions like I'm, you're, it's, we're, they're, and possessives like John's, Mary's, students', and won't, can't, shouldn't patterns to test the robustness of our apostrophe handling system

@@ -1,0 +1,63 @@
+Setting _echo_command = true
+%%> "\\set[person_name=\"John's Friend\"]"
+Setting person_name = John's Friend
+%%> "\\set[possessive=\"Sarah's\"]"
+Setting possessive = Sarah's
+%%> "\\set[contraction=\"can't\"]"
+Setting contraction = can't
+%%> "\\set[complex_text=\"I'm using Mary's computer but it won't work\"]"
+Setting complex_text = I'm using Mary's computer but it won't work
+%%> "\\echo Hello ${person_name}, how are you?"
+Hello John's Friend, how are you?
+%%> "\\echo The ${possessive} book is on the table"
+The Sarah's book is on the table
+%%> "\\echo I ${contraction} believe this is working"
+I can't believe this is working
+%%> "\\echo Status: ${complex_text}"
+Status: I'm using Mary's computer but it won't work
+%%> "\\echo[to=johns_var] This is John's message that won't fail"
+This is John's message that won't fail
+%%> "\\echo[to=marys_data] Mary's computer isn't working today"
+Mary's computer isn't working today
+%%> "\\get[johns_var]"
+johns_var = This is John's message that won't fail
+%%> "\\get[marys_data]"
+marys_data = Mary's computer isn't working today
+%%> "\\set[greeting=\"Hello, I'm\"]"
+Setting greeting = Hello, I'm
+%%> "\\set[location=\"at John's house\"]"
+Setting location = at John's house
+%%> "\\echo ${greeting} currently ${location} and it's working fine"
+Hello, I'm currently at John's house and it's working fine
+%%> "\\set[user_status=\"I'm online but can't respond\"]"
+Setting user_status = I'm online but can't respond
+%%> "\\echo User says: \"${user_status}\" - that's what's happening"
+User says: "I'm online but can't respond" - that's what's happening
+%%> "\\set[base_msg=\"It's working\"]"
+Setting base_msg = It's working
+%%> "\\set[extended_msg=\"${base_msg} but John's computer won't cooperate\"]"
+Setting extended_msg = It's working but John's computer won't cooperate
+%%> "\\echo Final message: ${extended_msg}"
+Final message: It's working but John's computer won't cooperate
+%%> "\\echo Current user's home: ${@user}'s directory"
+Current user's home: testuser's directory
+%%> "\\echo Today's date: ${@date} - it's ${@os} system"
+Today's date: 2024-01-01 - it's test-os system
+%%> "\\set[command_with_apos=\"echo \\\"I'm in a backtick\\\"\"]"
+Setting command_with_apos = echo \"I'm in a backtick\"
+%%> "\\echo The command ${command_with_apos} won't execute here"
+The command echo "I'm in a backtick" won't execute here
+%%> "\\echo Missing var: ${doesnt_exist} won't cause John's system to fail"
+Missing var:  won't cause John's system to fail
+%%> "\\set[owner=\"Mary's\"]"
+Setting owner = Mary's
+%%> "\\set[status=\"won't start\"]"
+Setting status = won't start
+%%> "\\set[full_msg=\"The ${owner} computer ${status} today\"]"
+Setting full_msg = The Mary's computer won't start today
+%%> "\\echo Problem report: ${full_msg} - that's the issue we're facing"
+Problem report: The Mary's computer won't start today - that's the issue we're facing
+%%> "\\set[recursive_msg=\"I'm testing ${person_name}'s system\"]"
+Setting recursive_msg = I'm testing John's Friend's system
+%%> "\\echo Recursive: ${recursive_msg}"
+Recursive: I'm testing John's Friend's system
