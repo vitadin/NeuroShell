@@ -341,6 +341,23 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		return "", false
 	}
 
+	// Handle chronological message history variables: ${.1}, ${.2}, etc.
+	if matched, _ := regexp.MatchString(`^\.(\d+)$`, name); matched {
+		// Extract the number after the dot
+		if matches := regexp.MustCompile(`^\.(\d+)$`).FindStringSubmatch(name); len(matches) > 1 {
+			if n, err := strconv.Atoi(matches[1]); err == nil {
+				value, err := ctx.GetNthChronologicalMessage(n)
+				if err != nil {
+					// Return empty string and false to indicate the variable doesn't exist
+					// This maintains same behavior as reverse order variables
+					return "", false
+				}
+				return value, true
+			}
+		}
+		return "", false
+	}
+
 	return "", false
 }
 
@@ -564,6 +581,41 @@ func (ctx *NeuroContext) GetNthRecentMessage(n int) (string, error) {
 	// Get the Nth most recent message (1-based indexing)
 	// messages[len-1] is most recent, messages[len-2] is 2nd most recent, etc.
 	messageIndex := messageCount - n
+	return session.Messages[messageIndex].Content, nil
+}
+
+// GetNthChronologicalMessage returns the Nth message from the active session in chronological order.
+// N=1 is the first message, N=2 is the second message, etc.
+// Returns the message content and an error if the message cannot be retrieved.
+func (ctx *NeuroContext) GetNthChronologicalMessage(n int) (string, error) {
+	// Handle invalid input
+	if n < 1 {
+		return "", fmt.Errorf("invalid message index %d: must be >= 1", n)
+	}
+
+	// Check if there's an active session
+	if ctx.activeSessionID == "" {
+		return "", fmt.Errorf("no active session")
+	}
+
+	// Get the active session
+	session, exists := ctx.chatSessions[ctx.activeSessionID]
+	if !exists {
+		return "", fmt.Errorf("active session %s not found", ctx.activeSessionID)
+	}
+
+	// Check if we have enough messages
+	messageCount := len(session.Messages)
+	if messageCount == 0 {
+		return "", fmt.Errorf("session has no messages")
+	}
+	if n > messageCount {
+		return "", fmt.Errorf("message index %d out of bounds: session has only %d messages", n, messageCount)
+	}
+
+	// Get the Nth chronological message (1-based indexing)
+	// messages[0] is first, messages[1] is second, etc.
+	messageIndex := n - 1
 	return session.Messages[messageIndex].Content, nil
 }
 
