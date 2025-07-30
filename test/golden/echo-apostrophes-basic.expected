@@ -1,0 +1,34 @@
+Setting _echo_command = true
+%%> "\\echo I'm working with apostrophes"
+I'm working with apostrophes
+%%> "\\echo You're seeing this correctly"
+You're seeing this correctly
+%%> "\\echo It's working perfectly"
+It's working perfectly
+%%> "\\echo They're all functioning"
+They're all functioning
+%%> "\\echo John's book is here"
+John's book is here
+%%> "\\echo The cat's toy"
+The cat's toy
+%%> "\\echo Students' assignments"
+Students' assignments
+%%> "\\echo James' car"
+James' car
+%%> "\\echo I can't believe it's John's cat that won't stop meowing"
+I can't believe it's John's cat that won't stop meowing
+%%> "\\echo[to=test_var] Sarah's phone isn't working"
+Sarah's phone isn't working
+%%> "\\get[test_var]"
+test_var = Sarah's phone isn't working
+%%> "\\echo[silent=true] This won't appear but it's stored"
+%%> "\\get[_output]"
+_output = This won't appear but it's stored
+%%> "\\echo Mix: I'm #1, you're @home, it's 100% sure!"
+Mix: I'm #1, you're @home, it's 100% sure!
+%%> "\\echo 'Quote at start"
+'Quote at start
+%%> "\\echo Middle apos'trophe"
+Middle apos'trophe
+%%> "\\echo End quote'"
+End quote'
