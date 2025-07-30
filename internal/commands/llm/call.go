@@ -229,7 +229,15 @@ func (c *CallCommand) Execute(args map[string]string, input string) error {
 	}
 
 	// Make LLM call (pure service orchestration)
+	// Check streaming mode from both args and _stream variable
 	stream := args["stream"] == "true"
+	if !stream {
+		// Check if _stream variable is set to true (case-insensitive)
+		if streamVar, err := variableService.Get("_stream"); err == nil {
+			stream = strings.ToLower(strings.TrimSpace(streamVar)) == "true"
+		}
+	}
+
 	if stream {
 		return c.handleStreamingCall(llmService, client, session, model, variableService)
 	}
@@ -337,20 +345,30 @@ func (c *CallCommand) handleStreamingCall(llmService neurotypes.LLMService, clie
 		return fmt.Errorf("streaming LLM call failed: %w", err)
 	}
 
-	// Stop the connecting display once streaming starts
-	if displayStarted {
-		c.stopLLMDisplay(displayID)
-	}
-
+	// Switch to streaming content display and accumulate response
 	var fullResponse strings.Builder
+	var streamingContent strings.Builder
+
+	// Start streaming content display
+	streamingStarted := false
 	for chunk := range stream {
 		if chunk.Error != nil {
 			return fmt.Errorf("streaming error: %w", chunk.Error)
 		}
-		fmt.Print(chunk.Content)
+
+		// Switch from "Connecting..." to streaming content display on first chunk
+		if !streamingStarted {
+			if displayStarted {
+				c.stopLLMDisplay(displayID)
+			}
+			displayStarted = c.startStreamingContentDisplay(displayID, &streamingContent)
+			streamingStarted = true
+		}
+
+		// Accumulate response and update streaming display content
 		fullResponse.WriteString(chunk.Content)
+		streamingContent.WriteString(chunk.Content)
 	}
-	fmt.Println() // Final newline
 
 	// Store complete response
 	response := fullResponse.String()
@@ -359,6 +377,7 @@ func (c *CallCommand) handleStreamingCall(llmService neurotypes.LLMService, clie
 	_ = variableService.SetSystemVariable("#llm_call_success", "true")
 	_ = variableService.SetSystemVariable("#llm_call_mode", "stream")
 
+	// Don't output response here - let _send.neuro handle final markdown rendering
 	return nil
 }
 
@@ -391,6 +410,58 @@ func (c *CallCommand) startLLMThinkingDisplay(id string, message string) bool {
 		seconds := int(elapsed.Seconds())
 		style := lipgloss.NewStyle().Foreground(lipgloss.Color("2")) // Green
 		return style.Render(fmt.Sprintf("%s %ds", message, seconds))
+	}
+
+	// Create a condition that never stops automatically (we'll stop manually)
+	condition := func(_ time.Duration) bool {
+		return false // Never auto-stop, we'll stop manually
+	}
+
+	err := temporalService.StartCustomDisplay(id, condition, renderer)
+	return err == nil
+}
+
+// startStreamingContentDisplay starts a temporal display showing actual streaming content.
+// Returns true if display was started successfully, false otherwise.
+func (c *CallCommand) startStreamingContentDisplay(id string, content *strings.Builder) bool {
+	temporalService := c.getTemporalDisplayService()
+	if temporalService == nil {
+		return false // Graceful degradation
+	}
+
+	// Create a custom renderer for streaming content display
+	renderer := func(elapsed time.Duration) string {
+		seconds := int(elapsed.Seconds())
+		currentContent := content.String()
+
+		// Use single-line display for reliability (no multi-line stacking issues)
+		// Show the last meaningful chunk of content
+		displayContent := currentContent
+
+		// Get last 200 characters for preview
+		if len(displayContent) > 80 {
+			displayContent = "..." + displayContent[len(displayContent)-77:]
+		}
+
+		// Replace newlines and tabs with spaces for single-line display
+		displayContent = strings.ReplaceAll(displayContent, "\n", " ")
+		displayContent = strings.ReplaceAll(displayContent, "\t", " ")
+
+		// Collapse multiple spaces
+		for strings.Contains(displayContent, "  ") {
+			displayContent = strings.ReplaceAll(displayContent, "  ", " ")
+		}
+
+		// Trim and ensure reasonable length
+		displayContent = strings.TrimSpace(displayContent)
+		if len(displayContent) > 80 {
+			displayContent = displayContent[:77] + "..."
+		}
+
+		// Show character count and preview
+		charCount := len(currentContent)
+		style := lipgloss.NewStyle().Foreground(lipgloss.Color("3")) // Yellow for streaming
+		return style.Render(fmt.Sprintf("Streaming (%ds): %d chars | %s", seconds, charCount, displayContent))
 	}
 
 	// Create a condition that never stops automatically (we'll stop manually)
