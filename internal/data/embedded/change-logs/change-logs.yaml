@@ -1,0 +1,49 @@
+# NeuroShell Change Log Data
+# This file contains structured change log entries for the NeuroShell development history
+# Each entry represents a significant change, bug fix, or feature addition
+
+entries:
+  - id: "CL001" 
+    version: "0.2.0+development"
+    date: "2025-01-30"
+    type: "bugfix"
+    title: "Fixed quote parsing for natural language apostrophes"
+    description: "Resolved 'Unterminated single-quoted string' errors when using contractions like 'can't' in \\send and \\echo commands"
+    impact: "Users can now use natural language with apostrophes without shell parsing errors"
+    files_changed: ["local-libs/ishell/ishell.go"]
+    
+  - id: "CL002"
+    version: "0.2.0+development" 
+    date: "2025-01-30"
+    type: "feature"
+    title: "Added temporal display integration for LLM calls"
+    description: "Integrated temporal display service to show 'Thinking...' progress during long-running LLM API calls"
+    impact: "Improved user experience with visual feedback for slow LLM responses"
+    files_changed: ["internal/commands/llm/call.go", "internal/data/embedded/stdlib/_send.neuro"]
+    
+  - id: "CL003" 
+    version: "0.2.0+development"
+    date: "2025-01-30"
+    type: "feature"
+    title: "Added streaming mode support via _stream variable"
+    description: "Implemented user-controlled streaming mode through _stream system variable with temporal progress display"
+    impact: "Users can control streaming behavior and see real-time progress without duplicate output"
+    files_changed: ["internal/context/context.go", "internal/commands/llm/call.go"]
+    
+  - id: "CL004"
+    version: "0.2.0+development"
+    date: "2025-01-30" 
+    type: "enhancement"
+    title: "Improved streaming display with single-line approach"
+    description: "Resolved multi-line display stacking issues by implementing reliable single-line streaming progress"
+    impact: "Clean, reliable streaming progress display without terminal artifacts"
+    files_changed: ["internal/services/temporal_display_service.go"]
+    
+  - id: "CL005"
+    version: "0.2.0+development"
+    date: "2025-01-30"
+    type: "testing"
+    title: "Fixed temporal display service test failures"
+    description: "Resolved timer resolution issues in temporal display tests by adjusting update frequency"
+    impact: "Stable test suite for temporal display functionality"
+    files_changed: ["internal/services/temporal_display_service.go"]
