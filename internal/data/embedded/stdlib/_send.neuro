@@ -27,8 +27,8 @@
 \silent \get[_client_id]
 \silent \if-not[condition="${_client_id}"] \echo "Warning: No client ID found, model may not be properly activated"
 
-%% Step 5: Make LLM call using all components
-\silent \llm-call[client_id=${_client_id}, session_id=${_session_id}]
+%% Step 5: Make LLM call using all components (not silent to show thinking display)
+\llm-call[client_id=${_client_id}, session_id=${_session_id}]
 
 %% Step 6: Add assistant response to session and display
 \silent \session-add-assistantmsg[session=${_session_id}] ${#llm_response}
