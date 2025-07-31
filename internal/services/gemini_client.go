@@ -3,11 +3,19 @@ package services
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"google.golang.org/genai"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
 )
+
+// GeminiThinkingInfo contains information about thinking blocks found in Gemini responses.
+type GeminiThinkingInfo struct {
+	ThinkingBlocks int // Number of thinking blocks processed
+	TextBlocks     int // Number of text blocks processed
+	ThinkingTokens int // Estimated thinking tokens used (if available)
+}
 
 // GeminiClient implements the LLMClient interface for Google Gemini API.
 // It provides lazy initialization of the Gemini client and handles
@@ -90,15 +98,15 @@ func (c *GeminiClient) SendChatCompletion(session *neurotypes.ChatSession, model
 		return "", fmt.Errorf("gemini request failed: %w", err)
 	}
 
-	// Extract response text
-	responseText := result.Text()
-	if responseText == "" {
-		logger.Error("Empty response content")
-		return "", fmt.Errorf("empty response content")
+	// Process response with thinking blocks
+	content, thinkingInfo := c.processGeminiResponse(result)
+	if content == "" {
+		logger.Error("No content in Gemini response")
+		return "", fmt.Errorf("no content in response")
 	}
 
-	logger.Debug("Gemini response received", "content_length", len(responseText))
-	return responseText, nil
+	logger.Debug("Gemini response received", "content_length", len(content), "thinking_blocks", thinkingInfo.ThinkingBlocks, "text_blocks", thinkingInfo.TextBlocks)
+	return content, nil
 }
 
 // StreamChatCompletion sends a streaming chat completion request to Google Gemini.
@@ -143,14 +151,15 @@ func (c *GeminiClient) StreamChatCompletion(session *neurotypes.ChatSession, mod
 				return
 			}
 
-			// Extract content from response
-			responseText := response.Text()
-			if responseText != "" {
+			// Process streaming response with thinking blocks
+			content, thinkingInfo := c.processGeminiResponse(response)
+			if content != "" {
 				responseChan <- neurotypes.StreamChunk{
-					Content: responseText,
+					Content: content,
 					Done:    false,
 					Error:   nil,
 				}
+				logger.Debug("Gemini stream chunk processed", "content_length", len(content), "thinking_blocks", thinkingInfo.ThinkingBlocks, "text_blocks", thinkingInfo.TextBlocks)
 			}
 		}
 
@@ -234,23 +243,64 @@ func (c *GeminiClient) buildGenerationConfig(modelConfig *neurotypes.ModelConfig
 			// Create ThinkingConfig based on thinking_budget value
 			switch {
 			case thinkingBudgetInt == -1:
-				// Dynamic thinking: let the model decide (set to nil for dynamic)
-				config.ThinkingConfig = nil
+				// Dynamic thinking: let the model decide
+				config.ThinkingConfig = &genai.ThinkingConfig{
+					IncludeThoughts: true, // Enable thought summaries
+				}
 			case thinkingBudgetInt == 0:
 				// Thinking disabled: set budget to 0
 				thinkingBudgetInt32 := int32(0)
 				config.ThinkingConfig = &genai.ThinkingConfig{
-					ThinkingBudget: &thinkingBudgetInt32,
+					ThinkingBudget:  &thinkingBudgetInt32,
+					IncludeThoughts: false, // No thoughts when disabled
 				}
 			case thinkingBudgetInt > 0:
 				// Fixed thinking budget
 				thinkingBudgetInt32 := int32(thinkingBudgetInt)
 				config.ThinkingConfig = &genai.ThinkingConfig{
-					ThinkingBudget: &thinkingBudgetInt32,
+					ThinkingBudget:  &thinkingBudgetInt32,
+					IncludeThoughts: true, // Enable thought summaries
 				}
 			}
 		}
 	}
 
 	return config
+}
+
+// processGeminiResponse processes all content from Gemini response including thinking blocks.
+// Handles both thinking and text parts appropriately, displaying thinking content visibly.
+func (c *GeminiClient) processGeminiResponse(result *genai.GenerateContentResponse) (string, GeminiThinkingInfo) {
+	var contentBuilder strings.Builder
+	info := GeminiThinkingInfo{}
+
+	// Process all candidates (usually just one)
+	for _, candidate := range result.Candidates {
+		if candidate.Content == nil {
+			continue
+		}
+
+		// Process all parts in the content
+		for _, part := range candidate.Content.Parts {
+			if part.Text == "" {
+				continue // Skip empty parts
+			}
+
+			if part.Thought {
+				// This is a thinking block - display it with special formatting
+				info.ThinkingBlocks++
+				contentBuilder.WriteString("\n🤔 **Thinking:**\n")
+				contentBuilder.WriteString(part.Text)
+				contentBuilder.WriteString("\n\n")
+				logger.Debug("Gemini thinking block processed", "thinking_length", len(part.Text))
+			} else {
+				// This is regular text content
+				info.TextBlocks++
+				contentBuilder.WriteString(part.Text)
+				logger.Debug("Gemini text block processed", "text_length", len(part.Text))
+			}
+		}
+	}
+
+	return contentBuilder.String(), info
 }
