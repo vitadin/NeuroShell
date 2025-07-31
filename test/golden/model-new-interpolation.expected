@@ -7,6 +7,8 @@ Setting model_name = test-model
 Setting temp_setting = 0.7
 %%> "\\model-new[catalog_id=\"${model_catalog_id}\", temperature=\"${temp_setting}\"] ${model_name}"
 Created model 'test-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\get[#model_id]"
 #model_id = 00000001-0000-4000-8000-000000000001

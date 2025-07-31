@@ -1,6 +1,8 @@
 Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"GM25F\"] delegated-flash"
 Created model 'delegated-flash' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\get[#model_name]"
 #model_name = delegated-flash
@@ -10,6 +12,8 @@ Created model 'delegated-flash' (ID: 00000001, Provider: gemini, Base: gemini-2.
 #model_base = gemini-2.5-flash
 %%> "\\model-new[catalog_id=\"GM25P\", thinking_budget=\"8192\"] delegated-pro"
 Created model 'delegated-pro' (ID: 00000002, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\get[#model_name]"
 #model_name = delegated-pro
@@ -19,6 +23,8 @@ Created model 'delegated-pro' (ID: 00000002, Provider: gemini, Base: gemini-2.5-
 #model_param_count = 1
 %%> "\\model-new[catalog_id=\"GM25FL\", temperature=\"0.7\", description=\"Delegated Flash Lite model\"] delegated-lite"
 Created model 'delegated-lite' (ID: 00000003, Provider: gemini, Base: gemini-2.5-flash-lite)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\get[#model_name]"
 #model_name = delegated-lite
@@ -28,6 +34,8 @@ Created model 'delegated-lite' (ID: 00000003, Provider: gemini, Base: gemini-2.5
 #model_description = Delegated Flash Lite model
 %%> "\\model-new[catalog_id=\"GM25F\", temperature=\"0.9\", thinking_budget=\"1024\", max_tokens=\"1500\"] delegated-full"
 Created model 'delegated-full' (ID: 00000004, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
 %%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
 %%> "\\get[#model_name]"
 #model_name = delegated-full

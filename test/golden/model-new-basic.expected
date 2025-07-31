@@ -1,6 +1,8 @@
 Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"G41\"] my-gpt4-model"
 Created model 'my-gpt4-model' (ID: 00000001, Provider: openai, Base: gpt-4.1-2025-04-14)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\get[#model_id]"
 #model_id = 00000001-0000-4000-8000-000000000001

@@ -1,14 +1,18 @@
 Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"O4M\"] primary-model"
 Created model 'primary-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\model-new[catalog_id=\"O3\"] secondary-model"
 Created model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\openai-client-new[client_type=OAR]"
+%%> "\\silent \\llm-client-activate OAR"
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\model-activate primary-model"
 Activated model 'primary-model' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
-%%> "\\silent \\llm-client-get[provider_catalog_id=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\model-status"
 Model Configurations (2 models):
   primary-model (00000001)
@@ -28,7 +32,8 @@ Model Configurations (2 models):
     Description: OpenAI O3 model
 %%> "\\model-activate secondary-model"
 Activated model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
+%%> "\\silent \\llm-client-activate OAR"
+%%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\model-status"
 Model Configurations (2 models):
   primary-model (00000001)
@@ -52,6 +57,8 @@ Model Configurations (2 models):
 #active_model_provider = openai
 %%> "\\model-new[catalog_id=\"O4M\"] new-model"
 Created model 'new-model' (ID: 00000003, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\get[#active_model_name]"
 #active_model_name = new-model

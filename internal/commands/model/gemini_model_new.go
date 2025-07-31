@@ -279,11 +279,21 @@ func (c *GeminiModelNewCommand) Execute(args map[string]string, input string) er
 		_ = variableService.SetSystemVariable("#model_description", createdModel.Description)
 	}
 
-	// Auto-push model activation command to stack service for seamless UX (following model-new tradition)
-	// Use precise ID-based activation to avoid any ambiguity
+	// Auto-push client creation and model activation commands for seamless UX
+	// Note: Stack is LIFO, so we push in reverse order of execution
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		activateCommand := fmt.Sprintf("\\silent \\model-activate[id=true] %s", createdModel.ID)
+		// Push commands in reverse order (LIFO stack)
+		// 1. Push model activation (executed last)
+		modelActivateCommand := fmt.Sprintf("\\silent \\model-activate[id=true] %s", createdModel.ID)
+		stackService.PushCommand(modelActivateCommand)
+
+		// 2. Push client activation (executed second)
+		activateCommand := "\\silent \\llm-client-activate GMC"
 		stackService.PushCommand(activateCommand)
+
+		// 3. Push client creation (executed first)
+		createCommand := "\\silent \\gemini-client-new"
+		stackService.PushCommand(createCommand)
 	}
 
 	// Output success message

@@ -281,12 +281,29 @@ func (c *ActivateCommand) activateModel(model *neurotypes.ModelConfig, modelServ
 		return fmt.Errorf("failed to activate model: %w", err)
 	}
 
-	// Auto-push client creation commands to stack service for seamless UX
+	// Auto-push client creation and activation commands to stack service for seamless UX
 	if stackService, err := services.GetGlobalStackService(); err == nil {
 		providerCatalogIDs := c.getProviderCatalogIDs(model)
-		for _, catalogID := range providerCatalogIDs {
-			clientCommand := fmt.Sprintf("\\silent \\llm-client-get[provider_catalog_id=%s]", catalogID)
-			stackService.PushCommand(clientCommand)
+
+		// Determine which client type should be activated based on model parameters
+		preferredClientType := c.determinePreferredClientType(model, providerCatalogIDs)
+
+		// Create the preferred client specifically
+		if preferredClientType != "" {
+			createCommand := c.generateClientNewCommand(preferredClientType, model)
+			if createCommand != "" {
+				stackService.PushCommand(createCommand)
+				activateCommand := fmt.Sprintf("\\silent \\llm-client-activate %s", preferredClientType)
+				stackService.PushCommand(activateCommand)
+			}
+		} else {
+			// Fallback: create all clients (backward compatibility)
+			for _, catalogID := range providerCatalogIDs {
+				createCommand := c.generateClientNewCommand(catalogID, model)
+				if createCommand != "" {
+					stackService.PushCommand(createCommand)
+				}
+			}
 		}
 	}
 
@@ -415,6 +432,73 @@ func (c *ActivateCommand) getProviderCatalogIDs(model *neurotypes.ModelConfig) [
 
 	// If catalog lookup fails, return empty slice to avoid creating incorrect clients
 	return []string{}
+}
+
+// determinePreferredClientType determines which client type should be activated based on model parameters.
+// It checks for reasoning-specific parameters to decide between reasoning and chat clients.
+func (c *ActivateCommand) determinePreferredClientType(model *neurotypes.ModelConfig, providerCatalogIDs []string) string {
+	// Check if model has reasoning parameters
+	if c.hasReasoningParameters(model.Parameters) {
+		// Prefer reasoning client if available
+		for _, catalogID := range providerCatalogIDs {
+			if catalogID == "OAR" {
+				return "OAR"
+			}
+		}
+	}
+
+	// Default logic: prefer the first available client type
+	if len(providerCatalogIDs) > 0 {
+		return providerCatalogIDs[0]
+	}
+
+	return ""
+}
+
+// hasReasoningParameters checks if model parameters contain reasoning-specific settings.
+func (c *ActivateCommand) hasReasoningParameters(parameters map[string]any) bool {
+	if parameters == nil {
+		return false
+	}
+
+	// Check for OpenAI reasoning parameters
+	if _, hasReasoningEffort := parameters["reasoning_effort"]; hasReasoningEffort {
+		return true
+	}
+	if _, hasReasoningSummary := parameters["reasoning_summary"]; hasReasoningSummary {
+		return true
+	}
+
+	// Check for Gemini thinking parameters
+	if thinkingBudget, hasThinkingBudget := parameters["thinking_budget"]; hasThinkingBudget {
+		// thinking_budget > 0 or -1 indicates thinking mode enabled
+		if budget, ok := thinkingBudget.(int); ok && (budget > 0 || budget == -1) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// generateClientNewCommand generates the appropriate client creation command for a provider catalog ID.
+func (c *ActivateCommand) generateClientNewCommand(catalogID string, model *neurotypes.ModelConfig) string {
+	switch catalogID {
+	case "OAC", "OAR":
+		// For OpenAI clients, determine the appropriate client type
+		clientType := "OAC" // default to chat
+		if c.hasReasoningParameters(model.Parameters) {
+			clientType = "OAR" // use reasoning for reasoning models
+		}
+		return fmt.Sprintf("\\silent \\openai-client-new[client_type=%s]", clientType)
+	case "ANC":
+		return "\\silent \\anthropic-client-new"
+	case "GMC":
+		return "\\silent \\gemini-client-new"
+	default:
+		// For other providers, we don't have specialized commands yet
+		// This maintains backward compatibility while supporting the main providers
+		return ""
+	}
 }
 
 func init() {

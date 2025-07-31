@@ -1,0 +1,82 @@
+%% OpenAI O4-mini Reasoning Experiment - Max Tokens Limit
+%% Purpose: Test O4-mini with high effort and token limits
+%% Part 5 of connected conversation series about data science project planning
+
+\set _style dark1
+
+\echo "=== OpenAI O4-mini Reasoning Experiment - Max Tokens ==="
+\echo "Testing: reasoning_effort='high', max_output_tokens=500"
+\echo "Topic: Final recommendations and implementation roadmap"
+
+%% STEP 1: Setup
+\echo "Step 1: Loading and activating OpenAI API keys..."
+\llm-api-show[provider=openai]
+\llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
+
+%% STEP 2: Create O4-mini model with token limits
+\echo "Step 2: Creating O4-mini model with HIGH effort and TOKEN LIMITS..."
+\openai-model-new[catalog_id="O4M", reasoning_effort="high", max_output_tokens=500] reasoning-tokens-model
+\model-activate reasoning-tokens-model
+
+%% STEP 3: Verify model configuration
+\echo "Step 3: Model configuration verification"
+\model-status
+\echo "Active model: ${#active_model_name}"
+
+%% STEP 4: Connected conversation - Final recommendations
+\echo ""
+\echo "=== REASONING EXPERIMENT: Connected Conversation Part 5/5 ==="
+\echo "Building on implementation decisions from concise-summary discussion"
+\echo "Message 1: Comprehensive project roadmap"
+\echo ""
+
+\send Based on all our previous discussions about churn prediction (initial scope, methodology, optimization, technology stack, and infrastructure), I need you to synthesize everything into a comprehensive 3-month implementation roadmap. The roadmap should prioritize tasks, identify risks, define success metrics, and provide actionable next steps for a team of 4 data scientists and 2 ML engineers with a $10k/month budget. Include specific deliverables for each month, resource allocation, and contingency plans for potential issues we've discussed.
+
+\echo ""
+\echo "Response time and thinking analysis:"
+\echo "- This should show extended thinking time with HIGH effort"
+\echo "- Response should be LIMITED by max_output_tokens=500"
+\echo "- This tests how reasoning models handle token constraints"
+\echo ""
+
+\echo "Message 2: Risk mitigation strategies"
+\send Given the roadmap you provided, what are the top 5 highest-risk aspects of this project, and what specific mitigation strategies would you recommend for each? Consider technical risks (model performance, scalability), business risks (changing requirements, timeline pressure), and operational risks (team capacity, budget constraints). Provide concrete action items for each risk category.
+
+\echo ""
+\echo "Message 3: Success measurement and iteration"
+\send Finally, how should we measure success at each stage of the project, and what feedback loops should we establish for continuous improvement? Define specific KPIs for technical performance (accuracy, latency, reliability), business impact (churn reduction, ROI, stakeholder satisfaction), and operational excellence (development velocity, maintenance overhead, team productivity). How should we adapt the system based on these measurements?
+
+\echo ""
+\echo "=== CONVERSATION SUMMARY ==="
+\echo "Messages in this session: 3"
+\echo "Reasoning effort: HIGH - Should show extended thinking times"
+\echo "Expected behavior: Deep analysis LIMITED by 500 tokens - truncated responses"
+\echo "Token constraint effects: Responses should be cut off around 500 tokens"
+\echo "First response: ${.1}"
+\echo "Latest response: ${1}"
+
+%% STEP 5: Token analysis
+\echo ""
+\echo "Step 5: Token limit analysis..."
+\echo "All responses should be constrained to ~500 tokens"
+\echo "This tests how reasoning models handle output limitations"
+\session-show Session 1
+
+%% STEP 6: Cleanup
+\echo ""
+\echo "Step 6: Cleaning up..."
+\model-delete reasoning-tokens-model
+\model-status
+\echo "Max tokens reasoning experiment completed."
+
+%% FINAL SUMMARY
+\echo ""
+\echo "=== REASONING EXPERIMENTS SERIES COMPLETED ==="
+\echo "Completed all 5 connected reasoning experiments:"
+\echo "1. Low effort + auto summary"
+\echo "2. Medium effort + detailed summary"
+\echo "3. High effort + auto summary"
+\echo "4. Medium effort + concise summary"
+\echo "5. High effort + token limits"
+\echo ""
+\echo "Next: Run each experiment and compare thinking times, summary quality, and response completeness"

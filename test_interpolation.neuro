@@ -1,2 +1,0 @@
-\set[test_var=true]
-\if[condition=${test_var}] cho This should work

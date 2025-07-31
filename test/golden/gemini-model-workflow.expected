@@ -33,12 +33,18 @@ Model Catalog (Gemini) (3 models):
     Description: Google's most capable multimodal AI model with advanced reasoning capabilities
 %%> "\\gemini-model-new[catalog_id=\"GM25F\", thinking_budget=\"2048\"] flash-direct"
 Created model 'flash-direct' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\model-new[catalog_id=\"GM25P\", thinking_budget=\"-1\"] pro-delegated"
 Created model 'pro-delegated' (ID: 00000002, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\gemini-model-new[catalog_id=\"GM25FL\", temperature=\"0.8\"] lite-direct"
 Created model 'lite-direct' (ID: 00000003, Provider: gemini, Base: gemini-2.5-flash-lite)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\model-status"
 Model Configurations (3 models):
@@ -66,21 +72,27 @@ Model Configurations (3 models):
     Description: Gemini Gemini 2.5 Pro model
 %%> "\\model-activate flash-direct"
 Activated model 'flash-direct' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
-%%> "\\silent \\llm-client-get[provider_catalog_id=GMC]"
+%%> "\\silent \\llm-client-activate GMC"
+%%> "\\silent \\gemini-client-new"
 %%> "\\get[#active_model_name]"
 #active_model_name = flash-direct
 %%> "\\get[#active_model_provider]"
 #active_model_provider = gemini
 %%> "\\model-activate pro-delegated"
 Activated model 'pro-delegated' (ID: 00000002, Provider: gemini, Base: gemini-2.5-pro)
-%%> "\\silent \\llm-client-get[provider_catalog_id=GMC]"
+%%> "\\silent \\llm-client-activate GMC"
+%%> "\\silent \\gemini-client-new"
 %%> "\\get[#active_model_name]"
 #active_model_name = pro-delegated
 %%> "\\model-new[catalog_id=\"GM25F\", temperature=\"0.9\", thinking_budget=\"0\", description=\"Fast Flash without thinking\"] fast-flash"
 Created model 'fast-flash' (ID: 00000004, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
 %%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
 %%> "\\gemini-model-new[catalog_id=\"GM25P\", thinking_budget=\"16384\", max_tokens=\"3000\", description=\"High-performance Pro\"] perf-pro"
 Created model 'perf-pro' (ID: 00000005, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
 %%> "\\silent \\model-activate[id=true] 00000005-0000-4000-8000-000000000005"
 %%> "\\model-status"
 Model Configurations (5 models):
@@ -122,7 +134,8 @@ Model Configurations (5 models):
     Description: Gemini Gemini 2.5 Pro model
 %%> "\\model-activate perf-pro"
 Activated model 'perf-pro' (ID: 00000005, Provider: gemini, Base: gemini-2.5-pro)
-%%> "\\silent \\llm-client-get[provider_catalog_id=GMC]"
+%%> "\\silent \\llm-client-activate GMC"
+%%> "\\silent \\gemini-client-new"
 %%> "\\get[#active_model_name]"
 #active_model_name = perf-pro
 %%> "\\model-delete flash-direct"
@@ -159,6 +172,8 @@ Model Configurations (3 models):
 #active_model_name = perf-pro
 %%> "\\gemini-model-new[catalog_id=\"GM25FL\", thinking_budget=\"-1\"] final-lite"
 Created model 'final-lite' (ID: 00000006, Provider: gemini, Base: gemini-2.5-flash-lite)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
 %%> "\\silent \\model-activate[id=true] 00000006-0000-4000-8000-000000000006"
 %%> "\\model-delete pro-delegated"
 Deleted model 'pro-delegated' (ID: 00000002, Provider: gemini, Base: gemini-2.5-pro)

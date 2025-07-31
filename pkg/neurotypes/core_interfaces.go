@@ -46,6 +46,7 @@ type Context interface {
 	// LLM client storage methods
 	GetLLMClient(clientID string) (LLMClient, bool)
 	SetLLMClient(clientID string, client LLMClient)
+	GetAllLLMClients() map[string]LLMClient
 	GetLLMClientCount() int
 	ClearLLMClients()
 

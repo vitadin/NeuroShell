@@ -1,6 +1,8 @@
 Setting _echo_command = true
 %%> "\\gemini-model-new[catalog_id=\"GM25F\", temperature=\"0.8\", max_tokens=\"2000\", top_p=\"0.9\", top_k=\"40\", thinking_budget=\"4096\", description=\"Advanced Gemini Flash model for creative tasks\"] creative-gemini"
 Created model 'creative-gemini' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\get[#model_id]"
 #model_id = 00000001-0000-4000-8000-000000000001

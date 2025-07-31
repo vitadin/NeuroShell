@@ -72,9 +72,13 @@ Model Catalog (Openai) (7 models):
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
 %%> "\\model-new[catalog_id=\"O4M\"] claude-s4-instance"
 Created model 'claude-s4-instance' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\model-new[catalog_id=\"O3\"] openai-o3-instance"
 Created model 'openai-o3-instance' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\openai-client-new[client_type=OAR]"
+%%> "\\silent \\llm-client-activate OAR"
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\model-status"
 Model Configurations (2 models):
@@ -97,13 +101,14 @@ Model Configurations (2 models):
 #model_count = 2
 %%> "\\model-activate claude-s4-instance"
 Activated model 'claude-s4-instance' (ID: 00000001, Provider: openai, Base: o4-mini)
-%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
-%%> "\\silent \\llm-client-get[provider_catalog_id=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\get[#active_model_base]"
 #active_model_base = o4-mini
 %%> "\\model-activate openai-o3-instance"
 Activated model 'openai-o3-instance' (ID: 00000002, Provider: openai, Base: o3)
-%%> "\\silent \\llm-client-get[provider_catalog_id=OAR]"
+%%> "\\silent \\llm-client-activate OAR"
+%%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\get[#active_model_base]"
 #active_model_base = o3
 %%> "\\get[#active_model_provider]"
