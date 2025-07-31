@@ -1,0 +1,32 @@
+Setting _echo_command = true
+%%> "\\session-json-import[file=test/golden/session-json-import-basic/sample-session.json]"
+Imported session as 'Session 1' (ID: 00000001) from test/golden/session-json-import-basic/sample-session.json (original: 'sample-imported-session')
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\get[_output]"
+_output = Activated session 'Session 1' (ID: 00000001, Messages: 3)
+%%> "\\get[#session_id]"
+#session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#session_name]"
+#session_name = Session 1
+%%> "\\get[#session_created]"
+#session_created = 2025-01-01 00:00:01
+%%> "\\get[#session_original_id]"
+#session_original_id = original-session-id-123
+%%> "\\get[#session_original_name]"
+#session_original_name = sample-imported-session
+%%> "\\get[#session_original_created]"
+#session_original_created = 2024-01-15 10:25:00
+%%> "\\get[#message_count]"
+#message_count = 3
+%%> "\\get[#system_prompt]"
+#system_prompt = You are a helpful test assistant for import testing
+%%> "\\session-show"
+Session: Session 1 (ID: 00000001)
+System: You are a helpful test assistant for import testing
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:01
+Messages: 3 total
+[1] user (10:30:00): Hello, can you help me test the import functionality?
+[2] assistant (10:30:05): Hello! Yes, I'd be happy to help you tes...ge should be preserved during import. (123 chars)
+[3] user (10:30:10): Great! Let's verify that all conversation history is maintained.
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"

@@ -1,0 +1,150 @@
+Setting _echo_command = true
+%%> "\\session-new[system=\"You are a coding assistant\"] workflow_session_1"
+Created session 'workflow_session_1' (ID: 00000001)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-usermsg Can you help me with Python?"
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-assistantmsg Of course! I'd be happy to help you with Python programming."
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-new[system=\"You are a writing assistant\"] workflow_session_2"
+Created session 'workflow_session_2' (ID: 00000004)
+%%> "\\silent \\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
+%%> "\\session-add-usermsg Help me write a story"
+Added user message to session '00000004-0000-4000-8000-000000000004'
+%%> "\\silent \\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
+%%> "\\session-add-assistantmsg I'd love to help you craft an engaging story!"
+Added assistant message to session '00000004-0000-4000-8000-000000000004'
+%%> "\\silent \\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
+%%> "\\session-new[system=\"You are a math tutor\"] workflow_session_3"
+Created session 'workflow_session_3' (ID: 00000007)
+%%> "\\silent \\session-activate[id=true] 00000007-0000-4000-8000-000000000007"
+%%> "\\session-add-usermsg Explain calculus basics"
+Added user message to session '00000007-0000-4000-8000-000000000007'
+%%> "\\silent \\session-activate[id=true] 00000007-0000-4000-8000-000000000007"
+%%> "\\session-add-assistantmsg Let me explain the fundamental concepts of calculus step by step."
+Added assistant message to session '00000007-0000-4000-8000-000000000007'
+%%> "\\silent \\session-activate[id=true] 00000007-0000-4000-8000-000000000007"
+%%> "\\session-export[file=/tmp/neuro_workflow_coding.json] workflow_session_1"
+%%> "\\session-json-export[file=/tmp/neuro_workflow_coding.json] workflow_session_1"
+Exported session 'workflow_session_1' (ID: 00000001) to /tmp/neuro_workflow_coding.json
+%%> "\\session-export[file=/tmp/neuro_workflow_writing.json] workflow_session_2"
+%%> "\\session-json-export[file=/tmp/neuro_workflow_writing.json] workflow_session_2"
+Exported session 'workflow_session_2' (ID: 00000004) to /tmp/neuro_workflow_writing.json
+%%> "\\session-export[file=/tmp/neuro_workflow_math.json] workflow_session_3"
+%%> "\\session-json-export[file=/tmp/neuro_workflow_math.json] workflow_session_3"
+Exported session 'workflow_session_3' (ID: 00000007) to /tmp/neuro_workflow_math.json
+%%> "\\cat /tmp/neuro_workflow_coding.json"
+{
+  "id": "00000001-0000-4000-8000-000000000001",
+  "name": "workflow_session_1",
+  "system_prompt": "You are a coding assistant",
+  "messages": [
+    {
+      "id": "00000002-0000-4000-8000-000000000002",
+      "role": "user",
+      "content": "Can you help me with Python?",
+      "timestamp": "2025-01-01T00:00:02Z"
+    },
+    {
+      "id": "00000003-0000-4000-8000-000000000003",
+      "role": "assistant",
+      "content": "Of course! I'd be happy to help you with Python programming.",
+      "timestamp": "2025-01-01T00:00:04Z"
+    }
+  ],
+  "created_at": "2025-01-01T00:00:01Z",
+  "updated_at": "2025-01-01T00:00:05Z",
+  "is_active": false
+}
+%%> "\\cat /tmp/neuro_workflow_writing.json"
+{
+  "id": "00000004-0000-4000-8000-000000000004",
+  "name": "workflow_session_2",
+  "system_prompt": "You are a writing assistant",
+  "messages": [
+    {
+      "id": "00000005-0000-4000-8000-000000000005",
+      "role": "user",
+      "content": "Help me write a story",
+      "timestamp": "2025-01-01T00:00:07Z"
+    },
+    {
+      "id": "00000006-0000-4000-8000-000000000006",
+      "role": "assistant",
+      "content": "I'd love to help you craft an engaging story!",
+      "timestamp": "2025-01-01T00:00:09Z"
+    }
+  ],
+  "created_at": "2025-01-01T00:00:06Z",
+  "updated_at": "2025-01-01T00:00:10Z",
+  "is_active": false
+}
+%%> "\\cat /tmp/neuro_workflow_math.json"
+{
+  "id": "00000007-0000-4000-8000-000000000007",
+  "name": "workflow_session_3",
+  "system_prompt": "You are a math tutor",
+  "messages": [
+    {
+      "id": "00000008-0000-4000-8000-000000000008",
+      "role": "user",
+      "content": "Explain calculus basics",
+      "timestamp": "2025-01-01T00:00:12Z"
+    },
+    {
+      "id": "00000009-0000-4000-8000-000000000009",
+      "role": "assistant",
+      "content": "Let me explain the fundamental concepts of calculus step by step.",
+      "timestamp": "2025-01-01T00:00:14Z"
+    }
+  ],
+  "created_at": "2025-01-01T00:00:11Z",
+  "updated_at": "2025-01-01T00:00:15Z",
+  "is_active": true
+}
+%%> "\\session-import[file=/tmp/neuro_workflow_coding.json]"
+%%> "\\session-json-import[file=/tmp/neuro_workflow_coding.json]"
+Imported session as 'Session 1' (ID: 0000000a) from /tmp/neuro_workflow_coding.json (original: 'workflow_session_1')
+%%> "\\silent \\session-activate[id=true] 0000000a-0000-4000-8000-00000000000a"
+%%> "\\get[#session_name]"
+#session_name = Session 1
+%%> "\\get[#session_original_name]"
+#session_original_name = workflow_session_1
+%%> "\\get[#message_count]"
+#message_count = 2
+%%> "\\session-import[file=/tmp/neuro_workflow_writing.json]"
+%%> "\\session-json-import[file=/tmp/neuro_workflow_writing.json]"
+Imported session as 'Session 2' (ID: 0000000b) from /tmp/neuro_workflow_writing.json (original: 'workflow_session_2')
+%%> "\\silent \\session-activate[id=true] 0000000b-0000-4000-8000-00000000000b"
+%%> "\\get[#session_name]"
+#session_name = Session 2
+%%> "\\get[#session_original_name]"
+#session_original_name = workflow_session_2
+%%> "\\get[#message_count]"
+#message_count = 2
+%%> "\\session-import[file=/tmp/neuro_workflow_math.json]"
+%%> "\\session-json-import[file=/tmp/neuro_workflow_math.json]"
+Imported session as 'Session 3' (ID: 0000000c) from /tmp/neuro_workflow_math.json (original: 'workflow_session_3')
+%%> "\\silent \\session-activate[id=true] 0000000c-0000-4000-8000-00000000000c"
+%%> "\\get[#session_name]"
+#session_name = Session 3
+%%> "\\get[#session_original_name]"
+#session_original_name = workflow_session_3
+%%> "\\get[#message_count]"
+#message_count = 2
+%%> "\\session-list"
+Sessions (6 total):
+  Session 3    (ID: 0000000c, active, 2 messages, created: 2025-01-01)
+  Session 2    (ID: 0000000b, 2 messages, created: 2025-01-01)
+  Session 1    (ID: 0000000a, 2 messages, created: 2025-01-01)
+  workflow_session_3    (ID: 00000007, 2 messages, created: 2025-01-01)
+  workflow_session_2    (ID: 00000004, 2 messages, created: 2025-01-01)
+  workflow_session_1    (ID: 00000001, 2 messages, created: 2025-01-01)
+%%> "\\try \\bash rm /tmp/neuro_workflow_coding.json"
+%%> "\\bash rm /tmp/neuro_workflow_coding.json"
+%%> "\\try \\bash rm /tmp/neuro_workflow_writing.json"
+%%> "\\bash rm /tmp/neuro_workflow_writing.json"
+%%> "\\try \\bash rm /tmp/neuro_workflow_math.json"
+%%> "\\bash rm /tmp/neuro_workflow_math.json"

@@ -1,0 +1,51 @@
+%% Test complete workflow with multiple sessions export/import
+\set[_echo_command="true"]
+
+%% Create first session
+\session-new[system="You are a coding assistant"] workflow_session_1
+\session-add-usermsg Can you help me with Python?
+\session-add-assistantmsg Of course! I'd be happy to help you with Python programming.
+
+%% Create second session
+\session-new[system="You are a writing assistant"] workflow_session_2  
+\session-add-usermsg Help me write a story
+\session-add-assistantmsg I'd love to help you craft an engaging story!
+
+%% Create third session
+\session-new[system="You are a math tutor"] workflow_session_3
+\session-add-usermsg Explain calculus basics
+\session-add-assistantmsg Let me explain the fundamental concepts of calculus step by step.
+
+%% Export all sessions to different files
+\session-export[file=/tmp/neuro_workflow_coding.json] workflow_session_1
+\session-export[file=/tmp/neuro_workflow_writing.json] workflow_session_2
+\session-export[file=/tmp/neuro_workflow_math.json] workflow_session_3
+
+%% Show content of each exported file
+\cat /tmp/neuro_workflow_coding.json
+\cat /tmp/neuro_workflow_writing.json  
+\cat /tmp/neuro_workflow_math.json
+
+%% Import all sessions back (they should get new names)
+\session-import[file=/tmp/neuro_workflow_coding.json]
+\get[#session_name]
+\get[#session_original_name]
+\get[#message_count]
+
+\session-import[file=/tmp/neuro_workflow_writing.json] 
+\get[#session_name]
+\get[#session_original_name]
+\get[#message_count]
+
+\session-import[file=/tmp/neuro_workflow_math.json]
+\get[#session_name]
+\get[#session_original_name] 
+\get[#message_count]
+
+%% List all sessions to verify we now have both original and imported sessions
+\session-list
+
+%% Clean up all temp files
+\try \bash rm /tmp/neuro_workflow_coding.json
+\try \bash rm /tmp/neuro_workflow_writing.json
+\try \bash rm /tmp/neuro_workflow_math.json

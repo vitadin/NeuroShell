@@ -1,0 +1,26 @@
+%% Test format auto-detection from file extensions
+\set[_echo_command="true"]
+
+%% Create a test session
+\session-new[system="You are a test assistant for format detection"] format_test_session
+
+%% Add a test message
+\session-add-usermsg Testing format auto-detection
+
+%% Test general export command (should detect .json format)
+\session-export[file=/tmp/neuro_test_format_detection.json] format_test_session
+
+%% Show exported content to verify it's valid JSON
+\cat /tmp/neuro_test_format_detection.json
+
+%% Test general import command (should detect .json format)
+\session-import[file=/tmp/neuro_test_format_detection.json]
+
+%% Verify import worked and variables are set
+\get[_output]
+\get[#session_name]
+\get[#session_original_name]
+\get[#message_count]
+
+%% Clean up temp file
+\try \bash rm /tmp/neuro_test_format_detection.json

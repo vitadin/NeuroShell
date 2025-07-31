@@ -1,0 +1,25 @@
+%% Test basic JSON import functionality using fixture files
+\set[_echo_command="true"]
+
+%% Import session from fixture JSON file
+\session-json-import[file=test/golden/session-json-import-basic/sample-session.json]
+
+%% Verify output variable
+\get[_output]
+
+%% Verify new session variables (in memory)
+\get[#session_id]
+\get[#session_name]
+\get[#session_created]
+
+%% Verify original session variables (from file)
+\get[#session_original_id]
+\get[#session_original_name]
+\get[#session_original_created]
+
+%% Verify preserved content variables
+\get[#message_count]
+\get[#system_prompt]
+
+%% Show the active session to verify it was imported correctly
+\session-show

@@ -1,0 +1,21 @@
+%% Test basic JSON export functionality with file cleanup
+\set[_echo_command="true"]
+
+%% Create a test session with messages and system prompt
+\session-new[system="You are a helpful test assistant for export testing"] export_test_session
+
+%% Add some messages to make the session more realistic
+\session-add-usermsg Hello, can you help me test the export functionality?
+\session-add-assistantmsg Hello! Yes, I'd be happy to help you test the session export functionality.
+
+%% Export the session to a temporary JSON file
+\session-json-export[file=/tmp/neuro_test_export_basic.json] export_test_session
+
+%% Display the exported JSON content for verification
+\cat /tmp/neuro_test_export_basic.json
+
+%% Verify output variables were set
+\get[_output]
+
+%% Clean up the temporary file
+\try \bash rm /tmp/neuro_test_export_basic.json

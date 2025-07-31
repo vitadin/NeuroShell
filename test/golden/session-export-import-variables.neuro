@@ -1,0 +1,58 @@
+%% Test comprehensive variable verification for export/import commands
+\set[_echo_command="true"]
+
+%% Create a session with specific content for variable testing
+\session-new[system="You are a comprehensive test assistant for variable verification"] variables_test_session
+
+%% Add multiple messages to test message count
+\session-add-usermsg First test message
+\session-add-assistantmsg First response message
+\session-add-usermsg Second test message  
+\session-add-assistantmsg Second response message
+\session-add-usermsg Third test message
+
+%% Capture original session variables before export
+\echo "=== Original Session Variables ==="
+\get[#session_id]
+\get[#session_name]
+\get[#session_created]
+\get[#message_count]
+\get[#system_prompt]
+
+%% Export the session
+\session-json-export[file=/tmp/neuro_variables_test.json] variables_test_session
+
+%% Show the exported JSON structure for verification
+\echo "=== Exported JSON Content ==="
+\cat /tmp/neuro_variables_test.json
+
+%% Import the session back
+\session-json-import[file=/tmp/neuro_variables_test.json]
+
+%% Verify all new session variables (in memory)
+\echo "=== New Session Variables (in memory) ==="
+\get[#session_id]
+\get[#session_name]
+\get[#session_created]
+
+%% Verify all original session variables (from file)
+\echo "=== Original Session Variables (from file) ==="
+\get[#session_original_id]
+\get[#session_original_name]
+\get[#session_original_created]
+
+%% Verify preserved content variables
+\echo "=== Preserved Content Variables ==="
+\get[#message_count]
+\get[#system_prompt]
+
+%% Verify command output variable
+\echo "=== Command Output Variable ==="
+\get[_output]
+
+%% Show the imported session to verify message preservation
+\echo "=== Imported Session Content ==="
+\session-show
+
+%% Clean up temp file
+\try \bash rm /tmp/neuro_variables_test.json
