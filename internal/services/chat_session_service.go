@@ -580,6 +580,49 @@ func (c *ChatSessionService) GetMessageCountWithContext(nameOrID string, ctx neu
 	return len(session.Messages), nil
 }
 
+// EditMessage edits the content of a specific message in the specified session.
+// The messageIndex parameter uses 0-based indexing internally.
+func (c *ChatSessionService) EditMessage(nameOrID string, messageIndex int, newContent string) error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.EditMessageWithContext(nameOrID, messageIndex, newContent, ctx)
+}
+
+// EditMessageWithContext edits the content of a specific message in the specified session using provided context.
+// The messageIndex parameter uses 0-based indexing internally.
+func (c *ChatSessionService) EditMessageWithContext(nameOrID string, messageIndex int, newContent string, ctx neurotypes.Context) error {
+	if !c.initialized {
+		return fmt.Errorf("chat session service not initialized")
+	}
+
+	// Get the session using smart prefix matching
+	session, err := c.FindSessionByPrefixWithContext(nameOrID, ctx)
+	if err != nil {
+		return err
+	}
+
+	// Validate message index bounds
+	if messageIndex < 0 || messageIndex >= len(session.Messages) {
+		return fmt.Errorf("message index %d is out of bounds (session has %d messages)", messageIndex+1, len(session.Messages))
+	}
+
+	// Update the message content while preserving other fields
+	session.Messages[messageIndex].Content = newContent
+	session.UpdatedAt = testutils.GetCurrentTime(ctx)
+
+	// Update session in context
+	sessions := ctx.GetChatSessions()
+	sessions[session.ID] = session
+	ctx.SetChatSessions(sessions)
+
+	logger.Debug("Message edited successfully",
+		"session_id", session.ID,
+		"session_name", session.Name,
+		"message_index", messageIndex,
+		"message_id", session.Messages[messageIndex].ID)
+
+	return nil
+}
+
 // GetSessionNames returns all session names for easy listing.
 func (c *ChatSessionService) GetSessionNames() []string {
 	ctx := neuroshellcontext.GetGlobalContext()

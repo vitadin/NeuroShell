@@ -1,0 +1,41 @@
+%% Test basic session-edit-msg functionality with dual indexing system
+\set[_echo_command="true"]
+
+%% Create a session with multiple messages
+\session-new[system="You are a test assistant"] edit_basic
+\session-add-usermsg First user message
+\session-add-assistantmsg First assistant response
+\session-add-usermsg Second user message
+\session-add-assistantmsg Second assistant response
+
+%% Test reverse order indexing (default)
+%% Edit last message (idx=1)
+\session-edit-msg[idx=1] Edited last message (was second assistant)
+\get[#old_content]
+\get[#new_content]
+\get[#message_position]
+
+%% Edit second-to-last message (idx=2)
+\session-edit-msg[idx=2] Edited second-to-last message (was second user)
+\get[#old_content]
+\get[#new_content]
+\get[#message_position]
+
+%% Test normal order indexing (dot notation)
+%% Edit first message (idx=.1)
+\session-edit-msg[idx=.1] Edited first message (was first user)
+\get[#old_content]
+\get[#new_content]
+\get[#message_position]
+
+%% Edit second message (idx=.2)
+\session-edit-msg[idx=.2] Edited second message (was first assistant)
+\get[#old_content]
+\get[#new_content]
+\get[#message_position]
+
+%% Show final session to verify all edits
+\session-show edit_basic
+
+%% Clean up
+\session-delete edit_basic

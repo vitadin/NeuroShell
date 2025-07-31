@@ -184,7 +184,7 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 
 	sessionCommands := map[string]bool{
 		"session-activate": true, "session-add-assistantmsg": true, "session-add-usermsg": true,
-		"session-copy": true, "session-delete": true, "session-export": true, "session-import": true,
+		"session-copy": true, "session-delete": true, "session-edit-msg": true, "session-export": true, "session-import": true,
 		"session-json-export": true, "session-json-import": true, "session-list": true,
 		"session-new": true, "session-show": true,
 	}
@@ -237,7 +237,7 @@ func (c *HelpCommand) displaySessionCommandsGrouped(sessionCommands []*neurotype
 		switch cmdInfo.Command {
 		case "session-new", "session-list", "session-activate", "session-copy", "session-delete", "session-show":
 			sessionGroups["Basic Management"] = append(sessionGroups["Basic Management"], cmdInfo)
-		case "session-add-usermsg", "session-add-assistantmsg":
+		case "session-add-usermsg", "session-add-assistantmsg", "session-edit-msg":
 			sessionGroups["Conversation"] = append(sessionGroups["Conversation"], cmdInfo)
 		case "session-export", "session-import", "session-json-export", "session-json-import":
 			sessionGroups["Import/Export"] = append(sessionGroups["Import/Export"], cmdInfo)

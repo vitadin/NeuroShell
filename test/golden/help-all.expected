@@ -40,6 +40,7 @@ Session Management:
     Conversation:
       \session-add-assistantmsg - Add assistant message to specified session
       \session-add-usermsg - Add user message to specified session
+      \session-edit-msg  - Edit message content by index using dual indexing system
     Import/Export:
       \session-export    - Export chat session in specified format
       \session-import    - Import chat session from file with format auto-detection
