@@ -404,3 +404,261 @@ func TestChatSessionService_CopySession_MultipleCopiesFromSameSource(t *testing.
 		}
 	}
 }
+
+func TestChatSessionService_EditMessage_Basic(t *testing.T) {
+	// Setup test environment
+	ctx := context.New()
+	ctx.SetTestMode(true)
+	context.SetGlobalContext(ctx)
+
+	// Create and initialize service
+	service := NewChatSessionService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Create session with messages
+	session, err := service.CreateSession("edit_test", "Test assistant", "")
+	require.NoError(t, err)
+
+	// Add messages
+	err = service.AddMessage("edit_test", "user", "First message")
+	require.NoError(t, err)
+	err = service.AddMessage("edit_test", "assistant", "Second message")
+	require.NoError(t, err)
+	err = service.AddMessage("edit_test", "user", "Third message")
+	require.NoError(t, err)
+
+	// Get original message details
+	originalSession, err := service.GetSession(session.ID)
+	require.NoError(t, err)
+	originalMessage := originalSession.Messages[1] // Edit second message
+	originalUpdateTime := originalSession.UpdatedAt
+
+	// Edit the second message (index 1)
+	err = service.EditMessage("edit_test", 1, "Edited second message")
+	assert.NoError(t, err)
+
+	// Verify the edit
+	updatedSession, err := service.GetSession(session.ID)
+	require.NoError(t, err)
+	updatedMessage := updatedSession.Messages[1]
+
+	// Content should be changed
+	assert.Equal(t, "Edited second message", updatedMessage.Content)
+	assert.NotEqual(t, originalMessage.Content, updatedMessage.Content)
+
+	// Metadata should be preserved
+	assert.Equal(t, originalMessage.ID, updatedMessage.ID)
+	assert.Equal(t, originalMessage.Role, updatedMessage.Role)
+	assert.Equal(t, originalMessage.Timestamp, updatedMessage.Timestamp)
+
+	// Session UpdatedAt should be updated
+	assert.True(t, updatedSession.UpdatedAt.After(originalUpdateTime))
+
+	// Other messages should be unchanged
+	assert.Equal(t, "First message", updatedSession.Messages[0].Content)
+	assert.Equal(t, "Third message", updatedSession.Messages[2].Content)
+}
+
+func TestChatSessionService_EditMessage_ByID(t *testing.T) {
+	// Setup test environment
+	ctx := context.New()
+	ctx.SetTestMode(true)
+	context.SetGlobalContext(ctx)
+
+	// Create and initialize service
+	service := NewChatSessionService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Create session with message
+	session, err := service.CreateSession("id_edit_test", "Test assistant", "")
+	require.NoError(t, err)
+
+	err = service.AddMessage("id_edit_test", "user", "Original message")
+	require.NoError(t, err)
+
+	// Edit by session ID instead of name
+	err = service.EditMessage(session.ID, 0, "Edited by ID")
+	assert.NoError(t, err)
+
+	// Verify the edit
+	updatedSession, err := service.GetSession(session.ID)
+	require.NoError(t, err)
+	assert.Equal(t, "Edited by ID", updatedSession.Messages[0].Content)
+}
+
+func TestChatSessionService_EditMessage_ErrorCases(t *testing.T) {
+	// Setup test environment
+	ctx := context.New()
+	ctx.SetTestMode(true)
+	context.SetGlobalContext(ctx)
+
+	// Create and initialize service
+	service := NewChatSessionService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Test 1: Service not initialized
+	uninitializedService := &ChatSessionService{}
+	err = uninitializedService.EditMessage("any_session", 0, "new content")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "chat session service not initialized")
+
+	// Test 2: Session not found
+	err = service.EditMessage("nonexistent_session", 0, "new content")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "no session found")
+
+	// Test 3: Message index out of bounds
+	_, err = service.CreateSession("bounds_test", "Test assistant", "")
+	require.NoError(t, err)
+
+	err = service.AddMessage("bounds_test", "user", "Only message")
+	require.NoError(t, err)
+
+	// Test negative index
+	err = service.EditMessage("bounds_test", -1, "new content")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "out of bounds")
+
+	// Test index too high
+	err = service.EditMessage("bounds_test", 1, "new content")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "out of bounds")
+
+	// Test 4: Empty session
+	_, err = service.CreateSession("empty_test", "Test assistant", "")
+	require.NoError(t, err)
+
+	err = service.EditMessage("empty_test", 0, "new content")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "out of bounds")
+}
+
+func TestChatSessionService_EditMessage_BoundaryConditions(t *testing.T) {
+	// Setup test environment
+	ctx := context.New()
+	ctx.SetTestMode(true)
+	context.SetGlobalContext(ctx)
+
+	// Create and initialize service
+	service := NewChatSessionService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Create session with exactly one message
+	session, err := service.CreateSession("single_message", "Test assistant", "")
+	require.NoError(t, err)
+
+	err = service.AddMessage("single_message", "user", "Only message")
+	require.NoError(t, err)
+
+	// Edit the only message (index 0)
+	err = service.EditMessage("single_message", 0, "Edited only message")
+	assert.NoError(t, err)
+
+	// Verify the edit
+	updatedSession, err := service.GetSession(session.ID)
+	require.NoError(t, err)
+	assert.Len(t, updatedSession.Messages, 1)
+	assert.Equal(t, "Edited only message", updatedSession.Messages[0].Content)
+}
+
+func TestChatSessionService_EditMessage_WithContext(t *testing.T) {
+	// Setup test environment
+	ctx := context.New()
+	ctx.SetTestMode(true)
+	context.SetGlobalContext(ctx)
+
+	// Create and initialize service
+	service := NewChatSessionService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Create session with message
+	session, err := service.CreateSession("context_test", "Test assistant", "")
+	require.NoError(t, err)
+
+	err = service.AddMessage("context_test", "user", "Original message")
+	require.NoError(t, err)
+
+	// Test EditMessageWithContext method directly
+	err = service.EditMessageWithContext("context_test", 0, "Edited with context", ctx)
+	assert.NoError(t, err)
+
+	// Verify the edit
+	updatedSession, err := service.GetSessionWithContext(session.ID, ctx)
+	require.NoError(t, err)
+	assert.Equal(t, "Edited with context", updatedSession.Messages[0].Content)
+}
+
+func TestChatSessionService_EditMessage_MultipleEdits(t *testing.T) {
+	// Setup test environment
+	ctx := context.New()
+	ctx.SetTestMode(true)
+	context.SetGlobalContext(ctx)
+
+	// Create and initialize service
+	service := NewChatSessionService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Create session with message
+	session, err := service.CreateSession("multi_edit", "Test assistant", "")
+	require.NoError(t, err)
+
+	err = service.AddMessage("multi_edit", "user", "Original message")
+	require.NoError(t, err)
+
+	// Edit the same message multiple times
+	edits := []string{
+		"First edit",
+		"Second edit",
+		"Final edit",
+	}
+
+	for i, edit := range edits {
+		err = service.EditMessage("multi_edit", 0, edit)
+		assert.NoError(t, err, "Edit %d should succeed", i+1)
+
+		// Verify each edit
+		updatedSession, err := service.GetSession(session.ID)
+		require.NoError(t, err)
+		assert.Equal(t, edit, updatedSession.Messages[0].Content, "Edit %d content should match", i+1)
+	}
+
+	// Final verification
+	finalSession, err := service.GetSession(session.ID)
+	require.NoError(t, err)
+	assert.Equal(t, "Final edit", finalSession.Messages[0].Content)
+	assert.Len(t, finalSession.Messages, 1) // Still only one message
+}
+
+func TestChatSessionService_EditMessage_PrefixMatching(t *testing.T) {
+	// Setup test environment
+	ctx := context.New()
+	ctx.SetTestMode(true)
+	context.SetGlobalContext(ctx)
+
+	// Create and initialize service
+	service := NewChatSessionService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Create session with specific name for prefix testing
+	session, err := service.CreateSession("prefix_edit_session_main", "Test assistant", "")
+	require.NoError(t, err)
+
+	err = service.AddMessage("prefix_edit_session_main", "user", "Original message")
+	require.NoError(t, err)
+
+	// Edit using prefix matching
+	err = service.EditMessage("prefix_edit", 0, "Edited via prefix")
+	assert.NoError(t, err)
+
+	// Verify the edit worked
+	updatedSession, err := service.GetSession(session.ID)
+	require.NoError(t, err)
+	assert.Equal(t, "Edited via prefix", updatedSession.Messages[0].Content)
+}
