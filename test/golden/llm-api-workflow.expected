@@ -1,7 +1,7 @@
 ═══ Initial State: No API Keys ═══
 No API keys found in any source.
 ═══ Attempting to Activate Non-existent Key ═══
-_error = key 'os.OPENAI_API_KEY' is empty. Run \llm-api-show to see available keys
+_error = key 'os.OPENAI_API_KEY' is empty. Run \llm-api-load to see available keys
 ═══ State After Failed Activation ═══
 No API keys found in any source.
 ═══ Testing Provider Filtering ═══

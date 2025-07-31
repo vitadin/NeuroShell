@@ -1,11 +1,11 @@
-%% Test basic LLM API key showing functionality with controlled environment
-%% This test verifies that \llm-api-show displays API keys with proper masking and status
+%% Test basic LLM API key loading functionality with controlled environment
+%% This test verifies that \llm-api-load displays API keys with proper masking and status
 
 %% First test: no API keys configured (should show "No API keys found")
-\llm-api-show
+\llm-api-load
 
 %% Second test: provider-specific filter with no keys (should show specific message)
-\llm-api-show[provider=openai]
+\llm-api-load[provider=openai]
 
 %% Third test: provider-specific filter for anthropic (should show specific message) 
-\llm-api-show[provider=anthropic]
+\llm-api-load[provider=anthropic]

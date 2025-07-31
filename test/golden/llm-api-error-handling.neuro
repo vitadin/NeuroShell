@@ -42,11 +42,11 @@
 \try \llm-api-activate[provider=anthropic, key=config.MISSING_KEY]
 \echo Missing config key error: ${_error}
 
-%% Test 5: Show command with invalid provider
-\echo ═══ Testing Show Command with Invalid Provider ═══
-\llm-api-show[provider=invalid]
+%% Test 5: Load command with invalid provider
+\echo ═══ Testing Load Command with Invalid Provider ═══
+\llm-api-load[provider=invalid]
 
 %% Test 6: Empty environment (already tested in basic, but good to confirm)
 \echo ═══ Testing Clean Environment ═══
-\llm-api-show
-\llm-api-show[provider=all]
+\llm-api-load
+\llm-api-load[provider=all]

@@ -14,7 +14,7 @@ Core Commands:
   \if             - Conditionally execute commands based on boolean conditions
   \if-not         - Conditionally execute commands when boolean conditions are false
   \llm-api-activate - Activate an API key for a specific provider
-  \llm-api-show   - Show API-related variables from multiple sources with intelligent filtering and masking
+  \llm-api-load   - Load and display API-related variables from multiple sources with intelligent filtering and masking
   \llm-call       - Orchestrate LLM API call using client, model, and session services
   \llm-client-activate - Activate LLM client by provider catalog ID or specific client ID
   \model-activate - Set active model by name or ID with smart matching

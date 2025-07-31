@@ -7,15 +7,15 @@
 \set-env[ANTHROPIC_API_KEY=ant-test1234567890abcdef1234567890abcdef]
 \set-env[MOONSHOT_API_KEY=moon-test1234567890abcdef1234567890abcdef]
 
-%% Step 2: Show all API keys (should now find the test keys)
-\echo ═══ Showing All API Keys ═══
-\llm-api-show
+%% Step 2: Load all API keys (should now find the test keys)
+\echo ═══ Loading All API Keys ═══
+\llm-api-load
 
 %% Step 3: Test provider-specific filtering
 \echo ═══ Testing Provider-Specific Filtering ═══
-\llm-api-show[provider=openai]
-\llm-api-show[provider=anthropic]
-\llm-api-show[provider=moonshot]
+\llm-api-load[provider=openai]
+\llm-api-load[provider=anthropic]
+\llm-api-load[provider=moonshot]
 
 %% Step 4: Activate keys for different providers
 \echo ═══ Activating OpenAI Key ═══
@@ -24,9 +24,9 @@
 \echo ═══ Activating Anthropic Key ═══  
 \llm-api-activate[provider=anthropic, key=os.ANTHROPIC_API_KEY]
 
-%% Step 5: Show final state with active keys
+%% Step 5: Load final state with active keys
 \echo ═══ Final State with Active Keys ═══
-\llm-api-show
+\llm-api-load
 
 %% Step 6: Test activation with moonshot
 \echo ═══ Activating Moonshot Key ═══

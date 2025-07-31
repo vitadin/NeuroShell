@@ -8,13 +8,13 @@
 \echo "Step 1: Activating OpenAI API key from environment..."
 
 %% Verify API key is activated
-\llm-api-show[provider=openai]
+\llm-api-load[provider=openai]
 
 %% First, activate the OpenAI API key from local environment
 \llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
 
 %% Verify API key is activated
-\llm-api-show[provider=openai]
+\llm-api-load[provider=openai]
 
 
 %% STEP 2

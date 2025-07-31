@@ -4,9 +4,9 @@
 
 \set _style dark1
 \set _stream true
-\llm-api-show[provider=gemini]
+\llm-api-load[provider=gemini]
 \llm-api-activate[provider=gemini, key=local.GEMINI_API_KEY]
-\llm-api-show[provider=gemini]
+\llm-api-load[provider=gemini]
 
 \echo "Step 2: Creating Gemini model with thinking capabilities..."
 \echo "Using thinking_budget=4096 for complex reasoning tasks"

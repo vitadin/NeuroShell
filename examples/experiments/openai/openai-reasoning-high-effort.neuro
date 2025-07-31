@@ -10,7 +10,7 @@
 
 %% STEP 1: Setup
 \echo "Step 1: Loading and activating OpenAI API keys..."
-\llm-api-show[provider=openai]
+\llm-api-load[provider=openai]
 \llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
 
 %% STEP 2: Create O4-mini model with high effort reasoning

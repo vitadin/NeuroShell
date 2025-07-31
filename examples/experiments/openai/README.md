@@ -101,7 +101,7 @@ When running experiments, observe:
 ./bin/neuro batch -c "\model-status"
 
 # Verify API configuration
-./bin/neuro batch -c "\llm-api-show[provider=openai]"
+./bin/neuro batch -c "\llm-api-load[provider=openai]"
 
 # List available OpenAI models
 ./bin/neuro batch -c "\model-catalog[provider=openai]"

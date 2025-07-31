@@ -2,7 +2,7 @@
 Setting OPENAI_API_KEY = sk-test1234567890abcdef1234567890abcdef
 Setting ANTHROPIC_API_KEY = ant-test1234567890abcdef1234567890abcdef
 Setting MOONSHOT_API_KEY = moon-test1234567890abcdef1234567890abcdef
-═══ Showing All API Keys ═══
+═══ Loading All API Keys ═══
   # LLM API Keys Found                                                        
    Variable Name          | API Key                | Status                   
   ------------------------|------------------------|------------------------  

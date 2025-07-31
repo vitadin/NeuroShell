@@ -1,3 +1,3 @@
-_error = key 'os.NONEXISTENT_KEY' is empty. Run \llm-api-show to see available keys
+_error = key 'os.NONEXISTENT_KEY' is empty. Run \llm-api-load to see available keys
 _error = key is required. Usage: \llm-api-activate[provider=<name>, key=<source.KEY_NAME>]
 _error = invalid provider 'invalid'. Valid providers: openai, anthropic, openrouter, moonshot, gemini

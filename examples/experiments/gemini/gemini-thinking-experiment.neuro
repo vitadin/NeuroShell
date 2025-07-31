@@ -8,13 +8,13 @@
 \echo "Step 1: Activating Gemini API key from environment..."
 
 %% Verify API key is activated
-\llm-api-show[provider=gemini]
+\llm-api-load[provider=gemini]
 
 %% First, activate the Gemini API key from local environment
 \llm-api-activate[provider=gemini, key=local.GEMINI_API_KEY]
 
 %% Verify API key is activated
-\llm-api-show[provider=gemini]
+\llm-api-load[provider=gemini]
 
 
 %% STEP 2

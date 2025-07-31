@@ -105,5 +105,5 @@ When running experiments, observe:
 ./bin/neuro batch -c "\model-status"
 
 # Verify API configuration
-./bin/neuro batch -c "\llm-api-show[provider=gemini]"
+./bin/neuro batch -c "\llm-api-load[provider=gemini]"
 ```
