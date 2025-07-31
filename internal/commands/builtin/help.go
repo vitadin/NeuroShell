@@ -185,6 +185,7 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 	sessionCommands := map[string]bool{
 		"session-activate": true, "session-add-assistantmsg": true, "session-add-usermsg": true,
 		"session-copy": true, "session-delete": true, "session-edit-msg": true, "session-edit-with-editor": true,
+		"session-rename": true, "session-edit-system": true,
 		"session-export": true, "session-import": true,
 		"session-json-export": true, "session-json-import": true, "session-list": true,
 		"session-new": true, "session-show": true,

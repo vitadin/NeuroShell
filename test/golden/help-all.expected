@@ -34,9 +34,11 @@ Session Management:
       \session-activate  - Activate session by name or ID with smart matching and auto-activation
       \session-copy      - Create deep copy of existing session with new identity
       \session-delete    - Delete an existing chat session
+      \session-edit-system - Edit session system prompt
       \session-edit-with-editor - Edit session messages using external editor
       \session-list      - List all existing chat sessions
       \session-new       - Create new chat session for LLM interactions
+      \session-rename    - Change session name
       \session-show      - Display detailed session information with smart content rendering
     Conversation:
       \session-add-assistantmsg - Add assistant message to specified session

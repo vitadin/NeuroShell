@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/context"
+	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -264,6 +265,9 @@ func TestListCommand_Execute_InvalidFilterOption(t *testing.T) {
 
 func TestListCommand_Execute_ServiceNotAvailable(t *testing.T) {
 	cmd := &ListCommand{}
+
+	// Clear the global service registry to ensure no services are available
+	services.SetGlobalRegistry(services.NewRegistry())
 
 	// Don't setup services - should fail
 	err := cmd.Execute(map[string]string{}, "")

@@ -104,6 +104,21 @@ func (c *ChatSessionService) IsSessionNameAvailable(name string) bool {
 	return !exists
 }
 
+// IsSessionNameAvailableWithContext checks if a session name is available for use using provided context.
+func (c *ChatSessionService) IsSessionNameAvailableWithContext(name string, ctx neurotypes.Context) bool {
+	if !c.initialized {
+		return false
+	}
+
+	if name == "" {
+		return true // Empty name is always available (auto-generated)
+	}
+
+	nameToID := ctx.GetSessionNameToID()
+	_, exists := nameToID[name]
+	return !exists
+}
+
 // isNameReservedOrConflicted checks if a name is reserved or already in use.
 func (c *ChatSessionService) isNameReservedOrConflicted(name string) bool {
 	// Check if name is reserved
@@ -883,4 +898,97 @@ func (c *ChatSessionService) reconstructImportedSessionWithContext(originalSessi
 	}
 
 	return reconstructedSession, nil
+}
+
+// UpdateSystemPrompt updates the system prompt of a session identified by name or ID.
+// It uses smart prefix matching for session lookup and updates the session's system prompt field.
+func (c *ChatSessionService) UpdateSystemPrompt(nameOrID string, newSystemPrompt string) error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.UpdateSystemPromptWithContext(nameOrID, newSystemPrompt, ctx)
+}
+
+// UpdateSystemPromptWithContext updates the system prompt of a session using provided context.
+func (c *ChatSessionService) UpdateSystemPromptWithContext(nameOrID string, newSystemPrompt string, ctx neurotypes.Context) error {
+	if !c.initialized {
+		return fmt.Errorf("chat session service not initialized")
+	}
+
+	// Get the session using smart prefix matching
+	session, err := c.FindSessionByPrefixWithContext(nameOrID, ctx)
+	if err != nil {
+		return fmt.Errorf("session lookup failed: %w", err)
+	}
+
+	// Update the system prompt
+	session.SystemPrompt = newSystemPrompt
+	session.UpdatedAt = testutils.GetCurrentTime(ctx)
+
+	// Update the session in context
+	sessions := ctx.GetChatSessions()
+	sessions[session.ID] = session
+	ctx.SetChatSessions(sessions)
+
+	logger.Debug("Updated system prompt for session", "session_id", session.ID, "session_name", session.Name)
+	return nil
+}
+
+// RenameSession changes the name of a session identified by name or ID.
+// It validates the new name and ensures it doesn't conflict with existing sessions.
+func (c *ChatSessionService) RenameSession(nameOrID string, newName string) error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.RenameSessionWithContext(nameOrID, newName, ctx)
+}
+
+// RenameSessionWithContext changes the name of a session using provided context.
+func (c *ChatSessionService) RenameSessionWithContext(nameOrID string, newName string, ctx neurotypes.Context) error {
+	if !c.initialized {
+		return fmt.Errorf("chat session service not initialized")
+	}
+
+	// Validate and preprocess the new name
+	processedName, err := c.ValidateSessionName(newName)
+	if err != nil {
+		return fmt.Errorf("invalid new session name: %w", err)
+	}
+
+	// Get the session using smart prefix matching
+	session, err := c.FindSessionByPrefixWithContext(nameOrID, ctx)
+	if err != nil {
+		return fmt.Errorf("session lookup failed: %w", err)
+	}
+
+	// Check if the new name is the same as current name (no-op)
+	if session.Name == processedName {
+		return nil // No change needed
+	}
+
+	// Check if new name is available
+	if !c.IsSessionNameAvailableWithContext(processedName, ctx) {
+		return fmt.Errorf("session name '%s' is already in use", processedName)
+	}
+
+	// Store old name for cleanup
+	oldName := session.Name
+
+	// Update the session name
+	session.Name = processedName
+	session.UpdatedAt = testutils.GetCurrentTime(ctx)
+
+	// Update both sessions map and name mapping
+	sessions := ctx.GetChatSessions()
+	nameToID := ctx.GetSessionNameToID()
+
+	// Update sessions map
+	sessions[session.ID] = session
+
+	// Update name-to-ID mapping
+	delete(nameToID, oldName)            // Remove old name mapping
+	nameToID[processedName] = session.ID // Add new name mapping
+
+	// Update context
+	ctx.SetChatSessions(sessions)
+	ctx.SetSessionNameToID(nameToID)
+
+	logger.Debug("Renamed session", "session_id", session.ID, "old_name", oldName, "new_name", processedName)
+	return nil
 }

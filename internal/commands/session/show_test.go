@@ -154,6 +154,7 @@ func TestShowCommand_TruncateContent_EdgeCase(t *testing.T) {
 }
 
 func TestShowCommand_RenderMessages_ManyMessages(t *testing.T) {
+	setupShowCommandTestRegistry(t)
 	cmd := &ShowCommand{}
 
 	// Create many messages (more than MaxMessagesShown)
@@ -190,6 +191,7 @@ func TestShowCommand_RenderMessages_ManyMessages(t *testing.T) {
 }
 
 func TestShowCommand_RenderSingleMessage_LongContent(t *testing.T) {
+	setupShowCommandTestRegistry(t)
 	cmd := &ShowCommand{}
 
 	longContent := strings.Repeat("a", 300)
