@@ -1,80 +1,204 @@
-%% OpenAI Basic Chat Experiment - Step by Step
-%% Purpose: Test basic OpenAI model creation and simple chat interaction with GPT-4.1
-%% Note: Run this step by step, uncommenting lines as we verify each step works
+%% OpenAI Basic Chat Experiment - Multiple Model Testing
+%% Purpose: Test OpenAI model creation and chat interaction with G41C, O4MC, and O4MR
+%% Note: Run this step by step, uncommenting sections as we verify each step works
 
 \set _style dark1
 
-\echo "=== OpenAI Basic Chat Experiment - Step 1 ==="
-\echo "Step 1: Activating OpenAI API key from environment..."
+\echo === OpenAI Multi-Model Chat Experiment ===
+\echo Testing: G41C (GPT-4.1), O4MC (O4-mini Chat), O4MR (O4-mini Reasoning)
+\echo
 
-%% Verify API key is activated
+%% ============================================================================
+%% PHASE 1: API SETUP
+%% ============================================================================
+\echo Phase 1: Activating OpenAI API key from environment...
+
+%% Load and activate the OpenAI API key from local environment
 \llm-api-load[provider=openai]
-
-%% First, activate the OpenAI API key from local environment
 \llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
 
 %% Verify API key is activated
 \llm-api-load[provider=openai]
+\echo
 
+%% ============================================================================
+%% PHASE 2: TEST G41C (GPT-4.1 Chat)
+%% ============================================================================
+\echo Phase 2: Testing G41C (GPT-4.1 Chat) with full parameter set...
+\openai-model-new[catalog_id="G41C", temperature="0.7", max_tokens="4000", top_p="0.9", presence_penalty="0.1", frequency_penalty="-0.1"] gpt41-chat-model
 
-%% STEP 2
-\echo "Step 2: Creating a basic GPT-4.1 model..."
-\openai-model-new[catalog_id="G41", temperature="0.7"] basic-chat-model
-
-%% STEP 3
-\echo "Step 3: Check that the model was created successfully"
+%% Check that the G41C model was created successfully
+\echo Step 2.1: Check G41C model creation...
 \model-status
 
-%% STEP 4
-\echo "Step 4: Activate the model for use"
-\model-activate basic-chat-model
+%% Activate the G41C model for use
+\echo Step 2.2: Activate G41C model for use...
+\model-activate gpt41-chat-model
 
+%% Verify the G41C model is active
+\echo Step 2.3: Verify G41C model is active...
+\echo Active model: ${#active_model_name}
+\echo Provider: ${#active_model_provider}
 
-%% STEP 5
-\echo "Step 5: Verify the model is active"
-\echo "Active model: ${#active_model_name}"
-\echo "Provider: ${#active_model_provider}"
-
-%% STEP 6: Progressive Session Context Test
-\echo "Step 6: Testing OpenAI session context with progressive conversation..."
-\echo "This tests whether GPT-4.1 receives and uses the full session context."
+%% G41C Progressive Session Context Test
+\echo Step 2.4: Testing G41C session context with progressive conversation...
+\echo This tests whether GPT-4.1 receives and uses the full session context.
+\echo
 
 %% Message 1: Setup the scenario
-\echo "Message 1: Setting up a mathematical puzzle..."
+\echo G41C Message 1: Setting up a mathematical puzzle...
 \send I'm thinking of a number between 1 and 10. Let's call it X.
 
 
 %% Message 2: Add constraint (requires context)
-\echo "Message 2: Adding constraint that requires context from Message 1..."
+\echo G41C Message 2: Adding constraint that requires context from Message 1...
 \send X is prime and less than 5. What could X be?
 
-
 %% Message 3: Build on previous answer (requires context from both messages)
-\echo "Message 3: Building calculation based on identified X..."
+\echo G41C Message 3: Building calculation based on identified X...
 \send Good! Now X + 4 equals what?
 
-
 %% Message 4: Complex calculation (requires full conversation context)
-\echo "Message 4: Complex calculation requiring full context..."
+\echo G41C Message 4: Complex calculation requiring full context...
 \send If we multiply that result by 2, what's the final answer?
 
-
 %% Message 5: Memory test (tests session memory)
-\echo "Message 5: Testing memory of original context..."
+\echo G41C Message 5: Testing memory of original context...
 \send Can you remind me what the original number X was?
 
-
 %% Message 6: Full context summary (ultimate test)
-\echo "Message 6: Full context summary test..."
+\echo G41C Message 6: Full context summary test...
 \send Summarize our entire calculation from X to the final result.
 
-
-%% STEP 7
-\echo "Step 7: Session context test complete. Checking session..."
+%% G41C test complete
+\echo Step 2.5: G41C session context test complete. Checking session...
 \session-list
-\session-show Session 1
+\session-show
 
-%% STEP 8
-\echo "Step 8: Cleanup - deleting the test model..."
-\model-delete basic-chat-model
+%% G41C cleanup
+\echo Step 2.6: Cleanup - deleting the G41C test model...
+\model-delete gpt41-chat-model
 \model-status
+\echo
+
+
+\exit
+
+%% ============================================================================
+%% PHASE 3: TEST O4MC (O4-mini Chat) - COMMENTED OUT FOR STEP-BY-STEP TESTING
+%% ============================================================================
+%% \echo Phase 3: Testing O4MC (O4-mini Chat)...  
+%% \openai-model-new[catalog_id="O4MC", temperature="0.7"] o4mini-chat-model
+%% 
+%% %% Check that the O4MC model was created successfully
+%% \echo Step 3.1: Check O4MC model creation...
+%% \model-status
+%% 
+%% %% Activate the O4MC model for use  
+%% \echo Step 3.2: Activate O4MC model for use...
+%% \model-activate o4mini-chat-model
+%% 
+%% %% Verify the O4MC model is active
+%% \echo Step 3.3: Verify O4MC model is active...
+%% \echo Active model: ${#active_model_name}
+%% \echo Provider: ${#active_model_provider}
+%% 
+%% %% O4MC Progressive Session Context Test
+%% \echo Step 3.4: Testing O4MC session context (should be fast)...
+%% \echo This tests O4-mini chat mode - should have fast responses with no reasoning delay.
+%% \echo
+%% 
+%% %% Message 1: Setup the scenario
+%% \echo O4MC Message 1: Setting up a mathematical puzzle...
+%% \send I'm thinking of a number between 1 and 10. Let's call it Y.
+%% 
+%% %% Message 2: Add constraint (requires context)
+%% \echo O4MC Message 2: Adding constraint that requires context from Message 1...
+%% \send Y is even and greater than 6. What could Y be?
+%% 
+%% %% Message 3: Build on previous answer (requires context from both messages)
+%% \echo O4MC Message 3: Building calculation based on identified Y...
+%% \send Good! Now Y - 3 equals what?
+%% 
+%% %% Message 4: Complex calculation (requires full conversation context)
+%% \echo O4MC Message 4: Complex calculation requiring full context...
+%% \send If we divide that result by 1.25, what's the final answer?
+%% 
+%% %% Message 5: Memory test (tests session memory)
+%% \echo O4MC Message 5: Testing memory of original context...
+%% \send Can you remind me what the original number Y was?
+%% 
+%% %% Message 6: Full context summary (ultimate test)
+%% \echo O4MC Message 6: Full context summary test...
+%% \send Summarize our entire calculation from Y to the final result.
+%% 
+%% %% O4MC test complete
+%% \echo Step 3.5: O4MC session context test complete. Checking session...
+%% \session-list
+%% \session-show
+%% 
+%% %% O4MC cleanup
+%% \echo Step 3.6: Cleanup - deleting the O4MC test model...
+%% \model-delete o4mini-chat-model
+%% \model-status
+%% \echo
+
+%% ============================================================================
+%% PHASE 4: TEST O4MR (O4-mini Reasoning) - COMMENTED OUT FOR STEP-BY-STEP TESTING  
+%% ============================================================================
+%% \echo Phase 4: Testing O4MR (O4-mini Reasoning)...
+%% \openai-model-new[catalog_id="O4MR", reasoning_effort="medium"] o4mini-reasoning-model
+%% 
+%% %% Check that the O4MR model was created successfully
+%% \echo Step 4.1: Check O4MR model creation...
+%% \model-status
+%% 
+%% %% Activate the O4MR model for use
+%% \echo Step 4.2: Activate O4MR model for use...
+%% \model-activate o4mini-reasoning-model
+%% 
+%% %% Verify the O4MR model is active
+%% \echo Step 4.3: Verify O4MR model is active...
+%% \echo Active model: ${#active_model_name}
+%% \echo Provider: ${#active_model_provider}
+%% 
+%% %% O4MR Progressive Session Context Test
+%% \echo Step 4.4: Testing O4MR session context with reasoning...
+%% \echo This tests O4-mini reasoning mode - should show reasoning tokens and thinking process.
+%% \echo
+%% 
+%% %% Message 1: Setup the scenario
+%% \echo O4MR Message 1: Setting up a mathematical puzzle...
+%% \send I'm thinking of a number between 1 and 10. Let's call it Z.
+%% 
+%% %% Message 2: Add constraint (requires context)
+%% \echo O4MR Message 2: Adding constraint that requires context from Message 1...
+%% \send Z is odd and is a perfect square. What could Z be?
+%% 
+%% %% Message 3: Build on previous answer (requires context from both messages)
+%% \echo O4MR Message 3: Building calculation based on identified Z...  
+%% \send Good! Now Z squared equals what?
+%% 
+%% %% Message 4: Complex calculation (requires full conversation context)
+%% \echo O4MR Message 4: Complex reasoning requiring full context...
+%% \send If we take the square root of that result and add 6, what's the final answer?
+%% 
+%% %% Message 5: Memory test (tests session memory)
+%% \echo O4MR Message 5: Testing memory of original context...
+%% \send Can you remind me what the original number Z was and show your reasoning?
+%% 
+%% %% Message 6: Full context summary (ultimate test)
+%% \echo O4MR Message 6: Full context summary test...
+%% \send Summarize our entire calculation from Z to the final result with reasoning steps.
+%% 
+%% %% O4MR test complete
+%% \echo Step 4.5: O4MR session context test complete. Checking session...
+%% \session-list
+%% \session-show
+%% 
+%% %% O4MR cleanup
+%% \echo Step 4.6: Cleanup - deleting the O4MR test model...
+%% \model-delete o4mini-reasoning-model
+%% \model-status
+
+\echo === All OpenAI model tests complete ===
