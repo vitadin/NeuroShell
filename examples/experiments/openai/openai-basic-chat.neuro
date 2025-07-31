@@ -22,69 +22,6 @@
 \echo
 
 %% ============================================================================
-%% PHASE 2: TEST G41C (GPT-4.1 Chat)
-%% ============================================================================
-\echo Phase 2: Testing G41C (GPT-4.1 Chat) with full parameter set...
-\openai-model-new[catalog_id="G41C", temperature="0.7", max_tokens="4000", top_p="0.9", presence_penalty="0.1", frequency_penalty="-0.1"] gpt41-chat-model
-
-%% Check that the G41C model was created successfully
-\echo Step 2.1: Check G41C model creation...
-\model-status
-
-%% Activate the G41C model for use
-\echo Step 2.2: Activate G41C model for use...
-\model-activate gpt41-chat-model
-
-%% Verify the G41C model is active
-\echo Step 2.3: Verify G41C model is active...
-\echo Active model: ${#active_model_name}
-\echo Provider: ${#active_model_provider}
-
-%% G41C Progressive Session Context Test
-\echo Step 2.4: Testing G41C session context with progressive conversation...
-\echo This tests whether GPT-4.1 receives and uses the full session context.
-\echo
-
-%% Message 1: Setup the scenario
-\echo G41C Message 1: Setting up a mathematical puzzle...
-\send I'm thinking of a number between 1 and 10. Let's call it X.
-
-
-%% Message 2: Add constraint (requires context)
-\echo G41C Message 2: Adding constraint that requires context from Message 1...
-\send X is prime and less than 5. What could X be?
-
-%% Message 3: Build on previous answer (requires context from both messages)
-\echo G41C Message 3: Building calculation based on identified X...
-\send Good! Now X + 4 equals what?
-
-%% Message 4: Complex calculation (requires full conversation context)
-\echo G41C Message 4: Complex calculation requiring full context...
-\send If we multiply that result by 2, what's the final answer?
-
-%% Message 5: Memory test (tests session memory)
-\echo G41C Message 5: Testing memory of original context...
-\send Can you remind me what the original number X was?
-
-%% Message 6: Full context summary (ultimate test)
-\echo G41C Message 6: Full context summary test...
-\send Summarize our entire calculation from X to the final result.
-
-%% G41C test complete
-\echo Step 2.5: G41C session context test complete. Checking session...
-\session-list
-\session-show
-
-%% G41C cleanup
-\echo Step 2.6: Cleanup - deleting the G41C test model...
-\model-delete gpt41-chat-model
-\model-status
-\echo
-
-
-\exit
-
-%% ============================================================================
 %% PHASE 3: TEST O4MC (O4-mini Chat) - COMMENTED OUT FOR STEP-BY-STEP TESTING
 %% ============================================================================
 %% \echo Phase 3: Testing O4MC (O4-mini Chat)...  
