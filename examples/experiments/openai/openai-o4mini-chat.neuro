@@ -20,9 +20,8 @@
 %% STEP 2
 \echo "Step 2: Creating OpenAI chat-only client (OAC)..."
 \echo "This will create a dedicated chat client that only uses /chat/completions API"
-\llm-client-get[provider_catalog_id=OAC, key=local.OPENAI_API_KEY]
-\echo "Client type: ${#client_type}"
-\echo "Reasoning support: ${#client_reasoning_support}"
+\openai-client-new[client_type=OAC, key=local.OPENAI_API_KEY]
+\llm-client-activate OAC
 
 %% STEP 3
 \echo "Step 3: Creating O4-mini model in CHAT mode (no reasoning parameters)..."

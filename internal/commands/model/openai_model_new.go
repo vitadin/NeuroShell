@@ -286,11 +286,28 @@ func (c *OpenAIModelNewCommand) Execute(args map[string]string, input string) er
 		_ = variableService.SetSystemVariable("#model_description", createdModel.Description)
 	}
 
-	// Auto-push model activation command to stack service for seamless UX (following model-new tradition)
-	// Use precise ID-based activation to avoid any ambiguity
+	// Auto-push client creation and model activation commands for seamless UX
+	// Note: Stack is LIFO, so we push in reverse order of execution
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		activateCommand := fmt.Sprintf("\\silent \\model-activate[id=true] %s", createdModel.ID)
-		stackService.PushCommand(activateCommand)
+		// Determine which client type should be created based on model parameters and catalog
+		preferredClientType := c.determinePreferredClientType(parameters, catalogModel)
+
+		if preferredClientType != "" {
+			// Push commands in reverse order (LIFO stack)
+			// 1. Push model activation (executed last)
+			modelActivateCommand := fmt.Sprintf("\\silent \\model-activate[id=true] %s", createdModel.ID)
+			stackService.PushCommand(modelActivateCommand)
+
+			// 2. Push client activation (executed second)
+			activateCommand := fmt.Sprintf("\\silent \\llm-client-activate %s", preferredClientType)
+			stackService.PushCommand(activateCommand)
+
+			// 3. Push client creation (executed first)
+			createCommand := c.generateClientNewCommand(preferredClientType)
+			if createCommand != "" {
+				stackService.PushCommand(createCommand)
+			}
+		}
 	}
 
 	// Output success message
@@ -426,6 +443,59 @@ func (c *OpenAIModelNewCommand) isValidChoice(value string, validChoices []strin
 		}
 	}
 	return false
+}
+
+// determinePreferredClientType determines which client type should be created based on model parameters and catalog.
+// It checks both the model's provider catalog IDs and reasoning-specific parameters to decide between reasoning and chat clients.
+func (c *OpenAIModelNewCommand) determinePreferredClientType(parameters map[string]any, catalogModel *neurotypes.ModelCatalogEntry) string {
+	// First check if the model only supports reasoning (OAR) based on catalog
+	if catalogModel != nil {
+		// If model only supports OAR, always use reasoning client
+		if len(catalogModel.ProviderCatalogID) == 1 && catalogModel.ProviderCatalogID[0] == "OAR" {
+			return "OAR"
+		}
+		// If model only supports OAC, always use chat client
+		if len(catalogModel.ProviderCatalogID) == 1 && catalogModel.ProviderCatalogID[0] == "OAC" {
+			return "OAC"
+		}
+	}
+
+	// For models that support both OAC and OAR, check if reasoning parameters are provided
+	if c.hasReasoningParameters(parameters) {
+		return "OAR" // OpenAI Reasoning client
+	}
+
+	// Default to chat client for multi-support models without explicit reasoning parameters
+	return "OAC" // OpenAI Chat client
+}
+
+// hasReasoningParameters checks if model parameters contain reasoning-specific settings.
+func (c *OpenAIModelNewCommand) hasReasoningParameters(parameters map[string]any) bool {
+	if parameters == nil {
+		return false
+	}
+
+	// Check for OpenAI reasoning parameters
+	if _, hasReasoningEffort := parameters["reasoning_effort"]; hasReasoningEffort {
+		return true
+	}
+	if _, hasReasoningSummary := parameters["reasoning_summary"]; hasReasoningSummary {
+		return true
+	}
+
+	return false
+}
+
+// generateClientNewCommand generates the appropriate client creation command for a client type.
+func (c *OpenAIModelNewCommand) generateClientNewCommand(clientType string) string {
+	switch clientType {
+	case "OAC":
+		return "\\silent \\openai-client-new[client_type=OAC]"
+	case "OAR":
+		return "\\silent \\openai-client-new[client_type=OAR]"
+	default:
+		return ""
+	}
 }
 
 func init() {

@@ -66,7 +66,7 @@ func (c *CallCommand) HelpInfo() neurotypes.HelpInfo {
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "client_id",
-				Description: "LLM client ID (from \\llm-client-get)",
+				Description: "LLM client ID (from \\*-client-new + \\llm-client-activate)",
 				Required:    false,
 				Type:        "string",
 				Default:     "${_client_id}",
@@ -167,7 +167,7 @@ func (c *CallCommand) Execute(args map[string]string, input string) error {
 		}
 	}
 	if clientID == "" {
-		return fmt.Errorf("client_id not specified and ${_client_id} not set. Use \\llm-client-get first")
+		return fmt.Errorf("client_id not specified and ${_client_id} not set. Use \\*-client-new and \\llm-client-activate first")
 	}
 
 	var model *neurotypes.ModelConfig

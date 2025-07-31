@@ -1,12 +1,18 @@
 Setting _echo_command = true
 %%> "\\model-new[catalog_id=\"O4M\"] my-claude-temp"
 Created model 'my-claude-temp' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\model-new[catalog_id=\"O3\"] my-openai-model"
 Created model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\openai-client-new[client_type=OAR]"
+%%> "\\silent \\llm-client-activate OAR"
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\model-new[catalog_id=\"O4M\"] permanent-model"
 Created model 'permanent-model' (ID: 00000003, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\model-delete temp"
 Deleted model 'my-claude-temp' (ID: 00000001, Provider: openai, Base: o4-mini)
@@ -17,10 +23,13 @@ Deleted model 'my-claude-temp' (ID: 00000001, Provider: openai, Base: o4-mini)
 _output = Current active model: 'permanent-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\model-new[catalog_id=\"G41\"] id-test-model"
 Created model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4.1-2025-04-14)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
 %%> "\\model-activate id-test-model"
 Activated model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4.1-2025-04-14)
-%%> "\\silent \\llm-client-get[provider_catalog_id=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\get[#active_model_id]"
 #active_model_id = 00000004-0000-4000-8000-000000000004
 %%> "\\set[short_id=\"${#active_model_id}\"]"

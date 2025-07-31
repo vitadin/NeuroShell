@@ -189,6 +189,34 @@ func (f *ClientFactoryService) GetClientByID(clientID string) (neurotypes.LLMCli
 	return nil, fmt.Errorf("client with ID '%s' not found in cache", clientID)
 }
 
+// FindClientByProviderCatalogID finds any existing client with the specified provider catalog ID.
+// This method scans all cached clients and returns the first match found.
+// Used by llm-client-activate to activate clients by provider catalog ID.
+func (f *ClientFactoryService) FindClientByProviderCatalogID(providerCatalogID string) (neurotypes.LLMClient, string, error) {
+	if !f.initialized {
+		return nil, "", fmt.Errorf("client factory service not initialized")
+	}
+
+	if providerCatalogID == "" {
+		return nil, "", fmt.Errorf("provider catalog ID cannot be empty")
+	}
+
+	// Get all cached clients from context
+	ctx := neuroshellcontext.GetGlobalContext()
+	allClients := ctx.GetAllLLMClients()
+
+	// Search for any client with matching provider catalog ID prefix
+	expectedPrefix := providerCatalogID + ":"
+	for clientID, client := range allClients {
+		if strings.HasPrefix(clientID, expectedPrefix) {
+			logger.Debug("Found client by provider catalog ID", "provider_catalog_id", providerCatalogID, "clientID", clientID)
+			return client, clientID, nil
+		}
+	}
+
+	return nil, "", fmt.Errorf("no client found with provider catalog ID '%s'", providerCatalogID)
+}
+
 // GetCachedClientCount returns the number of cached clients (for testing/debugging).
 func (f *ClientFactoryService) GetCachedClientCount() int {
 	ctx := neuroshellcontext.GetGlobalContext()

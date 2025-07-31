@@ -189,11 +189,33 @@ func (c *OpenAIReasoningClient) sendReasoningCompletion(session *neurotypes.Chat
 		return "", fmt.Errorf("no response output items returned")
 	}
 
-	// Find message output items and concatenate their content
+	// Process output items: extract reasoning summaries and message content
 	var responseContent string
-	for _, item := range response.Output {
-		// Check if this is a message output item
+	var reasoningSummaries []string
+
+	logger.Debug("Reasoning response received", "output_count", len(response.Output))
+
+	for i, item := range response.Output {
+		logger.Debug("Processing output item", "index", i, "item_type", fmt.Sprintf("%T", item))
+
+		// Extract reasoning summaries (thinking process) if present
+		if reasoning := item.AsReasoning(); reasoning.Type == "reasoning" {
+			logger.Debug("Found reasoning output", "summary_count", len(reasoning.Summary), "status", reasoning.Status)
+			for _, summaryItem := range reasoning.Summary {
+				if summaryItem.Type == "summary_text" {
+					reasoningSummaries = append(reasoningSummaries, summaryItem.Text)
+					preview := summaryItem.Text
+					if len(preview) > 100 {
+						preview = preview[:100] + "..."
+					}
+					logger.Debug("Extracted reasoning summary", "text_length", len(summaryItem.Text), "summary_preview", preview)
+				}
+			}
+		}
+
+		// Check if this is a message output item (existing working code)
 		if message := item.AsMessage(); message.Type == "message" && message.Role == "assistant" {
+			logger.Debug("Found message output", "role", message.Role)
 			// Process the content array
 			for _, contentItem := range message.Content {
 				// Check if this is text content
@@ -202,6 +224,23 @@ func (c *OpenAIReasoningClient) sendReasoningCompletion(session *neurotypes.Chat
 				}
 			}
 		}
+	}
+
+	// Prepend reasoning summaries to the response content so they get rendered together
+	if len(reasoningSummaries) > 0 {
+		var reasoningText string
+		reasoningText += "\n🧠 **Reasoning Summary:**\n\n"
+		for i, summary := range reasoningSummaries {
+			if len(reasoningSummaries) > 1 {
+				reasoningText += fmt.Sprintf("**Summary %d:**\n", i+1)
+			}
+			reasoningText += summary + "\n\n"
+		}
+		reasoningText += "📝 **Final Response:**\n\n"
+
+		// Combine reasoning summaries with the final response
+		responseContent = reasoningText + responseContent
+		logger.Debug("Combined reasoning summaries with response", "total_summaries", len(reasoningSummaries))
 	}
 
 	if responseContent == "" {

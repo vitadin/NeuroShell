@@ -1,0 +1,66 @@
+%% OpenAI O4-mini Reasoning Experiment - Medium Effort
+%% Purpose: Test O4-mini with medium reasoning effort and detailed summary
+%% Part 2 of connected conversation series about data science project planning
+
+\set _style dark1
+
+\echo "=== OpenAI O4-mini Reasoning Experiment - Medium Effort ==="
+\echo "Testing: reasoning_effort='medium', reasoning_summary='detailed'"
+\echo "Topic: Detailed project methodology and analysis approach"
+
+%% STEP 1: Setup
+\echo "Step 1: Loading and activating OpenAI API keys..."
+\llm-api-show[provider=openai]
+\llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
+
+%% STEP 2: Create O4-mini model with medium effort reasoning
+\echo "Step 2: Creating O4-mini model with MEDIUM reasoning effort..."
+\openai-model-new[catalog_id="O4M", reasoning_effort="medium", reasoning_summary="detailed"] reasoning-medium-model
+\model-activate reasoning-medium-model
+
+%% STEP 3: Verify model configuration
+\echo "Step 3: Model configuration verification"
+\model-status
+\echo "Active model: ${#active_model_name}"
+
+%% STEP 4: Connected conversation - Methodology design
+\echo ""
+\echo "=== REASONING EXPERIMENT: Connected Conversation Part 2/5 ==="
+\echo "Building on previous low-effort discussion about customer churn analysis"
+\echo "Message 1: Methodology development"
+\echo ""
+
+\send Now that we've identified the key data aspects for customer churn analysis, I need to design a comprehensive methodology. Given that we have 50k users with demographics, usage patterns, subscription history, and support tickets, what would be an optimal end-to-end machine learning pipeline? Please consider data preprocessing, feature selection, model selection, validation strategy, and deployment considerations.
+
+\echo ""
+\echo "Response time and thinking analysis:"
+\echo "- This should show moderate thinking time with MEDIUM effort"
+\echo "- Summary should be DETAILED"
+\echo ""
+
+\echo "Message 2: Advanced feature engineering"
+\send Based on your methodology suggestions, I want to create sophisticated behavioral features. How can I engineer time-series features that capture user lifecycle stages, seasonal patterns, and early warning signals for churn? What statistical and domain-specific transformations would be most valuable?
+
+\echo ""
+\echo "Message 3: Model architecture and ensemble strategies"
+\send Considering the complexity of churn prediction and the need for interpretability in a business context, how should I approach model architecture selection? What are the trade-offs between ensemble methods, neural networks, and traditional ML approaches for this specific use case?
+
+\echo ""
+\echo "=== CONVERSATION SUMMARY ==="
+\echo "Messages in this session: 3"
+\echo "Reasoning effort: MEDIUM - Should show moderate thinking times"
+\echo "Expected behavior: Thoughtful analysis, detailed summaries"
+\echo "First response: ${.1}"
+\echo "Latest response: ${1}"
+
+%% STEP 5: Session review
+\echo ""
+\echo "Step 5: Session analysis..."
+\session-show Session 1
+
+%% STEP 6: Cleanup
+\echo ""
+\echo "Step 6: Cleaning up..."
+\model-delete reasoning-medium-model
+\model-status
+\echo "Medium effort reasoning experiment completed."

@@ -688,6 +688,15 @@ func (ctx *NeuroContext) GetLLMClientCount() int {
 	return len(ctx.llmClients)
 }
 
+// GetAllLLMClients returns a copy of all cached LLM clients (for client lookup)
+func (ctx *NeuroContext) GetAllLLMClients() map[string]neurotypes.LLMClient {
+	clients := make(map[string]neurotypes.LLMClient)
+	for id, client := range ctx.llmClients {
+		clients[id] = client
+	}
+	return clients
+}
+
 // ClearLLMClients removes all cached LLM clients (for testing/debugging)
 func (ctx *NeuroContext) ClearLLMClients() {
 	ctx.llmClients = make(map[string]neurotypes.LLMClient)

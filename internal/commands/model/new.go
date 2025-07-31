@@ -312,8 +312,10 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 
 	// Auto-push client creation command to stack service for seamless UX
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		clientCommand := fmt.Sprintf("\\llm-client-get[provider=%s]", createdModel.Provider)
-		stackService.PushCommand(clientCommand)
+		clientCommand := c.generateClientNewCommand(createdModel.Provider)
+		if clientCommand != "" {
+			stackService.PushCommand(clientCommand)
+		}
 	}
 
 	// Auto-push model activation command to stack service for seamless UX
@@ -477,6 +479,21 @@ func (c *NewCommand) delegateToGeminiModelNew(args map[string]string, input stri
 
 	// Execute the gemini-model-new command directly
 	return geminiModelNewCmd.Execute(delegateArgs, input)
+}
+
+// generateClientNewCommand generates the appropriate client creation command for a provider.
+func (c *NewCommand) generateClientNewCommand(provider string) string {
+	switch provider {
+	case "openai":
+		return "\\silent \\openai-client-new"
+	case "anthropic":
+		return "\\silent \\anthropic-client-new"
+	case "google":
+		return "\\silent \\gemini-client-new"
+	default:
+		// For unknown providers, return empty string (no client creation)
+		return ""
+	}
 }
 
 func init() {
