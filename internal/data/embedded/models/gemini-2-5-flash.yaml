@@ -2,7 +2,7 @@ name: gemini-2.5-flash
 id: GM25F
 display_name: Gemini 2.5 Flash
 provider: gemini
-provider_catalog_id: [GMC]
+provider_catalog_id: GMC
 description: Google's fast and efficient multimodal AI model optimized for speed and performance
 capabilities: [text, reasoning, analysis, coding, writing, math, multimodal, audio, video, code-execution, search-grounding, thinking]
 context_window: 1048576
@@ -28,3 +28,40 @@ features:
 tools: [code-execution, search-grounding]
 version: "2025-06-01"
 snapshots: [gemini-2.5-flash, gemini-2.5-flash-preview-05-20]
+parameters:
+  - name: temperature
+    type: float
+    required: false
+    default: 1.0
+    constraints:
+      min: 0.0
+      max: 2.0
+    description: "Controls randomness (0.0=deterministic, 2.0=creative)"
+  - name: max_output_tokens
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 65536
+    description: "Maximum output tokens"
+  - name: top_p
+    type: float
+    required: false
+    constraints:
+      min: 0.0
+      max: 1.0
+    description: "Nucleus sampling parameter"
+  - name: top_k
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 40
+    description: "Top-k sampling parameter"
+  - name: thinking_budget
+    type: int
+    required: false
+    constraints:
+      min: 0
+      max: 24576
+    description: "Thinking token budget (0=disabled, -1=dynamic)"

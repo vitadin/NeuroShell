@@ -71,7 +71,7 @@ func TestOpenAIModelNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		{
 			name: "create basic OpenAI model with catalog_id",
 			args: map[string]string{
-				"catalog_id": "G4O", // GPT-4o
+				"catalog_id": "G4OC", // GPT-4o Chat
 			},
 			input:       "my-gpt4o",
 			expectError: false,
@@ -92,7 +92,7 @@ func TestOpenAIModelNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		{
 			name: "create model with catalog_id GPT-4",
 			args: map[string]string{
-				"catalog_id": "G41",
+				"catalog_id": "G41C",
 			},
 			input:       "my-gpt4",
 			expectError: false,
@@ -109,7 +109,7 @@ func TestOpenAIModelNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		{
 			name: "create model with reasoning parameters",
 			args: map[string]string{
-				"catalog_id":        "O3", // O3 reasoning model
+				"catalog_id":        "O3R", // O3 reasoning model
 				"reasoning_effort":  "high",
 				"max_output_tokens": "50000",
 				"reasoning_summary": "auto",
@@ -129,7 +129,7 @@ func TestOpenAIModelNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		{
 			name: "create model with standard parameters",
 			args: map[string]string{
-				"catalog_id":  "G41",
+				"catalog_id":  "G41C",
 				"temperature": "0.7",
 				"max_tokens":  "2000",
 				"top_p":       "0.9",
@@ -140,7 +140,7 @@ func TestOpenAIModelNewCommand_Execute_BasicFunctionality(t *testing.T) {
 		{
 			name: "missing model name",
 			args: map[string]string{
-				"catalog_id": "G41",
+				"catalog_id": "G41C",
 			},
 			input:       "",
 			expectError: true,
@@ -195,97 +195,97 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "invalid temperature - too high",
 			args: map[string]string{
-				"catalog_id":  "G4O",
+				"catalog_id":  "G4OC",
 				"temperature": "2.5",
 			},
 			input:       "test-model",
 			expectError: true,
-			errorMsg:    "temperature must be between 0.0 and 2.0",
+			errorMsg:    "temperature",
 		},
 		{
 			name: "invalid temperature - negative",
 			args: map[string]string{
-				"catalog_id":  "G4O",
+				"catalog_id":  "G4OC",
 				"temperature": "-0.1",
 			},
 			input:       "test-model",
 			expectError: true,
-			errorMsg:    "temperature must be between 0.0 and 2.0",
+			errorMsg:    "temperature",
 		},
 		{
 			name: "invalid temperature - not a number",
 			args: map[string]string{
-				"catalog_id":  "G4O",
+				"catalog_id":  "G4OC",
 				"temperature": "not-a-number",
 			},
 			input:       "test-model",
 			expectError: true,
-			errorMsg:    "invalid temperature value",
+			errorMsg:    "invalid float value",
 		},
 		{
 			name: "invalid max_tokens - not a number",
 			args: map[string]string{
-				"catalog_id": "G4O",
+				"catalog_id": "G4OC",
 				"max_tokens": "abc",
 			},
 			input:       "test-model",
 			expectError: true,
-			errorMsg:    "invalid max_tokens value",
+			errorMsg:    "invalid integer value",
 		},
 		{
 			name: "invalid max_tokens - negative",
 			args: map[string]string{
-				"catalog_id": "G4O",
+				"catalog_id": "G4OC",
 				"max_tokens": "-100",
 			},
 			input:       "test-model",
 			expectError: true,
-			errorMsg:    "max_tokens must be positive",
+			errorMsg:    "below minimum",
 		},
 		{
 			name: "invalid top_p - too high",
 			args: map[string]string{
-				"catalog_id": "G4O",
+				"catalog_id": "G4OC",
 				"top_p":      "1.5",
 			},
 			input:       "test-model",
 			expectError: true,
-			errorMsg:    "top_p must be between 0.0 and 1.0",
+			errorMsg:    "above maximum",
 		},
 		{
 			name: "invalid reasoning_effort",
 			args: map[string]string{
-				"catalog_id":       "O3",
+				"catalog_id":       "O3R",
 				"reasoning_effort": "invalid",
 			},
 			input:       "test-model",
 			expectError: true,
-			errorMsg:    "invalid reasoning_effort value",
+			errorMsg:    "invalid value 'invalid'",
 		},
 		{
 			name: "invalid max_output_tokens - negative",
 			args: map[string]string{
-				"catalog_id":        "O3",
+				"catalog_id":        "O3R",
 				"max_output_tokens": "-1000",
 			},
 			input:       "test-model",
 			expectError: true,
-			errorMsg:    "max_output_tokens must be positive",
+			errorMsg:    "below minimum",
 		},
 		{
 			name: "invalid reasoning_summary",
 			args: map[string]string{
-				"catalog_id":        "O3",
+				"catalog_id":        "O3R",
 				"reasoning_summary": "invalid",
 			},
 			input:       "test-model",
 			expectError: true,
-			errorMsg:    "invalid reasoning_summary value",
+			errorMsg:    "invalid value",
 		},
 		{
 			name: "valid edge case parameters",
 			args: map[string]string{
-				"catalog_id":  "G4O",
+				"catalog_id":  "G4OC",
 				"temperature": "0.0",
 				"top_p":       "1.0",
 				"max_tokens":  "1",
@@ -296,7 +296,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 		{
 			name: "valid reasoning parameters",
 			args: map[string]string{
-				"catalog_id":        "O3",
+				"catalog_id":        "O3R",
 				"reasoning_effort":  "low",
 				"max_output_tokens": "10000",
 				"reasoning_summary": "auto",
@@ -336,9 +336,9 @@ func TestOpenAIModelNewCommand_Execute_CatalogIntegration(t *testing.T) {
 		checkFunc   func(t *testing.T, ctx neurotypes.Context)
 	}{
 		{
-			name: "O3 catalog model",
+			name: "O3R catalog model",
 			args: map[string]string{
-				"catalog_id": "O3",
+				"catalog_id": "O3R",
 			},
 			input:       "my-o3",
 			expectError: false,
@@ -353,9 +353,9 @@ func TestOpenAIModelNewCommand_Execute_CatalogIntegration(t *testing.T) {
 			},
 		},
 		{
-			name: "O4M catalog model",
+			name: "O4MC catalog model",
 			args: map[string]string{
-				"catalog_id": "O4M",
+				"catalog_id": "O4MC",
 			},
 			input:       "my-o4-mini",
 			expectError: false,
@@ -368,7 +368,7 @@ func TestOpenAIModelNewCommand_Execute_CatalogIntegration(t *testing.T) {
 		{
 			name: "GPT-4o catalog model",
 			args: map[string]string{
-				"catalog_id": "G4O",
+				"catalog_id": "G4OC",
 			},
 			input:       "my-gpt4o",
 			expectError: false,
@@ -469,7 +469,7 @@ func TestOpenAIModelNewCommand_Execute_ServiceErrors(t *testing.T) {
 
 			tt.setupFunc(t)
 
-			args := map[string]string{"catalog_id": "G4O"}
+			args := map[string]string{"catalog_id": "G4OC"}
 			err := cmd.Execute(args, "test-model")
 
 			assert.Error(t, err)
@@ -485,7 +485,7 @@ func TestOpenAIModelNewCommand_Execute_ActivationBehavior(t *testing.T) {
 
 	// Create a model and verify it gets activated
 	args := map[string]string{
-		"catalog_id": "G4O",
+		"catalog_id": "G4OC",
 	}
 
 	var err error
@@ -526,6 +526,9 @@ func setupOpenAIModelTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	require.NoError(t, err)
 
 	err = services.GetGlobalRegistry().RegisterService(services.NewStackService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().RegisterService(services.NewParameterValidatorService())
 	require.NoError(t, err)
 
 	// Initialize services

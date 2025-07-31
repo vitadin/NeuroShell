@@ -1,28 +1,29 @@
-name: gpt-4o-2024-11-20
-id: G4OC
-display_name: GPT-4o Chat
+name: o4-mini
+id: O4MC
+display_name: O4-mini Chat
 provider: openai
 provider_catalog_id: OAC
-description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
-capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs, omni]
-context_window: 128000
-max_output_tokens: 16384
-knowledge_cutoff: "2023-09-30"
-modalities: [text-input, image-input, text-output]
+description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Chat endpoint version.
+capabilities: [text, reasoning, analysis, coding, writing, visual-reasoning]
+context_window: 200000
+max_output_tokens: 100000
+knowledge_cutoff: "2024-05-31"
+reasoning_tokens: false
+modalities: [text-input, text-output, image-input]
 pricing:
-  input_per_m_token: 2.50
-  output_per_m_token: 10.00
+  input_per_m_token: 1.10
+  output_per_m_token: 4.40
 features:
   streaming: true
   function_calling: true
   structured_outputs: true
   fine_tuning: true
   vision: true
-  predicted_outputs: true
-  distillation: true
+  distillation: false
+  predicted_outputs: false
   reasoning_supported: false
-tools: [web-search, file-search, image-generation, code-interpreter]
-version: "2024-11-20"
+tools: [web-search, file-search, code-interpreter, mcp]
+snapshots: [o4-mini, o4-mini-2025-04-16]
 parameters:
   - name: temperature
     type: float
@@ -37,7 +38,7 @@ parameters:
     required: false
     constraints:
       min: 1
-      max: 16384
+      max: 100000
     description: "Maximum output tokens"
   - name: top_p
     type: float

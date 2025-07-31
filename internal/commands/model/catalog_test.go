@@ -106,7 +106,7 @@ func TestCatalogCommand_Execute(t *testing.T) {
 		output, err := variableService.Get("_output")
 		require.NoError(t, err)
 		assert.Contains(t, output, "Openai")
-		assert.Contains(t, output, "O3")
+		assert.Contains(t, output, "O3R")
 	})
 
 	t.Run("filter by provider - anthropic", func(t *testing.T) {
@@ -132,7 +132,7 @@ func TestCatalogCommand_Execute(t *testing.T) {
 		output, err := variableService.Get("_output")
 		require.NoError(t, err)
 		assert.Contains(t, output, "Search: 'o3'")
-		assert.Contains(t, output, "O3")
+		assert.Contains(t, output, "O3R")
 	})
 
 	t.Run("sort by name", func(t *testing.T) {

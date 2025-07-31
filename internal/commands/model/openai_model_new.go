@@ -3,7 +3,6 @@ package model
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"neuroshell/internal/commands"
@@ -241,10 +240,16 @@ func (c *OpenAIModelNewCommand) Execute(args map[string]string, input string) er
 	catalogModel = &entry
 	baseModel = entry.Name
 
-	// Parse and validate parameters
-	parameters := make(map[string]any)
-	if err := c.parseOpenAIParameters(args, parameters, catalogModel); err != nil {
-		return fmt.Errorf("failed to parse parameters: %w", err)
+	// Get parameter validator service
+	paramValidatorService, err := services.GetGlobalParameterValidatorService()
+	if err != nil {
+		return fmt.Errorf("parameter validator service not available: %w", err)
+	}
+
+	// Validate parameters using the model's parameter definitions
+	parameters, err := paramValidatorService.ValidateParameters(args, catalogModel.Parameters)
+	if err != nil {
+		return fmt.Errorf("failed to validate parameters: %w", err)
 	}
 
 	// Get description
@@ -289,8 +294,8 @@ func (c *OpenAIModelNewCommand) Execute(args map[string]string, input string) er
 	// Auto-push client creation and model activation commands for seamless UX
 	// Note: Stack is LIFO, so we push in reverse order of execution
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		// Determine which client type should be created based on model parameters and catalog
-		preferredClientType := c.determinePreferredClientType(parameters, catalogModel)
+		// Use the model's provider catalog ID as the client type (now 1:1 mapping)
+		preferredClientType := catalogModel.ProviderCatalogID
 
 		if preferredClientType != "" {
 			// Push commands in reverse order (LIFO stack)
@@ -314,180 +319,6 @@ func (c *OpenAIModelNewCommand) Execute(args map[string]string, input string) er
 	fmt.Printf("Created model '%s' (ID: %s, Provider: %s, Base: %s)\n", createdModel.Name, createdModel.ID[:8], createdModel.Provider, createdModel.BaseModel)
 
 	return nil
-}
-
-// parseOpenAIParameters parses and validates OpenAI-specific parameters.
-func (c *OpenAIModelNewCommand) parseOpenAIParameters(args map[string]string, parameters map[string]any, _ *neurotypes.ModelCatalogEntry) error {
-	// Parse reasoning_effort
-	if reasoningEffort, exists := args["reasoning_effort"]; exists {
-		validEfforts := []string{"low", "medium", "high"}
-		if !c.isValidChoice(reasoningEffort, validEfforts) {
-			return fmt.Errorf("invalid reasoning_effort value: %s. Valid values: %s", reasoningEffort, strings.Join(validEfforts, ", "))
-		}
-		parameters["reasoning_effort"] = reasoningEffort
-	}
-
-	// Parse max_output_tokens
-	if maxOutputTokens, exists := args["max_output_tokens"]; exists {
-		maxOutputTokensInt, err := strconv.Atoi(maxOutputTokens)
-		if err != nil {
-			return fmt.Errorf("invalid max_output_tokens value: %s", maxOutputTokens)
-		}
-		if maxOutputTokensInt <= 0 {
-			return fmt.Errorf("max_output_tokens must be positive: %d", maxOutputTokensInt)
-		}
-		parameters["max_output_tokens"] = maxOutputTokensInt
-	}
-
-	// Parse reasoning_summary (simplified: only allow "auto" for all reasoning models)
-	if reasoningSummary, exists := args["reasoning_summary"]; exists {
-		if reasoningSummary != "auto" {
-			return fmt.Errorf("invalid reasoning_summary value: %s. Only 'auto' is supported (recommended by OpenAI)", reasoningSummary)
-		}
-		parameters["reasoning_summary"] = reasoningSummary
-	} else {
-		// Default to "auto" for reasoning models when reasoning_effort is specified
-		if _, hasReasoningEffort := args["reasoning_effort"]; hasReasoningEffort {
-			parameters["reasoning_summary"] = "auto"
-		}
-	}
-
-	// Parse standard parameters
-	if err := c.parseStandardParameters(args, parameters); err != nil {
-		return err
-	}
-
-	// Add any other string parameters that aren't specially handled
-	excludedParams := map[string]bool{
-		"catalog_id": true, "description": true,
-		"reasoning_effort": true, "max_output_tokens": true, "reasoning_summary": true,
-		"temperature": true, "max_tokens": true, "top_p": true,
-		"presence_penalty": true, "frequency_penalty": true,
-	}
-
-	for key, value := range args {
-		if !excludedParams[key] {
-			parameters[key] = value
-		}
-	}
-
-	return nil
-}
-
-// parseStandardParameters parses standard model parameters.
-func (c *OpenAIModelNewCommand) parseStandardParameters(args map[string]string, parameters map[string]any) error {
-	// Parse temperature
-	if temp, exists := args["temperature"]; exists {
-		tempFloat, err := strconv.ParseFloat(temp, 64)
-		if err != nil {
-			return fmt.Errorf("invalid temperature value: %s", temp)
-		}
-		if tempFloat < 0.0 || tempFloat > 2.0 {
-			return fmt.Errorf("temperature must be between 0.0 and 2.0: %f", tempFloat)
-		}
-		parameters["temperature"] = tempFloat
-	}
-
-	// Parse max_tokens
-	if maxTokens, exists := args["max_tokens"]; exists {
-		maxTokensInt, err := strconv.Atoi(maxTokens)
-		if err != nil {
-			return fmt.Errorf("invalid max_tokens value: %s", maxTokens)
-		}
-		if maxTokensInt <= 0 {
-			return fmt.Errorf("max_tokens must be positive: %d", maxTokensInt)
-		}
-		parameters["max_tokens"] = maxTokensInt
-	}
-
-	// Parse top_p
-	if topP, exists := args["top_p"]; exists {
-		topPFloat, err := strconv.ParseFloat(topP, 64)
-		if err != nil {
-			return fmt.Errorf("invalid top_p value: %s", topP)
-		}
-		if topPFloat < 0.0 || topPFloat > 1.0 {
-			return fmt.Errorf("top_p must be between 0.0 and 1.0: %f", topPFloat)
-		}
-		parameters["top_p"] = topPFloat
-	}
-
-	// Parse presence_penalty
-	if presPenalty, exists := args["presence_penalty"]; exists {
-		presPenaltyFloat, err := strconv.ParseFloat(presPenalty, 64)
-		if err != nil {
-			return fmt.Errorf("invalid presence_penalty value: %s", presPenalty)
-		}
-		if presPenaltyFloat < -2.0 || presPenaltyFloat > 2.0 {
-			return fmt.Errorf("presence_penalty must be between -2.0 and 2.0: %f", presPenaltyFloat)
-		}
-		parameters["presence_penalty"] = presPenaltyFloat
-	}
-
-	// Parse frequency_penalty
-	if freqPenalty, exists := args["frequency_penalty"]; exists {
-		freqPenaltyFloat, err := strconv.ParseFloat(freqPenalty, 64)
-		if err != nil {
-			return fmt.Errorf("invalid frequency_penalty value: %s", freqPenalty)
-		}
-		if freqPenaltyFloat < -2.0 || freqPenaltyFloat > 2.0 {
-			return fmt.Errorf("frequency_penalty must be between -2.0 and 2.0: %f", freqPenaltyFloat)
-		}
-		parameters["frequency_penalty"] = freqPenaltyFloat
-	}
-
-	return nil
-}
-
-// isValidChoice checks if a value is in the list of valid choices.
-func (c *OpenAIModelNewCommand) isValidChoice(value string, validChoices []string) bool {
-	for _, valid := range validChoices {
-		if value == valid {
-			return true
-		}
-	}
-	return false
-}
-
-// determinePreferredClientType determines which client type should be created based on model parameters and catalog.
-// It checks both the model's provider catalog IDs and reasoning-specific parameters to decide between reasoning and chat clients.
-func (c *OpenAIModelNewCommand) determinePreferredClientType(parameters map[string]any, catalogModel *neurotypes.ModelCatalogEntry) string {
-	// First check if the model only supports reasoning (OAR) based on catalog
-	if catalogModel != nil {
-		// If model only supports OAR, always use reasoning client
-		if len(catalogModel.ProviderCatalogID) == 1 && catalogModel.ProviderCatalogID[0] == "OAR" {
-			return "OAR"
-		}
-		// If model only supports OAC, always use chat client
-		if len(catalogModel.ProviderCatalogID) == 1 && catalogModel.ProviderCatalogID[0] == "OAC" {
-			return "OAC"
-		}
-	}
-
-	// For models that support both OAC and OAR, check if reasoning parameters are provided
-	if c.hasReasoningParameters(parameters) {
-		return "OAR" // OpenAI Reasoning client
-	}
-
-	// Default to chat client for multi-support models without explicit reasoning parameters
-	return "OAC" // OpenAI Chat client
-}
-
-// hasReasoningParameters checks if model parameters contain reasoning-specific settings.
-func (c *OpenAIModelNewCommand) hasReasoningParameters(parameters map[string]any) bool {
-	if parameters == nil {
-		return false
-	}
-
-	// Check for OpenAI reasoning parameters
-	if _, hasReasoningEffort := parameters["reasoning_effort"]; hasReasoningEffort {
-		return true
-	}
-	if _, hasReasoningSummary := parameters["reasoning_summary"]; hasReasoningSummary {
-		return true
-	}
-
-	return false
 }
 
 // generateClientNewCommand generates the appropriate client creation command for a client type.

@@ -116,9 +116,10 @@ type ModelCatalogEntry struct {
 	// Provider is the LLM provider name (e.g., "openai", "anthropic")
 	Provider string `yaml:"provider" json:"provider"`
 
-	// ProviderCatalogID lists the catalog IDs for provider endpoints this model supports
-	// For example: ["OAC", "OAR"] for OpenAI models supporting both Chat and Reasoning endpoints
-	ProviderCatalogID []string `yaml:"provider_catalog_id" json:"provider_catalog_id"`
+	// ProviderCatalogID is the catalog ID for the specific provider endpoint this model supports
+	// For example: "OAC" for OpenAI Chat, "OAR" for OpenAI Reasoning
+	// Each model card now maps to exactly one endpoint for clean separation
+	ProviderCatalogID string `yaml:"provider_catalog_id" json:"provider_catalog_id"`
 
 	// DisplayName is a human-readable name for the model (e.g., "GPT-4", "Claude 3 Sonnet")
 	DisplayName string `yaml:"display_name" json:"display_name"`
@@ -161,6 +162,10 @@ type ModelCatalogEntry struct {
 
 	// Snapshots lists available model snapshots or aliases
 	Snapshots []string `yaml:"snapshots,omitempty" json:"snapshots,omitempty"`
+
+	// Parameters defines the configurable parameters supported by this model
+	// Each parameter includes type information, constraints, and validation rules
+	Parameters []ParameterDefinition `yaml:"parameters,omitempty" json:"parameters,omitempty"`
 }
 
 // ModelPricing contains pricing information for a model.
@@ -231,6 +236,44 @@ type ModelFeatures struct {
 // Each model file contains a complete ModelCatalogEntry with provider information.
 type ModelCatalogFile struct {
 	ModelCatalogEntry `yaml:",inline" json:",inline"`
+}
+
+// ParameterDefinition defines a configurable parameter for a model.
+// This includes type information, validation constraints, and default values.
+type ParameterDefinition struct {
+	// Name is the parameter name (e.g., "temperature", "max_tokens")
+	Name string `yaml:"name" json:"name"`
+
+	// Type is the parameter type: "string", "int", "float", "bool", "enum"
+	Type string `yaml:"type" json:"type"`
+
+	// Required indicates whether this parameter must be provided
+	Required bool `yaml:"required" json:"required"`
+
+	// Default is the default value for optional parameters
+	Default interface{} `yaml:"default,omitempty" json:"default,omitempty"`
+
+	// Description provides help text for the parameter
+	Description string `yaml:"description" json:"description"`
+
+	// Constraints defines validation rules for the parameter value
+	Constraints *ParameterConstraints `yaml:"constraints,omitempty" json:"constraints,omitempty"`
+}
+
+// ParameterConstraints defines validation constraints for a parameter.
+// Different constraint types apply based on the parameter type.
+type ParameterConstraints struct {
+	// Min is the minimum value for numeric parameters (int, float)
+	Min *float64 `yaml:"min,omitempty" json:"min,omitempty"`
+
+	// Max is the maximum value for numeric parameters (int, float)
+	Max *float64 `yaml:"max,omitempty" json:"max,omitempty"`
+
+	// EnumValues lists valid values for enum parameters
+	EnumValues []string `yaml:"enum,omitempty" json:"enum,omitempty"`
+
+	// Pattern is a regex pattern for string parameter validation
+	Pattern *string `yaml:"pattern,omitempty" json:"pattern,omitempty"`
 }
 
 // ModelCatalogProvider represents a provider's model catalog loaded from YAML.

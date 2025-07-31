@@ -227,7 +227,7 @@ func TestModelCatalogService_SearchModelCatalog(t *testing.T) {
 		models, err := service.SearchModelCatalog("o3")
 		require.NoError(t, err)
 		require.NotNil(t, models)
-		assert.Greater(t, len(models), 0, "Should find O3 models")
+		assert.Greater(t, len(models), 0, "Should find O3R models")
 
 		// Verify all results contain the search term
 		for _, model := range models {
@@ -352,9 +352,9 @@ func TestModelCatalogService_GetModelByID(t *testing.T) {
 	require.NoError(t, service.Initialize())
 
 	t.Run("get model by exact ID", func(t *testing.T) {
-		model, err := service.GetModelByID("O3")
+		model, err := service.GetModelByID("O3R")
 		require.NoError(t, err)
-		assert.Equal(t, "O3", model.ID)
+		assert.Equal(t, "O3R", model.ID)
 		assert.Equal(t, "o3", model.Name)
 		assert.Equal(t, "openai", model.Provider)
 	})
@@ -386,7 +386,7 @@ func TestModelCatalogService_GetModelByID(t *testing.T) {
 
 	t.Run("service not initialized", func(t *testing.T) {
 		uninitializedService := NewModelCatalogService()
-		model, err := uninitializedService.GetModelByID("O3")
+		model, err := uninitializedService.GetModelByID("O3R")
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "not initialized")
 		assert.Equal(t, neurotypes.ModelCatalogEntry{}, model)
@@ -399,7 +399,7 @@ func TestModelCatalogService_validateUniqueIDs(t *testing.T) {
 
 	t.Run("unique IDs pass validation", func(t *testing.T) {
 		models := []neurotypes.ModelCatalogEntry{
-			{ID: "O3", Name: "o3", Provider: "openai"},
+			{ID: "O3R", Name: "o3", Provider: "openai"},
 			{ID: "CS4", Name: "claude-sonnet-4", Provider: "anthropic"},
 			{ID: "CO37", Name: "claude-opus-37", Provider: "anthropic"},
 		}
@@ -409,19 +409,19 @@ func TestModelCatalogService_validateUniqueIDs(t *testing.T) {
 
 	t.Run("duplicate IDs fail validation", func(t *testing.T) {
 		models := []neurotypes.ModelCatalogEntry{
-			{ID: "O3", Name: "o3", Provider: "openai"},
-			{ID: "O3", Name: "another-o3", Provider: "openai"},
+			{ID: "O3R", Name: "o3", Provider: "openai"},
+			{ID: "O3R", Name: "another-o3", Provider: "openai"},
 		}
 		err := service.validateUniqueIDs(models)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "duplicate model ID found")
-		assert.Contains(t, err.Error(), "O3")
+		assert.Contains(t, err.Error(), "O3R")
 	})
 
 	t.Run("case-insensitive duplicate IDs fail validation", func(t *testing.T) {
 		models := []neurotypes.ModelCatalogEntry{
-			{ID: "O3", Name: "o3", Provider: "openai"},
-			{ID: "o3", Name: "another-o3", Provider: "openai"},
+			{ID: "O3R", Name: "o3", Provider: "openai"},
+			{ID: "o3r", Name: "another-o3", Provider: "openai"},
 		}
 		err := service.validateUniqueIDs(models)
 		assert.Error(t, err)
@@ -453,8 +453,8 @@ func TestModelCatalogService_normalizeID(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"O3", "O3"},
-		{"o3", "O3"},
+		{"O3R", "O3R"},
+		{"o3r", "O3R"},
 		{"Cs4", "CS4"},
 		{"cs4", "CS4"},
 		{"CS4", "CS4"},
@@ -495,7 +495,7 @@ func TestModelCatalogService_IDValidationIntegration(t *testing.T) {
 	})
 
 	t.Run("expected model IDs exist", func(t *testing.T) {
-		expectedIDs := []string{"O3", "O4M", "CS37", "CS4", "CO37", "CO4"}
+		expectedIDs := []string{"O3R", "O4MC", "O4MR", "CS37", "CS4", "CO37", "CO4"}
 
 		for _, expectedID := range expectedIDs {
 			model, err := service.GetModelByID(expectedID)

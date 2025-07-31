@@ -2,9 +2,9 @@
 \set[_echo_command="true"]
 
 %% Create models with different names and providers to test sorting
-\model-new[catalog_id="O3"] zebra-model
-\model-new[catalog_id="O4M"] alpha-model
-\model-new[catalog_id="G41"] middle-model
+\model-new[catalog_id="O3R"] zebra-model
+\model-new[catalog_id="O4MC"] alpha-model
+\model-new[catalog_id="G41C"] middle-model
 
 %% Test sorting by name (alphabetical)
 \model-status[sort="name"]

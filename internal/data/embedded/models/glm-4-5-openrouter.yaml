@@ -2,7 +2,7 @@ name: z-ai/glm-4.5
 id: ORGLM45
 display_name: "Z.AI: GLM 4.5"
 provider: openrouter
-provider_catalog_id: [ORC]
+provider_catalog_id: ORC
 description: "Latest flagship foundation model purpose-built for agent-based applications with Mixture-of-Experts architecture and hybrid inference modes"
 capabilities: [text, reasoning, analysis, coding, writing, tool-use, agentic, agent-alignment, thinking-mode, instant-response]
 context_window: 128000

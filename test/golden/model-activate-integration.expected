@@ -1,10 +1,10 @@
 Setting _echo_command = true
-%%> "\\model-new[catalog_id=\"O4M\"] primary-model"
+%%> "\\model-new[catalog_id=\"O4MC\"] primary-model"
 Created model 'primary-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-%%> "\\model-new[catalog_id=\"O3\"] secondary-model"
+%%> "\\model-new[catalog_id=\"O3R\"] secondary-model"
 Created model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\silent \\llm-client-activate OAR"
@@ -18,44 +18,44 @@ Model Configurations (2 models):
   primary-model (00000001)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
-    Description: OpenAI O4-mini model
+    Description: OpenAI O4-mini Chat model
     Active: true
   secondary-model (00000002)
     Provider: openai
     Base Model: o3
-    Catalog ID: O3
-    Parameters: none
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 model
+    Description: OpenAI O3 Reasoning model
 %%> "\\model-activate secondary-model"
 Activated model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\llm-client-activate OAR"
-%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\model-status"
 Model Configurations (2 models):
   primary-model (00000001)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
-    Description: OpenAI O4-mini model
+    Description: OpenAI O4-mini Chat model
   secondary-model (00000002)
     Provider: openai
     Base Model: o3
-    Catalog ID: O3
-    Parameters: none
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 model
+    Description: OpenAI O3 Reasoning model
     Active: true
 %%> "\\get[#active_model_name]"
 #active_model_name = secondary-model
 %%> "\\get[#active_model_provider]"
 #active_model_provider = openai
-%%> "\\model-new[catalog_id=\"O4M\"] new-model"
+%%> "\\model-new[catalog_id=\"O4MC\"] new-model"
 Created model 'new-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"

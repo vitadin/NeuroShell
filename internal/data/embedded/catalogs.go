@@ -8,10 +8,15 @@ import _ "embed"
 //go:embed models/o3.yaml
 var O3ModelData []byte
 
-// O4MiniModelData contains the embedded O4-mini model YAML data.
+// O4MiniChatModelData contains the embedded O4-mini Chat model YAML data.
 //
-//go:embed models/o4-mini.yaml
-var O4MiniModelData []byte
+//go:embed models/o4-mini-chat.yaml
+var O4MiniChatModelData []byte
+
+// O4MiniReasoningModelData contains the embedded O4-mini Reasoning model YAML data.
+//
+//go:embed models/o4-mini-reasoning.yaml
+var O4MiniReasoningModelData []byte
 
 // Claude37SonnetModelData contains the embedded Claude 3.7 Sonnet model YAML data.
 //

@@ -2,7 +2,7 @@ name: gemini-2.5-pro
 id: GM25P
 display_name: Gemini 2.5 Pro
 provider: gemini
-provider_catalog_id: [GMC]
+provider_catalog_id: GMC
 description: Google's most capable multimodal AI model with advanced reasoning capabilities
 capabilities: [text, reasoning, analysis, coding, writing, math, multimodal, audio, video, pdf, code-execution, search-grounding, thinking]
 context_window: 1048576

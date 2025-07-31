@@ -1,5 +1,5 @@
 Setting _echo_command = true
-%%> "\\model-new[catalog_id=\"G41\"] my-gpt4-model"
+%%> "\\model-new[catalog_id=\"G41C\"] my-gpt4-model"
 Created model 'my-gpt4-model' (ID: 00000001, Provider: openai, Base: gpt-4.1-2025-04-14)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"
@@ -13,6 +13,6 @@ Created model 'my-gpt4-model' (ID: 00000001, Provider: openai, Base: gpt-4.1-202
 %%> "\\get[#model_base]"
 #model_base = gpt-4.1-2025-04-14
 %%> "\\get[#model_param_count]"
-#model_param_count = 0
+#model_param_count = 1
 %%> "\\get[_output]"
 _output = OpenAI client ready: OAC:b10394de (type: OAC)

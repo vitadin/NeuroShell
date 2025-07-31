@@ -6,8 +6,8 @@
 \model-catalog[provider="openai"]
 
 %% Create models using catalog
-\model-new[catalog_id="O4M"] my-claude-4
-\model-new[catalog_id="O3"] my-o3-model
+\model-new[catalog_id="O4MC"] my-claude-4
+\model-new[catalog_id="O3R"] my-o3-model
 
 %% Check status after creation
 \model-status
@@ -23,7 +23,7 @@
 \model-activate my-o3-model
 
 %% Create additional model with custom parameters
-\model-new[catalog_id="O4M", temperature="0.8", description="Custom model"] custom-model
+\model-new[catalog_id="O4MC", temperature="0.8", description="Custom model"] custom-model
 
 %% Check full status
 \model-status

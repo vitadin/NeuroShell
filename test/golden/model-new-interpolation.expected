@@ -1,6 +1,6 @@
 Setting _echo_command = true
-%%> "\\set[model_catalog_id=\"O4M\"]"
-Setting model_catalog_id = O4M
+%%> "\\set[model_catalog_id=\"O4MC\"]"
+Setting model_catalog_id = O4MC
 %%> "\\set[model_name=\"test-model\"]"
 Setting model_name = test-model
 %%> "\\set[temp_setting=\"0.7\"]"

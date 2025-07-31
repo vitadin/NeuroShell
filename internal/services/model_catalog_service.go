@@ -49,11 +49,17 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, o3Model)
 
-	o4MiniModel, err := m.loadModelFile(embedded.O4MiniModelData)
+	o4MiniChatModel, err := m.loadModelFile(embedded.O4MiniChatModelData)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load O4-mini model: %w", err)
+		return nil, fmt.Errorf("failed to load O4-mini Chat model: %w", err)
 	}
-	allModels = append(allModels, o4MiniModel)
+	allModels = append(allModels, o4MiniChatModel)
+
+	o4MiniReasoningModel, err := m.loadModelFile(embedded.O4MiniReasoningModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load O4-mini Reasoning model: %w", err)
+	}
+	allModels = append(allModels, o4MiniReasoningModel)
 
 	// Load Anthropic models
 	claude37SonnetModel, err := m.loadModelFile(embedded.Claude37SonnetModelData)
@@ -263,14 +269,29 @@ func (m *ModelCatalogService) GetModelByID(id string) (neurotypes.ModelCatalogEn
 }
 
 // GetProviderCatalogIDsByModelID returns the provider catalog IDs for a given model catalog ID.
+// Note: Returns a slice for backward compatibility, but now each model has exactly one catalog ID.
 func (m *ModelCatalogService) GetProviderCatalogIDsByModelID(id string) ([]string, error) {
 	model, err := m.GetModelByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(model.ProviderCatalogID) == 0 {
-		return nil, fmt.Errorf("model with ID '%s' has no provider catalog IDs defined", id)
+	if model.ProviderCatalogID == "" {
+		return nil, fmt.Errorf("model with ID '%s' has no provider catalog ID defined", id)
+	}
+
+	return []string{model.ProviderCatalogID}, nil
+}
+
+// GetProviderCatalogIDByModelID returns the single provider catalog ID for a given model catalog ID.
+func (m *ModelCatalogService) GetProviderCatalogIDByModelID(id string) (string, error) {
+	model, err := m.GetModelByID(id)
+	if err != nil {
+		return "", err
+	}
+
+	if model.ProviderCatalogID == "" {
+		return "", fmt.Errorf("model with ID '%s' has no provider catalog ID defined", id)
 	}
 
 	return model.ProviderCatalogID, nil
