@@ -1,0 +1,9 @@
+# Test session copy with custom target name
+\session-new[system="You are a coding assistant"] original_coding_session
+\session-add-usermsg Can you help me debug this code?
+\session-add-assistantmsg I'd be happy to help! Please share your code.
+\session-copy[source_session_name=original_coding_session, target_session_name=backup_coding_session]
+\echo Target session name: ${#session_name}
+\echo Source session name: ${#source_session_name}
+\echo Message count: ${#message_count}
+\echo Copy output: ${_output}

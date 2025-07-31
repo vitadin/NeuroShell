@@ -1,0 +1,10 @@
+# Test session copy basic functionality with auto-generated target name
+\session-new[system="You are a test assistant"] source_session
+\session-add-usermsg Hello from source session
+\session-add-assistantmsg Hello back from source!
+\session-copy[source_session_name=source_session]
+\echo Target session name: ${#session_name}
+\echo Target session ID: ${#session_id}
+\echo Source session name: ${#source_session_name}
+\echo Message count: ${#message_count}
+\echo System prompt: ${#system_prompt}

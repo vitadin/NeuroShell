@@ -1,0 +1,10 @@
+# Test session copy by session ID with prefix matching
+\session-new[system="You are a research assistant"] research_project
+\session-add-usermsg What is the latest research on AI?
+\session-add-assistantmsg AI research is rapidly evolving...
+\set[source_id=${#session_id}]
+\session-copy[source_session_id=${source_id}, target_session_name=research_backup]
+\echo Target session name: ${#session_name}
+\echo Source session ID: ${#source_session_id}
+\echo Target session ID: ${#session_id}
+\echo Message count: ${#message_count}

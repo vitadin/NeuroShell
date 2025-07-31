@@ -643,6 +643,95 @@ func (c *ChatSessionService) GenerateDefaultSessionName() string {
 	return fmt.Sprintf("Session %d", now.Unix())
 }
 
+// CopySession creates a deep copy of an existing session with a new identity.
+// It preserves all content (system prompt, messages, metadata) but generates
+// a new UUID, name (custom or auto-generated), and fresh timestamps.
+// The copied session automatically becomes the active session.
+func (c *ChatSessionService) CopySession(sourceIdentifier, targetName string) (*neurotypes.ChatSession, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.CopySessionWithContext(sourceIdentifier, targetName, ctx)
+}
+
+// CopySessionWithContext creates a deep copy of an existing session using provided context.
+func (c *ChatSessionService) CopySessionWithContext(sourceIdentifier, targetName string, ctx neurotypes.Context) (*neurotypes.ChatSession, error) {
+	if !c.initialized {
+		return nil, fmt.Errorf("chat session service not initialized")
+	}
+
+	// Find the source session using smart matching
+	sourceSession, err := c.FindSessionByPrefixWithContext(sourceIdentifier, ctx)
+	if err != nil {
+		return nil, fmt.Errorf("source session lookup failed: %w", err)
+	}
+
+	// Validate and process target name
+	var processedTargetName string
+	if targetName == "" {
+		// Auto-generate name if not provided
+		processedTargetName = c.GenerateDefaultSessionName()
+	} else {
+		// Validate custom target name
+		processedTargetName, err = c.ValidateSessionName(targetName)
+		if err != nil {
+			return nil, fmt.Errorf("invalid target session name: %w", err)
+		}
+	}
+
+	// Check if target name is available
+	if !c.IsSessionNameAvailable(processedTargetName) {
+		return nil, fmt.Errorf("target session name '%s' is already in use", processedTargetName)
+	}
+
+	// Create deep copy with new identity
+	newID := testutils.GenerateUUID(ctx)
+	now := testutils.GetCurrentTime(ctx)
+
+	// Deep copy all messages
+	copiedMessages := make([]neurotypes.Message, len(sourceSession.Messages))
+	for i, msg := range sourceSession.Messages {
+		copiedMessages[i] = neurotypes.Message{
+			ID:        testutils.GenerateUUID(ctx), // Generate new ID for each message
+			Role:      msg.Role,                    // Preserve role
+			Content:   msg.Content,                 // Preserve content
+			Timestamp: msg.Timestamp,               // Preserve original timestamp
+		}
+	}
+
+	// Create the copied session
+	copiedSession := &neurotypes.ChatSession{
+		ID:           newID,
+		Name:         processedTargetName,
+		SystemPrompt: sourceSession.SystemPrompt, // Preserve system prompt
+		Messages:     copiedMessages,
+		CreatedAt:    now,   // New creation timestamp
+		UpdatedAt:    now,   // New update timestamp
+		IsActive:     false, // Will be activated below
+	}
+
+	// Store the copied session
+	sessions := ctx.GetChatSessions()
+	nameToID := ctx.GetSessionNameToID()
+
+	sessions[copiedSession.ID] = copiedSession
+	nameToID[copiedSession.Name] = copiedSession.ID
+
+	// Update context with new session data
+	ctx.SetChatSessions(sessions)
+	ctx.SetSessionNameToID(nameToID)
+
+	// Note: The copied session is not automatically activated
+	// This allows users to create multiple copies without changing the active session
+
+	logger.Debug("Session copied successfully",
+		"source_id", sourceSession.ID,
+		"source_name", sourceSession.Name,
+		"target_id", copiedSession.ID,
+		"target_name", copiedSession.Name,
+		"message_count", len(copiedMessages))
+
+	return copiedSession, nil
+}
+
 // ExportSessionToJSON exports a session by ID to a JSON file.
 // The session must exist and the file path must be valid and writable.
 func (c *ChatSessionService) ExportSessionToJSON(sessionID, filepath string) error {
