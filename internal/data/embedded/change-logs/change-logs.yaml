@@ -3,6 +3,30 @@
 # Each entry represents a significant change, bug fix, or feature addition
 
 entries:
+  - id: "CL2"
+    version: "0.2.2"
+    date: "2025-07-31"
+    type: "feature"
+    title: "Session Import/Export, Model Parameter Validation, and Enhanced OpenAI Integration"
+    description: "Added comprehensive session import/export system supporting JSON format with full data preservation. Implemented model parameter validation service with detailed parameter cards for all models. Enhanced OpenAI integration with O4 Mini chat/reasoning modes, streaming support, and improved client management. Upgraded neurotest framework with enhanced testing capabilities and new experiment scripts. Improved help command organization by removing quick examples and adding better categorization."
+    impact: "Users can now backup/restore entire chat sessions, view detailed model parameters before creation, utilize OpenAI O4 Mini with both chat and reasoning modes, and benefit from more robust testing infrastructure. The help system is cleaner and more organized. Model management includes comprehensive parameter validation and provider catalog ID display."
+    files_changed: [
+      "internal/commands/session/json_export.go",
+      "internal/commands/session/json_import.go", 
+      "internal/commands/session/export.go",
+      "internal/commands/session/import.go",
+      "internal/services/chat_session_service.go",
+      "internal/services/parameter_validator_service.go",
+      "internal/commands/model/openai_model_new.go",
+      "internal/commands/llm/client_activate.go",
+      "internal/commands/llm/api_load.go",
+      "internal/commands/builtin/help.go",
+      "internal/data/embedded/models/o4-mini-*.yaml",
+      "cmd/neurotest/*",
+      "examples/experiments/openai/*",
+      "test/golden/session-*export*",
+      "test/golden/session-*import*"
+    ]
   - id: "CL1"
     version: "0.2.0+550"
     date: "2025-07-30"
