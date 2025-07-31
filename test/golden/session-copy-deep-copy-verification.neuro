@@ -1,0 +1,20 @@
+# Test session copy deep copy verification - ensures messages are preserved
+\session-new[system="You are a conversation assistant"] conversation_test
+\session-add-usermsg First user message
+\session-add-assistantmsg First assistant response
+\session-add-usermsg Second user message with more details
+\session-add-assistantmsg Second assistant response with analysis
+\session-add-usermsg Final user question
+\session-add-assistantmsg Final comprehensive answer
+
+# Copy the session
+\session-copy[source_session_name=conversation_test, target_session_name=conversation_copy]
+
+# Verify session details
+\echo Original session: conversation_test
+\echo Copied session: ${#session_name}
+\echo Message count: ${#message_count}
+\echo System prompt: ${#system_prompt}
+\echo Source session name: ${#source_session_name}
+\echo Source creation time: ${#source_session_created}
+\echo Target creation time: ${#session_created}

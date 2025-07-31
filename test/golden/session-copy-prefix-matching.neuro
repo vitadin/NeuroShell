@@ -1,0 +1,15 @@
+# Test session copy with prefix matching functionality
+\session-new[system="You are a project management assistant"] project_management_main
+\session-add-usermsg How should I organize my project tasks?
+\session-add-assistantmsg I recommend using a structured approach...
+
+# Test prefix matching by name (should match project_management_main)
+\session-copy[source_session_name=project_management, target_session_name=pm_backup]
+\echo Copied from: ${#source_session_name}
+\echo Copied to: ${#session_name}
+\echo Message count: ${#message_count}
+
+# Test with even shorter prefix
+\session-copy[source_session_name=project, target_session_name=another_copy]
+\echo Second copy from: ${#source_session_name}
+\echo Second copy to: ${#session_name}

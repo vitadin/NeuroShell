@@ -1,0 +1,11 @@
+# Test session copy error handling
+Created session 'valid_session' (ID: 00000001)
+# Test 1: No source parameters
+Error 1: must specify either source_session_id or source_session_name
+# Test 2: Both source parameters (should fail)
+Error 2: cannot specify both source_session_id and source_session_name - use exactly one
+# Test 3: Nonexistent source session
+Error 3: session copy failed: source session lookup failed: no session found for 'nonexistent_session' (tried exact name, exact ID, prefix match)
+# Test 4: Duplicate target name
+Created session 'existing_target' (ID: 00000002)
+Error 4: session copy failed: target session name 'existing_target' is already in use

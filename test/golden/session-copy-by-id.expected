@@ -1,0 +1,10 @@
+# Test session copy by session ID with prefix matching
+Created session 'research_project' (ID: 00000001)
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Setting source_id = 00000001-0000-4000-8000-000000000001
+Copied session 'research_project' to 'research_backup' (ID: 00000004) with 2 messages
+Target session name: research_backup
+Source session ID: 00000001-0000-4000-8000-000000000001
+Target session ID: 00000004-0000-4000-8000-000000000004
+Message count: 2

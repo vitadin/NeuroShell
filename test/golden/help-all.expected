@@ -32,6 +32,7 @@ Core Commands:
 Session Management:
     Basic Management:
       \session-activate  - Activate session by name or ID with smart matching and auto-activation
+      \session-copy      - Create deep copy of existing session with new identity
       \session-delete    - Delete an existing chat session
       \session-list      - List all existing chat sessions
       \session-new       - Create new chat session for LLM interactions

@@ -1,0 +1,18 @@
+# Test session copy deep copy verification - ensures messages are preserved
+Created session 'conversation_test' (ID: 00000001)
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+# Copy the session
+Copied session 'conversation_test' to 'conversation_copy' (ID: 00000008) with 6 messages
+# Verify session details
+Original session: conversation_test
+Copied session: conversation_copy
+Message count: 6
+System prompt: You are a conversation assistant
+Source session name: conversation_test
+Source creation time: 2025-01-01 00:00:01
+Target creation time: 2025-01-01 00:00:14

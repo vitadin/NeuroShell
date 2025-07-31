@@ -1,0 +1,20 @@
+# Test creating multiple copies from the same source session
+\session-new[system="You are a multi-project assistant"] master_template
+\session-add-usermsg This is the master template session
+\session-add-assistantmsg I understand this is a template for multiple projects
+
+# Create first copy
+\session-copy[source_session_name=master_template, target_session_name=project_alpha]
+\echo First copy: ${#session_name} (ID: ${#session_id})
+
+# Create second copy
+\session-copy[source_session_name=master_template, target_session_name=project_beta]
+\echo Second copy: ${#session_name} (ID: ${#session_id})
+
+# Create third copy with auto-generated name
+\session-copy[source_session_name=master_template]
+\echo Third copy: ${#session_name} (ID: ${#session_id})
+
+# Verify all sessions exist
+\session-list
+\echo All copies have message count: ${#message_count}

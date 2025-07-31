@@ -1,0 +1,19 @@
+# Test session copy error handling
+\session-new[system="You are a test assistant"] valid_session
+
+# Test 1: No source parameters
+\try \session-copy[target_session_name=should_fail]
+\echo Error 1: ${_error}
+
+# Test 2: Both source parameters (should fail)
+\try \session-copy[source_session_id=abc123, source_session_name=valid_session, target_session_name=should_fail]
+\echo Error 2: ${_error}
+
+# Test 3: Nonexistent source session
+\try \session-copy[source_session_name=nonexistent_session, target_session_name=should_fail]
+\echo Error 3: ${_error}
+
+# Test 4: Duplicate target name
+\session-new existing_target
+\try \session-copy[source_session_name=valid_session, target_session_name=existing_target]
+\echo Error 4: ${_error}
