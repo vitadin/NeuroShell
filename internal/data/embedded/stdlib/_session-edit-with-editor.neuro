@@ -1,0 +1,31 @@
+%% Description: Interactive editor-based session message editing
+%% Usage: \session-edit-with-editor[idx=N, session=session_name]
+%% 
+%% This script combines the power of external editors with session message editing.
+%% It retrieves existing message content, opens it in your preferred editor,
+%% and updates the session with the edited content.
+%%
+%% Parameters (automatically available as _idx, _session):
+%%   idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first) 
+%%   session - Session name or ID (optional, defaults to active session)
+%%
+%% Examples:
+%%   \session-edit-with-editor[idx=1]                    %% Edit last message with editor
+%%   \session-edit-with-editor[idx=2]                    %% Edit second-to-last message  
+%%   \session-edit-with-editor[idx=.1]                   %% Edit first message with editor
+%%   \session-edit-with-editor[idx=.3]                   %% Edit third message with editor
+%%   \session-edit-with-editor[session=work, idx=1]      %% Edit last message in 'work' session
+%%
+%% Workflow:
+%% 1. Open editor with existing message content using double variable interpolation
+%% 2. Update the session message with edited content from ${_output}
+
+%% Step 1: Open editor with the message content as initial text
+%% Use double variable interpolation: ${${_idx}} -> ${1} or ${.1} -> actual message content
+\editor ${${idx}}
+
+%% Step 2: Update the session message with edited content
+%% Pass through session parameter if provided, otherwise use active session
+\silent \if[condition="${_session}"] \session-edit-msg[idx=${idx}, session=${_session}] ${_output}
+\silent \if-not[condition="${_session}"] \session-edit-msg[idx=${idx}] ${_output}
+
