@@ -411,3 +411,33 @@ build-neurotest:
     @echo "Building neurotest..."
     go build -o bin/neurotest ./cmd/neurotest
     @echo "Binary built at: bin/neurotest"
+
+# Record a single experiment with real API calls
+experiment-record EXPERIMENT: ensure-build
+    @echo "Recording experiment: {{EXPERIMENT}}"
+    ./bin/neurotest --neuro-cmd="./bin/neuro" record-experiment "{{EXPERIMENT}}"
+
+# Record all available experiments with real API calls
+experiment-record-all: ensure-build
+    #!/bin/bash
+    echo "Recording all experiments with real API calls..."
+    ./bin/neurotest --neuro-cmd="./bin/neuro" record-all-experiments
+
+# Run an experiment and compare with a specific recording
+experiment-run EXPERIMENT SESSION_ID: ensure-build
+    @echo "Running experiment: {{EXPERIMENT}} (session: {{SESSION_ID}})"
+    ./bin/neurotest --neuro-cmd="./bin/neuro" run-experiment "{{EXPERIMENT}}" "{{SESSION_ID}}"
+
+# List all available experiments
+experiment-list:
+    @echo "Available experiments:"
+    @find examples/experiments -name "*.neuro" -type f 2>/dev/null | sed 's|examples/experiments/||' | sed 's|\.neuro$||' | sort || echo "No experiments found"
+
+# Show experiment recordings for a specific experiment
+experiment-recordings EXPERIMENT:
+    @echo "Recordings for experiment: {{EXPERIMENT}}"
+    @if [ -d "experiments/recordings/{{EXPERIMENT}}" ]; then \
+        ls -la "experiments/recordings/{{EXPERIMENT}}" | grep "\.expected$" | awk '{print $9}' | sed 's|\.expected$||' | sort; \
+    else \
+        echo "No recordings found for {{EXPERIMENT}}"; \
+    fi
