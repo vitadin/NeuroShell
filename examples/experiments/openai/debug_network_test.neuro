@@ -1,0 +1,57 @@
+%% Network Debug Test for OpenAI LLM Call
+%% Purpose: Test the new debug_network=true option in \llm-call command
+%% This captures raw network request/response data in JSON format
+
+\set _style dark1
+
+\echo === OpenAI Network Debug Test ===
+\echo Testing debug_network=true option with G41C model
+\echo
+
+%% API Setup
+\echo Phase 1: Setting up OpenAI API...
+\llm-api-load[provider=openai]
+\llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
+\echo
+
+%% Model Creation  
+\echo Phase 2: Creating G41C model with full parameters...
+\openai-model-new[catalog_id="G41C", temperature="0.7", max_tokens="1000", top_p="0.9", presence_penalty="0.1", frequency_penalty="-0.1"] debug-test-model
+
+%% Model Activation
+\echo Phase 3: Activating model...
+\model-activate debug-test-model
+
+%% Session Setup
+\echo Phase 4: Setting up test session...
+\session-new[system="You are a helpful assistant"] debug-session
+\session-add-usermsg What is 2+2?
+
+%% LLM Call WITHOUT Debug
+\echo Phase 5: Testing regular llm-call (no debug)...
+\llm-call
+\echo Response: ${_output}
+\echo Debug network enabled: ${#debug_network_enabled}
+\echo
+
+%% LLM Call WITH Debug  
+\echo Phase 6: Testing llm-call with debug_network=true...
+\session-add-usermsg Tell me a joke about programming
+\llm-call[debug_network=true]
+\echo Response: ${_output}
+\echo Debug network enabled: ${#debug_network_enabled}
+\echo
+
+%% Display Debug Information
+\echo Phase 7: Displaying captured network debug information...
+\echo === NETWORK DEBUG DATA ===
+\echo ${_debug_network}
+\echo === END DEBUG DATA ===
+\echo
+
+%% Cleanup
+\echo Phase 8: Cleanup...
+\model-delete debug-test-model
+\session-delete debug-session
+
+\echo === Network Debug Test Complete ===

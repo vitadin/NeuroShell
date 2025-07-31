@@ -210,6 +210,18 @@ func (c *OpenAICompatibleClient) SendChatCompletion(session *neurotypes.ChatSess
 	return content, nil
 }
 
+// SendChatCompletionWithDebug sends a chat completion request to OpenAI-compatible API with optional network debugging.
+// Currently, debug functionality is not implemented for OpenAI-compatible client - returns empty debug info.
+func (c *OpenAICompatibleClient) SendChatCompletionWithDebug(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig, debugNetwork bool) (string, string, error) {
+	// For now, just call regular method and return empty debug info
+	response, err := c.SendChatCompletion(session, modelConfig)
+	debugInfo := ""
+	if debugNetwork {
+		debugInfo = "{\"info\": \"debug not implemented for OpenAI-compatible client\"}"
+	}
+	return response, debugInfo, err
+}
+
 // StreamChatCompletion sends a streaming chat completion request to the OpenAI-compatible API.
 func (c *OpenAICompatibleClient) StreamChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
 	logger.Debug("OpenAI-compatible StreamChatCompletion starting", "model", modelConfig.BaseModel, "baseURL", c.baseURL)

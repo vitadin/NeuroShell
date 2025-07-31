@@ -16,6 +16,10 @@ type LLMClient interface {
 	// SendChatCompletion sends a chat completion request and returns the full response.
 	SendChatCompletion(session *ChatSession, model *ModelConfig) (string, error)
 
+	// SendChatCompletionWithDebug sends a chat completion request with optional network debugging.
+	// When debugNetwork is true, returns the response and network debug info as JSON.
+	SendChatCompletionWithDebug(session *ChatSession, model *ModelConfig, debugNetwork bool) (response string, debugInfo string, err error)
+
 	// StreamChatCompletion sends a streaming chat completion request.
 	// It returns a channel that receives response chunks as they arrive.
 	StreamChatCompletion(session *ChatSession, model *ModelConfig) (<-chan StreamChunk, error)
@@ -47,6 +51,10 @@ type LLMService interface {
 	// SendCompletion sends a chat completion request using the provided client.
 	// The session is sent as-is - message manipulation is the caller's responsibility.
 	SendCompletion(client LLMClient, session *ChatSession, model *ModelConfig) (string, error)
+
+	// SendCompletionWithDebug sends a chat completion request with optional network debugging.
+	// Returns response and debug info (if debugNetwork is true).
+	SendCompletionWithDebug(client LLMClient, session *ChatSession, model *ModelConfig, debugNetwork bool) (response string, debugInfo string, err error)
 
 	// StreamCompletion sends a streaming chat completion request using the provided client.
 	// The session is sent as-is - message manipulation is the caller's responsibility.

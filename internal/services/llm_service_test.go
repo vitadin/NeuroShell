@@ -40,6 +40,14 @@ func (m *MockLLMClient) SendChatCompletion(_ *neurotypes.ChatSession, _ *neuroty
 	return m.response, nil
 }
 
+func (m *MockLLMClient) SendChatCompletionWithDebug(_ *neurotypes.ChatSession, _ *neurotypes.ModelConfig, debugNetwork bool) (string, string, error) {
+	debugInfo := ""
+	if debugNetwork {
+		debugInfo = "{\"info\": \"mock debug data\"}"
+	}
+	return m.response, debugInfo, nil
+}
+
 func (m *MockLLMClient) StreamChatCompletion(_ *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
 	ch := make(chan neurotypes.StreamChunk, 1)
 	ch <- neurotypes.StreamChunk{Content: m.response, Done: true}

@@ -160,6 +160,18 @@ func (c *OpenAIReasoningClient) sendChatCompletion(session *neurotypes.ChatSessi
 	return content, nil
 }
 
+// SendChatCompletionWithDebug sends a chat completion request to OpenAI reasoning API with optional network debugging.
+// Currently, debug functionality is not implemented for OpenAI reasoning client - returns empty debug info.
+func (c *OpenAIReasoningClient) SendChatCompletionWithDebug(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig, debugNetwork bool) (string, string, error) {
+	// For now, just call regular method and return empty debug info
+	response, err := c.SendChatCompletion(session, modelConfig)
+	debugInfo := ""
+	if debugNetwork {
+		debugInfo = "{\"info\": \"debug not implemented for OpenAI reasoning client\"}"
+	}
+	return response, debugInfo, err
+}
+
 // sendReasoningCompletion handles reasoning completions via /responses endpoint.
 func (c *OpenAIReasoningClient) sendReasoningCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (string, error) {
 	// Convert session messages to responses API format

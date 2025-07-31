@@ -134,6 +134,18 @@ func (c *AnthropicClient) SendChatCompletion(session *neurotypes.ChatSession, mo
 	return content, nil
 }
 
+// SendChatCompletionWithDebug sends a chat completion request to Anthropic with optional network debugging.
+// Currently, debug functionality is not implemented for Anthropic - returns empty debug info.
+func (c *AnthropicClient) SendChatCompletionWithDebug(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig, debugNetwork bool) (string, string, error) {
+	// For now, just call regular method and return empty debug info
+	response, err := c.SendChatCompletion(session, modelConfig)
+	debugInfo := ""
+	if debugNetwork {
+		debugInfo = "{\"info\": \"debug not implemented for Anthropic client\"}"
+	}
+	return response, debugInfo, err
+}
+
 // StreamChatCompletion sends a streaming chat completion request to Anthropic.
 func (c *AnthropicClient) StreamChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
 	logger.Debug("Anthropic StreamChatCompletion starting", "model", modelConfig.BaseModel)
