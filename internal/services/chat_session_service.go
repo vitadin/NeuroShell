@@ -1,7 +1,9 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -639,4 +641,114 @@ func (c *ChatSessionService) GenerateDefaultSessionName() string {
 	// Final fallback: timestamp-based name (guaranteed unique)
 	now := testutils.GetCurrentTime(neuroshellcontext.GetGlobalContext())
 	return fmt.Sprintf("Session %d", now.Unix())
+}
+
+// ExportSessionToJSON exports a session by ID to a JSON file.
+// The session must exist and the file path must be valid and writable.
+func (c *ChatSessionService) ExportSessionToJSON(sessionID, filepath string) error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.ExportSessionToJSONWithContext(sessionID, filepath, ctx)
+}
+
+// ExportSessionToJSONWithContext exports a session by ID to a JSON file using provided context.
+func (c *ChatSessionService) ExportSessionToJSONWithContext(sessionID, filepath string, ctx neurotypes.Context) error {
+	if !c.initialized {
+		return fmt.Errorf("chat session service not initialized")
+	}
+
+	// Get the session by ID
+	session, err := c.GetSessionWithContext(sessionID, ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get session: %w", err)
+	}
+
+	// Marshal session to JSON with indentation for readability
+	jsonData, err := json.MarshalIndent(session, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal session to JSON: %w", err)
+	}
+
+	// Write JSON data to file
+	if err := os.WriteFile(filepath, jsonData, 0644); err != nil {
+		return fmt.Errorf("failed to write JSON file: %w", err)
+	}
+
+	return nil
+}
+
+// ImportSessionFromJSON imports a session from a JSON file and reconstructs it with new identity.
+// The imported session gets a new ID, auto-generated name, and current timestamps.
+func (c *ChatSessionService) ImportSessionFromJSON(filepath string) (*neurotypes.ChatSession, error) {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.ImportSessionFromJSONWithContext(filepath, ctx)
+}
+
+// ImportSessionFromJSONWithContext imports a session from a JSON file using provided context.
+func (c *ChatSessionService) ImportSessionFromJSONWithContext(filepath string, ctx neurotypes.Context) (*neurotypes.ChatSession, error) {
+	if !c.initialized {
+		return nil, fmt.Errorf("chat session service not initialized")
+	}
+
+	// Read JSON file
+	jsonData, err := os.ReadFile(filepath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read JSON file: %w", err)
+	}
+
+	// Unmarshal JSON to session struct
+	var originalSession neurotypes.ChatSession
+	if err := json.Unmarshal(jsonData, &originalSession); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
+	}
+
+	// Reconstruct session with new identity
+	reconstructedSession, err := c.reconstructImportedSessionWithContext(&originalSession, ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to reconstruct session: %w", err)
+	}
+
+	// Store the reconstructed session
+	sessions := ctx.GetChatSessions()
+	nameToID := ctx.GetSessionNameToID()
+
+	// Deactivate previous active session
+	activeID := ctx.GetActiveSessionID()
+	if activeID != "" {
+		if prevSession, exists := sessions[activeID]; exists {
+			prevSession.IsActive = false
+		}
+	}
+
+	// Store session and update mappings
+	sessions[reconstructedSession.ID] = reconstructedSession
+	nameToID[reconstructedSession.Name] = reconstructedSession.ID
+
+	// Update context with new state
+	ctx.SetChatSessions(sessions)
+	ctx.SetSessionNameToID(nameToID)
+	ctx.SetActiveSessionID(reconstructedSession.ID)
+
+	return reconstructedSession, nil
+}
+
+// reconstructImportedSessionWithContext creates a new session from imported data with fresh identity.
+// Preserves all content but assigns new ID, auto-generated name, and current timestamps.
+func (c *ChatSessionService) reconstructImportedSessionWithContext(originalSession *neurotypes.ChatSession, ctx neurotypes.Context) (*neurotypes.ChatSession, error) {
+	// Generate new identity
+	newID := testutils.GenerateUUID(ctx)
+	newName := c.GenerateDefaultSessionName()
+	now := testutils.GetCurrentTime(ctx)
+
+	// Create reconstructed session preserving content but with new identity
+	reconstructedSession := &neurotypes.ChatSession{
+		ID:           newID,
+		Name:         newName,
+		SystemPrompt: originalSession.SystemPrompt,
+		Messages:     originalSession.Messages, // Preserve conversation history with original timestamps
+		CreatedAt:    now,
+		UpdatedAt:    now,
+		IsActive:     true, // Imported session becomes active
+	}
+
+	return reconstructedSession, nil
 }

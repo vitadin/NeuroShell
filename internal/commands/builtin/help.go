@@ -161,10 +161,10 @@ type CommandCategory struct {
 func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []CommandCategory {
 	categories := []CommandCategory{
 		{Name: "Core Commands", Commands: []*neurotypes.HelpInfo{}},
-		{Name: "System Commands", Commands: []*neurotypes.HelpInfo{}},
-		{Name: "Model Commands", Commands: []*neurotypes.HelpInfo{}},
-		{Name: "Session Commands", Commands: []*neurotypes.HelpInfo{}},
-		{Name: "Testing Commands", Commands: []*neurotypes.HelpInfo{}},
+		{Name: "Session Management", Commands: []*neurotypes.HelpInfo{}},
+		{Name: "Model Management", Commands: []*neurotypes.HelpInfo{}},
+		{Name: "System & Tools", Commands: []*neurotypes.HelpInfo{}},
+		{Name: "Testing & Debugging", Commands: []*neurotypes.HelpInfo{}},
 	}
 
 	// Define command categories
@@ -175,7 +175,7 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 	}
 
 	systemCommands := map[string]bool{
-		"check": true, "editor": true, "render": true,
+		"check": true, "editor": true, "render": true, "version": true, "change-log-show": true,
 	}
 
 	modelCommands := map[string]bool{
@@ -183,7 +183,10 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 	}
 
 	sessionCommands := map[string]bool{
-		"session-delete": true, "session-list": true, "session-new": true,
+		"session-activate": true, "session-add-assistantmsg": true, "session-add-usermsg": true,
+		"session-delete": true, "session-export": true, "session-import": true,
+		"session-json-export": true, "session-json-import": true, "session-list": true,
+		"session-new": true, "session-show": true,
 	}
 
 	testingCommands := map[string]bool{
@@ -194,15 +197,15 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 	for _, cmdInfo := range allCommands {
 		switch {
 		case coreCommands[cmdInfo.Command]:
-			categories[0].Commands = append(categories[0].Commands, cmdInfo)
-		case systemCommands[cmdInfo.Command]:
-			categories[1].Commands = append(categories[1].Commands, cmdInfo)
-		case modelCommands[cmdInfo.Command]:
-			categories[2].Commands = append(categories[2].Commands, cmdInfo)
+			categories[0].Commands = append(categories[0].Commands, cmdInfo) // Core Commands
 		case sessionCommands[cmdInfo.Command]:
-			categories[3].Commands = append(categories[3].Commands, cmdInfo)
+			categories[1].Commands = append(categories[1].Commands, cmdInfo) // Session Management
+		case modelCommands[cmdInfo.Command]:
+			categories[2].Commands = append(categories[2].Commands, cmdInfo) // Model Management
+		case systemCommands[cmdInfo.Command]:
+			categories[3].Commands = append(categories[3].Commands, cmdInfo) // System & Tools
 		case testingCommands[cmdInfo.Command]:
-			categories[4].Commands = append(categories[4].Commands, cmdInfo)
+			categories[4].Commands = append(categories[4].Commands, cmdInfo) // Testing & Debugging
 		default:
 			// Unknown commands go to Core Commands category
 			categories[0].Commands = append(categories[0].Commands, cmdInfo)
@@ -220,11 +223,50 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 	return result
 }
 
+// displaySessionCommandsGrouped displays session commands organized by functionality
+func (c *HelpCommand) displaySessionCommandsGrouped(sessionCommands []*neurotypes.HelpInfo, themeObj *services.Theme) {
+	// Group session commands by functionality
+	sessionGroups := map[string][]*neurotypes.HelpInfo{
+		"Basic Management": {},
+		"Conversation":     {},
+		"Import/Export":    {},
+	}
+
+	// Categorize session commands
+	for _, cmdInfo := range sessionCommands {
+		switch cmdInfo.Command {
+		case "session-new", "session-list", "session-activate", "session-delete", "session-show":
+			sessionGroups["Basic Management"] = append(sessionGroups["Basic Management"], cmdInfo)
+		case "session-add-usermsg", "session-add-assistantmsg":
+			sessionGroups["Conversation"] = append(sessionGroups["Conversation"], cmdInfo)
+		case "session-export", "session-import", "session-json-export", "session-json-import":
+			sessionGroups["Import/Export"] = append(sessionGroups["Import/Export"], cmdInfo)
+		default:
+			sessionGroups["Basic Management"] = append(sessionGroups["Basic Management"], cmdInfo)
+		}
+	}
+
+	// Display each group
+	groupOrder := []string{"Basic Management", "Conversation", "Import/Export"}
+	for _, groupName := range groupOrder {
+		commands := sessionGroups[groupName]
+		if len(commands) > 0 {
+			fmt.Printf("    %s:\n", themeObj.Info.Render(groupName))
+			for _, cmdInfo := range commands {
+				fmt.Printf("      %s - %s\n",
+					themeObj.Command.Render(fmt.Sprintf("%-18s", "\\"+cmdInfo.Command)),
+					cmdInfo.Description)
+			}
+			fmt.Println()
+		}
+	}
+}
+
 // showAllCommandsStyled displays all commands using only theme object semantic styles
 func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.HelpInfo, themeObj *services.Theme) error {
 
 	// Title
-	fmt.Println(themeObj.Success.Render("Neuro Shell - Quick Start Guide"))
+	fmt.Println(themeObj.Success.Render("Neuro Shell - Available Commands"))
 	fmt.Println()
 
 	// Categorize commands
@@ -238,29 +280,16 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.HelpInfo, 
 
 		fmt.Println(themeObj.Warning.Render(category.Name + ":"))
 
-		for _, cmdInfo := range category.Commands {
-			fmt.Printf("  %s - %s\n",
-				themeObj.Command.Render(fmt.Sprintf("%-15s", "\\"+cmdInfo.Command)),
-				themeObj.Info.Render(cmdInfo.Description))
+		// Special handling for Session Management to show subcategories
+		if category.Name == "Session Management" {
+			c.displaySessionCommandsGrouped(category.Commands, themeObj)
+		} else {
+			for _, cmdInfo := range category.Commands {
+				fmt.Printf("  %s - %s\n",
+					themeObj.Command.Render(fmt.Sprintf("%-20s", "\\"+cmdInfo.Command)),
+					themeObj.Info.Render(cmdInfo.Description))
+			}
 		}
-	}
-
-	fmt.Println()
-
-	// Quick Examples section
-	fmt.Println(themeObj.Warning.Render("Quick Examples:"))
-
-	examples := []string{
-		"\\send Hello world",
-		"\\set[name=\"John\"]",
-		"\\model-new[name=\"gpt4\"]",
-		"\\bash[ls -la]",
-	}
-
-	for _, example := range examples {
-		// Apply NeuroShell syntax highlighting to examples
-		styledExample := c.highlightNeuroShellSyntax(example, themeObj)
-		fmt.Printf("  %s\n", styledExample)
 	}
 
 	fmt.Println()

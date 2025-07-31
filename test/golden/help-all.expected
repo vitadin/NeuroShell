@@ -1,58 +1,60 @@
-Neuro Shell - Quick Start Guide
+Neuro Shell - Available Commands
 Core Commands:
   \anthropic-client-new - Create new Anthropic client with automatic key resolution and extended thinking support
-  \bash           - Execute system commands via bash
-  \cat            - Display file contents with optional line limiting and variable storage
-  \change-log-show - Show NeuroShell development change log with search capabilities
-  \echo           - Output text with optional raw mode and variable storage
-  \exit           - Exit the shell
-  \gemini-client-new - Create new Gemini client with automatic key resolution
-  \gemini-model-new - Create Gemini model configurations with thinking support
-  \get            - Get a variable
-  \get-env        - Get an environment variable and create #os.VAR neuro variable
-  \help           - Show command help
-  \if             - Conditionally execute commands based on boolean conditions
-  \if-not         - Conditionally execute commands when boolean conditions are false
-  \llm-api-activate - Activate an API key for a specific provider
-  \llm-api-load   - Load and display API-related variables from multiple sources with intelligent filtering and masking
-  \llm-call       - Orchestrate LLM API call using client, model, and session services
+  \bash                - Execute system commands via bash
+  \cat                 - Display file contents with optional line limiting and variable storage
+  \echo                - Output text with optional raw mode and variable storage
+  \exit                - Exit the shell
+  \gemini-client-new   - Create new Gemini client with automatic key resolution
+  \gemini-model-new    - Create Gemini model configurations with thinking support
+  \get                 - Get a variable
+  \get-env             - Get an environment variable and create #os.VAR neuro variable
+  \help                - Show command help
+  \if                  - Conditionally execute commands based on boolean conditions
+  \if-not              - Conditionally execute commands when boolean conditions are false
+  \llm-api-activate    - Activate an API key for a specific provider
+  \llm-api-load        - Load and display API-related variables from multiple sources with intelligent filtering and masking
+  \llm-call            - Orchestrate LLM API call using client, model, and session services
   \llm-client-activate - Activate LLM client by provider catalog ID or specific client ID
-  \model-activate - Set active model by name or ID with smart matching
-  \model-delete   - Delete model configuration by name or ID with smart matching
-  \openai-client-new - Create new OpenAI client with automatic key resolution and reasoning model support
-  \openai-model-new - Create OpenAI model configurations with reasoning support
-  \provider-catalog - List available LLM providers from embedded catalog
-  \render-markdown - Render markdown content to ANSI terminal output using Glamour
-  \send           - Send message to LLM agent
-  \session-activate - Activate session by name or ID with smart matching and auto-activation
-  \session-add-assistantmsg - Add assistant message to specified session
-  \session-add-usermsg - Add user message to specified session
-  \session-show   - Display detailed session information with smart content rendering
-  \set            - Set a variable
-  \set-env        - Set an environment variable
-  \silent         - Execute commands with stdout output suppressed
-  \timer          - Start a visual countdown timer for the specified number of seconds
-  \try            - Execute commands with error capture and handling
-  \vars           - List variables with optional filtering
-  \version        - Show NeuroShell version information and store details in system variables
-System Commands:
-  \check          - Check service initialization status and availability
-  \editor         - Open external editor for composing input
-  \render         - Style and highlight text using lipgloss with keyword support
-Model Commands:
-  \model-catalog  - List available LLM models from embedded catalog
-  \model-new      - Create new LLM model configuration
-  \model-status   - Display status and details of model configurations
-Session Commands:
-  \session-delete - Delete an existing chat session
-  \session-list   - List all existing chat sessions
-  \session-new    - Create new chat session for LLM interactions
-Testing Commands:
-  \assert-equal   - Compare two values for equality
-Quick Examples:
-  \send Hello world
-  \set[name="John"]
-  \model-new[name="gpt4"]
-  \bash[ls -la]
+  \model-activate      - Set active model by name or ID with smart matching
+  \model-delete        - Delete model configuration by name or ID with smart matching
+  \openai-client-new   - Create new OpenAI client with automatic key resolution and reasoning model support
+  \openai-model-new    - Create OpenAI model configurations with reasoning support
+  \provider-catalog    - List available LLM providers from embedded catalog
+  \render-markdown     - Render markdown content to ANSI terminal output using Glamour
+  \send                - Send message to LLM agent
+  \set                 - Set a variable
+  \set-env             - Set an environment variable
+  \silent              - Execute commands with stdout output suppressed
+  \timer               - Start a visual countdown timer for the specified number of seconds
+  \try                 - Execute commands with error capture and handling
+  \vars                - List variables with optional filtering
+Session Management:
+    Basic Management:
+      \session-activate  - Activate session by name or ID with smart matching and auto-activation
+      \session-delete    - Delete an existing chat session
+      \session-list      - List all existing chat sessions
+      \session-new       - Create new chat session for LLM interactions
+      \session-show      - Display detailed session information with smart content rendering
+    Conversation:
+      \session-add-assistantmsg - Add assistant message to specified session
+      \session-add-usermsg - Add user message to specified session
+    Import/Export:
+      \session-export    - Export chat session in specified format
+      \session-import    - Import chat session from file with format auto-detection
+      \session-json-export - Export chat session to JSON file
+      \session-json-import - Import chat session from JSON file
+Model Management:
+  \model-catalog       - List available LLM models from embedded catalog
+  \model-new           - Create new LLM model configuration
+  \model-status        - Display status and details of model configurations
+System & Tools:
+  \change-log-show     - Show NeuroShell development change log with search capabilities
+  \check               - Check service initialization status and availability
+  \editor              - Open external editor for composing input
+  \render              - Style and highlight text using lipgloss with keyword support
+  \version             - Show NeuroShell version information and store details in system variables
+Testing & Debugging:
+  \assert-equal        - Compare two values for equality
 Note: Text without \ prefix is sent to LLM automatically
 Use \help[command] for detailed help on any command
