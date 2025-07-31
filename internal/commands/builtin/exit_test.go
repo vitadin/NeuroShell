@@ -22,12 +22,12 @@ func TestExitCommand_ParseMode(t *testing.T) {
 
 func TestExitCommand_Description(t *testing.T) {
 	cmd := &ExitCommand{}
-	assert.Equal(t, "Exit the shell", cmd.Description())
+	assert.Equal(t, "Exit the shell with optional exit code and message", cmd.Description())
 }
 
 func TestExitCommand_Usage(t *testing.T) {
 	cmd := &ExitCommand{}
-	assert.Equal(t, "\\exit", cmd.Usage())
+	assert.Equal(t, "\\exit[code=N, message=text]", cmd.Usage())
 }
 
 // TestExitCommand_Execute tests the exit command by running it in a subprocess
@@ -64,13 +64,13 @@ func TestExitCommand_Execute(t *testing.T) {
 	// We just verify that the subprocess exited cleanly
 }
 
-// TestExitCommand_Execute_WithArgs tests that args are ignored
+// TestExitCommand_Execute_WithArgs tests that known args are processed correctly
 func TestExitCommand_Execute_WithArgs(t *testing.T) {
 	if os.Getenv("TEST_EXIT_COMMAND_ARGS") == "1" {
 		// This code runs in the subprocess
 		cmd := &ExitCommand{}
 
-		// Test with args - should still exit normally
+		// Test with mixed args - known args are processed, unknown are ignored
 		args := map[string]string{"force": "true", "code": "1"}
 		_ = cmd.Execute(args, "")
 
@@ -85,15 +85,12 @@ func TestExitCommand_Execute_WithArgs(t *testing.T) {
 	output, err := subCmd.CombinedOutput()
 	outputStr := string(output)
 
-	// Should still exit with code 0 (args are ignored)
+	// Should exit with code 1 (code arg is processed)
 	if e, ok := err.(*exec.ExitError); ok {
-		assert.Equal(t, 0, e.ExitCode(), "Expected exit code 0, got %d. Output: %s", e.ExitCode(), outputStr)
+		assert.Equal(t, 1, e.ExitCode(), "Expected exit code 1, got %d. Output: %s", e.ExitCode(), outputStr)
 	} else {
-		assert.NoError(t, err, "Expected successful exit (code 0)")
+		t.Errorf("Expected exit code 1 but subprocess succeeded with code 0. Output: %s", outputStr)
 	}
-
-	// Exit command should not print any message - it just exits silently
-	// We just verify that the subprocess exited cleanly with code 0
 }
 
 // TestExitCommand_Execute_WithInput tests that input is ignored
@@ -127,8 +124,130 @@ func TestExitCommand_Execute_WithInput(t *testing.T) {
 	// We just verify that the subprocess exited cleanly with code 0
 }
 
+// TestExitCommand_Execute_WithCode tests exit command with custom exit codes
+func TestExitCommand_Execute_WithCode(t *testing.T) {
+	testCases := []struct {
+		name     string
+		code     string
+		expected int
+	}{
+		{"code_1", "1", 1},
+		{"code_2", "2", 2},
+		{"code_255", "255", 255},
+		{"code_invalid_negative", "-1", 0},  // Should default to 0
+		{"code_invalid_too_high", "256", 0}, // Should default to 0
+		{"code_invalid_text", "abc", 0},     // Should default to 0
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if os.Getenv("TEST_EXIT_CODE_"+tc.name) == "1" {
+				// This code runs in the subprocess
+				cmd := &ExitCommand{}
+				args := map[string]string{"code": tc.code}
+				_ = cmd.Execute(args, "")
+				t.Fatal("Expected os.Exit to be called")
+				return
+			}
+
+			// Run the test in a subprocess
+			subCmd := exec.Command(os.Args[0], "-test.run=TestExitCommand_Execute_WithCode/"+tc.name)
+			subCmd.Env = append(os.Environ(), "TEST_EXIT_CODE_"+tc.name+"=1")
+
+			output, err := subCmd.CombinedOutput()
+			outputStr := string(output)
+
+			if e, ok := err.(*exec.ExitError); ok {
+				assert.Equal(t, tc.expected, e.ExitCode(), "Expected exit code %d, got %d. Output: %s", tc.expected, e.ExitCode(), outputStr)
+			} else if tc.expected == 0 {
+				// No error means exit code 0
+				assert.NoError(t, err, "Expected successful exit (code 0)")
+			} else {
+				t.Errorf("Expected exit code %d but subprocess succeeded with code 0. Output: %s", tc.expected, outputStr)
+			}
+		})
+	}
+}
+
+// TestExitCommand_Execute_WithMessage tests exit command with messages
+func TestExitCommand_Execute_WithMessage(t *testing.T) {
+	testCases := []struct {
+		name    string
+		message string
+	}{
+		{"simple_message", "Goodbye!"},
+		{"multi_word", "Task completed successfully"},
+		{"empty_message", ""},
+		{"special_chars", "Error: File not found!"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if os.Getenv("TEST_EXIT_MESSAGE_"+tc.name) == "1" {
+				// This code runs in the subprocess
+				cmd := &ExitCommand{}
+				args := map[string]string{"message": tc.message}
+				_ = cmd.Execute(args, "")
+				t.Fatal("Expected os.Exit to be called")
+				return
+			}
+
+			// Run the test in a subprocess
+			subCmd := exec.Command(os.Args[0], "-test.run=TestExitCommand_Execute_WithMessage/"+tc.name)
+			subCmd.Env = append(os.Environ(), "TEST_EXIT_MESSAGE_"+tc.name+"=1")
+
+			output, err := subCmd.CombinedOutput()
+			outputStr := string(output)
+
+			// Should exit with code 0
+			if e, ok := err.(*exec.ExitError); ok {
+				assert.Equal(t, 0, e.ExitCode(), "Expected exit code 0, got %d. Output: %s", e.ExitCode(), outputStr)
+			} else {
+				assert.NoError(t, err, "Expected successful exit (code 0)")
+			}
+
+			// Check that message was printed (if not empty)
+			if tc.message != "" {
+				assert.Contains(t, outputStr, tc.message, "Expected message '%s' in output: %s", tc.message, outputStr)
+			}
+		})
+	}
+}
+
+// TestExitCommand_Execute_WithBoth tests exit command with both code and message
+func TestExitCommand_Execute_WithBoth(t *testing.T) {
+	if os.Getenv("TEST_EXIT_BOTH") == "1" {
+		// This code runs in the subprocess
+		cmd := &ExitCommand{}
+		args := map[string]string{
+			"code":    "42",
+			"message": "Custom exit message",
+		}
+		_ = cmd.Execute(args, "")
+		t.Fatal("Expected os.Exit to be called")
+		return
+	}
+
+	// Run the test in a subprocess
+	subCmd := exec.Command(os.Args[0], "-test.run=TestExitCommand_Execute_WithBoth")
+	subCmd.Env = append(os.Environ(), "TEST_EXIT_BOTH=1")
+
+	output, err := subCmd.CombinedOutput()
+	outputStr := string(output)
+
+	// Should exit with code 42
+	if e, ok := err.(*exec.ExitError); ok {
+		assert.Equal(t, 42, e.ExitCode(), "Expected exit code 42, got %d. Output: %s", e.ExitCode(), outputStr)
+	} else {
+		t.Errorf("Expected exit code 42 but subprocess succeeded with code 0. Output: %s", outputStr)
+	}
+
+	// Check that message was printed
+	assert.Contains(t, outputStr, "Custom exit message", "Expected message in output: %s", outputStr)
+}
+
 // TestExitCommand_Execute_MessageOnly tests the basic metadata without calling os.Exit
-// Since the exit command doesn't print any messages, we just test interface compliance
+// Since the exit command now supports parameters, we test the updated interface
 func TestExitCommand_Execute_MessageOnly(t *testing.T) {
 	// We can't easily test the full Execute method due to os.Exit,
 	// but we can test the command interface methods
@@ -137,17 +256,46 @@ func TestExitCommand_Execute_MessageOnly(t *testing.T) {
 
 	// Test that all interface methods work correctly
 	assert.Equal(t, "exit", cmd.Name())
-	assert.Equal(t, "Exit the shell", cmd.Description())
-	assert.Equal(t, "\\exit", cmd.Usage())
+	assert.Equal(t, "Exit the shell with optional exit code and message", cmd.Description())
+	assert.Equal(t, "\\exit[code=N, message=text]", cmd.Usage())
 	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 
 	// Test HelpInfo
 	helpInfo := cmd.HelpInfo()
 	assert.Equal(t, "exit", helpInfo.Command)
-	assert.Equal(t, "Exit the shell", helpInfo.Description)
-	assert.Equal(t, "\\exit", helpInfo.Usage)
+	assert.Equal(t, "Exit the shell with optional exit code and message", helpInfo.Description)
+	assert.Equal(t, "\\exit[code=N, message=text]", helpInfo.Usage)
 	assert.NotEmpty(t, helpInfo.Examples)
 	assert.NotEmpty(t, helpInfo.Notes)
+	assert.NotEmpty(t, helpInfo.Options)
+
+	// Test that we have the expected options
+	assert.Len(t, helpInfo.Options, 2)
+
+	// Find code and message options
+	var codeOption, messageOption *neurotypes.HelpOption
+	for i, opt := range helpInfo.Options {
+		switch opt.Name {
+		case "code":
+			codeOption = &helpInfo.Options[i]
+		case "message":
+			messageOption = &helpInfo.Options[i]
+		}
+	}
+
+	assert.NotNil(t, codeOption, "Should have code option")
+	assert.NotNil(t, messageOption, "Should have message option")
+
+	if codeOption != nil {
+		assert.Equal(t, "int", codeOption.Type)
+		assert.Equal(t, "0", codeOption.Default)
+		assert.False(t, codeOption.Required)
+	}
+
+	if messageOption != nil {
+		assert.Equal(t, "string", messageOption.Type)
+		assert.False(t, messageOption.Required)
+	}
 }
 
 // BenchmarkExitCommand tests the performance characteristics of the exit command
