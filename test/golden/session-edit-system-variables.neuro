@@ -1,0 +1,47 @@
+%% Test session-edit-system variable interpolation and metadata
+\set[_echo_command="true"]
+
+%% Create a session for testing
+\session-new[system="Initial prompt"] variable_test_session
+
+%% Set variables to use in system prompt
+\set[role="data scientist"]
+\set[specialty="machine learning"]
+\set[style="concise and technical"]
+
+%% Test variable interpolation in system prompt
+\session-edit-system You are a ${role} who specializes in ${specialty}. Be ${style} in your responses.
+\get[#session_id]
+\get[#session_name]
+\get[#old_system_prompt]
+\get[#new_system_prompt]
+\get[_output]
+
+%% Test updating with a long system prompt
+\set[long_prompt="You are an expert assistant with deep knowledge across multiple domains including technology, science, mathematics, and creative writing. Your responses should be comprehensive yet accessible, providing detailed explanations while maintaining clarity and engagement."]
+\session-edit-system ${long_prompt}
+\get[#old_system_prompt]
+\get[#new_system_prompt]
+\get[_output]
+
+%% Test updating with special characters and formatting
+\session-edit-system "You are an AI assistant! Use proper formatting:\n1. Be helpful\n2. Be accurate\n3. Use examples like: @user, #topic, $variable"
+\get[#old_system_prompt]
+\get[#new_system_prompt]
+\get[_output]
+
+%% Test multiple rapid updates
+\session-edit-system First update
+\get[#old_system_prompt]
+\get[#new_system_prompt]
+
+\session-edit-system Second update
+\get[#old_system_prompt]
+\get[#new_system_prompt]
+
+\session-edit-system Final update
+\get[#old_system_prompt]
+\get[#new_system_prompt]
+
+%% Clean up
+\session-delete variable_test_session

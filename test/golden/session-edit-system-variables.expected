@@ -1,0 +1,61 @@
+Setting _echo_command = true
+%%> "\\session-new[system=\"Initial prompt\"] variable_test_session"
+Created session 'variable_test_session' (ID: 00000001)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\set[role=\"data scientist\"]"
+Setting role = data scientist
+%%> "\\set[specialty=\"machine learning\"]"
+Setting specialty = machine learning
+%%> "\\set[style=\"concise and technical\"]"
+Setting style = concise and technical
+%%> "\\session-edit-system You are a ${role} who specializes in ${specialty}. Be ${style} in your responses."
+Updated system prompt for session 'variable_test_session'
+%%> "\\get[#session_id]"
+#session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#session_name]"
+#session_name = variable_test_session
+%%> "\\get[#old_system_prompt]"
+#old_system_prompt = Initial prompt
+%%> "\\get[#new_system_prompt]"
+#new_system_prompt = You are a data scientist who specializes in machine learning. Be concise and technical in your responses.
+%%> "\\get[_output]"
+_output = Updated system prompt for session 'variable_test_session'
+%%> "\\set[long_prompt=\"You are an expert assistant with deep knowledge across multiple domains including technology, science, mathematics, and creative writing. Your responses should be comprehensive yet accessible, providing detailed explanations while maintaining clarity and engagement.\"]"
+Setting long_prompt = You are an expert assistant with deep knowledge across multiple domains including technology, science, mathematics, and creative writing. Your responses should be comprehensive yet accessible, providing detailed explanations while maintaining clarity and engagement.
+%%> "\\session-edit-system ${long_prompt}"
+Updated system prompt for session 'variable_test_session'
+%%> "\\get[#old_system_prompt]"
+#old_system_prompt = You are a data scientist who specializes in machine learning. Be concise and technical in your responses.
+%%> "\\get[#new_system_prompt]"
+#new_system_prompt = You are an expert assistant with deep knowledge across multiple domains including technology, science, mathematics, and creative writing. Your responses should be comprehensive yet accessible, providing detailed explanations while maintaining clarity and engagement.
+%%> "\\get[_output]"
+_output = Updated system prompt for session 'variable_test_session'
+%%> "\\session-edit-system \"You are an AI assistant! Use proper formatting:\\n1. Be helpful\\n2. Be accurate\\n3. Use examples like: @user, #topic, $variable\""
+Updated system prompt for session 'variable_test_session'
+%%> "\\get[#old_system_prompt]"
+#old_system_prompt = You are an expert assistant with deep knowledge across multiple domains including technology, science, mathematics, and creative writing. Your responses should be comprehensive yet accessible, providing detailed explanations while maintaining clarity and engagement.
+%%> "\\get[#new_system_prompt]"
+#new_system_prompt = "You are an AI assistant! Use proper formatting:\n1. Be helpful\n2. Be accurate\n3. Use examples like: @user, #topic, $variable"
+%%> "\\get[_output]"
+_output = Updated system prompt for session 'variable_test_session'
+%%> "\\session-edit-system First update"
+Updated system prompt for session 'variable_test_session'
+%%> "\\get[#old_system_prompt]"
+#old_system_prompt = "You are an AI assistant! Use proper formatting:\n1. Be helpful\n2. Be accurate\n3. Use examples like: @user, #topic, $variable"
+%%> "\\get[#new_system_prompt]"
+#new_system_prompt = First update
+%%> "\\session-edit-system Second update"
+Updated system prompt for session 'variable_test_session'
+%%> "\\get[#old_system_prompt]"
+#old_system_prompt = First update
+%%> "\\get[#new_system_prompt]"
+#new_system_prompt = Second update
+%%> "\\session-edit-system Final update"
+Updated system prompt for session 'variable_test_session'
+%%> "\\get[#old_system_prompt]"
+#old_system_prompt = Second update
+%%> "\\get[#new_system_prompt]"
+#new_system_prompt = Final update
+%%> "\\session-delete variable_test_session"
+Deleted session 'variable_test_session' (ID: 00000001)
+%%> "\\silent \\session-activate"
