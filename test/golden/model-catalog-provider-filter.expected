@@ -1,7 +1,8 @@
 Setting _echo_command = true
 %%> "\\model-catalog[provider=openai]"
-Model Catalog (Openai) (7 models):
-  [G41] GPT-4.1 (gpt-4.1-2025-04-14)
+Model Catalog (Openai) (8 models):
+  [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
+    Endpoint: OAC
     Context: 1,047,576 tokens (max output: 32,768 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs
     Modalities: text-input, image-input, text-output
@@ -10,7 +11,8 @@ Model Catalog (Openai) (7 models):
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
-  [G4O] GPT-4o (gpt-4o-2024-11-20)
+  [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
+    Endpoint: OAC
     Context: 128,000 tokens (max output: 16,384 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs, omni
     Modalities: text-input, image-input, text-output
@@ -19,7 +21,8 @@ Model Catalog (Openai) (7 models):
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
-  [O1] o1 (o1-2024-12-17)
+  [O1R] o1 Reasoning (o1-2024-12-17)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -29,7 +32,8 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
-  [O1P] o1-pro (o1-pro-2025-03-19)
+  [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -38,7 +42,8 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
-  [O3] O3 (o3)
+  [O3R] O3 Reasoning (o3)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
     Modalities: text-input, text-output, image-input
@@ -49,7 +54,8 @@ Model Catalog (Openai) (7 models):
     Reasoning tokens supported
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
-  [O3P] o3-pro (o3-pro-2025-06-10)
+  [O3PR] o3-pro Reasoning (o3-pro-2025-06-10)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning
     Modalities: text-input, image-input, text-output
@@ -59,7 +65,19 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
-  [O4M] O4-mini (o4-mini)
+  [O4MC] O4-mini Chat (o4-mini)
+    Endpoint: OAC
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.10/1M input, $4.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Snapshots: o4-mini, o4-mini-2025-04-16
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Chat endpoint version.
+  [O4MR] O4-mini Reasoning (o4-mini)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -69,10 +87,11 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
-    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.
 %%> "\\model-catalog[provider=anthropic]"
 Model Catalog (Anthropic) (4 models):
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
+    Endpoint: ANC
     Context: 200,000 tokens (max output: 4,096 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -81,6 +100,7 @@ Model Catalog (Anthropic) (4 models):
     Knowledge cutoff: 2023-08-01
     Description: Top-level intelligence, fluency, and understanding
   [CS37] Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
+    Endpoint: ANC
     Context: 200,000 tokens (max output: 64,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
     Modalities: text-input, text-output, image-input
@@ -89,6 +109,7 @@ Model Catalog (Anthropic) (4 models):
     Knowledge cutoff: 2024-11-01
     Description: High intelligence with toggleable extended thinking
   [CO4] Claude Opus 4 (claude-opus-4-20250514)
+    Endpoint: ANC
     Context: 200,000 tokens (max output: 32,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking
     Modalities: text-input, text-output, image-input
@@ -97,6 +118,7 @@ Model Catalog (Anthropic) (4 models):
     Knowledge cutoff: 2025-03-01
     Description: Highest level of intelligence and capability
   [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
+    Endpoint: ANC
     Context: 200,000 tokens (max output: 64,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
     Modalities: text-input, text-output, image-input
@@ -105,10 +127,10 @@ Model Catalog (Anthropic) (4 models):
     Knowledge cutoff: 2025-03-01
     Description: High intelligence and balanced performance
 %%> "\\model-catalog[provider=all]"
-Model Catalog (22 models):
+Model Catalog (23 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
-    Provider: anthropic
+    Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 4,096 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -117,7 +139,7 @@ Anthropic Models:
     Knowledge cutoff: 2023-08-01
     Description: Top-level intelligence, fluency, and understanding
   [CS37] Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
-    Provider: anthropic
+    Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 64,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
     Modalities: text-input, text-output, image-input
@@ -126,7 +148,7 @@ Anthropic Models:
     Knowledge cutoff: 2024-11-01
     Description: High intelligence with toggleable extended thinking
   [CO4] Claude Opus 4 (claude-opus-4-20250514)
-    Provider: anthropic
+    Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 32,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking
     Modalities: text-input, text-output, image-input
@@ -135,7 +157,7 @@ Anthropic Models:
     Knowledge cutoff: 2025-03-01
     Description: Highest level of intelligence and capability
   [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
-    Provider: anthropic
+    Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 64,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
     Modalities: text-input, text-output, image-input
@@ -145,7 +167,7 @@ Anthropic Models:
     Description: High intelligence and balanced performance
 Gemini Models:
   [GM25F] Gemini 2.5 Flash (gemini-2.5-flash)
-    Provider: gemini
+    Provider: gemini (GMC)
     Context: 1,048,576 tokens (max output: 65,536 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, multimodal, audio, video, code-execution, search-grounding, thinking
     Modalities: text-input, image-input, audio-input, video-input, text-output
@@ -157,7 +179,7 @@ Gemini Models:
     Snapshots: gemini-2.5-flash, gemini-2.5-flash-preview-05-20
     Description: Google's fast and efficient multimodal AI model optimized for speed and performance
   [GM25FL] Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
-    Provider: gemini
+    Provider: gemini (GMC)
     Context: 1,048,576 tokens
     Capabilities: text, reasoning, analysis, coding, writing, multimodal, ultra-low-latency, cost-efficient, thinking-mode-optional, structured-outputs, function-calling, code-execution, url-context, search-grounding, caching, batch-mode
     Modalities: text-input, image-input, video-input, audio-input, pdf-input, text-output
@@ -167,7 +189,7 @@ Gemini Models:
     Thinking mode: range: 512-24576, default: disabled, can disable
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
   [GM25P] Gemini 2.5 Pro (gemini-2.5-pro)
-    Provider: gemini
+    Provider: gemini (GMC)
     Context: 1,048,576 tokens (max output: 65,536 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, multimodal, audio, video, pdf, code-execution, search-grounding, thinking
     Modalities: text-input, image-input, audio-input, video-input, pdf-input, text-output
@@ -179,7 +201,7 @@ Gemini Models:
     Description: Google's most capable multimodal AI model with advanced reasoning capabilities
 Moonshot Models:
   [MK2] Kimi K2 (Moonshot) (kimi-k2-0711-preview)
-    Provider: moonshot
+    Provider: moonshot (MSC)
     Context: 128,000 tokens (max output: 32,768 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, agentic
     Modalities: text-input, text-output
@@ -188,8 +210,8 @@ Moonshot Models:
     Knowledge cutoff: 2024-12-01
     Description: Direct access to Kimi K2 via Moonshot AI platform, a trillion-parameter MoE model with 384 experts and advanced reasoning capabilities
 Openai Models:
-  [G41] GPT-4.1 (gpt-4.1-2025-04-14)
-    Provider: openai
+  [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
+    Provider: openai (OAC)
     Context: 1,047,576 tokens (max output: 32,768 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs
     Modalities: text-input, image-input, text-output
@@ -198,8 +220,8 @@ Openai Models:
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
-  [G4O] GPT-4o (gpt-4o-2024-11-20)
-    Provider: openai
+  [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
+    Provider: openai (OAC)
     Context: 128,000 tokens (max output: 16,384 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs, omni
     Modalities: text-input, image-input, text-output
@@ -208,8 +230,8 @@ Openai Models:
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
-  [O1] o1 (o1-2024-12-17)
-    Provider: openai
+  [O1R] o1 Reasoning (o1-2024-12-17)
+    Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -219,8 +241,8 @@ Openai Models:
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
-  [O1P] o1-pro (o1-pro-2025-03-19)
-    Provider: openai
+  [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
+    Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -229,8 +251,8 @@ Openai Models:
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
-  [O3] O3 (o3)
-    Provider: openai
+  [O3R] O3 Reasoning (o3)
+    Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
     Modalities: text-input, text-output, image-input
@@ -241,8 +263,8 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
-  [O3P] o3-pro (o3-pro-2025-06-10)
-    Provider: openai
+  [O3PR] o3-pro Reasoning (o3-pro-2025-06-10)
+    Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning
     Modalities: text-input, image-input, text-output
@@ -252,8 +274,19 @@ Openai Models:
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
-  [O4M] O4-mini (o4-mini)
-    Provider: openai
+  [O4MC] O4-mini Chat (o4-mini)
+    Provider: openai (OAC)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.10/1M input, $4.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Snapshots: o4-mini, o4-mini-2025-04-16
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Chat endpoint version.
+  [O4MR] O4-mini Reasoning (o4-mini)
+    Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -263,10 +296,10 @@ Openai Models:
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
-    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.
 Openrouter Models:
   [ORGM25FL] Google: Gemini 2.5 Flash Lite (google/gemini-2.5-flash-lite)
-    Provider: openrouter
+    Provider: openrouter (ORC)
     Context: 1,048,576 tokens
     Capabilities: text, reasoning, analysis, coding, writing, multimodal, ultra-low-latency, cost-efficient, thinking-mode-optional, structured-outputs, function-calling, code-execution, url-context, search-grounding, caching, batch-mode
     Modalities: text-input, image-input, video-input, audio-input, pdf-input, text-output
@@ -276,7 +309,7 @@ Openrouter Models:
     Thinking mode: range: 512-24576, default: disabled, can disable
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
   [ORK2] Kimi K2 (OpenRouter) (moonshotai/kimi-k2)
-    Provider: openrouter
+    Provider: openrouter (ORC)
     Context: 131,000 tokens (max output: 32,768 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, agentic
     Modalities: text-input, text-output
@@ -285,7 +318,7 @@ Openrouter Models:
     Knowledge cutoff: 2024-12-01
     Description: Trillion-parameter MoE model with 32B active parameters via OpenRouter, optimized for advanced tool use, reasoning, and code synthesis
   [ORK2F] Kimi K2 Free (OpenRouter) (moonshotai/kimi-k2:free)
-    Provider: openrouter
+    Provider: openrouter (ORC)
     Context: 65,536 tokens (max output: 32,768 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, agentic
     Modalities: text-input, text-output
@@ -294,7 +327,7 @@ Openrouter Models:
     Knowledge cutoff: 2024-12-01
     Description: Free access to Kimi K2 via OpenRouter, a trillion-parameter MoE model optimized for advanced tool use, reasoning, and code synthesis
   [ORQ3A] Qwen: Qwen3 235B A22B 2507 (qwen/qwen3-235b-a22b-07-25)
-    Provider: openrouter
+    Provider: openrouter (ORC)
     Context: 262,144 tokens
     Capabilities: text, reasoning, analysis, coding, writing, math, tool-use, multilingual, thinking-mode, instruction-following
     Modalities: text-input, text-output
@@ -303,7 +336,7 @@ Openrouter Models:
     Knowledge cutoff: 2025-07-01
     Description: Mixture-of-Experts model with 235B total/22B active parameters via OpenRouter, featuring thinking mode and advanced multilingual capabilities
   [ORQ3AT] Qwen: Qwen3 235B A22B Thinking 2507 (qwen/qwen3-235b-a22b-thinking-2507)
-    Provider: openrouter
+    Provider: openrouter (ORC)
     Context: 262,144 tokens (max output: 81,920 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, tool-use, multilingual, thinking-mode, instruction-following, structured-reasoning, agentic
     Modalities: text-input, text-output
@@ -312,7 +345,7 @@ Openrouter Models:
     Knowledge cutoff: 2025-07-25
     Description: High-performance Mixture-of-Experts model optimized for complex reasoning tasks with thinking mode, activating 22B of 235B parameters per forward pass
   [ORG4] xAI: Grok 4 (x-ai/grok-4)
-    Provider: openrouter
+    Provider: openrouter (ORC)
     Context: 256,000 tokens
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, structured-outputs, parallel-tool-calling, mandatory-reasoning
     Modalities: text-input, image-input, text-output
@@ -321,7 +354,7 @@ Openrouter Models:
     Knowledge cutoff: 2025-07-09
     Description: Grok 4 is xAI's latest reasoning model with a 256k context window. It supports parallel tool calling, structured outputs, and both image and text inputs with mandatory reasoning capabilities.
   [ORGLM45] Z.AI: GLM 4.5 (z-ai/glm-4.5)
-    Provider: openrouter
+    Provider: openrouter (ORC)
     Context: 128,000 tokens
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, agentic, agent-alignment, thinking-mode, instant-response
     Modalities: text-input, text-output

@@ -1,15 +1,15 @@
 Setting _echo_command = true
-%%> "\\model-new[catalog_id=\"O4M\"] first-model"
+%%> "\\model-new[catalog_id=\"O4MC\"] first-model"
 Created model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-%%> "\\model-new[catalog_id=\"O3\"] second-model"
+%%> "\\model-new[catalog_id=\"O3R\"] second-model"
 Created model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\silent \\llm-client-activate OAR"
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-%%> "\\model-new[catalog_id=\"O4M\", description=\"Third model\"] third-model"
+%%> "\\model-new[catalog_id=\"O4MC\", description=\"Third model\"] third-model"
 Created model 'third-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"
@@ -31,7 +31,7 @@ Activated model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\model-activate second-model"
 Activated model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\llm-client-activate OAR"
-%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\get[#active_model_name]"
 #active_model_name = second-model
 %%> "\\get[#active_model_provider]"
@@ -43,23 +43,23 @@ Model Configurations (3 models):
   first-model (00000001)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
-    Description: OpenAI O4-mini model
+    Description: OpenAI O4-mini Chat model
   second-model (00000002)
     Provider: openai
     Base Model: o3
-    Catalog ID: O3
-    Parameters: none
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 model
+    Description: OpenAI O3 Reasoning model
     Active: true
   third-model (00000003)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:03
     Description: Third model
 %%> "\\get[#model_count]"
@@ -95,10 +95,10 @@ Model Configurations (1 models):
   first-model (00000001)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
-    Description: OpenAI O4-mini model
+    Description: OpenAI O4-mini Chat model
     Active: true
 %%> "\\get[#model_count]"
 #model_count = 1

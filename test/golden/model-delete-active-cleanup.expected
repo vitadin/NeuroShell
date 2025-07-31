@@ -1,10 +1,10 @@
 Setting _echo_command = true
-%%> "\\model-new[catalog_id=\"O4M\"] current-model"
+%%> "\\model-new[catalog_id=\"O4MC\"] current-model"
 Created model 'current-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-%%> "\\model-new[catalog_id=\"O3\"] backup-model"
+%%> "\\model-new[catalog_id=\"O3R\"] backup-model"
 Created model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\silent \\llm-client-activate OAR"
@@ -33,16 +33,16 @@ Model Configurations (1 models):
   backup-model (00000002)
     Provider: openai
     Base Model: o3
-    Catalog ID: O3
-    Parameters: none
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 model
+    Description: OpenAI O3 Reasoning model
     Active: true
 %%> "\\try \\model-activate current-model"
 %%> "\\model-activate current-model"
 %%> "\\model-activate backup-model"
 Activated model 'backup-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\llm-client-activate OAR"
-%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\get[#active_model_name]"
 #active_model_name = backup-model

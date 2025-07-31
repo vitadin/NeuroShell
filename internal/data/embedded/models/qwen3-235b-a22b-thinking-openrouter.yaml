@@ -2,7 +2,7 @@ name: qwen/qwen3-235b-a22b-thinking-2507
 id: ORQ3AT
 display_name: "Qwen: Qwen3 235B A22B Thinking 2507"
 provider: openrouter
-provider_catalog_id: [ORC]
+provider_catalog_id: ORC
 description: "High-performance Mixture-of-Experts model optimized for complex reasoning tasks with thinking mode, activating 22B of 235B parameters per forward pass"
 capabilities: [text, reasoning, analysis, coding, writing, math, tool-use, multilingual, thinking-mode, instruction-following, structured-reasoning, agentic]
 context_window: 262144

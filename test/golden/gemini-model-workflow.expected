@@ -2,6 +2,7 @@ Setting _echo_command = true
 %%> "\\model-catalog[provider=\"gemini\"]"
 Model Catalog (Gemini) (3 models):
   [GM25F] Gemini 2.5 Flash (gemini-2.5-flash)
+    Endpoint: GMC
     Context: 1,048,576 tokens (max output: 65,536 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, multimodal, audio, video, code-execution, search-grounding, thinking
     Modalities: text-input, image-input, audio-input, video-input, text-output
@@ -13,6 +14,7 @@ Model Catalog (Gemini) (3 models):
     Snapshots: gemini-2.5-flash, gemini-2.5-flash-preview-05-20
     Description: Google's fast and efficient multimodal AI model optimized for speed and performance
   [GM25FL] Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
+    Endpoint: GMC
     Context: 1,048,576 tokens
     Capabilities: text, reasoning, analysis, coding, writing, multimodal, ultra-low-latency, cost-efficient, thinking-mode-optional, structured-outputs, function-calling, code-execution, url-context, search-grounding, caching, batch-mode
     Modalities: text-input, image-input, video-input, audio-input, pdf-input, text-output
@@ -22,6 +24,7 @@ Model Catalog (Gemini) (3 models):
     Thinking mode: range: 512-24576, default: disabled, can disable
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
   [GM25P] Gemini 2.5 Pro (gemini-2.5-pro)
+    Endpoint: GMC
     Context: 1,048,576 tokens (max output: 65,536 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, multimodal, audio, video, pdf, code-execution, search-grounding, thinking
     Modalities: text-input, image-input, audio-input, video-input, pdf-input, text-output

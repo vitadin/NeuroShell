@@ -1,15 +1,15 @@
 Setting _echo_command = true
-%%> "\\model-new[catalog_id=\"O4M\"] model-to-delete"
+%%> "\\model-new[catalog_id=\"O4MC\"] model-to-delete"
 Created model 'model-to-delete' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-%%> "\\model-new[catalog_id=\"O3\"] model-to-keep"
+%%> "\\model-new[catalog_id=\"O3R\"] model-to-keep"
 Created model 'model-to-keep' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\silent \\llm-client-activate OAR"
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-%%> "\\model-new[catalog_id=\"O4M\"] another-model"
+%%> "\\model-new[catalog_id=\"O4MC\"] another-model"
 Created model 'another-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"
@@ -19,25 +19,25 @@ Model Configurations (3 models):
   another-model (00000003)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:03
-    Description: OpenAI O4-mini model
+    Description: OpenAI O4-mini Chat model
     Active: true
   model-to-delete (00000001)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
-    Description: OpenAI O4-mini model
+    Description: OpenAI O4-mini Chat model
   model-to-keep (00000002)
     Provider: openai
     Base Model: o3
-    Catalog ID: O3
-    Parameters: none
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 model
+    Description: OpenAI O3 Reasoning model
 %%> "\\model-delete model-to-delete"
 Deleted model 'model-to-delete' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate"
@@ -56,17 +56,17 @@ Model Configurations (2 models):
   another-model (00000003)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:03
-    Description: OpenAI O4-mini model
+    Description: OpenAI O4-mini Chat model
     Active: true
   model-to-keep (00000002)
     Provider: openai
     Base Model: o3
-    Catalog ID: O3
-    Parameters: none
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 model
+    Description: OpenAI O3 Reasoning model
 %%> "\\get[#model_count]"
 #model_count = 2

@@ -697,7 +697,7 @@ func TestGeminiModelNewCommand_Execute_InvalidCatalogID(t *testing.T) {
 		},
 		{
 			name:      "OpenAI catalog ID",
-			catalogID: "O3", // OpenAI model
+			catalogID: "O3R", // OpenAI model
 			errorMsg:  "is not a Gemini model",
 		},
 	}

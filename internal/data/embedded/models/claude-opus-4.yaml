@@ -2,7 +2,7 @@ name: claude-opus-4-20250514
 id: CO4
 display_name: Claude Opus 4
 provider: anthropic
-provider_catalog_id: [ANC]
+provider_catalog_id: ANC
 description: Highest level of intelligence and capability
 capabilities: [text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking]
 context_window: 200000
@@ -20,3 +20,40 @@ features:
   extended_thinking: true
   multilingual: true
 version: "2025-05-14"
+parameters:
+  - name: temperature
+    type: float
+    required: false
+    default: 1.0
+    constraints:
+      min: 0.0
+      max: 1.0
+    description: "Controls randomness (0.0=deterministic, 1.0=creative)"
+  - name: max_tokens
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 32000
+    description: "Maximum output tokens"
+  - name: top_p
+    type: float
+    required: false
+    constraints:
+      min: 0.0
+      max: 1.0
+    description: "Nucleus sampling parameter"
+  - name: top_k
+    type: int
+    required: false
+    constraints:
+      min: 0
+      max: 200
+    description: "Top-k sampling parameter"
+  - name: thinking_budget
+    type: int
+    required: false
+    constraints:
+      min: 0
+      max: 32768
+    description: "Extended thinking token budget (0=disabled, -1=dynamic)"

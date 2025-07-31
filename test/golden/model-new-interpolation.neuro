@@ -1,6 +1,6 @@
 %% Test model creation with variable interpolation
 \set[_echo_command="true"]
-\set[model_catalog_id="O4M"]
+\set[model_catalog_id="O4MC"]
 \set[model_name="test-model"]
 \set[temp_setting="0.7"]
 \model-new[catalog_id="${model_catalog_id}", temperature="${temp_setting}"] ${model_name}

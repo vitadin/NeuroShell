@@ -1,8 +1,8 @@
 name: gpt-4.1-2025-04-14
-id: G41
-display_name: GPT-4.1
+id: G41C
+display_name: GPT-4.1 Chat
 provider: openai
-provider_catalog_id: [OAC]
+provider_catalog_id: OAC
 description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
 capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs]
 context_window: 1047576
@@ -24,3 +24,40 @@ features:
   reasoning_supported: false
 tools: [web-search, file-search, image-generation, code-interpreter]
 version: "2025-04-14"
+parameters:
+  - name: temperature
+    type: float
+    required: false
+    default: 1.0
+    constraints:
+      min: 0.0
+      max: 2.0
+    description: "Controls randomness (0.0=deterministic, 2.0=creative)"
+  - name: max_tokens
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 32768
+    description: "Maximum output tokens"
+  - name: top_p
+    type: float
+    required: false
+    constraints:
+      min: 0.0
+      max: 1.0
+    description: "Nucleus sampling parameter"
+  - name: presence_penalty
+    type: float
+    required: false
+    constraints:
+      min: -2.0
+      max: 2.0
+    description: "Presence penalty (-2.0 to 2.0)"
+  - name: frequency_penalty
+    type: float
+    required: false
+    constraints:
+      min: -2.0
+      max: 2.0
+    description: "Frequency penalty (-2.0 to 2.0)"

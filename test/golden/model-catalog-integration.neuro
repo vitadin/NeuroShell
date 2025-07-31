@@ -5,8 +5,8 @@
 \model-catalog[provider="openai", sort="name"]
 
 %% Create models using different catalog IDs
-\model-new[catalog_id="O4M"] claude-s4-instance
-\model-new[catalog_id="O3"] openai-o3-instance
+\model-new[catalog_id="O4MC"] claude-s4-instance
+\model-new[catalog_id="O3R"] openai-o3-instance
 
 %% Verify catalog information is preserved in status
 \model-status

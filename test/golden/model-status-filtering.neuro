@@ -2,10 +2,10 @@
 \set[_echo_command="true"]
 
 %% Create models with different providers and names
-\model-new[catalog_id="O4M"] claude-prod-model
-\model-new[catalog_id="O3"] openai-prod-model
-\model-new[catalog_id="O4M"] claude-test-model
-\model-new[catalog_id="G41"] openai-test-model
+\model-new[catalog_id="O4MC"] claude-prod-model
+\model-new[catalog_id="O3R"] openai-prod-model
+\model-new[catalog_id="O4MC"] claude-test-model
+\model-new[catalog_id="G41C"] openai-test-model
 
 %% Test filtering by name pattern
 \model-status[name="prod"]

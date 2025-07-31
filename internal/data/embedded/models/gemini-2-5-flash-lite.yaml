@@ -2,7 +2,7 @@ name: gemini-2.5-flash-lite
 id: GM25FL
 display_name: "Gemini 2.5 Flash Lite"
 provider: gemini
-provider_catalog_id: [GMC]
+provider_catalog_id: GMC
 description: "Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode."
 capabilities: [text, reasoning, analysis, coding, writing, multimodal, ultra-low-latency, cost-efficient, thinking-mode-optional, structured-outputs, function-calling, code-execution, url-context, search-grounding, caching, batch-mode]
 context_window: 1048576

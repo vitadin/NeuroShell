@@ -1,15 +1,15 @@
 Setting _echo_command = true
-%%> "\\model-new[catalog_id=\"O4M\"] claude-model"
+%%> "\\model-new[catalog_id=\"O4MC\"] claude-model"
 Created model 'claude-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-%%> "\\model-new[catalog_id=\"O3\"] openai-model"
+%%> "\\model-new[catalog_id=\"O3R\"] openai-model"
 Created model 'openai-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\silent \\llm-client-activate OAR"
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
-%%> "\\model-new[catalog_id=\"O4M\", description=\"Custom Claude model\"] custom-claude"
+%%> "\\model-new[catalog_id=\"O4MC\", description=\"Custom Claude model\"] custom-claude"
 Created model 'custom-claude' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"
@@ -19,25 +19,25 @@ Model Configurations (3 models):
   claude-model (00000001)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
-    Description: OpenAI O4-mini model
+    Description: OpenAI O4-mini Chat model
   custom-claude (00000003)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:03
     Description: Custom Claude model
     Active: true
   openai-model (00000002)
     Provider: openai
     Base Model: o3
-    Catalog ID: O3
-    Parameters: none
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 model
+    Description: OpenAI O3 Reasoning model
 %%> "\\get[#model_count]"
 #model_count = 3
 %%> "\\get[#model_filtered_count]"
@@ -47,22 +47,22 @@ _output = Model Configurations (3 models):
   claude-model (00000001)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
-    Description: OpenAI O4-mini model
+    Description: OpenAI O4-mini Chat model
   custom-claude (00000003)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:03
     Description: Custom Claude model
     Active: true
   openai-model (00000002)
     Provider: openai
     Base Model: o3
-    Catalog ID: O3
-    Parameters: none
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 model
+    Description: OpenAI O3 Reasoning model

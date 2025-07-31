@@ -1,8 +1,8 @@
 name: o3-pro-2025-06-10
-id: O3P
-display_name: o3-pro
+id: O3PR
+display_name: o3-pro Reasoning
 provider: openai
-provider_catalog_id: [OAR]
+provider_catalog_id: OAR
 description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
 capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning]
 context_window: 200000
@@ -26,3 +26,25 @@ features:
 tools: [web-search, file-search, image-generation]
 reasoning_tokens: true
 version: "2025-06-10"
+parameters:
+  - name: reasoning_effort
+    type: enum
+    required: false
+    default: "medium"
+    constraints:
+      enum: ["low", "medium", "high"]
+    description: "Reasoning effort level (low=speed/economy, medium=balanced, high=thorough)"
+  - name: reasoning_summary
+    type: enum
+    required: false
+    default: "auto"
+    constraints:
+      enum: ["auto"]
+    description: "Reasoning summary mode (auto recommended by OpenAI)"
+  - name: max_output_tokens
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 100000
+    description: "Maximum total output tokens including reasoning tokens"

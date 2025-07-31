@@ -1,31 +1,32 @@
-name: o1-pro-2025-03-19
-id: O1PR
-display_name: o1-pro Reasoning
+name: o4-mini
+id: O4MR
+display_name: O4-mini Reasoning
 provider: openai
 provider_catalog_id: OAR
-description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
-capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, reinforcement-learning, complex-reasoning, chain-of-thought]
+description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.
+capabilities: [text, reasoning, analysis, coding, writing, visual-reasoning]
 context_window: 200000
 max_output_tokens: 100000
-knowledge_cutoff: "2023-09-30"
-modalities: [text-input, image-input, text-output]
+knowledge_cutoff: "2024-05-31"
+reasoning_tokens: true
+modalities: [text-input, text-output, image-input]
 pricing:
-  input_per_m_token: 150.00
-  output_per_m_token: 600.00
+  input_per_m_token: 1.10
+  output_per_m_token: 4.40
 features:
   streaming: true
   function_calling: true
   structured_outputs: true
+  fine_tuning: true
   vision: true
-  batch: true
-  mcp: true
-  reinforcement_learning: true
+  distillation: false
+  predicted_outputs: false
   reasoning_supported: true
   reasoning_effort_levels: ["low", "medium", "high"]
   reasoning_default_effort: "medium"
   reasoning_summary_supported: true
-reasoning_tokens: true
-version: "2025-03-19"
+tools: [web-search, file-search, code-interpreter, mcp]
+snapshots: [o4-mini, o4-mini-2025-04-16]
 parameters:
   - name: reasoning_effort
     type: enum

@@ -82,8 +82,8 @@ func (c *APIActivateCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 		},
 		Notes: []string{
-			"Use \\llm-api-show to see available keys and their source-prefixed names",
-			"The key must exist as a collected variable (run \\llm-api-show first)",
+			"Use \\llm-api-load to see available keys and their source-prefixed names",
+			"The key must exist as a collected variable (run \\llm-api-load first)",
 		},
 	}
 }
@@ -131,11 +131,11 @@ func (c *APIActivateCommand) Execute(args map[string]string, _ string) error {
 	// Validate that the key exists as a collected variable
 	keyValue, err := variableService.Get(key)
 	if err != nil {
-		return fmt.Errorf("key '%s' not found. Run \\llm-api-show to see available keys", key)
+		return fmt.Errorf("key '%s' not found. Run \\llm-api-load to see available keys", key)
 	}
 
 	if keyValue == "" {
-		return fmt.Errorf("key '%s' is empty. Run \\llm-api-show to see available keys", key)
+		return fmt.Errorf("key '%s' is empty. Run \\llm-api-load to see available keys", key)
 	}
 
 	// Validate key format (should be source.ORIGINAL_NAME)

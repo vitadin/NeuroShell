@@ -1,8 +1,8 @@
 name: o1-2024-12-17
-id: O1
-display_name: o1
+id: O1R
+display_name: o1 Reasoning
 provider: openai
-provider_catalog_id: [OAR]
+provider_catalog_id: OAR
 description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
 capabilities: [text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought]
 context_window: 200000
@@ -28,3 +28,25 @@ features:
 tools: [file-search]
 reasoning_tokens: true
 version: "2024-12-17"
+parameters:
+  - name: reasoning_effort
+    type: enum
+    required: false
+    default: "medium"
+    constraints:
+      enum: ["low", "medium", "high"]
+    description: "Reasoning effort level (low=speed/economy, medium=balanced, high=thorough)"
+  - name: reasoning_summary
+    type: enum
+    required: false
+    default: "auto"
+    constraints:
+      enum: ["auto"]
+    description: "Reasoning summary mode (auto recommended by OpenAI)"
+  - name: max_output_tokens
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 100000
+    description: "Maximum total output tokens including reasoning tokens"

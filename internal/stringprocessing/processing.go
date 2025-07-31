@@ -183,3 +183,31 @@ func IsAPIRelated(variableName string, providers []string) (bool, string) {
 	// Has API keywords but no specific provider detected
 	return true, "generic"
 }
+
+// StringPtr returns a pointer to the given string value.
+// This is a utility function for creating string pointers, commonly used in structs
+// where fields are defined as *string to allow for optional/nullable values.
+func StringPtr(s string) *string {
+	return &s
+}
+
+// Float64Ptr returns a pointer to the given float64 value.
+// This is a utility function for creating float64 pointers, commonly used in structs
+// where fields are defined as *float64 to allow for optional/nullable values.
+func Float64Ptr(f float64) *float64 {
+	return &f
+}
+
+// IntPtr returns a pointer to the given int value.
+// This is a utility function for creating int pointers, commonly used in structs
+// where fields are defined as *int to allow for optional/nullable values.
+func IntPtr(i int) *int {
+	return &i
+}
+
+// BoolPtr returns a pointer to the given bool value.
+// This is a utility function for creating bool pointers, commonly used in structs
+// where fields are defined as *bool to allow for optional/nullable values.
+func BoolPtr(b bool) *bool {
+	return &b
+}

@@ -1,7 +1,8 @@
 Setting _echo_command = true
 %%> "\\model-catalog[provider=\"openai\"]"
-Model Catalog (Openai) (7 models):
-  [G41] GPT-4.1 (gpt-4.1-2025-04-14)
+Model Catalog (Openai) (8 models):
+  [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
+    Endpoint: OAC
     Context: 1,047,576 tokens (max output: 32,768 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs
     Modalities: text-input, image-input, text-output
@@ -10,7 +11,8 @@ Model Catalog (Openai) (7 models):
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
-  [G4O] GPT-4o (gpt-4o-2024-11-20)
+  [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
+    Endpoint: OAC
     Context: 128,000 tokens (max output: 16,384 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs, omni
     Modalities: text-input, image-input, text-output
@@ -19,7 +21,8 @@ Model Catalog (Openai) (7 models):
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
-  [O1] o1 (o1-2024-12-17)
+  [O1R] o1 Reasoning (o1-2024-12-17)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -29,7 +32,8 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
-  [O1P] o1-pro (o1-pro-2025-03-19)
+  [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -38,7 +42,8 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
-  [O3] O3 (o3)
+  [O3R] O3 Reasoning (o3)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
     Modalities: text-input, text-output, image-input
@@ -49,7 +54,8 @@ Model Catalog (Openai) (7 models):
     Reasoning tokens supported
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
-  [O3P] o3-pro (o3-pro-2025-06-10)
+  [O3PR] o3-pro Reasoning (o3-pro-2025-06-10)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning
     Modalities: text-input, image-input, text-output
@@ -59,7 +65,19 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
-  [O4M] O4-mini (o4-mini)
+  [O4MC] O4-mini Chat (o4-mini)
+    Endpoint: OAC
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.10/1M input, $4.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Snapshots: o4-mini, o4-mini-2025-04-16
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Chat endpoint version.
+  [O4MR] O4-mini Reasoning (o4-mini)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -69,10 +87,11 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
-    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.
 %%> "\\model-catalog[provider=\"openai\"]"
-Model Catalog (Openai) (7 models):
-  [G41] GPT-4.1 (gpt-4.1-2025-04-14)
+Model Catalog (Openai) (8 models):
+  [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
+    Endpoint: OAC
     Context: 1,047,576 tokens (max output: 32,768 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs
     Modalities: text-input, image-input, text-output
@@ -81,7 +100,8 @@ Model Catalog (Openai) (7 models):
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
-  [G4O] GPT-4o (gpt-4o-2024-11-20)
+  [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
+    Endpoint: OAC
     Context: 128,000 tokens (max output: 16,384 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs, omni
     Modalities: text-input, image-input, text-output
@@ -90,7 +110,8 @@ Model Catalog (Openai) (7 models):
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
-  [O1] o1 (o1-2024-12-17)
+  [O1R] o1 Reasoning (o1-2024-12-17)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -100,7 +121,8 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
-  [O1P] o1-pro (o1-pro-2025-03-19)
+  [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -109,7 +131,8 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
-  [O3] O3 (o3)
+  [O3R] O3 Reasoning (o3)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
     Modalities: text-input, text-output, image-input
@@ -120,7 +143,8 @@ Model Catalog (Openai) (7 models):
     Reasoning tokens supported
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
-  [O3P] o3-pro (o3-pro-2025-06-10)
+  [O3PR] o3-pro Reasoning (o3-pro-2025-06-10)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning
     Modalities: text-input, image-input, text-output
@@ -130,7 +154,19 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
-  [O4M] O4-mini (o4-mini)
+  [O4MC] O4-mini Chat (o4-mini)
+    Endpoint: OAC
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.10/1M input, $4.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Snapshots: o4-mini, o4-mini-2025-04-16
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Chat endpoint version.
+  [O4MR] O4-mini Reasoning (o4-mini)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -140,13 +176,13 @@ Model Catalog (Openai) (7 models):
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
-    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
-%%> "\\model-new[catalog_id=\"O4M\"] my-claude-4"
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.
+%%> "\\model-new[catalog_id=\"O4MC\"] my-claude-4"
 Created model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"
 %%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
-%%> "\\model-new[catalog_id=\"O3\"] my-o3-model"
+%%> "\\model-new[catalog_id=\"O3R\"] my-o3-model"
 Created model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\silent \\llm-client-activate OAR"
@@ -156,17 +192,17 @@ Model Configurations (2 models):
   my-claude-4 (00000001)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
-    Description: OpenAI O4-mini model
+    Description: OpenAI O4-mini Chat model
   my-o3-model (00000002)
     Provider: openai
     Base Model: o3
-    Catalog ID: O3
-    Parameters: none
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 model
+    Description: OpenAI O3 Reasoning model
     Active: true
 %%> "\\model-activate my-claude-4"
 Activated model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
@@ -179,8 +215,8 @@ Activated model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\model-activate my-o3-model"
 Activated model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\llm-client-activate OAR"
-%%> "\\silent \\openai-client-new[client_type=OAC]"
-%%> "\\model-new[catalog_id=\"O4M\", temperature=\"0.8\", description=\"Custom model\"] custom-model"
+%%> "\\silent \\openai-client-new[client_type=OAR]"
+%%> "\\model-new[catalog_id=\"O4MC\", temperature=\"0.8\", description=\"Custom model\"] custom-model"
 Created model 'custom-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"
@@ -190,7 +226,7 @@ Model Configurations (3 models):
   custom-model (00000003)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
+    Catalog ID: O4MC
     Parameters: 1 (temperature=0.8)
     Created: 2025-01-01 00:00:03
     Description: Custom model
@@ -198,17 +234,17 @@ Model Configurations (3 models):
   my-claude-4 (00000001)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
-    Parameters: none
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
-    Description: OpenAI O4-mini model
+    Description: OpenAI O4-mini Chat model
   my-o3-model (00000002)
     Provider: openai
     Base Model: o3
-    Catalog ID: O3
-    Parameters: none
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 model
+    Description: OpenAI O3 Reasoning model
 %%> "\\model-delete my-claude-4"
 Deleted model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate"
@@ -217,7 +253,7 @@ Model Configurations (2 models):
   custom-model (00000003)
     Provider: openai
     Base Model: o4-mini
-    Catalog ID: O4M
+    Catalog ID: O4MC
     Parameters: 1 (temperature=0.8)
     Created: 2025-01-01 00:00:03
     Description: Custom model
@@ -225,10 +261,10 @@ Model Configurations (2 models):
   my-o3-model (00000002)
     Provider: openai
     Base Model: o3
-    Catalog ID: O3
-    Parameters: none
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 model
+    Description: OpenAI O3 Reasoning model
 %%> "\\get[#active_model_name]"
 #active_model_name = custom-model
 %%> "\\model-delete my-o3-model"

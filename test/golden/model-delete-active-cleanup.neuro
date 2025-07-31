@@ -2,8 +2,8 @@
 \set[_echo_command="true"]
 
 %% Create models
-\model-new[catalog_id="O4M"] current-model
-\model-new[catalog_id="O3"] backup-model
+\model-new[catalog_id="O4MC"] current-model
+\model-new[catalog_id="O3R"] backup-model
 
 %% Activate one model
 \model-activate current-model

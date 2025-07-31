@@ -2,15 +2,15 @@
 \set[_echo_command="true"]
 
 %% Create models for testing error scenarios
-\model-new[catalog_id="O4M"] test-model-1
-\model-new[catalog_id="O3"] test-model-2
+\model-new[catalog_id="O4MC"] test-model-1
+\model-new[catalog_id="O3R"] test-model-2
 
 %% Test no matches scenario
 \try \model-activate nonexistent-model
 
 %% Test multiple matches scenario
-\model-new[catalog_id="O4M"] test-similar
-\model-new[catalog_id="G41"] test-different
+\model-new[catalog_id="O4MC"] test-similar
+\model-new[catalog_id="G41C"] test-different
 \try \model-activate test
 
 %% Test empty input error

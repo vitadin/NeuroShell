@@ -2,9 +2,9 @@
 \set[_echo_command="true"]
 
 %% Create multiple models
-\model-new[catalog_id="O4M"] first-model
-\model-new[catalog_id="O3"] second-model
-\model-new[catalog_id="O4M"] third-model
+\model-new[catalog_id="O4MC"] first-model
+\model-new[catalog_id="O3R"] second-model
+\model-new[catalog_id="O4MC"] third-model
 
 %% Test activation by exact name match
 \model-activate first-model

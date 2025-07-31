@@ -2,8 +2,8 @@
 \set[_echo_command="true"]
 
 %% Create multiple models
-\model-new[catalog_id="O4M"] primary-model
-\model-new[catalog_id="O3"] secondary-model
+\model-new[catalog_id="O4MC"] primary-model
+\model-new[catalog_id="O3R"] secondary-model
 
 %% Activate primary model
 \model-activate primary-model
@@ -22,7 +22,7 @@
 \get[#active_model_provider]
 
 %% Test that creating a new model doesn't change active model
-\model-new[catalog_id="O4M"] new-model
+\model-new[catalog_id="O4MC"] new-model
 
 %% Verify secondary-model is still active
 \get[#active_model_name]

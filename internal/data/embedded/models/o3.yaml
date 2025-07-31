@@ -1,8 +1,8 @@
 name: o3
-id: O3
-display_name: O3
+id: O3R
+display_name: O3 Reasoning
 provider: openai
-provider_catalog_id: [OAR]
+provider_catalog_id: OAR
 description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
 capabilities: [text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing]
 context_window: 200000
@@ -27,3 +27,25 @@ features:
   reasoning_summary_supported: true
 tools: [web-search, file-search, image-generation, code-interpreter, mcp]
 snapshots: [o3, o3-2025-04-16]
+parameters:
+  - name: reasoning_effort
+    type: enum
+    required: false
+    default: "medium"
+    constraints:
+      enum: ["low", "medium", "high"]
+    description: "Reasoning effort level (low=speed/economy, medium=balanced, high=thorough)"
+  - name: reasoning_summary
+    type: enum
+    required: false
+    default: "auto"
+    constraints:
+      enum: ["auto"]
+    description: "Reasoning summary mode (auto recommended by OpenAI)"
+  - name: max_output_tokens
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 100000
+    description: "Maximum total output tokens including reasoning tokens"

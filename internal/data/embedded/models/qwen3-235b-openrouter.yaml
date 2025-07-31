@@ -2,7 +2,7 @@ name: qwen/qwen3-235b-a22b-07-25
 id: ORQ3A
 display_name: "Qwen: Qwen3 235B A22B 2507"
 provider: openrouter
-provider_catalog_id: [ORC]
+provider_catalog_id: ORC
 description: Mixture-of-Experts model with 235B total/22B active parameters via OpenRouter, featuring thinking mode and advanced multilingual capabilities
 capabilities: [text, reasoning, analysis, coding, writing, math, tool-use, multilingual, thinking-mode, instruction-following]
 context_window: 262144

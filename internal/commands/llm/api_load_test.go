@@ -14,36 +14,36 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-func TestAPIShowCommand_Name(t *testing.T) {
-	cmd := &APIShowCommand{}
-	assert.Equal(t, "llm-api-show", cmd.Name())
+func TestAPILoadCommand_Name(t *testing.T) {
+	cmd := &APILoadCommand{}
+	assert.Equal(t, "llm-api-load", cmd.Name())
 }
 
-func TestAPIShowCommand_ParseMode(t *testing.T) {
-	cmd := &APIShowCommand{}
+func TestAPILoadCommand_ParseMode(t *testing.T) {
+	cmd := &APILoadCommand{}
 	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 }
 
-func TestAPIShowCommand_Description(t *testing.T) {
-	cmd := &APIShowCommand{}
+func TestAPILoadCommand_Description(t *testing.T) {
+	cmd := &APILoadCommand{}
 	desc := cmd.Description()
 	assert.NotEmpty(t, desc)
 	assert.Contains(t, strings.ToLower(desc), "api")
 	assert.Contains(t, strings.ToLower(desc), "filtering")
 }
 
-func TestAPIShowCommand_Usage(t *testing.T) {
-	cmd := &APIShowCommand{}
+func TestAPILoadCommand_Usage(t *testing.T) {
+	cmd := &APILoadCommand{}
 	usage := cmd.Usage()
 	assert.NotEmpty(t, usage)
-	assert.Contains(t, usage, "\\llm-api-show")
+	assert.Contains(t, usage, "\\llm-api-load")
 }
 
-func TestAPIShowCommand_HelpInfo(t *testing.T) {
-	cmd := &APIShowCommand{}
+func TestAPILoadCommand_HelpInfo(t *testing.T) {
+	cmd := &APILoadCommand{}
 	helpInfo := cmd.HelpInfo()
 
-	assert.Equal(t, "llm-api-show", helpInfo.Command)
+	assert.Equal(t, "llm-api-load", helpInfo.Command)
 	assert.NotEmpty(t, helpInfo.Description)
 	assert.NotEmpty(t, helpInfo.Usage)
 	assert.Equal(t, neurotypes.ParseModeKeyValue, helpInfo.ParseMode)
@@ -64,9 +64,9 @@ func TestAPIShowCommand_HelpInfo(t *testing.T) {
 	assert.True(t, found, "provider option should exist")
 }
 
-func TestAPIShowCommand_Execute_NoKeys(t *testing.T) {
-	cmd := &APIShowCommand{}
-	ctx := setupLLMAPIShowTestRegistry(t)
+func TestAPILoadCommand_Execute_NoKeys(t *testing.T) {
+	cmd := &APILoadCommand{}
+	ctx := setupLLMAPILoadTestRegistry(t)
 
 	// Override all possible LLM environment variables to empty to simulate no keys
 	ctx.SetTestEnvOverride("OPENAI_API_KEY", "")
@@ -119,9 +119,9 @@ func TestAPIShowCommand_Execute_NoKeys(t *testing.T) {
 	}
 }
 
-func TestAPIShowCommand_Execute_WithKeys(t *testing.T) {
-	cmd := &APIShowCommand{}
-	ctx := setupLLMAPIShowTestRegistry(t)
+func TestAPILoadCommand_Execute_WithKeys(t *testing.T) {
+	cmd := &APILoadCommand{}
+	ctx := setupLLMAPILoadTestRegistry(t)
 
 	// Clear any existing environment variables and set controlled test data
 	ctx.ClearAllTestEnvOverrides()
@@ -206,9 +206,9 @@ func TestAPIShowCommand_Execute_WithKeys(t *testing.T) {
 	}
 }
 
-func TestAPIShowCommand_Execute_WithActiveKeys(t *testing.T) {
-	cmd := &APIShowCommand{}
-	ctx := setupLLMAPIShowTestRegistry(t)
+func TestAPILoadCommand_Execute_WithActiveKeys(t *testing.T) {
+	cmd := &APILoadCommand{}
+	ctx := setupLLMAPILoadTestRegistry(t)
 
 	// Clear any existing environment variables and set controlled test data
 	ctx.ClearAllTestEnvOverrides()
@@ -238,8 +238,8 @@ func TestAPIShowCommand_Execute_WithActiveKeys(t *testing.T) {
 	assert.Contains(t, output, "Active keys:")
 }
 
-func TestAPIShowCommand_maskAPIKey(t *testing.T) {
-	cmd := &APIShowCommand{}
+func TestAPILoadCommand_maskAPIKey(t *testing.T) {
+	cmd := &APILoadCommand{}
 
 	tests := []struct {
 		name     string
@@ -281,9 +281,9 @@ func TestAPIShowCommand_maskAPIKey(t *testing.T) {
 	}
 }
 
-func TestAPIShowCommand_getKeyStatus(t *testing.T) {
-	cmd := &APIShowCommand{}
-	setupLLMAPIShowTestRegistry(t)
+func TestAPILoadCommand_getKeyStatus(t *testing.T) {
+	cmd := &APILoadCommand{}
+	setupLLMAPILoadTestRegistry(t)
 
 	variableService, err := services.GetGlobalVariableService()
 	require.NoError(t, err)
@@ -341,8 +341,8 @@ func TestAPIShowCommand_getKeyStatus(t *testing.T) {
 	}
 }
 
-func TestAPIShowCommand_Execute_ConfigurationServiceError(t *testing.T) {
-	cmd := &APIShowCommand{}
+func TestAPILoadCommand_Execute_ConfigurationServiceError(t *testing.T) {
+	cmd := &APILoadCommand{}
 
 	// Don't set up configuration service to simulate error
 	ctx := context.NewTestContext()
@@ -366,8 +366,8 @@ func TestAPIShowCommand_Execute_ConfigurationServiceError(t *testing.T) {
 	assert.Contains(t, err.Error(), "configuration service not available")
 }
 
-func TestAPIShowCommand_Execute_VariableServiceError(t *testing.T) {
-	cmd := &APIShowCommand{}
+func TestAPILoadCommand_Execute_VariableServiceError(t *testing.T) {
+	cmd := &APILoadCommand{}
 
 	// Set up context but not variable service to simulate error
 	ctx := context.NewTestContext()
@@ -394,8 +394,8 @@ func TestAPIShowCommand_Execute_VariableServiceError(t *testing.T) {
 	assert.Contains(t, err.Error(), "variable service not available")
 }
 
-// setupLLMAPIShowTestRegistry sets up a test environment with required services
-func setupLLMAPIShowTestRegistry(t *testing.T) neurotypes.Context {
+// setupLLMAPILoadTestRegistry sets up a test environment with required services
+func setupLLMAPILoadTestRegistry(t *testing.T) neurotypes.Context {
 	ctx := context.NewTestContext()
 	context.SetGlobalContext(ctx)
 
@@ -423,7 +423,7 @@ func setupLLMAPIShowTestRegistry(t *testing.T) neurotypes.Context {
 	return ctx
 }
 
-func TestAPIShowCommand_isAPIRelated(t *testing.T) {
+func TestAPILoadCommand_isAPIRelated(t *testing.T) {
 	// Define the test provider list that matches the standard providers
 	providers := []string{"openai", "anthropic", "openrouter", "moonshot", "gemini"}
 
@@ -581,9 +581,9 @@ func TestAPIShowCommand_isAPIRelated(t *testing.T) {
 	}
 }
 
-func TestAPIShowCommand_Execute_WithFiltering(t *testing.T) {
-	cmd := &APIShowCommand{}
-	ctx := setupLLMAPIShowTestRegistry(t)
+func TestAPILoadCommand_Execute_WithFiltering(t *testing.T) {
+	cmd := &APILoadCommand{}
+	ctx := setupLLMAPILoadTestRegistry(t)
 
 	// Clear any existing environment variables and set controlled test data
 	ctx.ClearAllTestEnvOverrides()
@@ -639,4 +639,4 @@ func TestAPIShowCommand_Execute_WithFiltering(t *testing.T) {
 }
 
 // Interface compliance check
-var _ neurotypes.Command = (*APIShowCommand)(nil)
+var _ neurotypes.Command = (*APILoadCommand)(nil)

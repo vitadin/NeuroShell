@@ -3,7 +3,7 @@ Setting _echo_command = true
 Model Catalog - Search: 'o3' (3 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
-    Provider: anthropic
+    Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 4,096 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -12,8 +12,8 @@ Anthropic Models:
     Knowledge cutoff: 2023-08-01
     Description: Top-level intelligence, fluency, and understanding
 Openai Models:
-  [O3] O3 (o3)
-    Provider: openai
+  [O3R] O3 Reasoning (o3)
+    Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
     Modalities: text-input, text-output, image-input
@@ -24,8 +24,8 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
-  [O3P] o3-pro (o3-pro-2025-06-10)
-    Provider: openai
+  [O3PR] o3-pro Reasoning (o3-pro-2025-06-10)
+    Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning
     Modalities: text-input, image-input, text-output
@@ -39,7 +39,7 @@ Openai Models:
 Model Catalog - Search: 'claude' (4 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
-    Provider: anthropic
+    Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 4,096 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -48,7 +48,7 @@ Anthropic Models:
     Knowledge cutoff: 2023-08-01
     Description: Top-level intelligence, fluency, and understanding
   [CS37] Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
-    Provider: anthropic
+    Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 64,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
     Modalities: text-input, text-output, image-input
@@ -57,7 +57,7 @@ Anthropic Models:
     Knowledge cutoff: 2024-11-01
     Description: High intelligence with toggleable extended thinking
   [CO4] Claude Opus 4 (claude-opus-4-20250514)
-    Provider: anthropic
+    Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 32,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking
     Modalities: text-input, text-output, image-input
@@ -66,7 +66,7 @@ Anthropic Models:
     Knowledge cutoff: 2025-03-01
     Description: Highest level of intelligence and capability
   [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
-    Provider: anthropic
+    Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 64,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
     Modalities: text-input, text-output, image-input
@@ -75,10 +75,10 @@ Anthropic Models:
     Knowledge cutoff: 2025-03-01
     Description: High intelligence and balanced performance
 %%> "\\model-catalog[search=coding]"
-Model Catalog - Search: 'coding' (2 models):
+Model Catalog - Search: 'coding' (3 models):
 Openai Models:
-  [O3] O3 (o3)
-    Provider: openai
+  [O3R] O3 Reasoning (o3)
+    Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
     Modalities: text-input, text-output, image-input
@@ -89,8 +89,19 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
-  [O4M] O4-mini (o4-mini)
-    Provider: openai
+  [O4MC] O4-mini Chat (o4-mini)
+    Provider: openai (OAC)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.10/1M input, $4.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Snapshots: o4-mini, o4-mini-2025-04-16
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Chat endpoint version.
+  [O4MR] O4-mini Reasoning (o4-mini)
+    Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -100,4 +111,4 @@ Openai Models:
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
-    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks.
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.

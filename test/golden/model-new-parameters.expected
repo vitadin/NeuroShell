@@ -1,5 +1,5 @@
 Setting _echo_command = true
-%%> "\\model-new[catalog_id=\"O4M\", temperature=\"0.8\", max_tokens=\"2000\", description=\"Advanced model for creative tasks\"] creative-claude"
+%%> "\\model-new[catalog_id=\"O4MC\", temperature=\"0.8\", max_tokens=\"2000\", description=\"Advanced model for creative tasks\"] creative-claude"
 Created model 'creative-claude' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\llm-client-activate OAC"

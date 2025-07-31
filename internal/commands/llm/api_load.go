@@ -12,32 +12,32 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-// APIShowCommand implements the \llm-api-show command for displaying collected API keys.
-// It shows API keys from multiple sources (OS env, config .env, local .env) with source attribution.
-type APIShowCommand struct{}
+// APILoadCommand implements the \llm-api-load command for loading and displaying API keys.
+// It loads API keys from multiple sources (OS env, config .env, local .env) with source attribution.
+type APILoadCommand struct{}
 
-// Name returns the command name "llm-api-show" for registration and lookup.
-func (c *APIShowCommand) Name() string {
-	return "llm-api-show"
+// Name returns the command name "llm-api-load" for registration and lookup.
+func (c *APILoadCommand) Name() string {
+	return "llm-api-load"
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
-func (c *APIShowCommand) ParseMode() neurotypes.ParseMode {
+func (c *APILoadCommand) ParseMode() neurotypes.ParseMode {
 	return neurotypes.ParseModeKeyValue
 }
 
-// Description returns a brief description of what the llm-api-show command does.
-func (c *APIShowCommand) Description() string {
-	return "Show API-related variables from multiple sources with intelligent filtering and masking"
+// Description returns a brief description of what the llm-api-load command does.
+func (c *APILoadCommand) Description() string {
+	return "Load and display API-related variables from multiple sources with intelligent filtering and masking"
 }
 
-// Usage returns the syntax and usage examples for the llm-api-show command.
-func (c *APIShowCommand) Usage() string {
-	return "\\llm-api-show[provider=openai|anthropic|openrouter|moonshot|gemini|all]"
+// Usage returns the syntax and usage examples for the llm-api-load command.
+func (c *APILoadCommand) Usage() string {
+	return "\\llm-api-load[provider=openai|anthropic|openrouter|moonshot|gemini|all]"
 }
 
-// HelpInfo returns structured help information for the llm-api-show command.
-func (c *APIShowCommand) HelpInfo() neurotypes.HelpInfo {
+// HelpInfo returns structured help information for the llm-api-load command.
+func (c *APILoadCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
@@ -54,20 +54,20 @@ func (c *APIShowCommand) HelpInfo() neurotypes.HelpInfo {
 		},
 		Examples: []neurotypes.HelpExample{
 			{
-				Command:     "\\llm-api-show",
-				Description: "Show all API-related variables from all sources and providers",
+				Command:     "\\llm-api-load",
+				Description: "Load and display all API-related variables from all sources and providers",
 			},
 			{
-				Command:     "\\llm-api-show[provider=openai]",
-				Description: "Show only OpenAI-related API variables",
+				Command:     "\\llm-api-load[provider=openai]",
+				Description: "Load and display only OpenAI-related API variables",
 			},
 			{
-				Command:     "\\llm-api-show[provider=anthropic]",
-				Description: "Show only Anthropic-related API variables",
+				Command:     "\\llm-api-load[provider=anthropic]",
+				Description: "Load and display only Anthropic-related API variables",
 			},
 			{
-				Command:     "\\llm-api-show[provider=gemini]",
-				Description: "Show only Gemini-related API variables",
+				Command:     "\\llm-api-load[provider=gemini]",
+				Description: "Load and display only Gemini-related API variables",
 			},
 		},
 		Notes: []string{
@@ -77,13 +77,14 @@ func (c *APIShowCommand) HelpInfo() neurotypes.HelpInfo {
 			"  • Variables containing API keywords: api, key, secret (case-insensitive)",
 			"Keys are stored as source-prefixed variables (e.g., os.OPENAI_API_KEY)",
 			"Active keys are marked with ACTIVE status when set via \\llm-api-activate",
+			"Use \\silent \\llm-api-load to load keys without displaying them",
 			"API keys are masked showing only first 3 and last 3 characters for security",
 		},
 	}
 }
 
-// Execute displays collected API keys with source attribution and masked values.
-func (c *APIShowCommand) Execute(args map[string]string, _ string) error {
+// Execute loads and displays API keys with source attribution and masked values.
+func (c *APILoadCommand) Execute(args map[string]string, _ string) error {
 	// Get configuration service
 	configService, err := services.GetGlobalConfigurationService()
 	if err != nil {
@@ -146,7 +147,7 @@ func (c *APIShowCommand) Execute(args map[string]string, _ string) error {
 }
 
 // displayAPIKeys formats and displays the API keys using markdown table rendered by glamour
-func (c *APIShowCommand) displayAPIKeys(keys []services.APIKeySource, variableService *services.VariableService, providerFilter string) {
+func (c *APILoadCommand) displayAPIKeys(keys []services.APIKeySource, variableService *services.VariableService, providerFilter string) {
 	if len(keys) == 0 {
 		if providerFilter == "all" {
 			fmt.Println("No API keys found in any source.")
@@ -179,7 +180,7 @@ func (c *APIShowCommand) displayAPIKeys(keys []services.APIKeySource, variableSe
 }
 
 // createMarkdownTable creates a markdown table for API keys with proper formatting
-func (c *APIShowCommand) createMarkdownTable(keys []services.APIKeySource, variableService *services.VariableService, providerFilter string) string {
+func (c *APILoadCommand) createMarkdownTable(keys []services.APIKeySource, variableService *services.VariableService, providerFilter string) string {
 	var result strings.Builder
 
 	// Title
@@ -241,7 +242,7 @@ func (c *APIShowCommand) createMarkdownTable(keys []services.APIKeySource, varia
 }
 
 // maskAPIKey masks an API key showing only first 3 and last 3 characters
-func (c *APIShowCommand) maskAPIKey(apiKey string) string {
+func (c *APILoadCommand) maskAPIKey(apiKey string) string {
 	if len(apiKey) <= 6 {
 		return strings.Repeat("*", len(apiKey))
 	}
@@ -249,7 +250,7 @@ func (c *APIShowCommand) maskAPIKey(apiKey string) string {
 }
 
 // getKeyStatus checks if a key is currently active for its provider
-func (c *APIShowCommand) getKeyStatus(provider, varName string, variableService *services.VariableService) string {
+func (c *APILoadCommand) getKeyStatus(provider, varName string, variableService *services.VariableService) string {
 	activeVarName := "#active_" + provider + "_key"
 	activeKeyValue, err := variableService.Get(activeVarName)
 	if err != nil || activeKeyValue == "" {
@@ -270,7 +271,7 @@ func (c *APIShowCommand) getKeyStatus(provider, varName string, variableService 
 }
 
 // getActiveKeysInfo returns a list of active key metadata variable names
-func (c *APIShowCommand) getActiveKeysInfo(variableService *services.VariableService) []string {
+func (c *APILoadCommand) getActiveKeysInfo(variableService *services.VariableService) []string {
 	// Get configuration service to access provider list
 	configService, err := services.GetGlobalConfigurationService()
 	if err != nil {
@@ -292,7 +293,7 @@ func (c *APIShowCommand) getActiveKeysInfo(variableService *services.VariableSer
 }
 
 // getActiveKeyForProvider returns the active key metadata variable for a specific provider
-func (c *APIShowCommand) getActiveKeyForProvider(provider string, variableService *services.VariableService) string {
+func (c *APILoadCommand) getActiveKeyForProvider(provider string, variableService *services.VariableService) string {
 	activeVarName := "#active_" + provider + "_key"
 	activeKey, err := variableService.Get(activeVarName)
 	if err == nil && activeKey != "" {
@@ -302,7 +303,7 @@ func (c *APIShowCommand) getActiveKeyForProvider(provider string, variableServic
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&APIShowCommand{}); err != nil {
-		panic(fmt.Sprintf("failed to register llm-api-show command: %v", err))
+	if err := commands.GlobalRegistry.Register(&APILoadCommand{}); err != nil {
+		panic(fmt.Sprintf("failed to register llm-api-load command: %v", err))
 	}
 }
