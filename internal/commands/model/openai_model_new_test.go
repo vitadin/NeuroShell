@@ -112,7 +112,7 @@ func TestOpenAIModelNewCommand_Execute_BasicFunctionality(t *testing.T) {
 				"catalog_id":        "O3", // O3 reasoning model
 				"reasoning_effort":  "high",
 				"max_output_tokens": "50000",
-				"reasoning_summary": "detailed",
+				"reasoning_summary": "auto",
 			},
 			input:       "reasoning-o3",
 			expectError: false,
@@ -299,7 +299,7 @@ func TestOpenAIModelNewCommand_Execute_ParameterValidation(t *testing.T) {
 				"catalog_id":        "O3",
 				"reasoning_effort":  "low",
 				"max_output_tokens": "10000",
-				"reasoning_summary": "concise",
+				"reasoning_summary": "auto",
 			},
 			input:       "reasoning-model",
 			expectError: false,

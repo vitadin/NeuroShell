@@ -1,11 +1,11 @@
-%% OpenAI O4-mini Reasoning Experiment - Concise Summary
-%% Purpose: Test O4-mini with medium effort and concise summary
+%% OpenAI O4-mini Reasoning Experiment - Auto Summary
+%% Purpose: Test O4-mini with medium effort and auto summary (recommended by OpenAI)
 %% Part 4 of connected conversation series about data science project planning
 
 \set _style dark1
 
-\echo "=== OpenAI O4-mini Reasoning Experiment - Concise Summary ==="
-\echo "Testing: reasoning_effort='medium', reasoning_summary='concise'"
+\echo "=== OpenAI O4-mini Reasoning Experiment - Auto Summary ==="
+\echo "Testing: reasoning_effort='medium', reasoning_summary='auto' (default)"
 \echo "Topic: Implementation decisions and technical trade-offs"
 
 %% STEP 1: Setup
@@ -13,10 +13,10 @@
 \llm-api-show[provider=openai]
 \llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
 
-%% STEP 2: Create O4-mini model with concise summary
-\echo "Step 2: Creating O4-mini model with CONCISE reasoning summary..."
-\openai-model-new[catalog_id="O4M", reasoning_effort="medium", reasoning_summary="concise"] reasoning-concise-model
-\model-activate reasoning-concise-model
+%% STEP 2: Create O4-mini model with auto summary (recommended by OpenAI)
+\echo "Step 2: Creating O4-mini model with AUTO reasoning summary..."
+\openai-model-new[catalog_id="O4M", reasoning_effort="medium"] reasoning-auto-model
+\model-activate reasoning-auto-model
 
 %% STEP 3: Verify model configuration
 \echo "Step 3: Model configuration verification"
@@ -35,7 +35,7 @@
 \echo ""
 \echo "Response time and thinking analysis:"
 \echo "- This should show moderate thinking time with MEDIUM effort"
-\echo "- Summary should be CONCISE (brief summaries)"
+\echo "- Summary should be AUTO (OpenAI decides best format)"
 \echo ""
 
 \echo "Message 2: Infrastructure and deployment architecture"
@@ -49,7 +49,7 @@
 \echo "=== CONVERSATION SUMMARY ==="
 \echo "Messages in this session: 3"
 \echo "Reasoning effort: MEDIUM - Should show moderate thinking times"
-\echo "Expected behavior: Thoughtful analysis with CONCISE summaries"
+\echo "Expected behavior: Thoughtful analysis with AUTO summaries (OpenAI chooses)"
 \echo "First response: ${.1}"
 \echo "Latest response: ${1}"
 
@@ -61,6 +61,6 @@
 %% STEP 6: Cleanup
 \echo ""
 \echo "Step 6: Cleaning up..."
-\model-delete reasoning-concise-model
+\model-delete reasoning-auto-model
 \model-status
-\echo "Concise summary reasoning experiment completed."
+\echo "Auto summary reasoning experiment completed."

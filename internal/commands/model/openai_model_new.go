@@ -45,7 +45,7 @@ Options:
   catalog_id - Short model ID from catalog (O3, O4M, O1, O1P, G4O, G41, etc.)
   reasoning_effort - Reasoning effort level (low, medium, high) - controls reasoning token usage
   max_output_tokens - Maximum total output tokens including reasoning tokens
-  reasoning_summary - Enable reasoning summaries (auto, detailed, concise)
+  reasoning_summary - Enable reasoning summaries (auto only, recommended by OpenAI)
   temperature - Sampling temperature (0.0-2.0)
   max_tokens - Maximum completion tokens (for non-reasoning models)
   top_p - Nucleus sampling parameter (0.0-1.0)
@@ -88,7 +88,7 @@ func (c *OpenAIModelNewCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 			{
 				Name:        "reasoning_summary",
-				Description: "Enable reasoning summaries (auto, detailed, concise)",
+				Description: "Enable reasoning summaries (auto only, recommended by OpenAI)",
 				Required:    false,
 				Type:        "string",
 			},
@@ -186,7 +186,7 @@ func (c *OpenAIModelNewCommand) HelpInfo() neurotypes.HelpInfo {
 			"Non-reasoning models use Chat Completions API (/chat/completions)",
 			"reasoning_effort: low=speed/economy, medium=balanced, high=thorough",
 			"max_output_tokens includes reasoning tokens (reserve ~25k for complex reasoning)",
-			"reasoning_summary shows internal reasoning process for supported models",
+			"reasoning_summary='auto' shows internal reasoning process (default for reasoning models)",
 			"Model is automatically activated after creation",
 			"Variables in model name and parameters are interpolated",
 		},
@@ -339,13 +339,17 @@ func (c *OpenAIModelNewCommand) parseOpenAIParameters(args map[string]string, pa
 		parameters["max_output_tokens"] = maxOutputTokensInt
 	}
 
-	// Parse reasoning_summary
+	// Parse reasoning_summary (simplified: only allow "auto" for all reasoning models)
 	if reasoningSummary, exists := args["reasoning_summary"]; exists {
-		validSummaries := []string{"auto", "detailed", "concise"}
-		if !c.isValidChoice(reasoningSummary, validSummaries) {
-			return fmt.Errorf("invalid reasoning_summary value: %s. Valid values: %s", reasoningSummary, strings.Join(validSummaries, ", "))
+		if reasoningSummary != "auto" {
+			return fmt.Errorf("invalid reasoning_summary value: %s. Only 'auto' is supported (recommended by OpenAI)", reasoningSummary)
 		}
 		parameters["reasoning_summary"] = reasoningSummary
+	} else {
+		// Default to "auto" for reasoning models when reasoning_effort is specified
+		if _, hasReasoningEffort := args["reasoning_effort"]; hasReasoningEffort {
+			parameters["reasoning_summary"] = "auto"
+		}
 	}
 
 	// Parse standard parameters
