@@ -368,13 +368,20 @@ func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, sh
 	modelHeader := fmt.Sprintf("  %s %s %s\n", catalogID, displayName, technicalName)
 	result.WriteString(modelHeader)
 
-	// Provider (if showing all providers)
+	// Provider and provider catalog ID
 	if showProvider {
 		provider := c.getProviderFromModel(model, modelToProvider)
-		providerLine := fmt.Sprintf("    %s %s\n",
+		providerLine := fmt.Sprintf("    %s %s (%s)\n",
 			themeObj.Info.Render("Provider:"),
-			themeObj.Keyword.Render(provider))
+			themeObj.Keyword.Render(provider),
+			themeObj.Variable.Render(model.ProviderCatalogID))
 		result.WriteString(providerLine)
+	} else {
+		// Even when not showing provider name, show the provider catalog ID as it's useful for endpoint selection
+		providerCatalogLine := fmt.Sprintf("    %s %s\n",
+			themeObj.Info.Render("Endpoint:"),
+			themeObj.Variable.Render(model.ProviderCatalogID))
+		result.WriteString(providerCatalogLine)
 	}
 
 	// Context window and max output tokens

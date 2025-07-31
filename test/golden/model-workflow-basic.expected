@@ -2,6 +2,7 @@ Setting _echo_command = true
 %%> "\\model-catalog[provider=\"openai\"]"
 Model Catalog (Openai) (8 models):
   [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
+    Endpoint: OAC
     Context: 1,047,576 tokens (max output: 32,768 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs
     Modalities: text-input, image-input, text-output
@@ -11,6 +12,7 @@ Model Catalog (Openai) (8 models):
     Knowledge cutoff: 2024-05-31
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
   [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
+    Endpoint: OAC
     Context: 128,000 tokens (max output: 16,384 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs, omni
     Modalities: text-input, image-input, text-output
@@ -20,6 +22,7 @@ Model Catalog (Openai) (8 models):
     Knowledge cutoff: 2023-09-30
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
   [O1R] o1 Reasoning (o1-2024-12-17)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -30,6 +33,7 @@ Model Catalog (Openai) (8 models):
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -39,6 +43,7 @@ Model Catalog (Openai) (8 models):
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
   [O3R] O3 Reasoning (o3)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
     Modalities: text-input, text-output, image-input
@@ -50,6 +55,7 @@ Model Catalog (Openai) (8 models):
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
   [O3PR] o3-pro Reasoning (o3-pro-2025-06-10)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning
     Modalities: text-input, image-input, text-output
@@ -60,6 +66,7 @@ Model Catalog (Openai) (8 models):
     Reasoning tokens supported
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
   [O4MC] O4-mini Chat (o4-mini)
+    Endpoint: OAC
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -70,6 +77,7 @@ Model Catalog (Openai) (8 models):
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Chat endpoint version.
   [O4MR] O4-mini Reasoning (o4-mini)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -83,6 +91,7 @@ Model Catalog (Openai) (8 models):
 %%> "\\model-catalog[provider=\"openai\"]"
 Model Catalog (Openai) (8 models):
   [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
+    Endpoint: OAC
     Context: 1,047,576 tokens (max output: 32,768 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs
     Modalities: text-input, image-input, text-output
@@ -92,6 +101,7 @@ Model Catalog (Openai) (8 models):
     Knowledge cutoff: 2024-05-31
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
   [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
+    Endpoint: OAC
     Context: 128,000 tokens (max output: 16,384 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, code-interpreter, fine-tuning, distillation, predicted-outputs, omni
     Modalities: text-input, image-input, text-output
@@ -101,6 +111,7 @@ Model Catalog (Openai) (8 models):
     Knowledge cutoff: 2023-09-30
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
   [O1R] o1 Reasoning (o1-2024-12-17)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, file-search, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -111,6 +122,7 @@ Model Catalog (Openai) (8 models):
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, reinforcement-learning, complex-reasoning, chain-of-thought
     Modalities: text-input, image-input, text-output
@@ -120,6 +132,7 @@ Model Catalog (Openai) (8 models):
     Reasoning tokens supported
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
   [O3R] O3 Reasoning (o3)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
     Modalities: text-input, text-output, image-input
@@ -131,6 +144,7 @@ Model Catalog (Openai) (8 models):
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
   [O3PR] o3-pro Reasoning (o3-pro-2025-06-10)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning
     Modalities: text-input, image-input, text-output
@@ -141,6 +155,7 @@ Model Catalog (Openai) (8 models):
     Reasoning tokens supported
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
   [O4MC] O4-mini Chat (o4-mini)
+    Endpoint: OAC
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
     Modalities: text-input, text-output, image-input
@@ -151,6 +166,7 @@ Model Catalog (Openai) (8 models):
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Chat endpoint version.
   [O4MR] O4-mini Reasoning (o4-mini)
+    Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
     Modalities: text-input, text-output, image-input
