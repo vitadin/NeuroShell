@@ -94,6 +94,37 @@ var versionCmd = &cobra.Command{
 	},
 }
 
+// recordExperimentCmd records a new experiment execution
+var recordExperimentCmd = &cobra.Command{
+	Use:   "record-experiment <experiment-name>",
+	Short: "Record a real-world experiment execution",
+	Long: `Record a real-world experiment by running a .neuro script from examples/experiments/
+with actual LLM API calls (no test mode). Creates uniquely identified recordings
+with timestamps and metadata in experiments/recordings/<experiment-name>/`,
+	Args: cobra.ExactArgs(1),
+	RunE: recordExperiment,
+}
+
+// runExperimentCmd runs a specific experiment and compares with a recording
+var runExperimentCmd = &cobra.Command{
+	Use:   "run-experiment <experiment-name> <session-id>",
+	Short: "Run an experiment and compare with a specific recording",
+	Long: `Run an experiment and compare its output with a specific recording.
+Use this to verify reproducibility or debug experiment behavior.`,
+	Args: cobra.ExactArgs(2),
+	RunE: runExperiment,
+}
+
+// recordAllExperimentsCmd records all available experiments
+var recordAllExperimentsCmd = &cobra.Command{
+	Use:   "record-all-experiments",
+	Short: "Record all available experiments",
+	Long: `Record all experiments found in examples/experiments/ directory.
+Each experiment will be run with actual LLM API calls and recorded
+with unique session IDs and metadata.`,
+	RunE: recordAllExperiments,
+}
+
 func main() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -121,6 +152,11 @@ func init() {
 	rootCmd.AddCommand(acceptCmd)
 	rootCmd.AddCommand(diffCmd)
 	rootCmd.AddCommand(versionCmd)
+
+	// Add experiment commands
+	rootCmd.AddCommand(recordExperimentCmd)
+	rootCmd.AddCommand(runExperimentCmd)
+	rootCmd.AddCommand(recordAllExperimentsCmd)
 }
 
 // recordTest records a new test case by running the .neuro script
@@ -538,4 +574,177 @@ func cleanNeuroOutput(output string) string {
 	}
 
 	return strings.Join(cleanLines, "\n")
+}
+
+// recordExperiment records a new experiment execution with real API calls
+func recordExperiment(_ *cobra.Command, args []string) error {
+	experimentName := args[0]
+
+	if verbose {
+		fmt.Printf("Recording experiment: %s\n", experimentName)
+	}
+
+	// Check if neuro command exists
+	if err := checkNeuroCommand(); err != nil {
+		return err
+	}
+
+	// Find the experiment script
+	scriptPath, err := findExperimentScript(experimentName)
+	if err != nil {
+		return err
+	}
+
+	if verbose {
+		fmt.Printf("Found experiment script: %s\n", scriptPath)
+	}
+
+	// Run the experiment (with real API calls)
+	output, duration, err := runExperimentScript(scriptPath)
+	exitCode := 0
+	if err != nil {
+		exitCode = 1
+		// Don't return error immediately - we still want to save the recording
+		if verbose {
+			fmt.Printf("Experiment failed: %v\n", err)
+		}
+	}
+
+	// Save the experiment recording
+	sessionID, err := saveExperimentRecording(experimentName, scriptPath, output, duration, exitCode)
+	if err != nil {
+		return fmt.Errorf("failed to save experiment recording: %w", err)
+	}
+
+	fmt.Printf("Recorded experiment: %s\n", experimentName)
+	fmt.Printf("Session ID: %s\n", sessionID)
+	fmt.Printf("Duration: %v\n", duration)
+	fmt.Printf("Recording saved to: experiments/recordings/%s/%s.expected\n", experimentName, sessionID)
+
+	// If the experiment failed, return error after saving
+	if exitCode != 0 {
+		return fmt.Errorf("experiment execution failed but recording was saved")
+	}
+
+	return nil
+}
+
+// runExperiment runs an experiment and compares with a specific recording
+func runExperiment(_ *cobra.Command, args []string) error {
+	experimentName := args[0]
+	sessionID := args[1]
+
+	if verbose {
+		fmt.Printf("Running experiment: %s (comparing with session: %s)\n", experimentName, sessionID)
+	}
+
+	// Check if neuro command exists
+	if err := checkNeuroCommand(); err != nil {
+		return err
+	}
+
+	// Find the experiment script
+	scriptPath, err := findExperimentScript(experimentName)
+	if err != nil {
+		return err
+	}
+
+	// Check if the recording exists
+	recordingDir := filepath.Join(recordingsDir, experimentName)
+	expectedFile := filepath.Join(recordingDir, sessionID+".expected")
+	if _, err := os.Stat(expectedFile); os.IsNotExist(err) {
+		return fmt.Errorf("recording not found: %s\nUse 'neurotest record-experiment %s' to create recordings", expectedFile, experimentName)
+	}
+
+	// Read expected output
+	expectedBytes, err := os.ReadFile(expectedFile)
+	if err != nil {
+		return fmt.Errorf("failed to read expected output: %w", err)
+	}
+	expected := string(expectedBytes)
+
+	// Run the experiment
+	actual, duration, err := runExperimentScript(scriptPath)
+	if err != nil {
+		return fmt.Errorf("failed to run experiment: %w", err)
+	}
+
+	// Compare outputs using the same logic as regular tests
+	var passed bool
+	var normalized bool
+
+	// First try exact match
+	if strings.TrimSpace(actual) == strings.TrimSpace(expected) {
+		passed = true
+	} else {
+		// Try smart comparison with placeholders
+		if normalizationEngine.CompareWithPlaceholders(expected, actual) {
+			passed = true
+			normalized = true
+		} else {
+			// Try normalized comparison
+			normalizedExpected := normalizationEngine.NormalizeOutput(expected)
+			normalizedActual := normalizationEngine.NormalizeOutput(actual)
+			if strings.TrimSpace(normalizedActual) == strings.TrimSpace(normalizedExpected) {
+				passed = true
+				normalized = true
+			}
+		}
+	}
+
+	if passed {
+		if normalized && verbose {
+			fmt.Printf("PASS: %s (session: %s, duration: %v, using smart comparison)\n", experimentName, sessionID, duration)
+		} else {
+			fmt.Printf("PASS: %s (session: %s, duration: %v)\n", experimentName, sessionID, duration)
+		}
+		return nil
+	}
+
+	fmt.Printf("FAIL: %s (session: %s, duration: %v)\n", experimentName, sessionID, duration)
+	showDetailedDiff(expected, actual, fmt.Sprintf("%s:%s", experimentName, sessionID))
+	return fmt.Errorf("experiment output mismatch")
+}
+
+// recordAllExperiments records all available experiments
+func recordAllExperiments(_ *cobra.Command, _ []string) error {
+	if verbose {
+		fmt.Println("Recording all experiments...")
+	}
+
+	// Find all experiments
+	experiments, err := findAllExperiments()
+	if err != nil {
+		return err
+	}
+
+	if len(experiments) == 0 {
+		fmt.Println("No experiments found in examples/experiments/")
+		return nil
+	}
+
+	recorded := 0
+	failed := 0
+
+	for _, experimentName := range experiments {
+		fmt.Printf("Recording %s... ", experimentName)
+		if err := recordExperiment(nil, []string{experimentName}); err != nil {
+			fmt.Println("FAIL")
+			if verbose {
+				fmt.Printf("  Error: %v\n", err)
+			}
+			failed++
+		} else {
+			fmt.Println("RECORDED")
+			recorded++
+		}
+	}
+
+	fmt.Printf("\nResults: %d recorded, %d failed\n", recorded, failed)
+
+	if failed > 0 {
+		return fmt.Errorf("%d experiment(s) failed to record", failed)
+	}
+
+	return nil
 }
