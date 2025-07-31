@@ -1,0 +1,41 @@
+%% Test basic export-import round-trip workflow
+\set[_echo_command="true"]
+
+%% Create original session with content
+\session-new[system="You are a test assistant for round-trip testing"] roundtrip_original
+
+%% Add conversation messages
+\session-add-usermsg Can you help me test the export-import workflow?
+\session-add-assistantmsg Absolutely! I'll help you verify that the round-trip export-import process preserves all session data correctly.
+\session-add-usermsg Perfect! Let's make sure all messages are preserved.
+
+%% Capture original session info for comparison
+\get[#session_id]
+\get[#session_name]
+\get[#message_count]
+\get[#system_prompt]
+
+%% Export the session
+\session-export[file=/tmp/neuro_test_roundtrip.json] roundtrip_original
+
+%% Show the exported JSON content
+\cat /tmp/neuro_test_roundtrip.json
+
+%% Import the session back (should get new identity)
+\session-import[file=/tmp/neuro_test_roundtrip.json]
+
+%% Verify new session has different identity but same content
+\get[#session_id]
+\get[#session_name]
+\get[#session_original_id]
+\get[#session_original_name]
+
+%% Verify content preservation
+\get[#message_count]
+\get[#system_prompt]
+
+%% Show imported session to verify messages
+\session-show
+
+%% Clean up temp file
+\try \bash rm /tmp/neuro_test_roundtrip.json

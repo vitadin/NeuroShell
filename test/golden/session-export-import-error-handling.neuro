@@ -1,0 +1,23 @@
+%% Test error handling for export/import commands
+\set[_echo_command="true"]
+
+%% Test export with missing file parameter
+\try \session-json-export nonexistent_session
+
+%% Test export with non-existent session
+\try \session-json-export[file=/tmp/test.json] completely_nonexistent_session
+
+%% Test import with missing file parameter  
+\try \session-json-import
+
+%% Test import with non-existent file
+\try \session-json-import[file=/tmp/completely_nonexistent_file.json]
+
+%% Test import with invalid JSON file
+\try \session-json-import[file=test/golden/session-export-import-error-handling/invalid.json]
+
+%% Test general import with unsupported file extension (should fail gracefully)
+\try \session-import[file=/tmp/test.txt]
+
+%% Verify _output variables contain error information for the failed attempts
+\get[_output]
