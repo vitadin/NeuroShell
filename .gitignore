@@ -6,7 +6,7 @@
 *.dylib
 bin/
 dist/
-experiments/
+/experiments/
 
 # Root level binary (neuroshell)
 /neuroshell
