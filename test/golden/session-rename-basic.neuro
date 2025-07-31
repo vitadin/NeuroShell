@@ -1,0 +1,44 @@
+%% Test basic session-rename functionality
+\set[_echo_command="true"]
+
+%% Create sessions to test renaming
+\session-new[system="You are a helpful assistant"] original_name
+\session-new[system="You are a code reviewer"] session_two
+\get[#session_name]
+
+%% Test renaming active session
+\session-rename My New Session Name
+\get[#session_id]
+\get[#old_session_name]
+\get[#new_session_name]
+\get[_output]
+
+%% Test renaming specific session by name
+\session-rename[session=original_name] Renamed Original Session
+\get[#session_id]
+\get[#old_session_name]
+\get[#new_session_name]
+\get[_output]
+
+%% Test renaming using session ID
+\session-new test_id_rename
+\get[#session_id]
+\session-rename[session=${#session_id}] Renamed By ID
+\get[#session_id]
+\get[#old_session_name]
+\get[#new_session_name]
+\get[_output]
+
+%% Test renaming with quoted names containing spaces
+\session-rename "Final Test Session Name"
+\get[#old_session_name]
+\get[#new_session_name]
+\get[_output]
+
+%% List sessions to verify all renames worked
+\session-list
+
+%% Clean up
+\session-delete My New Session Name
+\session-delete Renamed Original Session
+\session-delete Final Test Session Name

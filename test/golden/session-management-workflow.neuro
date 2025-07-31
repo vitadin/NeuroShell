@@ -1,0 +1,55 @@
+%% Test comprehensive session management workflow with new commands
+\set[_echo_command="true"]
+
+%% Create initial session
+\session-new[system="You are a helpful assistant"] workflow_session
+\get[#session_name]
+\get[#system_prompt]
+
+%% Add some messages to the session
+\session-add-usermsg Hello, can you help me with coding?
+\session-add-assistantmsg Of course! I'd be happy to help you with coding questions.
+
+%% Edit the system prompt to be more specific
+\session-edit-system You are an expert software engineer specializing in Go, Python, and JavaScript. Provide detailed, practical solutions with code examples.
+\get[#old_system_prompt]
+\get[#new_system_prompt]
+\get[_output]
+
+%% Rename the session to reflect its new purpose
+\session-rename coding_assistant_session
+\get[#old_session_name]
+\get[#new_session_name]
+\get[_output]
+
+%% Create another session for comparison
+\session-new[system="You are a data analysis expert"] data_session
+\session-add-usermsg What's the best way to analyze large datasets?
+
+%% Edit the system prompt of the non-active session
+\session-edit-system[session=coding_assistant_session] You are a senior full-stack developer with expertise in modern web technologies, backend systems, and best practices.
+\get[#session_name]
+\get[#old_system_prompt]
+\get[#new_system_prompt]
+
+%% Rename the data session while it's active
+\session-rename analytics_expert_session
+\get[#old_session_name]
+\get[#new_session_name]
+
+%% Switch back to coding session and verify its state
+\session-activate coding_assistant_session
+\get[#active_session_name]
+\session-show
+
+%% Test prefix matching for rename
+\session-rename[session=analytics_expert_session] final_analytics_session
+\get[#old_session_name]
+\get[#new_session_name]
+
+%% List all sessions to see final state
+\session-list
+
+%% Clean up
+\session-delete coding_assistant_session
+\session-delete final_analytics_session

@@ -1,0 +1,36 @@
+%% Test basic session-edit-system functionality
+\set[_echo_command="true"]
+
+%% Create a session with initial system prompt
+\session-new[system="You are a helpful assistant"] test_system_edit
+\get[#session_name]
+\get[#system_prompt]
+
+%% Test editing system prompt for active session
+\session-edit-system You are a specialized coding assistant
+\get[#session_id]
+\get[#session_name]
+\get[#old_system_prompt]
+\get[#new_system_prompt]
+\get[_output]
+
+%% Test editing system prompt for specific session by name
+\session-new[system="Default prompt"] another_session
+\session-edit-system[session=test_system_edit] You are an expert data analyst
+\get[#session_id]
+\get[#session_name]
+\get[#old_system_prompt]
+\get[#new_system_prompt]
+\get[_output]
+
+%% Test clearing system prompt (empty string)
+\session-edit-system[session=test_system_edit] ""
+\get[#session_id]
+\get[#session_name]
+\get[#old_system_prompt]
+\get[#new_system_prompt]
+\get[_output]
+
+%% Clean up
+\session-delete test_system_edit
+\session-delete another_session

@@ -1,0 +1,79 @@
+Setting _echo_command = true
+%%> "\\session-new[system=\"You are a helpful assistant\"] workflow_session"
+Created session 'workflow_session' (ID: 00000001)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\get[#session_name]"
+#session_name = workflow_session
+%%> "\\get[#system_prompt]"
+#system_prompt = You are a helpful assistant
+%%> "\\session-add-usermsg Hello, can you help me with coding?"
+Added user message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-assistantmsg Of course! I'd be happy to help you with coding questions."
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-edit-system You are an expert software engineer specializing in Go, Python, and JavaScript. Provide detailed, practical solutions with code examples."
+Updated system prompt for session 'workflow_session'
+%%> "\\get[#old_system_prompt]"
+#old_system_prompt = You are a helpful assistant
+%%> "\\get[#new_system_prompt]"
+#new_system_prompt = You are an expert software engineer specializing in Go, Python, and JavaScript. Provide detailed, practical solutions with code examples.
+%%> "\\get[_output]"
+_output = Updated system prompt for session 'workflow_session'
+%%> "\\session-rename coding_assistant_session"
+Renamed session from 'workflow_session' to 'coding_assistant_session'
+%%> "\\get[#old_session_name]"
+#old_session_name = workflow_session
+%%> "\\get[#new_session_name]"
+#new_session_name = coding_assistant_session
+%%> "\\get[_output]"
+_output = Renamed session from 'workflow_session' to 'coding_assistant_session'
+%%> "\\session-new[system=\"You are a data analysis expert\"] data_session"
+Created session 'data_session' (ID: 00000004)
+%%> "\\silent \\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
+%%> "\\session-add-usermsg What's the best way to analyze large datasets?"
+Added user message to session '00000004-0000-4000-8000-000000000004'
+%%> "\\silent \\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
+%%> "\\session-edit-system[session=coding_assistant_session] You are a senior full-stack developer with expertise in modern web technologies, backend systems, and best practices."
+Updated system prompt for session 'coding_assistant_session'
+%%> "\\get[#session_name]"
+#session_name = coding_assistant_session
+%%> "\\get[#old_system_prompt]"
+#old_system_prompt = You are an expert software engineer specializing in Go, Python, and JavaScript. Provide detailed, practical solutions with code examples.
+%%> "\\get[#new_system_prompt]"
+#new_system_prompt = You are a senior full-stack developer with expertise in modern web technologies, backend systems, and best practices.
+%%> "\\session-rename analytics_expert_session"
+Renamed session from 'data_session' to 'analytics_expert_session'
+%%> "\\get[#old_session_name]"
+#old_session_name = data_session
+%%> "\\get[#new_session_name]"
+#new_session_name = analytics_expert_session
+%%> "\\session-activate coding_assistant_session"
+Activated session 'coding_assistant_session' (ID: 00000001, Messages: 2)
+%%> "\\get[#active_session_name]"
+#active_session_name = coding_assistant_session
+%%> "\\session-show"
+Session: coding_assistant_session (ID: 00000001)
+System: You are a senior full-stack developer with experti...hnologies, backend systems, and best practices. (117 chars)
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:11
+Messages: 2 total
+[1] user (00:00:02): Hello, can you help me with coding?
+[2] assistant (00:00:04): Of course! I'd be happy to help you with coding questions.
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-rename[session=analytics_expert_session] final_analytics_session"
+Renamed session from 'analytics_expert_session' to 'final_analytics_session'
+%%> "\\get[#old_session_name]"
+#old_session_name = analytics_expert_session
+%%> "\\get[#new_session_name]"
+#new_session_name = final_analytics_session
+%%> "\\session-list"
+Sessions (2 total):
+  final_analytics_session    (ID: 00000004, 1 message, created: 2025-01-01)
+  coding_assistant_session    (ID: 00000001, active, 2 messages, created: 2025-01-01)
+%%> "\\session-delete coding_assistant_session"
+Deleted session 'coding_assistant_session' (ID: 00000001)
+%%> "\\silent \\session-activate"
+%%> "\\session-delete final_analytics_session"
+Deleted session 'final_analytics_session' (ID: 00000004)
+%%> "\\silent \\session-activate"
