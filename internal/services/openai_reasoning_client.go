@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
@@ -18,8 +19,9 @@ import (
 // - /chat/completions for regular GPT models
 // - /responses for reasoning models (o3, o4-mini, o1, etc.)
 type OpenAIReasoningClient struct {
-	apiKey string
-	client *openai.Client
+	apiKey         string
+	client         *openai.Client
+	debugTransport http.RoundTripper
 }
 
 // NewOpenAIReasoningClient creates a new OpenAI reasoning client with lazy initialization.
@@ -41,6 +43,13 @@ func (c *OpenAIReasoningClient) IsConfigured() bool {
 	return c.apiKey != ""
 }
 
+// SetDebugTransport sets the HTTP transport for network debugging.
+func (c *OpenAIReasoningClient) SetDebugTransport(transport http.RoundTripper) {
+	c.debugTransport = transport
+	// Clear the existing client to force re-initialization with debug transport
+	c.client = nil
+}
+
 // initializeClientIfNeeded initializes the OpenAI client if it hasn't been initialized yet.
 func (c *OpenAIReasoningClient) initializeClientIfNeeded() error {
 	if c.client != nil {
@@ -51,11 +60,21 @@ func (c *OpenAIReasoningClient) initializeClientIfNeeded() error {
 		return fmt.Errorf("OpenAI API key not configured")
 	}
 
-	// Create OpenAI client with API key
-	client := openai.NewClient(option.WithAPIKey(c.apiKey))
+	// Create OpenAI client with API key and optional debug transport
+	var options []option.RequestOption
+	options = append(options, option.WithAPIKey(c.apiKey))
+
+	if c.debugTransport != nil {
+		httpClient := &http.Client{Transport: c.debugTransport}
+		options = append(options, option.WithHTTPClient(httpClient))
+		logger.Debug("OpenAI reasoning client initialized with debug transport", "provider", "openai")
+	} else {
+		logger.Debug("OpenAI reasoning client initialized", "provider", "openai")
+	}
+
+	client := openai.NewClient(options...)
 	c.client = &client
 
-	logger.Debug("OpenAI reasoning client initialized", "provider", "openai")
 	return nil
 }
 
@@ -158,18 +177,6 @@ func (c *OpenAIReasoningClient) sendChatCompletion(session *neurotypes.ChatSessi
 
 	logger.Debug("OpenAI chat completion response received", "content_length", len(content))
 	return content, nil
-}
-
-// SendChatCompletionWithDebug sends a chat completion request to OpenAI reasoning API with optional network debugging.
-// Currently, debug functionality is not implemented for OpenAI reasoning client - returns empty debug info.
-func (c *OpenAIReasoningClient) SendChatCompletionWithDebug(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig, debugNetwork bool) (string, string, error) {
-	// For now, just call regular method and return empty debug info
-	response, err := c.SendChatCompletion(session, modelConfig)
-	debugInfo := ""
-	if debugNetwork {
-		debugInfo = "{\"info\": \"debug not implemented for OpenAI reasoning client\"}"
-	}
-	return response, debugInfo, err
 }
 
 // sendReasoningCompletion handles reasoning completions via /responses endpoint.

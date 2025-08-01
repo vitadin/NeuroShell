@@ -2,6 +2,8 @@
 // This file contains types for LLM client abstraction, streaming, and service interfaces.
 package neurotypes
 
+import "net/http"
+
 // StreamChunk represents a single chunk of streaming response.
 type StreamChunk struct {
 	Content string // The text content of this chunk
@@ -16,10 +18,6 @@ type LLMClient interface {
 	// SendChatCompletion sends a chat completion request and returns the full response.
 	SendChatCompletion(session *ChatSession, model *ModelConfig) (string, error)
 
-	// SendChatCompletionWithDebug sends a chat completion request with optional network debugging.
-	// When debugNetwork is true, returns the response and network debug info as JSON.
-	SendChatCompletionWithDebug(session *ChatSession, model *ModelConfig, debugNetwork bool) (response string, debugInfo string, err error)
-
 	// StreamChatCompletion sends a streaming chat completion request.
 	// It returns a channel that receives response chunks as they arrive.
 	StreamChatCompletion(session *ChatSession, model *ModelConfig) (<-chan StreamChunk, error)
@@ -29,6 +27,10 @@ type LLMClient interface {
 
 	// IsConfigured returns true if the client has valid configuration and can make requests.
 	IsConfigured() bool
+
+	// SetDebugTransport sets the HTTP transport for network debugging.
+	// All clients must accept debug transport for consistent debugging infrastructure.
+	SetDebugTransport(transport http.RoundTripper)
 }
 
 // ClientFactory manages the creation and caching of LLM clients.
@@ -50,11 +52,8 @@ type LLMService interface {
 
 	// SendCompletion sends a chat completion request using the provided client.
 	// The session is sent as-is - message manipulation is the caller's responsibility.
+	// Debug transport capture happens transparently via the client's debug transport.
 	SendCompletion(client LLMClient, session *ChatSession, model *ModelConfig) (string, error)
-
-	// SendCompletionWithDebug sends a chat completion request with optional network debugging.
-	// Returns response and debug info (if debugNetwork is true).
-	SendCompletionWithDebug(client LLMClient, session *ChatSession, model *ModelConfig, debugNetwork bool) (response string, debugInfo string, err error)
 
 	// StreamCompletion sends a streaming chat completion request using the provided client.
 	// The session is sent as-is - message manipulation is the caller's responsibility.

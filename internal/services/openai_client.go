@@ -2,8 +2,8 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
@@ -15,8 +15,9 @@ import (
 // It provides lazy initialization of the OpenAI client and handles
 // all OpenAI-specific communication logic.
 type OpenAIClient struct {
-	apiKey string
-	client *openai.Client
+	apiKey         string
+	client         *openai.Client
+	debugTransport http.RoundTripper
 }
 
 // NewOpenAIClient creates a new OpenAI client with lazy initialization.
@@ -38,6 +39,13 @@ func (c *OpenAIClient) IsConfigured() bool {
 	return c.apiKey != ""
 }
 
+// SetDebugTransport sets the HTTP transport for network debugging.
+func (c *OpenAIClient) SetDebugTransport(transport http.RoundTripper) {
+	c.debugTransport = transport
+	// Clear the existing client to force re-initialization with debug transport
+	c.client = nil
+}
+
 // initializeClientIfNeeded initializes the OpenAI client if it hasn't been initialized yet.
 func (c *OpenAIClient) initializeClientIfNeeded() error {
 	if c.client != nil {
@@ -48,11 +56,21 @@ func (c *OpenAIClient) initializeClientIfNeeded() error {
 		return fmt.Errorf("OpenAI API key not configured")
 	}
 
-	// Create OpenAI client with API key
-	client := openai.NewClient(option.WithAPIKey(c.apiKey))
+	// Create OpenAI client with API key and optional debug transport
+	var options []option.RequestOption
+	options = append(options, option.WithAPIKey(c.apiKey))
+
+	if c.debugTransport != nil {
+		httpClient := &http.Client{Transport: c.debugTransport}
+		options = append(options, option.WithHTTPClient(httpClient))
+		logger.Debug("OpenAI client initialized with debug transport", "provider", "openai")
+	} else {
+		logger.Debug("OpenAI client initialized", "provider", "openai")
+	}
+
+	client := openai.NewClient(options...)
 	c.client = &client
 
-	logger.Debug("OpenAI client initialized", "provider", "openai")
 	return nil
 }
 
@@ -108,122 +126,6 @@ func (c *OpenAIClient) SendChatCompletion(session *neurotypes.ChatSession, model
 
 	logger.Debug("OpenAI response received", "content_length", len(content))
 	return content, nil
-}
-
-// SendChatCompletionWithDebug sends a chat completion request to OpenAI with optional network debugging.
-func (c *OpenAIClient) SendChatCompletionWithDebug(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig, debugNetwork bool) (string, string, error) {
-	logger.Debug("OpenAI SendChatCompletionWithDebug starting", "model", modelConfig.BaseModel, "debug", debugNetwork)
-
-	// If debug is not requested, use regular method
-	if !debugNetwork {
-		response, err := c.SendChatCompletion(session, modelConfig)
-		return response, "", err
-	}
-
-	// Initialize client if needed
-	if err := c.initializeClientIfNeeded(); err != nil {
-		return "", "", fmt.Errorf("failed to initialize OpenAI client: %w", err)
-	}
-
-	// Convert session messages to OpenAI format
-	messages := c.convertMessagesToOpenAI(session)
-	logger.Debug("Messages converted", "message_count", len(messages))
-
-	// Add system prompt if present
-	if session.SystemPrompt != "" {
-		systemMsg := openai.SystemMessage(session.SystemPrompt)
-		messages = append([]openai.ChatCompletionMessageParamUnion{systemMsg}, messages...)
-		logger.Debug("System prompt added", "system_prompt", session.SystemPrompt)
-	}
-
-	// Build completion parameters
-	params := openai.ChatCompletionNewParams{
-		Model:    openai.ChatModel(modelConfig.BaseModel),
-		Messages: messages,
-	}
-	logger.Debug("Completion parameters built", "model", modelConfig.BaseModel, "message_count", len(messages))
-
-	// Apply model parameters if available
-	c.applyModelParameters(&params, modelConfig)
-
-	// Capture request for debug
-	debugData := map[string]interface{}{
-		"request": map[string]interface{}{
-			"model":    modelConfig.BaseModel,
-			"messages": c.convertMessagesToDebugFormat(session),
-		},
-	}
-
-	// Add model parameters to debug request
-	if len(modelConfig.Parameters) > 0 {
-		requestParams := make(map[string]interface{})
-		for k, v := range modelConfig.Parameters {
-			requestParams[k] = v
-		}
-		debugData["request"].(map[string]interface{})["parameters"] = requestParams
-	}
-
-	// Send request
-	logger.Debug("Sending OpenAI request with debug", "model", modelConfig.BaseModel)
-	completion, err := c.client.Chat.Completions.New(context.Background(), params)
-	if err != nil {
-		logger.Error("OpenAI request failed", "error", err)
-		return "", "", fmt.Errorf("openai request failed: %w", err)
-	}
-
-	// Extract response content
-	if len(completion.Choices) == 0 {
-		logger.Error("No response choices returned")
-		return "", "", fmt.Errorf("no response choices returned")
-	}
-
-	content := completion.Choices[0].Message.Content
-	if content == "" {
-		logger.Error("Empty response content")
-		return "", "", fmt.Errorf("empty response content")
-	}
-
-	// Capture response for debug
-	debugData["response"] = map[string]interface{}{
-		"choices": completion.Choices,
-		"usage":   completion.Usage,
-		"model":   completion.Model,
-		"id":      completion.ID,
-	}
-
-	// Convert debug data to JSON
-	debugJSON, err := json.Marshal(debugData)
-	if err != nil {
-		logger.Error("Failed to marshal debug data", "error", err)
-		// Don't fail the request, just return empty debug info
-		debugJSON = []byte("{\"error\": \"failed to marshal debug data\"}")
-	}
-
-	logger.Debug("OpenAI response received with debug", "content_length", len(content), "debug_length", len(debugJSON))
-	return content, string(debugJSON), nil
-}
-
-// convertMessagesToDebugFormat converts session messages to a debug-friendly format.
-func (c *OpenAIClient) convertMessagesToDebugFormat(session *neurotypes.ChatSession) []map[string]interface{} {
-	debugMessages := make([]map[string]interface{}, 0, len(session.Messages))
-
-	// Add system message if present
-	if session.SystemPrompt != "" {
-		debugMessages = append(debugMessages, map[string]interface{}{
-			"role":    "system",
-			"content": session.SystemPrompt,
-		})
-	}
-
-	// Add session messages
-	for _, msg := range session.Messages {
-		debugMessages = append(debugMessages, map[string]interface{}{
-			"role":    msg.Role,
-			"content": msg.Content,
-		})
-	}
-
-	return debugMessages
 }
 
 // StreamChatCompletion sends a streaming chat completion request to OpenAI.

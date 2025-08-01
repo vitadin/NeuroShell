@@ -33,14 +33,13 @@ func (c *CallCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the llm-call command.
 func (c *CallCommand) Usage() string {
-	return `\llm-call[client_id=client_id, model_id=model_id, session_id=session_id, stream=false, dry_run=false, debug_network=false]
+	return `\llm-call[client_id=client_id, model_id=model_id, session_id=session_id, stream=false, dry_run=false]
 
 Examples:
   \llm-call                                                %% Use defaults (active model, active session, cached client)
   \llm-call[client_id=${_client_id}, model_id=my-gpt4]     %% Explicit client and model
   \llm-call[session_id=work-session, stream=true]          %% Use specific session with streaming
   \llm-call[dry_run=true]                                  %% Show what would be sent without API call
-  \llm-call[debug_network=true]                            %% Capture raw network request/response in JSON
   \llm-call[client_id=OAR:a1b2c3d4, model_id=creative-gpt4, session_id=creative-work]
 
 Options:
@@ -49,13 +48,12 @@ Options:
   session_id    - Session ID (defaults to active session)
   stream        - Enable streaming mode (default: false)
   dry_run       - Show API payload without making call (default: false)
-  debug_network - Capture raw network interaction as JSON (default: false)
 
 Notes:
   - This command does NOT accept input messages
   - Use \session-add-usermsg to add messages to sessions
   - Response stored in ${_output} and ${#llm_response} variables
-  - Network debug stored in ${_debug_network} when debug_network=true
+  - Network debug data always available in ${_debug_network}
   - Use \session-add-assistantmsg to add response to session`
 }
 
@@ -64,7 +62,7 @@ func (c *CallCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       `\llm-call[client_id=client_id, model_id=model_id, session_id=session_id, stream=false, dry_run=false, debug_network=false]`,
+		Usage:       `\llm-call[client_id=client_id, model_id=model_id, session_id=session_id, stream=false, dry_run=false]`,
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
@@ -102,13 +100,6 @@ func (c *CallCommand) HelpInfo() neurotypes.HelpInfo {
 				Type:        "boolean",
 				Default:     "false",
 			},
-			{
-				Name:        "debug_network",
-				Description: "Capture raw network request/response as JSON",
-				Required:    false,
-				Type:        "boolean",
-				Default:     "false",
-			},
 		},
 		Examples: []neurotypes.HelpExample{
 			{
@@ -123,10 +114,6 @@ func (c *CallCommand) HelpInfo() neurotypes.HelpInfo {
 				Command:     `\llm-call[dry_run=true]`,
 				Description: "Preview API payload without making call",
 			},
-			{
-				Command:     `\llm-call[debug_network=true]`,
-				Description: "Capture raw network request/response in ${_debug_network}",
-			},
 		},
 		Notes: []string{
 			"Pure service orchestration - does not modify sessions",
@@ -134,6 +121,7 @@ func (c *CallCommand) HelpInfo() neurotypes.HelpInfo {
 			"Combines three independent components: client, model, session",
 			"dry_run option shows complete API payload for debugging",
 			"Response stored in ${_output} for use with \\session-add-assistantmsg",
+			"Network debug data always available in ${_debug_network}",
 			"All parameters support variable interpolation",
 		},
 	}
@@ -252,13 +240,10 @@ func (c *CallCommand) Execute(args map[string]string, input string) error {
 		}
 	}
 
-	// Check if network debugging is requested
-	debugNetwork := args["debug_network"] == "true"
-
 	if stream {
 		return c.handleStreamingCall(llmService, client, session, model, variableService)
 	}
-	return c.handleSyncCall(llmService, client, session, model, variableService, debugNetwork)
+	return c.handleSyncCall(llmService, client, session, model, variableService)
 }
 
 // handleDryRun shows the complete API payload that would be sent without making the call.
@@ -311,8 +296,8 @@ func (c *CallCommand) handleDryRun(client neurotypes.LLMClient, model *neurotype
 	return nil
 }
 
-// handleSyncCall performs a synchronous LLM API call.
-func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, variableService *services.VariableService, debugNetwork bool) error {
+// handleSyncCall performs a synchronous LLM API call with always-on debug transport.
+func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, variableService *services.VariableService) error {
 	// Start temporal display for thinking indicator
 	displayID := "llm-call-sync"
 	displayStarted := c.startLLMThinkingDisplay(displayID, "Thinking...")
@@ -322,34 +307,34 @@ func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client ne
 		defer c.stopLLMDisplay(displayID)
 	}
 
-	// Pure service orchestration - no message manipulation
-	var response string
-	var debugInfo string
-	var err error
-
-	if debugNetwork {
-		// Use debug method when network debugging is requested
-		response, debugInfo, err = llmService.SendCompletionWithDebug(client, session, model, debugNetwork)
-		if err != nil {
-			return fmt.Errorf("LLM call with debug failed: %w", err)
-		}
-
-		// Store debug information
-		_ = variableService.SetSystemVariable("_debug_network", debugInfo)
-	} else {
-		// Use regular method when no debugging is needed
-		response, err = llmService.SendCompletion(client, session, model)
-		if err != nil {
-			return fmt.Errorf("LLM call failed: %w", err)
-		}
+	// Get debug transport service and inject debug transport into client
+	debugTransportService, err := services.GetGlobalDebugTransportService()
+	if err != nil {
+		return fmt.Errorf("debug transport service not available: %w", err)
 	}
 
-	// Store response in variables
+	// Create and inject debug transport into the client
+	debugTransport := debugTransportService.CreateTransport()
+	client.SetDebugTransport(debugTransport)
+
+	// Make LLM call (debug capture happens automatically via transport)
+	response, err := llmService.SendCompletion(client, session, model)
+	if err != nil {
+		return fmt.Errorf("LLM call failed: %w", err)
+	}
+
+	// Get captured debug data from the debug transport service
+	debugData := debugTransportService.GetCapturedData()
+
+	// Store response and debug data in variables
 	_ = variableService.SetSystemVariable("_output", response)
 	_ = variableService.SetSystemVariable("#llm_response", response)
 	_ = variableService.SetSystemVariable("#llm_call_success", "true")
 	_ = variableService.SetSystemVariable("#llm_call_mode", "sync")
-	_ = variableService.SetSystemVariable("#debug_network_enabled", fmt.Sprintf("%v", debugNetwork))
+	_ = variableService.SetSystemVariable("_debug_network", debugData)
+
+	// Clear debug data for next call
+	debugTransportService.ClearCapturedData()
 
 	// Don't output response here - let calling script handle formatting
 	return nil
@@ -373,7 +358,17 @@ func (c *CallCommand) handleStreamingCall(llmService neurotypes.LLMService, clie
 		}()
 	}
 
-	// Pure service orchestration for streaming
+	// Get debug transport service and inject debug transport into client
+	debugTransportService, err := services.GetGlobalDebugTransportService()
+	if err != nil {
+		return fmt.Errorf("debug transport service not available: %w", err)
+	}
+
+	// Create and inject debug transport into the client
+	debugTransport := debugTransportService.CreateTransport()
+	client.SetDebugTransport(debugTransport)
+
+	// Pure service orchestration for streaming (debug capture happens automatically via transport)
 	stream, err := llmService.StreamCompletion(client, session, model)
 	if err != nil {
 		return fmt.Errorf("streaming LLM call failed: %w", err)
@@ -404,12 +399,19 @@ func (c *CallCommand) handleStreamingCall(llmService neurotypes.LLMService, clie
 		streamingContent.WriteString(chunk.Content)
 	}
 
-	// Store complete response
+	// Get captured debug data from the debug transport service
+	debugData := debugTransportService.GetCapturedData()
+
+	// Store complete response and debug data
 	response := fullResponse.String()
 	_ = variableService.SetSystemVariable("_output", response)
 	_ = variableService.SetSystemVariable("#llm_response", response)
 	_ = variableService.SetSystemVariable("#llm_call_success", "true")
 	_ = variableService.SetSystemVariable("#llm_call_mode", "stream")
+	_ = variableService.SetSystemVariable("_debug_network", debugData)
+
+	// Clear debug data for next call
+	debugTransportService.ClearCapturedData()
 
 	// Don't output response here - let _send.neuro handle final markdown rendering
 	return nil

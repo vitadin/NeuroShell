@@ -71,40 +71,6 @@ func (s *LLMService) SendCompletion(client neurotypes.LLMClient, session *neurot
 	return response, nil
 }
 
-// SendCompletionWithDebug sends a chat completion request with optional network debugging.
-// When debugNetwork is true, returns the response and network debug info as JSON.
-func (s *LLMService) SendCompletionWithDebug(client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, debugNetwork bool) (response string, debugInfo string, err error) {
-	logger.ServiceOperation("llm", "send_completion_with_debug", "starting")
-
-	if !s.initialized {
-		logger.Error("LLM service not initialized")
-		return "", "", fmt.Errorf("llm service not initialized")
-	}
-
-	if client == nil {
-		logger.Error("LLM client is nil")
-		return "", "", fmt.Errorf("llm client cannot be nil")
-	}
-
-	if !client.IsConfigured() {
-		logger.Error("LLM client is not configured")
-		return "", "", fmt.Errorf("llm client is not configured")
-	}
-
-	logger.Debug("Sending completion request with debug", "provider", client.GetProviderName(), "model", model.BaseModel, "messages", len(session.Messages), "debug", debugNetwork)
-
-	// Send the completion request with debug support
-	response, debugInfo, err = client.SendChatCompletionWithDebug(session, model, debugNetwork)
-	if err != nil {
-		logger.Error("Completion request with debug failed", "error", err)
-		return "", "", fmt.Errorf("completion request failed: %w", err)
-	}
-
-	logger.Debug("Completion request with debug completed", "response_length", len(response), "debug_info_length", len(debugInfo))
-	logger.ServiceOperation("llm", "send_completion_with_debug", "completed")
-	return response, debugInfo, nil
-}
-
 // StreamCompletion sends a streaming chat completion request using the provided client.
 // The session is sent as-is with no message manipulation - this is the caller's responsibility.
 func (s *LLMService) StreamCompletion(client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {

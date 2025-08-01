@@ -686,8 +686,8 @@ func TestCallCommand_handleSyncCall(t *testing.T) {
 	variableService := services.NewVariableService()
 	_ = variableService.Initialize()
 
-	// Test sync call without debug
-	err := cmd.handleSyncCall(llmService, client, session, model, variableService, false)
+	// Test sync call
+	err := cmd.handleSyncCall(llmService, client, session, model, variableService)
 	require.NoError(t, err)
 
 	// Verify variables were set

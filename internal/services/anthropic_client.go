@@ -4,6 +4,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/anthropics/anthropic-sdk-go/option"
@@ -134,16 +135,11 @@ func (c *AnthropicClient) SendChatCompletion(session *neurotypes.ChatSession, mo
 	return content, nil
 }
 
-// SendChatCompletionWithDebug sends a chat completion request to Anthropic with optional network debugging.
-// Currently, debug functionality is not implemented for Anthropic - returns empty debug info.
-func (c *AnthropicClient) SendChatCompletionWithDebug(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig, debugNetwork bool) (string, string, error) {
-	// For now, just call regular method and return empty debug info
-	response, err := c.SendChatCompletion(session, modelConfig)
-	debugInfo := ""
-	if debugNetwork {
-		debugInfo = "{\"info\": \"debug not implemented for Anthropic client\"}"
-	}
-	return response, debugInfo, err
+// SetDebugTransport sets the HTTP transport for network debugging.
+// Currently, debug transport is not implemented for Anthropic client - this is a placeholder.
+func (c *AnthropicClient) SetDebugTransport(_ http.RoundTripper) {
+	// Dummy implementation - will be implemented later
+	// The Anthropic client will eventually use this transport for HTTP debugging
 }
 
 // StreamChatCompletion sends a streaming chat completion request to Anthropic.

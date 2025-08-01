@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"google.golang.org/genai"
@@ -109,16 +110,11 @@ func (c *GeminiClient) SendChatCompletion(session *neurotypes.ChatSession, model
 	return content, nil
 }
 
-// SendChatCompletionWithDebug sends a chat completion request to Gemini with optional network debugging.
-// Currently, debug functionality is not implemented for Gemini - returns empty debug info.
-func (c *GeminiClient) SendChatCompletionWithDebug(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig, debugNetwork bool) (string, string, error) {
-	// For now, just call regular method and return empty debug info
-	response, err := c.SendChatCompletion(session, modelConfig)
-	debugInfo := ""
-	if debugNetwork {
-		debugInfo = "{\"info\": \"debug not implemented for Gemini client\"}"
-	}
-	return response, debugInfo, err
+// SetDebugTransport sets the HTTP transport for network debugging.
+// Currently, debug transport is not implemented for Gemini client - this is a placeholder.
+func (c *GeminiClient) SetDebugTransport(_ http.RoundTripper) {
+	// Dummy implementation - will be implemented later
+	// The Gemini client will eventually use this transport for HTTP debugging
 }
 
 // StreamChatCompletion sends a streaming chat completion request to Google Gemini.
