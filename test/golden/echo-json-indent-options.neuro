@@ -1,0 +1,42 @@
+%% Echo-json command indent options test
+\set[_echo_command="true"]
+%% Tests various indentation options for JSON formatting
+
+%% Set up test JSON
+\set[test_json={"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}], "count": 2}]
+
+%% Test default 2-space indentation
+\echo Default 2-space indentation:
+\echo-json ${test_json}
+
+%% Test 4-space indentation
+\echo 4-space indentation:
+\echo-json[indent=4] ${test_json}
+
+%% Test 1-space indentation
+\echo 1-space indentation:
+\echo-json[indent=1] ${test_json}
+
+%% Test compact format (no indentation)
+\echo Compact format:
+\echo-json[indent=0] ${test_json}
+
+%% Test with large indent
+\echo 8-space indentation:
+\echo-json[indent=8] {"key": "value"}
+
+%% Test invalid indent (should fall back to default)
+\echo Invalid indent falls back to default:
+\echo-json[indent=invalid] {"fallback": "test"}
+
+%% Test negative indent (should fall back to default)
+\echo Negative indent falls back to default:
+\echo-json[indent=-1] {"negative": "test"}
+
+%% Test zero with complex structure
+\echo Complex structure in compact:
+\echo-json[indent=0] {"data": {"nested": {"deep": "value"}}, "array": [1, 2, 3]}
+
+%% Test storing formatted JSON with custom indent
+\echo-json[indent=4, to=custom_formatted] {"stored": "with 4 spaces"}
+\get[custom_formatted]

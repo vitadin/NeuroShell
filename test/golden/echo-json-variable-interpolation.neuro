@@ -1,0 +1,48 @@
+%% Echo-json command variable interpolation test
+\set[_echo_command="true"]
+%% Tests JSON formatting with variable interpolation
+
+%% Set up test variables
+\set[api_key="sk-test-key-123"]
+\set[model_name="gpt-4"]
+\set[user_message="Hello, how are you?"]
+\set[response_text="I'm doing well, thank you!"]
+\set[status_code="200"]
+
+%% Test simple variable interpolation in JSON
+\set[simple_json={"model": "${model_name}", "status": ${status_code}}]
+\echo Simple JSON with variables:
+\echo-json ${simple_json}
+
+%% Test complex nested structure with variables
+\set[api_request={"model": "${model_name}", "messages": [{"role": "user", "content": "${user_message}"}], "temperature": 0.7}]
+\echo API Request JSON:
+\echo-json ${api_request}
+
+%% Test API response structure
+\set[api_response={"choices": [{"message": {"role": "assistant", "content": "${response_text}"}}], "usage": {"total_tokens": 25}}]
+\echo API Response JSON:
+\echo-json ${api_response}
+
+%% Test with system variables
+\set[system_info={"test_mode": "${#test_mode}", "user": "${@user}", "timestamp": "{{TIMESTAMP}}"}]
+\echo System Info JSON:
+\echo-json ${system_info}
+
+%% Test storing interpolated JSON
+\echo-json[to=stored_request] ${api_request}
+\echo Stored API request:
+\get[stored_request]
+
+%% Test with undefined variables (should become empty)
+\set[with_undefined={"defined": "${model_name}", "undefined": "${not_defined}", "empty": ""}]
+\echo JSON with undefined variables:
+\echo-json ${with_undefined}
+
+%% Test compact format with variables
+\echo Compact JSON with variables:
+\echo-json[indent=0] ${api_request}
+
+%% Test 4-space indent with variables
+\echo 4-space JSON with variables:
+\echo-json[indent=4] ${api_response}

@@ -4,6 +4,7 @@ Core Commands:
   \bash                - Execute system commands via bash
   \cat                 - Display file contents with optional line limiting and variable storage
   \echo                - Output text with optional raw mode and variable storage
+  \echo-json           - Pretty-print JSON data in readable format
   \exit                - Exit the shell with optional exit code and message
   \gemini-client-new   - Create new Gemini client with automatic key resolution
   \gemini-model-new    - Create Gemini model configurations with thinking support
