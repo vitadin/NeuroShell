@@ -1,0 +1,29 @@
+%% Basic echo-json command functionality test
+\set[_echo_command="true"]
+%% Tests core echo-json features: JSON formatting, variable storage, indent options
+
+%% Test simple JSON object
+\echo-json {"key": "value", "number": 42}
+
+%% Test JSON array
+\echo-json ["item1", "item2", 123, true]
+
+%% Test nested JSON structure
+\echo-json {"users": [{"name": "John", "age": 30}, {"name": "Jane", "age": 25}], "total": 2}
+
+%% Test JSON stored in custom variable
+\echo-json[to=formatted_json] {"stored": "in variable", "success": true}
+\get[formatted_json]
+
+%% Test default behavior (stored in _output)
+\echo-json {"default": "behavior"}
+\get[_output]
+
+%% Test with whitespace handling
+\echo-json   {"whitespace": "trimmed"}   
+
+%% Test invalid JSON graceful handling
+\echo-json {invalid json}
+
+%% Test empty input
+\echo-json 

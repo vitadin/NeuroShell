@@ -1,6 +1,7 @@
 package services
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -38,6 +39,10 @@ func NewMockLLMClient() *MockLLMClient {
 
 func (m *MockLLMClient) SendChatCompletion(_ *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (string, error) {
 	return m.response, nil
+}
+
+func (m *MockLLMClient) SetDebugTransport(_ http.RoundTripper) {
+	// Dummy implementation for mock client
 }
 
 func (m *MockLLMClient) StreamChatCompletion(_ *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {

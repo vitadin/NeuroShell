@@ -210,6 +210,13 @@ func (c *OpenAICompatibleClient) SendChatCompletion(session *neurotypes.ChatSess
 	return content, nil
 }
 
+// SetDebugTransport sets the HTTP transport for network debugging.
+// Currently, debug transport is not implemented for OpenAI-compatible client - this is a placeholder.
+func (c *OpenAICompatibleClient) SetDebugTransport(_ http.RoundTripper) {
+	// Dummy implementation - will be implemented later
+	// The OpenAI-compatible client will eventually use this transport for HTTP debugging
+}
+
 // StreamChatCompletion sends a streaming chat completion request to the OpenAI-compatible API.
 func (c *OpenAICompatibleClient) StreamChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
 	logger.Debug("OpenAI-compatible StreamChatCompletion starting", "model", modelConfig.BaseModel, "baseURL", c.baseURL)

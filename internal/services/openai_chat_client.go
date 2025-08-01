@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
@@ -14,8 +15,9 @@ import (
 // It provides lazy initialization of the OpenAI client and handles
 // all OpenAI-specific communication logic.
 type OpenAIClient struct {
-	apiKey string
-	client *openai.Client
+	apiKey         string
+	client         *openai.Client
+	debugTransport http.RoundTripper
 }
 
 // NewOpenAIClient creates a new OpenAI client with lazy initialization.
@@ -37,6 +39,13 @@ func (c *OpenAIClient) IsConfigured() bool {
 	return c.apiKey != ""
 }
 
+// SetDebugTransport sets the HTTP transport for network debugging.
+func (c *OpenAIClient) SetDebugTransport(transport http.RoundTripper) {
+	c.debugTransport = transport
+	// Clear the existing client to force re-initialization with debug transport
+	c.client = nil
+}
+
 // initializeClientIfNeeded initializes the OpenAI client if it hasn't been initialized yet.
 func (c *OpenAIClient) initializeClientIfNeeded() error {
 	if c.client != nil {
@@ -47,11 +56,21 @@ func (c *OpenAIClient) initializeClientIfNeeded() error {
 		return fmt.Errorf("OpenAI API key not configured")
 	}
 
-	// Create OpenAI client with API key
-	client := openai.NewClient(option.WithAPIKey(c.apiKey))
+	// Create OpenAI client with API key and optional debug transport
+	var options []option.RequestOption
+	options = append(options, option.WithAPIKey(c.apiKey))
+
+	if c.debugTransport != nil {
+		httpClient := &http.Client{Transport: c.debugTransport}
+		options = append(options, option.WithHTTPClient(httpClient))
+		logger.Debug("OpenAI client initialized with debug transport", "provider", "openai")
+	} else {
+		logger.Debug("OpenAI client initialized", "provider", "openai")
+	}
+
+	client := openai.NewClient(options...)
 	c.client = &client
 
-	logger.Debug("OpenAI client initialized", "provider", "openai")
 	return nil
 }
 

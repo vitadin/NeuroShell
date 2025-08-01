@@ -71,6 +71,7 @@ func TestCallCommand_Execute_InputWarning(t *testing.T) {
 	_ = registry.RegisterService(services.NewChatSessionService())
 	_ = registry.RegisterService(services.NewMockLLMService()) // Use mock for testing
 	_ = registry.RegisterService(services.NewVariableService())
+	_ = registry.RegisterService(services.NewDebugTransportService())
 	_ = registry.InitializeAll()
 
 	// Set global registry and context
@@ -105,6 +106,7 @@ func TestCallCommand_Execute_DryRun(t *testing.T) {
 	_ = registry.RegisterService(services.NewChatSessionService())
 	_ = registry.RegisterService(services.NewMockLLMService())
 	_ = registry.RegisterService(services.NewVariableService())
+	_ = registry.RegisterService(services.NewDebugTransportService())
 	_ = registry.InitializeAll()
 
 	// Set global registry and context
@@ -180,6 +182,7 @@ func TestCallCommand_Execute_SyncCall(t *testing.T) {
 	_ = registry.RegisterService(services.NewChatSessionService())
 	_ = registry.RegisterService(services.NewMockLLMService())
 	_ = registry.RegisterService(services.NewVariableService())
+	_ = registry.RegisterService(services.NewDebugTransportService())
 	_ = registry.InitializeAll()
 
 	// Set global registry and context
@@ -255,6 +258,7 @@ func TestCallCommand_Execute_StreamingCall(t *testing.T) {
 	_ = registry.RegisterService(services.NewChatSessionService())
 	_ = registry.RegisterService(services.NewMockLLMService())
 	_ = registry.RegisterService(services.NewVariableService())
+	_ = registry.RegisterService(services.NewDebugTransportService())
 	_ = registry.InitializeAll()
 
 	// Set global registry and context
@@ -322,6 +326,7 @@ func TestCallCommand_Execute_DefaultResolution(t *testing.T) {
 	_ = registry.RegisterService(services.NewChatSessionService())
 	_ = registry.RegisterService(services.NewMockLLMService())
 	_ = registry.RegisterService(services.NewVariableService())
+	_ = registry.RegisterService(services.NewDebugTransportService())
 	_ = registry.InitializeAll()
 
 	// Set global registry and context
@@ -384,6 +389,7 @@ func TestCallCommand_Execute_MissingComponents(t *testing.T) {
 	_ = registry.RegisterService(services.NewChatSessionService())
 	_ = registry.RegisterService(services.NewMockLLMService())
 	_ = registry.RegisterService(services.NewVariableService())
+	_ = registry.RegisterService(services.NewDebugTransportService())
 	_ = registry.InitializeAll()
 
 	// Set global registry and context with isolation
@@ -436,6 +442,7 @@ func TestCallCommand_Execute_EmptySession(t *testing.T) {
 	_ = registry.RegisterService(services.NewChatSessionService())
 	_ = registry.RegisterService(services.NewMockLLMService())
 	_ = registry.RegisterService(services.NewVariableService())
+	_ = registry.RegisterService(services.NewDebugTransportService())
 	_ = registry.InitializeAll()
 
 	// Set global registry and context
@@ -492,6 +499,7 @@ func TestCallCommand_Execute_EmptySession_DryRun(t *testing.T) {
 	_ = registry.RegisterService(services.NewChatSessionService())
 	_ = registry.RegisterService(services.NewMockLLMService())
 	_ = registry.RegisterService(services.NewVariableService())
+	_ = registry.RegisterService(services.NewDebugTransportService())
 	_ = registry.InitializeAll()
 
 	// Set global registry and context
@@ -557,6 +565,7 @@ func TestCallCommand_Execute_InvalidComponents(t *testing.T) {
 	_ = registry.RegisterService(services.NewChatSessionService())
 	_ = registry.RegisterService(services.NewMockLLMService())
 	_ = registry.RegisterService(services.NewVariableService())
+	_ = registry.RegisterService(services.NewDebugTransportService())
 	_ = registry.InitializeAll()
 
 	// Set global registry and context
@@ -659,12 +668,24 @@ func TestCallCommand_handleDryRun(t *testing.T) {
 func TestCallCommand_handleSyncCall(t *testing.T) {
 	cmd := &CallCommand{}
 
-	// Create mock services
-	llmService := services.NewMockLLMService()
-	_ = llmService.Initialize()
+	// Create mock services with registry setup
+	registry := services.NewRegistry()
+	_ = registry.RegisterService(services.NewMockLLMService())
+	_ = registry.RegisterService(services.NewClientFactoryService())
+	_ = registry.RegisterService(services.NewVariableService())
+	_ = registry.RegisterService(services.NewDebugTransportService())
+	_ = registry.InitializeAll()
 
-	clientFactory := services.NewClientFactoryService()
-	_ = clientFactory.Initialize()
+	// Set up global registry for the test
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(registry)
+	defer services.SetGlobalRegistry(oldRegistry)
+
+	// Get services from registry
+	llmService, _ := services.GetGlobalLLMService()
+	clientFactory, _ := services.GetGlobalClientFactoryService()
+	variableService, _ := services.GetGlobalVariableService()
+
 	client, clientID, _ := clientFactory.GetClientWithID("OAR", "test-key")
 	_ = clientID // Use clientID to avoid unused variable error
 
@@ -683,9 +704,6 @@ func TestCallCommand_handleSyncCall(t *testing.T) {
 		},
 	}
 
-	variableService := services.NewVariableService()
-	_ = variableService.Initialize()
-
 	// Test sync call
 	err := cmd.handleSyncCall(llmService, client, session, model, variableService)
 	require.NoError(t, err)
@@ -703,12 +721,24 @@ func TestCallCommand_handleSyncCall(t *testing.T) {
 func TestCallCommand_handleStreamingCall(t *testing.T) {
 	cmd := &CallCommand{}
 
-	// Create mock services
-	llmService := services.NewMockLLMService()
-	_ = llmService.Initialize()
+	// Create mock services with registry setup
+	registry := services.NewRegistry()
+	_ = registry.RegisterService(services.NewMockLLMService())
+	_ = registry.RegisterService(services.NewClientFactoryService())
+	_ = registry.RegisterService(services.NewVariableService())
+	_ = registry.RegisterService(services.NewDebugTransportService())
+	_ = registry.InitializeAll()
 
-	clientFactory := services.NewClientFactoryService()
-	_ = clientFactory.Initialize()
+	// Set up global registry for the test
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(registry)
+	defer services.SetGlobalRegistry(oldRegistry)
+
+	// Get services from registry
+	llmService, _ := services.GetGlobalLLMService()
+	clientFactory, _ := services.GetGlobalClientFactoryService()
+	variableService, _ := services.GetGlobalVariableService()
+
 	client, clientID, _ := clientFactory.GetClientWithID("OAR", "test-key")
 	_ = clientID // Use clientID to avoid unused variable error
 
@@ -726,9 +756,6 @@ func TestCallCommand_handleStreamingCall(t *testing.T) {
 			{Role: "user", Content: "Write a story"},
 		},
 	}
-
-	variableService := services.NewVariableService()
-	_ = variableService.Initialize()
 
 	// Test streaming call
 	err := cmd.handleStreamingCall(llmService, client, session, model, variableService)

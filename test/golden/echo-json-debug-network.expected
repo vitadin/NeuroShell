@@ -1,0 +1,40 @@
+Setting _echo_command = true
+%%> "\\set[debug_network={\"http_request\": {\"method\": \"POST\", \"url\": \"https://api.openai.com/v1/chat/completions\", \"headers\": {\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer sk-***\"}, \"body\": \"{\\\"model\\\":\\\"gpt-4\\\",\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"Hello\\\"}]}\"}, \"http_response\": {\"status_code\": 200, \"headers\": {\"Content-Type\": \"application/json\"}, \"body\": \"{\\\"choices\\\":[{\\\"message\\\":{\\\"content\\\":\\\"Hello there!\\\"}}]}\"}, \"timing\": {\"request_time\": \"2024-01-01T12:00:00Z\", \"response_time\": \"2024-01-01T12:00:01Z\", \"duration_ms\": 1000}}]"
+Setting "Authorization": "Bearer sk-***"} = 
+Setting "body": "{\"choices\":[{\"message\":{\"content\":\"Hello there!\"}}]}"} = 
+Setting "body": "{\"model\":\"gpt-4\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello\"}]}"} = 
+Setting "duration_ms": 1000}} = 
+Setting "headers": {"Content-Type": "application/json" = 
+Setting "headers": {"Content-Type": "application/json"} = 
+Setting "http_response": {"status_code": 200 = 
+Setting "response_time": "2024-01-01T12:00:01Z" = 
+Setting "timing": {"request_time": "2024-01-01T12:00:00Z" = 
+Setting "url": "https://api.openai.com/v1/chat/completions" = 
+Setting debug_network = {"http_request": {"method": "POST"
+%%> "\\echo-json ${debug_network}"
+Error: Invalid JSON - unexpected end of JSON input
+Original input: {"http_request": {"method": "POST"
+%%> "\\echo-json[indent=0] ${debug_network}"
+Error: Invalid JSON - unexpected end of JSON input
+Original input: {"http_request": {"method": "POST"
+%%> "\\echo-json[indent=4] ${debug_network}"
+Error: Invalid JSON - unexpected end of JSON input
+Original input: {"http_request": {"method": "POST"
+%%> "\\echo-json[to=formatted_debug] ${debug_network}"
+Error: Invalid JSON - unexpected end of JSON input
+Original input: {"http_request": {"method": "POST"
+%%> "\\echo Stored debug data length check:"
+Stored debug data length check:
+%%> "\\get[formatted_debug]"
+formatted_debug = Error: Invalid JSON - unexpected end of JSON input
+Original input: {"http_request": {"method": "POST"
+%%> "\\set[simple_debug={\"request\": {\"method\": \"GET\"}, \"response\": {\"status\": 200}, \"duration\": 500}]"
+Setting "duration": 500} = 
+Setting "response": {"status": 200} = 
+Setting simple_debug = {"request": {"method": "GET"}
+%%> "\\echo-json ${simple_debug}"
+Error: Invalid JSON - unexpected end of JSON input
+Original input: {"request": {"method": "GET"}
+%%> "\\echo-json {\"request\": {\"method\": \"POST\", \"incomplete\": }"
+Error: Invalid JSON - invalid character '}' looking for beginning of value
+Original input: {"request": {"method": "POST", "incomplete": }

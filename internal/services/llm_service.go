@@ -150,6 +150,28 @@ func (m *MockLLMService) SendCompletion(_ neurotypes.LLMClient, session *neuroty
 	return fmt.Sprintf("This is a mocking reply (received %d messages, last: %s)", messageCount, lastMessage), nil
 }
 
+// SendCompletionWithDebug mocks sending a completion request with debug info
+func (m *MockLLMService) SendCompletionWithDebug(_ neurotypes.LLMClient, session *neurotypes.ChatSession, _ *neurotypes.ModelConfig, debugNetwork bool) (string, string, error) {
+	if !m.initialized {
+		return "", "", fmt.Errorf("mock llm service not initialized")
+	}
+
+	// Create a mock response with message count and last message info for debugging
+	messageCount := len(session.Messages)
+	lastMessage := "no messages"
+	if messageCount > 0 {
+		lastMessage = session.Messages[messageCount-1].Content
+	}
+
+	response := fmt.Sprintf("This is a mocking reply (received %d messages, last: %s)", messageCount, lastMessage)
+	debugInfo := ""
+	if debugNetwork {
+		debugInfo = "{\"info\": \"mock debug data\", \"request\": {\"messages\": " + fmt.Sprintf("%d", messageCount) + "}, \"response\": {\"content\": \"mock response\"}}"
+	}
+
+	return response, debugInfo, nil
+}
+
 // StreamCompletion mocks streaming completion (returns a channel with mock response)
 func (m *MockLLMService) StreamCompletion(_ neurotypes.LLMClient, session *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
 	if !m.initialized {

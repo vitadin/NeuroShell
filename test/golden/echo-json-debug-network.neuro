@@ -1,0 +1,32 @@
+%% Echo-json command debug network data test  
+\set[_echo_command="true"]
+%% Tests echo-json with simulated debug network data (like _debug_network variable)
+
+%% Set up simulated debug network JSON data
+\set[debug_network={"http_request": {"method": "POST", "url": "https://api.openai.com/v1/chat/completions", "headers": {"Content-Type": "application/json", "Authorization": "Bearer sk-***"}, "body": "{\"model\":\"gpt-4\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello\"}]}"}, "http_response": {"status_code": 200, "headers": {"Content-Type": "application/json"}, "body": "{\"choices\":[{\"message\":{\"content\":\"Hello there!\"}}]}"}, "timing": {"request_time": "2024-01-01T12:00:00Z", "response_time": "2024-01-01T12:00:01Z", "duration_ms": 1000}}]
+
+%% Test formatting debug network data (default 2-space)
+\echo === DEBUG NETWORK DATA (Default) ===
+\echo-json ${debug_network}
+
+%% Test with compact format for comparison
+\echo === DEBUG NETWORK DATA (Compact) ===
+\echo-json[indent=0] ${debug_network}
+
+%% Test with 4-space indentation for better readability
+\echo === DEBUG NETWORK DATA (4-space) ===
+\echo-json[indent=4] ${debug_network}
+
+%% Test storing formatted debug data
+\echo-json[to=formatted_debug] ${debug_network}
+\echo Stored debug data length check:
+\get[formatted_debug]
+
+%% Test with minimal debug structure
+\set[simple_debug={"request": {"method": "GET"}, "response": {"status": 200}, "duration": 500}]
+\echo === SIMPLE DEBUG DATA ===
+\echo-json ${simple_debug}
+
+%% Test error case with malformed debug data
+\echo === MALFORMED DEBUG DATA ===
+\echo-json {"request": {"method": "POST", "incomplete": }
