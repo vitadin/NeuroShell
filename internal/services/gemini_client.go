@@ -22,8 +22,9 @@ type GeminiThinkingInfo struct {
 // It provides lazy initialization of the Gemini client and handles
 // all Gemini-specific communication logic.
 type GeminiClient struct {
-	apiKey string
-	client *genai.Client
+	apiKey         string
+	client         *genai.Client
+	debugTransport http.RoundTripper
 }
 
 // NewGeminiClient creates a new Gemini client with lazy initialization.
@@ -60,13 +61,22 @@ func (c *GeminiClient) initializeClientIfNeeded() error {
 	clientConfig := &genai.ClientConfig{
 		APIKey: c.apiKey,
 	}
+
+	// Add debug transport if available
+	if c.debugTransport != nil {
+		httpClient := &http.Client{Transport: c.debugTransport}
+		clientConfig.HTTPClient = httpClient
+		logger.Debug("Gemini client initialized with debug transport", "provider", "gemini")
+	} else {
+		logger.Debug("Gemini client initialized", "provider", "gemini")
+	}
+
 	client, err := genai.NewClient(ctx, clientConfig)
 	if err != nil {
 		return fmt.Errorf("failed to create Gemini client: %w", err)
 	}
 
 	c.client = client
-	logger.Debug("Gemini client initialized", "provider", "gemini", "apiKeySet", c.apiKey != "")
 	return nil
 }
 
@@ -83,8 +93,8 @@ func (c *GeminiClient) SendChatCompletion(session *neurotypes.ChatSession, model
 	contents := c.convertMessagesToGemini(session)
 	logger.Debug("Messages converted", "content_count", len(contents))
 
-	// Build generation config from model parameters
-	config := c.buildGenerationConfig(modelConfig)
+	// Build generation config from model parameters and session
+	config := c.buildGenerationConfig(modelConfig, session)
 
 	// Send request to Gemini
 	ctx := context.Background()
@@ -111,10 +121,10 @@ func (c *GeminiClient) SendChatCompletion(session *neurotypes.ChatSession, model
 }
 
 // SetDebugTransport sets the HTTP transport for network debugging.
-// Currently, debug transport is not implemented for Gemini client - this is a placeholder.
-func (c *GeminiClient) SetDebugTransport(_ http.RoundTripper) {
-	// Dummy implementation - will be implemented later
-	// The Gemini client will eventually use this transport for HTTP debugging
+func (c *GeminiClient) SetDebugTransport(transport http.RoundTripper) {
+	c.debugTransport = transport
+	// Clear the existing client to force re-initialization with debug transport
+	c.client = nil
 }
 
 // StreamChatCompletion sends a streaming chat completion request to Google Gemini.
@@ -129,8 +139,8 @@ func (c *GeminiClient) StreamChatCompletion(session *neurotypes.ChatSession, mod
 	// Convert session messages to Gemini format
 	contents := c.convertMessagesToGemini(session)
 
-	// Build generation config from model parameters
-	config := c.buildGenerationConfig(modelConfig)
+	// Build generation config from model parameters and session
+	config := c.buildGenerationConfig(modelConfig, session)
 
 	// Create streaming request
 	ctx := context.Background()
@@ -184,46 +194,58 @@ func (c *GeminiClient) StreamChatCompletion(session *neurotypes.ChatSession, mod
 
 // convertMessagesToGemini converts NeuroShell messages to Gemini format.
 // Returns the conversation as a slice of genai.Content.
+// System prompt is handled separately via SystemInstruction in GenerateContentConfig.
 func (c *GeminiClient) convertMessagesToGemini(session *neurotypes.ChatSession) []*genai.Content {
 	contents := make([]*genai.Content, 0)
 
-	// Add system prompt if present
-	if session.SystemPrompt != "" {
-		systemContents := genai.Text("System: " + session.SystemPrompt)
-		contents = append(contents, systemContents...)
-	}
-
-	// Convert conversation messages
+	// Convert conversation messages with proper role mapping
 	for _, msg := range session.Messages {
-		var prefix string
+		var role string
+		var content string
+
 		switch msg.Role {
 		case "user":
-			prefix = "User: "
+			role = "user"
+			content = msg.Content
 		case "assistant":
-			prefix = "Assistant: "
+			role = "model" // Gemini uses "model" instead of "assistant"
+			content = msg.Content
 		case "system":
-			prefix = "System: "
+			// System messages are treated as user messages in Gemini
+			role = "user"
+			content = "System: " + msg.Content
 		default:
 			// Skip unknown roles
 			continue
 		}
 
-		msgContents := genai.Text(prefix + msg.Content)
-		contents = append(contents, msgContents...)
+		msgContent := &genai.Content{
+			Parts: []*genai.Part{{Text: content}},
+			Role:  role,
+		}
+		contents = append(contents, msgContent)
 	}
 
-	// If no contents were added, add a default empty text content
+	// If no contents were added, add a default empty user content
 	if len(contents) == 0 {
-		emptyContents := genai.Text("")
-		contents = append(contents, emptyContents...)
+		emptyContent := &genai.Content{
+			Parts: []*genai.Part{{Text: ""}},
+			Role:  "user",
+		}
+		contents = append(contents, emptyContent)
 	}
 
 	return contents
 }
 
-// buildGenerationConfig creates a Gemini generation config from NeuroShell model parameters.
-func (c *GeminiClient) buildGenerationConfig(modelConfig *neurotypes.ModelConfig) *genai.GenerateContentConfig {
+// buildGenerationConfig creates a Gemini generation config from NeuroShell model parameters and session.
+func (c *GeminiClient) buildGenerationConfig(modelConfig *neurotypes.ModelConfig, session *neurotypes.ChatSession) *genai.GenerateContentConfig {
 	config := &genai.GenerateContentConfig{}
+
+	// Add system instruction if present
+	if session.SystemPrompt != "" {
+		config.SystemInstruction = genai.NewContentFromText(session.SystemPrompt, genai.RoleUser)
+	}
 
 	if modelConfig.Parameters == nil {
 		return config
