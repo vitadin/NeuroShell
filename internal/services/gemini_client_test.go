@@ -217,8 +217,8 @@ func TestGeminiClient_ConvertMessagesToGemini(t *testing.T) {
 					{Role: "user", Content: "Hello"},
 				},
 			},
-			expectedContentCount: 2, // System prompt + user message
-			shouldContainSystem:  true,
+			expectedContentCount: 1, // Only user message (system prompt now in SystemInstruction)
+			shouldContainSystem:  false, // System prompt no longer in contents
 		},
 	}
 
@@ -250,7 +250,7 @@ func TestGeminiClient_SystemPromptHandling(t *testing.T) {
 				{Role: "user", Content: "Hello"},
 				{Role: "assistant", Content: "Hi there!"},
 			},
-			expectedCount: 3, // System prompt + 2 messages
+			expectedCount: 2, // Only 2 messages (system prompt now in SystemInstruction)
 		},
 		{
 			name:                "session without system prompt",
@@ -365,7 +365,12 @@ func TestGeminiClient_BuildGenerationConfig(t *testing.T) {
 				Parameters: tt.parameters,
 			}
 
-			config := client.buildGenerationConfig(modelConfig)
+			// Create a test session for buildGenerationConfig
+			session := &neurotypes.ChatSession{
+				SystemPrompt: "Test system prompt",
+				Messages:     []neurotypes.Message{},
+			}
+			config := client.buildGenerationConfig(modelConfig, session)
 			assert.NotNil(t, config)
 
 			// Check if thinking configuration exists
@@ -429,7 +434,12 @@ func TestGeminiClient_ThinkingConfiguration(t *testing.T) {
 				},
 			}
 
-			config := client.buildGenerationConfig(modelConfig)
+			// Create a test session for buildGenerationConfig
+			session := &neurotypes.ChatSession{
+				SystemPrompt: "Test system prompt",
+				Messages:     []neurotypes.Message{},
+			}
+			config := client.buildGenerationConfig(modelConfig, session)
 
 			if tt.expectBudget || tt.expectThoughts {
 				assert.NotNil(t, config.ThinkingConfig)
@@ -581,7 +591,12 @@ func TestGeminiClient_ParameterTypeHandling(t *testing.T) {
 
 			// Should not panic regardless of parameter type
 			assert.NotPanics(t, func() {
-				config := client.buildGenerationConfig(modelConfig)
+				// Create a test session for buildGenerationConfig
+				session := &neurotypes.ChatSession{
+					SystemPrompt: "Test system prompt",
+					Messages:     []neurotypes.Message{},
+				}
+				config := client.buildGenerationConfig(modelConfig, session)
 				assert.NotNil(t, config)
 			})
 		})
@@ -638,7 +653,12 @@ func TestGeminiClient_ParameterEdgeCases(t *testing.T) {
 
 			// Should not panic with any parameter configuration
 			assert.NotPanics(t, func() {
-				config := client.buildGenerationConfig(modelConfig)
+				// Create a test session for buildGenerationConfig
+				session := &neurotypes.ChatSession{
+					SystemPrompt: "Test system prompt",
+					Messages:     []neurotypes.Message{},
+				}
+				config := client.buildGenerationConfig(modelConfig, session)
 				assert.NotNil(t, config)
 			})
 		})

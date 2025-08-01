@@ -1,0 +1,80 @@
+%% Gemini 2.5 Flash Debug Transport Test
+%% Purpose: Test GM25F model with debug transport integration
+%% This validates that debug transport captures HTTP requests for Gemini models
+
+\set _style dark1
+
+\echo === Gemini 2.5 Flash Debug Transport Validation Test ===
+\echo Testing GM25F with debug transport to capture HTTP request/response details
+\echo
+
+%% ============================================================================
+%% API SETUP
+%% ============================================================================
+\echo Phase 1: Activating Gemini API key from environment...
+
+%% Load and activate the Gemini API key from local environment
+\llm-api-load[provider=gemini]
+\llm-api-activate[provider=gemini, key=local.GEMINI_API_KEY]
+
+%% Verify API key is activated
+\llm-api-load[provider=gemini]
+\echo
+
+%% ============================================================================
+%% GM25F DEBUG TRANSPORT TEST
+%% ============================================================================
+\echo Phase 2: Testing GM25F (Gemini 2.5 Flash) with debug transport...
+\gemini-model-new[catalog_id="GM25F", temperature="0.7", max_tokens="1000"] gemini-debug-test-model
+
+%% Check that the GM25F model was created successfully
+\echo Step 2.1: Check GM25F model creation with parameters...
+\model-status
+
+%% Activate the GM25F model for use
+\echo Step 2.2: Activate GM25F model for use...
+\model-activate gemini-debug-test-model
+
+%% Verify the GM25F model is active
+\echo Step 2.3: Verify GM25F model is active...
+\echo Active model: ${#active_model_name}
+\echo Provider: ${#active_model_provider}
+
+%% GM25F Progressive Session Context Test
+\echo Step 2.4: Testing GM25F session context with progressive conversation...
+\echo This tests whether Gemini 2.5 Flash receives and uses the full session context.
+\echo
+
+%% Message 1: Setup the scenario
+\echo GM25F Message 1: Setting up a math problem...
+\send I'm thinking of two numbers. Let's call them X and Y. X is 9 and Y is 4.
+
+\echo-json ${_debug_network}
+
+%% Message 2: Add constraint (requires context)
+\echo GM25F Message 2: Building on the numbers from Message 1...
+\send What is X + Y?
+
+\echo-json ${_debug_network}
+
+%% Message 3: Build on previous answer (requires context from both messages)
+\echo GM25F Message 3: Using the sum we just calculated...
+\send Now multiply that result by 3. What do you get?
+
+%% Message 4: Memory test (tests session memory)
+\echo GM25F Message 4: Testing memory of original values...
+\send What were the original values of X and Y that I mentioned at the start?
+
+
+%% GM25F test complete
+\echo Step 2.5: GM25F debug transport test complete. Checking session...
+\session-list
+\session-show
+
+%% GM25F cleanup
+\echo Step 2.6: Cleanup - deleting the GM25F test model...
+\model-delete gemini-debug-test-model
+\model-status
+
+\echo === Gemini 2.5 Flash Debug Transport Test Complete ===
+\echo-json  ${_debug_network}
