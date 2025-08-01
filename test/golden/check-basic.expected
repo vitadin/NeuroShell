@@ -8,6 +8,7 @@ Service Status Check:
   [OK] chat_session         - available/initialized
   [OK] client_factory       - available/initialized
   [OK] configuration        - available/initialized
+  [OK] debug_transport      - available/initialized
   [OK] editor               - available/initialized
   [OK] help                 - available/initialized
   [OK] llm                  - available/initialized
@@ -20,4 +21,4 @@ Service Status Check:
   [OK] temporal-display     - available/initialized
   [OK] theme                - available/initialized
   [OK] variable             - available/initialized
-Summary: 18/18 services healthy
+Summary: 19/19 services healthy

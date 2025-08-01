@@ -28,21 +28,21 @@ func NewDebugTransportService() *DebugTransportService {
 	}
 }
 
-// Name returns the service name "debug-transport" for registration.
+// Name returns the service name "debug_transport" for registration.
 func (d *DebugTransportService) Name() string {
-	return "debug-transport"
+	return "debug_transport"
 }
 
 // Initialize sets up the DebugTransportService for operation.
 func (d *DebugTransportService) Initialize() error {
-	logger.ServiceOperation("debug-transport", "initialize", "starting")
+	logger.ServiceOperation("debug_transport", "initialize", "starting")
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 
 	d.initialized = true
 	d.capturedData = ""
 
-	logger.ServiceOperation("debug-transport", "initialize", "completed")
+	logger.ServiceOperation("debug_transport", "initialize", "completed")
 	return nil
 }
 
@@ -264,7 +264,7 @@ func (dt *debugTransport) sanitizeHeaders(headers http.Header) map[string]interf
 
 // GetGlobalDebugTransportService returns the global debug transport service instance.
 func GetGlobalDebugTransportService() (*DebugTransportService, error) {
-	serviceInterface, err := GetGlobalRegistry().GetService("debug-transport")
+	serviceInterface, err := GetGlobalRegistry().GetService("debug_transport")
 	if err != nil {
 		return nil, fmt.Errorf("debug transport service not registered: %w", err)
 	}
