@@ -25,7 +25,7 @@
 %% GM25F DEBUG TRANSPORT TEST
 %% ============================================================================
 \echo Phase 2: Testing GM25F (Gemini 2.5 Flash) with debug transport...
-\gemini-model-new[catalog_id="GM25F", temperature="0.7", max_tokens="1000"] gemini-debug-test-model
+\gemini-model-new[catalog_id="GM25F", temperature="1.5", max_tokens="2048", thinking_budget="4096"] gemini-debug-test-model
 
 %% Check that the GM25F model was created successfully
 \echo Step 2.1: Check GM25F model creation with parameters...

@@ -55,7 +55,7 @@ Model Configurations (3 models):
     Provider: gemini
     Base Model: gemini-2.5-flash
     Catalog ID: GM25F
-    Parameters: 1 (thinking_budget=2048)
+    Parameters: 2 (temperature=1, thinking_budget=2048)
     Created: 2025-01-01 00:00:01
     Description: Gemini Gemini 2.5 Flash model
   lite-direct (00000003)
@@ -70,7 +70,7 @@ Model Configurations (3 models):
     Provider: gemini
     Base Model: gemini-2.5-pro
     Catalog ID: GM25P
-    Parameters: 1 (thinking_budget=-1)
+    Parameters: 2 (temperature=1, thinking_budget=-1)
     Created: 2025-01-01 00:00:02
     Description: Gemini Gemini 2.5 Pro model
 %%> "\\model-activate flash-direct"
@@ -110,7 +110,7 @@ Model Configurations (5 models):
     Provider: gemini
     Base Model: gemini-2.5-flash
     Catalog ID: GM25F
-    Parameters: 1 (thinking_budget=2048)
+    Parameters: 2 (temperature=1, thinking_budget=2048)
     Created: 2025-01-01 00:00:01
     Description: Gemini Gemini 2.5 Flash model
   lite-direct (00000003)
@@ -124,7 +124,7 @@ Model Configurations (5 models):
     Provider: gemini
     Base Model: gemini-2.5-pro
     Catalog ID: GM25P
-    Parameters: 2 (max_tokens=3000, thinking_budget=16384)
+    Parameters: 3 (max_tokens=3000, temperature=1, thinking_budget=16384)
     Created: 2025-01-01 00:00:05
     Description: High-performance Pro
     Active: true
@@ -132,7 +132,7 @@ Model Configurations (5 models):
     Provider: gemini
     Base Model: gemini-2.5-pro
     Catalog ID: GM25P
-    Parameters: 1 (thinking_budget=-1)
+    Parameters: 2 (temperature=1, thinking_budget=-1)
     Created: 2025-01-01 00:00:02
     Description: Gemini Gemini 2.5 Pro model
 %%> "\\model-activate perf-pro"
@@ -160,7 +160,7 @@ Model Configurations (3 models):
     Provider: gemini
     Base Model: gemini-2.5-pro
     Catalog ID: GM25P
-    Parameters: 2 (max_tokens=3000, thinking_budget=16384)
+    Parameters: 3 (max_tokens=3000, temperature=1, thinking_budget=16384)
     Created: 2025-01-01 00:00:05
     Description: High-performance Pro
     Active: true
@@ -168,7 +168,7 @@ Model Configurations (3 models):
     Provider: gemini
     Base Model: gemini-2.5-pro
     Catalog ID: GM25P
-    Parameters: 1 (thinking_budget=-1)
+    Parameters: 2 (temperature=1, thinking_budget=-1)
     Created: 2025-01-01 00:00:02
     Description: Gemini Gemini 2.5 Pro model
 %%> "\\get[#active_model_name]"

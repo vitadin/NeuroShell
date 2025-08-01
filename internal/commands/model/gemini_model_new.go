@@ -45,12 +45,8 @@ Examples:
 Options:
   catalog_id - Short model ID from catalog (GM25F, GM25P, GM25FL, etc.)
   thinking_budget - Thinking tokens budget (-1=dynamic, 0=disabled, positive=fixed token count)
-  temperature - Sampling temperature (0.0-1.0)
+  temperature - Sampling temperature (0.0-2.0)
   max_tokens - Maximum completion tokens
-  top_p - Nucleus sampling parameter (0.0-1.0)
-  top_k - Top-k sampling parameter (positive integer)
-  presence_penalty - Presence penalty (-2.0 to 2.0)
-  frequency_penalty - Frequency penalty (-2.0 to 2.0)
   description - Human-readable description
 
 Note: catalog_id is required.
@@ -84,7 +80,7 @@ func (c *GeminiModelNewCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 			{
 				Name:        "temperature",
-				Description: "Sampling temperature (0.0-1.0)",
+				Description: "Sampling temperature (0.0-2.0)",
 				Required:    false,
 				Type:        "float",
 			},
@@ -93,30 +89,6 @@ func (c *GeminiModelNewCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Maximum completion tokens",
 				Required:    false,
 				Type:        "int",
-			},
-			{
-				Name:        "top_p",
-				Description: "Nucleus sampling parameter (0.0-1.0)",
-				Required:    false,
-				Type:        "float",
-			},
-			{
-				Name:        "top_k",
-				Description: "Top-k sampling parameter",
-				Required:    false,
-				Type:        "int",
-			},
-			{
-				Name:        "presence_penalty",
-				Description: "Presence penalty (-2.0 to 2.0)",
-				Required:    false,
-				Type:        "float",
-			},
-			{
-				Name:        "frequency_penalty",
-				Description: "Frequency penalty (-2.0 to 2.0)",
-				Required:    false,
-				Type:        "float",
 			},
 			{
 				Name:        "description",

@@ -415,84 +415,12 @@ func TestGeminiModelNewCommand_Execute_StandardParameters(t *testing.T) {
 			errorMsg:    "below minimum",
 		},
 		{
-			name: "valid top_p",
-			args: map[string]string{
-				"catalog_id": "GM25F",
-				"top_p":      "0.9",
-			},
-			expectError: false,
-		},
-		{
-			name: "top_p above maximum",
-			args: map[string]string{
-				"catalog_id": "GM25F",
-				"top_p":      "1.1",
-			},
-			expectError: true,
-			errorMsg:    "above maximum",
-		},
-		{
-			name: "valid top_k",
-			args: map[string]string{
-				"catalog_id": "GM25F",
-				"top_k":      "40",
-			},
-			expectError: false,
-		},
-		{
-			name: "zero top_k",
-			args: map[string]string{
-				"catalog_id": "GM25F",
-				"top_k":      "0",
-			},
-			expectError: true,
-			errorMsg:    "below minimum",
-		},
-		{
-			name: "valid presence_penalty",
-			args: map[string]string{
-				"catalog_id":       "GM25F",
-				"presence_penalty": "1.0",
-			},
-			expectError: false,
-		},
-		{
-			name: "presence_penalty above maximum",
-			args: map[string]string{
-				"catalog_id":       "GM25F",
-				"presence_penalty": "2.1",
-			},
-			expectError: true,
-			errorMsg:    "above maximum",
-		},
-		{
-			name: "valid frequency_penalty",
-			args: map[string]string{
-				"catalog_id":        "GM25F",
-				"frequency_penalty": "-1.5",
-			},
-			expectError: false,
-		},
-		{
-			name: "frequency_penalty below minimum",
-			args: map[string]string{
-				"catalog_id":        "GM25F",
-				"frequency_penalty": "-2.1",
-			},
-			expectError: true,
-			errorMsg:    "below minimum",
-		},
-		{
 			name: "multiple valid parameters",
 			args: map[string]string{
-				"catalog_id":        "GM25F",
-				"temperature":       "0.8",
-				"max_tokens":        "1500",
-				"top_p":             "0.95",
-				"top_k":             "50",
-				"thinking_budget":   "4096",
-				"presence_penalty":  "0.5",
-				"frequency_penalty": "-0.5",
+				"catalog_id":      "GM25F",
+				"temperature":     "0.8",
+				"max_tokens":      "1500",
+				"thinking_budget": "4096",
 			},
 			expectError: false,
 		},
@@ -550,8 +478,6 @@ func TestGeminiModelNewCommand_Execute_CustomParameters(t *testing.T) {
 		"catalog_id":      "GM25F",
 		"temperature":     "0.7",
 		"thinking_budget": "2048",
-		"top_p":           "0.9",
-		"top_k":           "30",
 	}
 
 	err = cmd.Execute(validArgs, "valid-gemini-model")
@@ -565,7 +491,7 @@ func TestGeminiModelNewCommand_Execute_CustomParameters(t *testing.T) {
 	// Verify parameter count includes only the provided valid parameters
 	paramCount, err := ctx.GetVariable("#model_param_count")
 	assert.NoError(t, err)
-	assert.Equal(t, "4", paramCount) // temperature, thinking_budget, top_p, top_k
+	assert.Equal(t, "2", paramCount) // temperature, thinking_budget
 }
 
 func TestGeminiModelNewCommand_Execute_EdgeCases(t *testing.T) {

@@ -1,6 +1,6 @@
 %% Test Gemini model creation with comprehensive parameters
 \set[_echo_command="true"]
-\gemini-model-new[catalog_id="GM25F", temperature="0.8", max_tokens="2000", top_p="0.9", top_k="40", thinking_budget="4096", description="Advanced Gemini Flash model for creative tasks"] creative-gemini
+\gemini-model-new[catalog_id="GM25F", temperature="0.8", max_tokens="2000", thinking_budget="4096", description="Advanced Gemini Flash model for creative tasks"] creative-gemini
 \get[#model_id]
 \get[#model_name]
 \get[#model_provider]

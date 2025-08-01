@@ -1,5 +1,5 @@
 Setting _echo_command = true
-%%> "\\gemini-model-new[catalog_id=\"GM25F\", temperature=\"0.8\", max_tokens=\"2000\", top_p=\"0.9\", top_k=\"40\", thinking_budget=\"4096\", description=\"Advanced Gemini Flash model for creative tasks\"] creative-gemini"
+%%> "\\gemini-model-new[catalog_id=\"GM25F\", temperature=\"0.8\", max_tokens=\"2000\", thinking_budget=\"4096\", description=\"Advanced Gemini Flash model for creative tasks\"] creative-gemini"
 Created model 'creative-gemini' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
 %%> "\\silent \\gemini-client-new"
 %%> "\\silent \\llm-client-activate GMC"
@@ -13,7 +13,7 @@ Created model 'creative-gemini' (ID: 00000001, Provider: gemini, Base: gemini-2.
 %%> "\\get[#model_base]"
 #model_base = gemini-2.5-flash
 %%> "\\get[#model_param_count]"
-#model_param_count = 5
+#model_param_count = 3
 %%> "\\get[#model_description]"
 #model_description = Advanced Gemini Flash model for creative tasks
 %%> "\\get[_output]"

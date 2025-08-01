@@ -43,20 +43,6 @@ parameters:
       min: 1
       max: 65536
     description: "Maximum completion tokens"
-  - name: top_p
-    type: float
-    required: false
-    constraints:
-      min: 0.0
-      max: 1.0
-    description: "Nucleus sampling parameter"
-  - name: top_k
-    type: int
-    required: false
-    constraints:
-      min: 1
-      max: 100
-    description: "Top-k sampling parameter"
   - name: thinking_budget
     type: int
     required: false
@@ -64,17 +50,3 @@ parameters:
       min: -1
       max: 32768
     description: "Thinking token budget (-1=dynamic, 128-32768 tokens, cannot be disabled)"
-  - name: presence_penalty
-    type: float
-    required: false
-    constraints:
-      min: -2.0
-      max: 2.0
-    description: "Presence penalty (-2.0 to 2.0)"
-  - name: frequency_penalty
-    type: float
-    required: false
-    constraints:
-      min: -2.0
-      max: 2.0
-    description: "Frequency penalty (-2.0 to 2.0)"

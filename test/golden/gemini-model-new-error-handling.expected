@@ -14,12 +14,8 @@ Examples:
 Options:
   catalog_id - Short model ID from catalog (GM25F, GM25P, GM25FL, etc.)
   thinking_budget - Thinking tokens budget (-1=dynamic, 0=disabled, positive=fixed token count)
-  temperature - Sampling temperature (0.0-1.0)
+  temperature - Sampling temperature (0.0-2.0)
   max_tokens - Maximum completion tokens
-  top_p - Nucleus sampling parameter (0.0-1.0)
-  top_k - Top-k sampling parameter (positive integer)
-  presence_penalty - Presence penalty (-2.0 to 2.0)
-  frequency_penalty - Frequency penalty (-2.0 to 2.0)
   description - Human-readable description
 Note: catalog_id is required.
       thinking_budget ranges vary by model:
@@ -30,12 +26,12 @@ Note: catalog_id is required.
 _status = 1
 _error = catalog_id is required
 _status = 1
-_error = failed to parse parameters: invalid thinking_budget: thinking cannot be disabled for model gemini-2.5-pro (thinking_budget=0 not allowed)
+_error = invalid thinking_budget: thinking cannot be disabled for model gemini-2.5-pro (thinking_budget=0 not allowed)
 _status = 1
-_error = failed to parse parameters: invalid thinking_budget: thinking_budget 50000 is outside valid range 0-24576 for model gemini-2.5-flash
+_error = failed to validate parameters: parameter 'thinking_budget': value 50000 is above maximum 24576
 _status = 1
-_error = failed to parse parameters: invalid thinking_budget: thinking_budget 50 is outside valid range 128-32768 for model gemini-2.5-pro
+_error = invalid thinking_budget: thinking_budget 50 is outside valid range 128-32768 for model gemini-2.5-pro
 _status = 1
-_error = failed to parse parameters: invalid thinking_budget value: invalid
+_error = failed to validate parameters: parameter 'thinking_budget': invalid integer value 'invalid'
 Created model 'recovery-model' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
 #model_name = recovery-model

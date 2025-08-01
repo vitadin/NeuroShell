@@ -283,10 +283,10 @@ func (m *ModelService) ValidateModelParameters(parameters map[string]any) error 
 	// Parameter validation is now handled by ParameterValidatorService
 	// using model catalog parameter definitions. This provides proper
 	// type checking, constraint validation, and model-specific rules.
-	// 
+	//
 	// This method is kept for any future model service-specific validation
 	// that might not belong in the parameter validator.
-	
+
 	return nil
 }
 
