@@ -49,8 +49,7 @@
 \echo G41C Message 1: Setting up a mathematical puzzle...
 \send I'm thinking of a number between 1 and 10. Let's call it X.
 
-\echo Debug network data: ${_debug_network}
-\exit
+\echo-json  ${_debug_network}
 
 %% Message 2: Add constraint (requires context)
 \echo G41C Message 2: Adding constraint that requires context from Message 1...
