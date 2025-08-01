@@ -235,10 +235,27 @@ func (c *GeminiModelNewCommand) Execute(args map[string]string, input string) er
 	catalogModel = &entry
 	baseModel = entry.Name
 
-	// Parse and validate parameters
-	parameters := make(map[string]any)
-	if err := c.parseGeminiParameters(args, parameters, catalogModel); err != nil {
-		return fmt.Errorf("failed to parse parameters: %w", err)
+	// Get parameter validator service
+	paramValidatorService, err := services.GetGlobalParameterValidatorService()
+	if err != nil {
+		return fmt.Errorf("parameter validator service not available: %w", err)
+	}
+
+	// Validate parameters using the model's parameter definitions
+	parameters, err := paramValidatorService.ValidateParameters(args, catalogModel.Parameters)
+	if err != nil {
+		return fmt.Errorf("failed to validate parameters: %w", err)
+	}
+
+	// Special handling for thinking_budget validation (Gemini-specific constraints)
+	// The parameter validator handles basic range constraints, but we need additional
+	// validation for thinking_can_disable and other Gemini-specific rules
+	if thinkingBudgetVal, exists := parameters["thinking_budget"]; exists {
+		if thinkingBudgetInt, ok := thinkingBudgetVal.(int); ok {
+			if err := c.validateThinkingBudgetSpecialCases(thinkingBudgetInt, catalogModel); err != nil {
+				return fmt.Errorf("invalid thinking_budget: %w", err)
+			}
+		}
 	}
 
 	// Get description
@@ -302,124 +319,9 @@ func (c *GeminiModelNewCommand) Execute(args map[string]string, input string) er
 	return nil
 }
 
-// parseGeminiParameters parses and validates Gemini-specific parameters.
-func (c *GeminiModelNewCommand) parseGeminiParameters(args map[string]string, parameters map[string]any, catalogModel *neurotypes.ModelCatalogEntry) error {
-	// Parse thinking_budget (Gemini-specific)
-	if thinkingBudget, exists := args["thinking_budget"]; exists {
-		thinkingBudgetInt, err := strconv.Atoi(thinkingBudget)
-		if err != nil {
-			return fmt.Errorf("invalid thinking_budget value: %s", thinkingBudget)
-		}
-
-		// Validate thinking_budget using catalog information
-		if err := c.validateThinkingBudget(thinkingBudgetInt, catalogModel); err != nil {
-			return fmt.Errorf("invalid thinking_budget: %w", err)
-		}
-
-		parameters["thinking_budget"] = thinkingBudgetInt
-	}
-
-	// Parse standard parameters
-	if err := c.parseStandardParameters(args, parameters); err != nil {
-		return err
-	}
-
-	// Add any other string parameters that aren't specially handled
-	excludedParams := map[string]bool{
-		"catalog_id": true, "description": true,
-		"thinking_budget": true,
-		"temperature":     true, "max_tokens": true, "top_p": true, "top_k": true,
-		"presence_penalty": true, "frequency_penalty": true,
-	}
-
-	for key, value := range args {
-		if !excludedParams[key] {
-			parameters[key] = value
-		}
-	}
-
-	return nil
-}
-
-// parseStandardParameters parses standard model parameters.
-func (c *GeminiModelNewCommand) parseStandardParameters(args map[string]string, parameters map[string]any) error {
-	// Parse temperature
-	if temp, exists := args["temperature"]; exists {
-		tempFloat, err := strconv.ParseFloat(temp, 64)
-		if err != nil {
-			return fmt.Errorf("invalid temperature value: %s", temp)
-		}
-		if tempFloat < 0.0 || tempFloat > 1.0 {
-			return fmt.Errorf("temperature must be between 0.0 and 1.0: %f", tempFloat)
-		}
-		parameters["temperature"] = tempFloat
-	}
-
-	// Parse max_tokens
-	if maxTokens, exists := args["max_tokens"]; exists {
-		maxTokensInt, err := strconv.Atoi(maxTokens)
-		if err != nil {
-			return fmt.Errorf("invalid max_tokens value: %s", maxTokens)
-		}
-		if maxTokensInt <= 0 {
-			return fmt.Errorf("max_tokens must be positive: %d", maxTokensInt)
-		}
-		parameters["max_tokens"] = maxTokensInt
-	}
-
-	// Parse top_p
-	if topP, exists := args["top_p"]; exists {
-		topPFloat, err := strconv.ParseFloat(topP, 64)
-		if err != nil {
-			return fmt.Errorf("invalid top_p value: %s", topP)
-		}
-		if topPFloat < 0.0 || topPFloat > 1.0 {
-			return fmt.Errorf("top_p must be between 0.0 and 1.0: %f", topPFloat)
-		}
-		parameters["top_p"] = topPFloat
-	}
-
-	// Parse top_k
-	if topK, exists := args["top_k"]; exists {
-		topKInt, err := strconv.Atoi(topK)
-		if err != nil {
-			return fmt.Errorf("invalid top_k value: %s", topK)
-		}
-		if topKInt <= 0 {
-			return fmt.Errorf("top_k must be positive: %d", topKInt)
-		}
-		parameters["top_k"] = topKInt
-	}
-
-	// Parse presence_penalty
-	if presPenalty, exists := args["presence_penalty"]; exists {
-		presPenaltyFloat, err := strconv.ParseFloat(presPenalty, 64)
-		if err != nil {
-			return fmt.Errorf("invalid presence_penalty value: %s", presPenalty)
-		}
-		if presPenaltyFloat < -2.0 || presPenaltyFloat > 2.0 {
-			return fmt.Errorf("presence_penalty must be between -2.0 and 2.0: %f", presPenaltyFloat)
-		}
-		parameters["presence_penalty"] = presPenaltyFloat
-	}
-
-	// Parse frequency_penalty
-	if freqPenalty, exists := args["frequency_penalty"]; exists {
-		freqPenaltyFloat, err := strconv.ParseFloat(freqPenalty, 64)
-		if err != nil {
-			return fmt.Errorf("invalid frequency_penalty value: %s", freqPenalty)
-		}
-		if freqPenaltyFloat < -2.0 || freqPenaltyFloat > 2.0 {
-			return fmt.Errorf("frequency_penalty must be between -2.0 and 2.0: %f", freqPenaltyFloat)
-		}
-		parameters["frequency_penalty"] = freqPenaltyFloat
-	}
-
-	return nil
-}
-
-// validateThinkingBudget validates thinking_budget parameter for Gemini models using catalog information.
-func (c *GeminiModelNewCommand) validateThinkingBudget(thinkingBudget int, catalogModel *neurotypes.ModelCatalogEntry) error {
+// validateThinkingBudgetSpecialCases validates Gemini-specific thinking_budget constraints
+// that go beyond basic range validation (which is handled by the parameter validator).
+func (c *GeminiModelNewCommand) validateThinkingBudgetSpecialCases(thinkingBudget int, catalogModel *neurotypes.ModelCatalogEntry) error {
 	// Only validate for Gemini models
 	if catalogModel.Provider != "gemini" {
 		return nil
@@ -430,27 +332,26 @@ func (c *GeminiModelNewCommand) validateThinkingBudget(thinkingBudget int, catal
 		return fmt.Errorf("model %s does not support thinking mode", catalogModel.Name)
 	}
 
-	// Parse thinking range if available
+	// Special case for -1 (dynamic thinking) - always allowed for thinking models
+	if thinkingBudget == -1 {
+		return nil
+	}
+
+	// Special case for 0 (disabled thinking) - check if model allows disabling
+	if thinkingBudget == 0 {
+		if catalogModel.Features.ThinkingCanDisable != nil && *catalogModel.Features.ThinkingCanDisable {
+			return nil // Disabling is allowed
+		}
+		return fmt.Errorf("thinking cannot be disabled for model %s (thinking_budget=0 not allowed)", catalogModel.Name)
+	}
+
+	// For positive values, validate against thinking_range from features if available
 	if catalogModel.Features.ThinkingRange != nil {
 		rangeParts := strings.Split(*catalogModel.Features.ThinkingRange, "-")
 		if len(rangeParts) == 2 {
 			minRange, err1 := strconv.Atoi(rangeParts[0])
 			maxRange, err2 := strconv.Atoi(rangeParts[1])
 			if err1 == nil && err2 == nil {
-				// Special case for -1 (dynamic thinking)
-				if thinkingBudget == -1 {
-					return nil // Dynamic thinking is always valid
-				}
-
-				// Special case for 0 (disabled thinking)
-				if thinkingBudget == 0 {
-					if catalogModel.Features.ThinkingCanDisable != nil && *catalogModel.Features.ThinkingCanDisable {
-						return nil // Disabling is allowed
-					}
-					return fmt.Errorf("thinking cannot be disabled for model %s (thinking_budget=0 not allowed)", catalogModel.Name)
-				}
-
-				// Validate range for positive values
 				if thinkingBudget < minRange || thinkingBudget > maxRange {
 					return fmt.Errorf("thinking_budget %d is outside valid range %s for model %s", thinkingBudget, *catalogModel.Features.ThinkingRange, catalogModel.Name)
 				}

@@ -272,37 +272,21 @@ func (m *ModelService) storeModel(model *neurotypes.ModelConfig, ctx neurotypes.
 }
 
 // ValidateModelParameters validates model parameters against standard constraints.
-// This is a basic validation - more sophisticated validation could be added later.
+// NOTE: Parameter validation is now handled by the ParameterValidatorService
+// using model catalog parameter definitions. This method is kept for backward
+// compatibility but performs minimal validation.
 func (m *ModelService) ValidateModelParameters(parameters map[string]any) error {
 	if parameters == nil {
 		return nil
 	}
 
-	// Validate common parameters
-	if temp, ok := parameters["temperature"]; ok {
-		if tempFloat, ok := temp.(float64); ok {
-			if tempFloat < 0.0 || tempFloat > 1.0 {
-				return fmt.Errorf("temperature must be between 0.0 and 1.0")
-			}
-		}
-	}
-
-	if maxTokens, ok := parameters["max_tokens"]; ok {
-		if maxTokensInt, ok := maxTokens.(int); ok {
-			if maxTokensInt <= 0 {
-				return fmt.Errorf("max_tokens must be positive")
-			}
-		}
-	}
-
-	if topP, ok := parameters["top_p"]; ok {
-		if topPFloat, ok := topP.(float64); ok {
-			if topPFloat < 0.0 || topPFloat > 1.0 {
-				return fmt.Errorf("top_p must be between 0.0 and 1.0")
-			}
-		}
-	}
-
+	// Parameter validation is now handled by ParameterValidatorService
+	// using model catalog parameter definitions. This provides proper
+	// type checking, constraint validation, and model-specific rules.
+	// 
+	// This method is kept for any future model service-specific validation
+	// that might not belong in the parameter validator.
+	
 	return nil
 }
 

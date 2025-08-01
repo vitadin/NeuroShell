@@ -37,13 +37,13 @@ parameters:
       min: 0.0
       max: 2.0
     description: "Controls randomness (0.0=deterministic, 2.0=creative)"
-  - name: max_output_tokens
+  - name: max_tokens
     type: int
     required: false
     constraints:
       min: 1
       max: 65536
-    description: "Maximum output tokens"
+    description: "Maximum completion tokens"
   - name: top_p
     type: float
     required: false
@@ -56,12 +56,26 @@ parameters:
     required: false
     constraints:
       min: 1
-      max: 40
+      max: 100
     description: "Top-k sampling parameter"
   - name: thinking_budget
     type: int
     required: false
     constraints:
-      min: 0
+      min: -1
       max: 24576
     description: "Thinking token budget (0=disabled, -1=dynamic)"
+  - name: presence_penalty
+    type: float
+    required: false
+    constraints:
+      min: -2.0
+      max: 2.0
+    description: "Presence penalty (-2.0 to 2.0)"
+  - name: frequency_penalty
+    type: float
+    required: false
+    constraints:
+      min: -2.0
+      max: 2.0
+    description: "Frequency penalty (-2.0 to 2.0)"

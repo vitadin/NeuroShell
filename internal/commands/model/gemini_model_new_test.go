@@ -234,14 +234,14 @@ func TestGeminiModelNewCommand_Execute_ThinkingBudgetValidation(t *testing.T) {
 			catalogID:      "GM25F",
 			thinkingBudget: "30000",
 			expectError:    true,
-			errorMsg:       "outside valid range",
+			errorMsg:       "above maximum",
 		},
 		{
 			name:           "Flash - negative thinking_budget (not -1)",
 			catalogID:      "GM25F",
 			thinkingBudget: "-5",
 			expectError:    true,
-			errorMsg:       "outside valid range",
+			errorMsg:       "below minimum",
 		},
 		// Gemini Pro (GM25P) tests - range 128-32768, cannot disable
 		{
@@ -287,7 +287,7 @@ func TestGeminiModelNewCommand_Execute_ThinkingBudgetValidation(t *testing.T) {
 			catalogID:      "GM25P",
 			thinkingBudget: "40000",
 			expectError:    true,
-			errorMsg:       "outside valid range",
+			errorMsg:       "above maximum",
 		},
 		// Invalid thinking_budget format
 		{
@@ -295,14 +295,13 @@ func TestGeminiModelNewCommand_Execute_ThinkingBudgetValidation(t *testing.T) {
 			catalogID:      "GM25F",
 			thinkingBudget: "abc",
 			expectError:    true,
-			errorMsg:       "invalid thinking_budget value",
+			errorMsg:       "invalid integer value",
 		},
 		{
 			name:           "Flash - empty thinking_budget",
 			catalogID:      "GM25F",
 			thinkingBudget: "",
-			expectError:    true,
-			errorMsg:       "invalid thinking_budget value",
+			expectError:    false, // Empty values use default, should not error
 		},
 	}
 
@@ -364,10 +363,10 @@ func TestGeminiModelNewCommand_Execute_StandardParameters(t *testing.T) {
 			expectError: false,
 		},
 		{
-			name: "temperature at maximum",
+			name: "temperature at maximum (2.0)",
 			args: map[string]string{
 				"catalog_id":  "GM25F",
-				"temperature": "1.0",
+				"temperature": "2.0",
 			},
 			expectError: false,
 		},
@@ -375,10 +374,10 @@ func TestGeminiModelNewCommand_Execute_StandardParameters(t *testing.T) {
 			name: "temperature above maximum",
 			args: map[string]string{
 				"catalog_id":  "GM25F",
-				"temperature": "1.5",
+				"temperature": "2.5",
 			},
 			expectError: true,
-			errorMsg:    "temperature must be between 0.0 and 1.0",
+			errorMsg:    "above maximum",
 		},
 		{
 			name: "temperature below minimum",
@@ -387,7 +386,7 @@ func TestGeminiModelNewCommand_Execute_StandardParameters(t *testing.T) {
 				"temperature": "-0.1",
 			},
 			expectError: true,
-			errorMsg:    "temperature must be between 0.0 and 1.0",
+			errorMsg:    "below minimum",
 		},
 		{
 			name: "valid max_tokens",
@@ -404,7 +403,7 @@ func TestGeminiModelNewCommand_Execute_StandardParameters(t *testing.T) {
 				"max_tokens": "0",
 			},
 			expectError: true,
-			errorMsg:    "max_tokens must be positive",
+			errorMsg:    "below minimum",
 		},
 		{
 			name: "negative max_tokens",
@@ -413,7 +412,7 @@ func TestGeminiModelNewCommand_Execute_StandardParameters(t *testing.T) {
 				"max_tokens": "-100",
 			},
 			expectError: true,
-			errorMsg:    "max_tokens must be positive",
+			errorMsg:    "below minimum",
 		},
 		{
 			name: "valid top_p",
@@ -430,7 +429,7 @@ func TestGeminiModelNewCommand_Execute_StandardParameters(t *testing.T) {
 				"top_p":      "1.1",
 			},
 			expectError: true,
-			errorMsg:    "top_p must be between 0.0 and 1.0",
+			errorMsg:    "above maximum",
 		},
 		{
 			name: "valid top_k",
@@ -447,7 +446,7 @@ func TestGeminiModelNewCommand_Execute_StandardParameters(t *testing.T) {
 				"top_k":      "0",
 			},
 			expectError: true,
-			errorMsg:    "top_k must be positive",
+			errorMsg:    "below minimum",
 		},
 		{
 			name: "valid presence_penalty",
@@ -464,7 +463,7 @@ func TestGeminiModelNewCommand_Execute_StandardParameters(t *testing.T) {
 				"presence_penalty": "2.1",
 			},
 			expectError: true,
-			errorMsg:    "presence_penalty must be between -2.0 and 2.0",
+			errorMsg:    "above maximum",
 		},
 		{
 			name: "valid frequency_penalty",
@@ -481,7 +480,7 @@ func TestGeminiModelNewCommand_Execute_StandardParameters(t *testing.T) {
 				"frequency_penalty": "-2.1",
 			},
 			expectError: true,
-			errorMsg:    "frequency_penalty must be between -2.0 and 2.0",
+			errorMsg:    "below minimum",
 		},
 		{
 			name: "multiple valid parameters",
@@ -534,17 +533,28 @@ func TestGeminiModelNewCommand_Execute_CustomParameters(t *testing.T) {
 	ctx := context.New()
 	setupGeminiModelTestRegistry(t, ctx)
 
-	// Test with custom provider-specific parameters
+	// Test that unknown parameters are rejected (this is the correct behavior)
 	args := map[string]string{
-		"catalog_id":        "GM25F",
-		"temperature":       "0.7",
-		"thinking_budget":   "2048",
-		"custom_param1":     "value1",
-		"custom_param2":     "value2",
-		"google_search_api": "enabled",
+		"catalog_id":      "GM25F",
+		"temperature":     "0.7",
+		"thinking_budget": "2048",
+		"unknown_param":   "value1",
 	}
 
 	err := cmd.Execute(args, "custom-gemini-model")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "unknown parameter")
+
+	// Test with only valid parameters
+	validArgs := map[string]string{
+		"catalog_id":      "GM25F",
+		"temperature":     "0.7",
+		"thinking_budget": "2048",
+		"top_p":           "0.9",
+		"top_k":           "30",
+	}
+
+	err = cmd.Execute(validArgs, "valid-gemini-model")
 	assert.NoError(t, err)
 
 	// Verify model was created
@@ -552,10 +562,10 @@ func TestGeminiModelNewCommand_Execute_CustomParameters(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, modelID)
 
-	// Verify parameter count includes custom parameters
+	// Verify parameter count includes only the provided valid parameters
 	paramCount, err := ctx.GetVariable("#model_param_count")
 	assert.NoError(t, err)
-	assert.Equal(t, "5", paramCount) // temperature, thinking_budget, custom_param1, custom_param2, google_search_api
+	assert.Equal(t, "4", paramCount) // temperature, thinking_budget, top_p, top_k
 }
 
 func TestGeminiModelNewCommand_Execute_EdgeCases(t *testing.T) {
@@ -595,7 +605,7 @@ func TestGeminiModelNewCommand_Execute_EdgeCases(t *testing.T) {
 			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
 				paramCount, err := ctx.GetVariable("#model_param_count")
 				assert.NoError(t, err)
-				assert.Equal(t, "1", paramCount) // Only thinking_budget parameter
+				assert.Equal(t, "2", paramCount) // thinking_budget + temperature default
 			},
 		},
 		{
@@ -632,7 +642,7 @@ func TestGeminiModelNewCommand_Execute_EdgeCases(t *testing.T) {
 			checkFunc: func(t *testing.T, ctx neurotypes.Context) {
 				paramCount, err := ctx.GetVariable("#model_param_count")
 				assert.NoError(t, err)
-				assert.Equal(t, "0", paramCount) // No optional parameters
+				assert.Equal(t, "1", paramCount) // Only temperature default
 			},
 		},
 	}
@@ -739,6 +749,9 @@ func setupGeminiModelTestRegistry(t *testing.T, ctx neurotypes.Context) {
 	require.NoError(t, err)
 
 	err = services.GetGlobalRegistry().RegisterService(services.NewStackService())
+	require.NoError(t, err)
+
+	err = services.GetGlobalRegistry().RegisterService(services.NewParameterValidatorService())
 	require.NoError(t, err)
 
 	// Initialize services

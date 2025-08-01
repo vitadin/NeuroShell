@@ -217,7 +217,7 @@ func TestGeminiClient_ConvertMessagesToGemini(t *testing.T) {
 					{Role: "user", Content: "Hello"},
 				},
 			},
-			expectedContentCount: 1, // Only user message (system prompt now in SystemInstruction)
+			expectedContentCount: 1,     // Only user message (system prompt now in SystemInstruction)
 			shouldContainSystem:  false, // System prompt no longer in contents
 		},
 	}
