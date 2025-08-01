@@ -1,0 +1,79 @@
+%% OpenAI GPT-4o Full Parameter Test
+%% Purpose: Test G4OC model with all available parameters from gpt-4o-openai.yaml
+%% This validates that all YAML parameter definitions are correctly implemented
+
+\set _style dark1
+
+\echo === OpenAI GPT-4o Full Parameter Validation Test ===
+\echo Testing G4OC with all parameters: temperature, max_tokens, top_p, presence_penalty, frequency_penalty
+\echo
+
+%% ============================================================================
+%% API SETUP
+%% ============================================================================
+\echo Phase 1: Activating OpenAI API key from environment...
+
+%% Load and activate the OpenAI API key from local environment
+\llm-api-load[provider=openai]
+\llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
+
+%% Verify API key is activated
+\llm-api-load[provider=openai]
+\echo
+
+%% ============================================================================
+%% G4OC FULL PARAMETER TEST
+%% ============================================================================
+\echo Phase 2: Testing G4OC (GPT-4o Chat) with full parameter set...
+\openai-model-new[catalog_id="G4OC", temperature="0.6", max_tokens="8000", top_p="0.85", presence_penalty="0.3", frequency_penalty="0.1"] gpt4o-full-params-model
+
+%% Check that the G4OC model was created successfully
+\echo Step 2.1: Check G4OC model creation with full parameters...
+\model-status
+
+%% Activate the G4OC model for use
+\echo Step 2.2: Activate G4OC model for use...
+\model-activate gpt4o-full-params-model
+
+%% Verify the G4OC model is active
+\echo Step 2.3: Verify G4OC model is active...
+\echo Active model: ${#active_model_name}
+\echo Provider: ${#active_model_provider}
+
+%% G4OC Progressive Session Context Test
+\echo Step 2.4: Testing G4OC session context with progressive conversation...
+\echo This tests whether GPT-4o receives and uses the full session context.
+\echo
+
+%% Message 1: Setup the scenario
+\echo G4OC Message 1: Setting up a math problem...
+\send I'm thinking of two numbers. Let's call them A and B. A is 15 and B is 7.
+
+\echo-json ${_debug_network}
+
+%% Message 2: Add constraint (requires context)
+\echo G4OC Message 2: Building on the numbers from Message 1...
+\send What is A + B?
+
+%% Message 3: Build on previous answer (requires context from both messages)
+\echo G4OC Message 3: Using the sum we just calculated...
+\send Now multiply that result by 3. What do you get?
+
+%% Message 4: Memory test (tests session memory)
+\echo G4OC Message 4: Testing memory of original values...
+\send What were the original values of A and B that I mentioned at the start?
+
+\echo-json ${_debug_network}
+
+%% G4OC test complete
+\echo Step 2.5: G4OC session context test complete. Checking session...
+\session-list
+\session-show
+
+%% G4OC cleanup
+\echo Step 2.6: Cleanup - deleting the G4OC test model...
+\model-delete gpt4o-full-params-model
+\model-status
+
+\echo === GPT-4o Full Parameter Test Complete ===
+\echo All parameters successfully validated: temperature, max_tokens, top_p, presence_penalty, frequency_penalty

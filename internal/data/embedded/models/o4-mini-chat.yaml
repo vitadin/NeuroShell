@@ -30,34 +30,12 @@ parameters:
     required: false
     default: 1.0
     constraints:
-      min: 0.0
-      max: 2.0
-    description: "Controls randomness (0.0=deterministic, 2.0=creative)"
-  - name: max_tokens
+      fixed: 1.0
+    description: "Controls randomness (fixed at 1.0 for this model)"
+  - name: max_completion_tokens
     type: int
     required: false
     constraints:
       min: 1
       max: 100000
     description: "Maximum output tokens"
-  - name: top_p
-    type: float
-    required: false
-    constraints:
-      min: 0.0
-      max: 1.0
-    description: "Nucleus sampling parameter"
-  - name: presence_penalty
-    type: float
-    required: false
-    constraints:
-      min: -2.0
-      max: 2.0
-    description: "Presence penalty (-2.0 to 2.0)"
-  - name: frequency_penalty
-    type: float
-    required: false
-    constraints:
-      min: -2.0
-      max: 2.0
-    description: "Frequency penalty (-2.0 to 2.0)"

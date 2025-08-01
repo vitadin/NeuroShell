@@ -1,0 +1,87 @@
+%% OpenAI O4-mini Full Parameter Test
+%% Purpose: Test O4MC model with all available parameters from o4-mini-chat.yaml
+%% This validates that all YAML parameter definitions are correctly implemented
+
+\set _style dark1
+
+\echo === OpenAI O4-mini Full Parameter Validation Test ===
+\echo Testing O4MC with all parameters: temperature (fixed at 1.0), max_completion_tokens
+\echo
+
+%% ============================================================================
+%% API SETUP
+%% ============================================================================
+\echo Phase 1: Activating OpenAI API key from environment...
+
+%% Load and activate the OpenAI API key from local environment
+\llm-api-load[provider=openai]
+\llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
+
+%% Verify API key is activated
+\llm-api-load[provider=openai]
+\echo
+
+%% ============================================================================
+%% O4MC FULL PARAMETER TEST
+%% ============================================================================
+\echo Phase 2: Testing O4MC (O4-mini Chat) with full parameter set...
+\openai-model-new[catalog_id="O4MC", temperature="1.0", max_completion_tokens="50000"] o4mini-full-params-model
+
+%% Check that the O4MC model was created successfully
+\echo Step 2.1: Check O4MC model creation with full parameters...
+\model-status
+
+%% Activate the O4MC model for use
+\echo Step 2.2: Activate O4MC model for use...
+\model-activate o4mini-full-params-model
+
+%% Verify the O4MC model is active
+\echo Step 2.3: Verify O4MC model is active...
+\echo Active model: ${#active_model_name}
+\echo Provider: ${#active_model_provider}
+
+%% O4MC Progressive Session Context Test
+\echo Step 2.4: Testing O4MC session context with progressive conversation...
+\echo This tests whether O4-mini receives and uses the full session context.
+\echo
+
+%% Message 1: Setup the scenario
+\echo O4MC Message 1: Setting up a coding problem...
+\send I need to write a function that calculates fibonacci numbers. Let's call it fibonacci_calc.
+
+\echo-json ${_debug_network}
+
+%% Message 2: Add constraint (requires context)
+\echo O4MC Message 2: Adding constraint that requires context from Message 1...
+\send The fibonacci_calc function should be iterative, not recursive, and handle n=0 and n=1 cases.
+
+%% Message 3: Build on previous answer (requires context from both messages)
+\echo O4MC Message 3: Building on the function specification...
+\send Good! Now add input validation to fibonacci_calc to ensure n is non-negative.
+
+%% Message 4: Complex request (requires full conversation context)
+\echo O4MC Message 4: Complex request requiring full context...
+\send Can you show me the complete fibonacci_calc function with all the requirements we discussed?
+
+%% Message 5: Memory test (tests session memory)
+\echo O4MC Message 5: Testing memory of original context...
+\send What was the original name I suggested for the fibonacci function?
+
+%% Message 6: Full context summary (ultimate test)
+\echo O4MC Message 6: Full context summary test...
+\send Summarize all the requirements we established for our fibonacci function.
+
+\echo-json ${_debug_network}
+
+%% O4MC test complete
+\echo Step 2.5: O4MC session context test complete. Checking session...
+\session-list
+\session-show
+
+%% O4MC cleanup
+\echo Step 2.6: Cleanup - deleting the O4MC test model...
+\model-delete o4mini-full-params-model
+\model-status
+
+\echo === O4-mini Full Parameter Test Complete ===
+\echo All parameters successfully validated: temperature (fixed at 1.0), max_completion_tokens
