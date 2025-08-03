@@ -104,6 +104,11 @@ func TestClipCommand_Execute_EmptyInput(t *testing.T) {
 }
 
 func TestClipCommand_Execute_BasicText(t *testing.T) {
+	// Skip this test on Linux where clipboard is not available
+	if !clipboardAvailable {
+		t.Skip("Skipping clipboard test on Linux (clipboard not available)")
+	}
+
 	cmd := &ClipCommand{}
 
 	// Capture stdout to check feedback
@@ -162,6 +167,11 @@ func TestClipCommand_Execute_BasicText(t *testing.T) {
 }
 
 func TestClipCommand_Execute_VariableInterpolation(t *testing.T) {
+	// Skip this test on Linux where clipboard is not available
+	if !clipboardAvailable {
+		t.Skip("Skipping clipboard test on Linux (clipboard not available)")
+	}
+
 	// Note: Variable interpolation is handled by the shell before our command executes
 	// So we test with already-interpolated strings
 	cmd := &ClipCommand{}

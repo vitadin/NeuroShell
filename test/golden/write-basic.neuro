@@ -1,33 +1,33 @@
-# Test basic write command functionality
+%% Test basic write command functionality
 
-# Test 1: Basic overwrite mode (default)
+%% Test 1: Basic overwrite mode (default)
 \write[file=test/fixtures/write-test1.txt] Hello World!
 
-# Test 2: Explicit overwrite mode
+%% Test 2: Explicit overwrite mode
 \write[file=test/fixtures/write-test2.txt, mode=overwrite] This is a test file.
 
-# Test 3: Append mode
+%% Test 3: Append mode
 \write[file=test/fixtures/write-test2.txt, mode=append] Appended content.
 
-# Test 4: Write with variable interpolation
+%% Test 4: Write with variable interpolation
 \set[name=NeuroShell]
 \write[file=test/fixtures/write-test3.txt] Welcome to ${name}!
 
-# Test 5: Silent mode
+%% Test 5: Silent mode
 \write[file=test/fixtures/write-test4.txt, silent=true] Silent write test
 
-# Test 6: Empty content
+%% Test 6: Empty content
 \write[file=test/fixtures/write-empty.txt] 
 
-# Test 7: Special characters and unicode
+%% Test 7: Special characters and unicode
 \write[file=test/fixtures/write-unicode.txt] Hello 🌍 with unicode! Special chars: !@#$%
 
-# Test 8: Multiline content
+%% Test 8: Multiline content
 \write[file=test/fixtures/write-multiline.txt] Line 1
 Second line
 Third line
 
-# Verify file contents using cat
+%% Verify file contents using cat
 \cat[path=test/fixtures/write-test1.txt]
 \cat[path=test/fixtures/write-test2.txt]
 \cat[path=test/fixtures/write-test3.txt]

@@ -1,36 +1,36 @@
-# Test write command modes (overwrite vs append)
+%% Test write command modes (overwrite vs append)
 
-# Create initial file with content
+%% Create initial file with content
 \write[file=test/fixtures/write-modes-test.txt] Initial content
 
-# Show initial content
+%% Show initial content
 \echo Initial file content:
 \cat[path=test/fixtures/write-modes-test.txt]
 
-# Overwrite the file (default mode)
+%% Overwrite the file (default mode)
 \write[file=test/fixtures/write-modes-test.txt] Overwritten content
 
-# Show after overwrite
+%% Show after overwrite
 \echo After overwrite:
 \cat[path=test/fixtures/write-modes-test.txt]
 
-# Append to the file
+%% Append to the file
 \write[file=test/fixtures/write-modes-test.txt, mode=append] 
 Additional line 1
 Additional line 2
 
-# Show after append
+%% Show after append
 \echo After append:
 \cat[path=test/fixtures/write-modes-test.txt]
 
-# Test case variations
+%% Test case variations
 \write[file=test/fixtures/write-case-test.txt, mode=OVERWRITE] Uppercase mode
 \write[file=test/fixtures/write-case-test.txt, mode=Append] Mixed case append
 
 \echo Case variation test:
 \cat[path=test/fixtures/write-case-test.txt]
 
-# Test with spaces in mode
+%% Test with spaces in mode
 \write[file=test/fixtures/write-space-test.txt, mode= overwrite ] Mode with spaces
 \write[file=test/fixtures/write-space-test.txt, mode= append ] Append with spaces
 
