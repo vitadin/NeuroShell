@@ -13,6 +13,6 @@ func initClipboard() error {
 }
 
 // writeToClipboard returns an error indicating clipboard is not available
-func writeToClipboard(text string) error {
+func writeToClipboard(_ string) error {
 	return fmt.Errorf("clipboard not available on this platform (Linux without X11)")
 }

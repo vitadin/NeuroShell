@@ -30,6 +30,7 @@ Core Commands:
   \timer               - Start a visual countdown timer for the specified number of seconds
   \try                 - Execute commands with error capture and handling
   \vars                - List variables with optional filtering
+  \write               - Write content to a file with overwrite or append modes
 Session Management:
     Basic Management:
       \session-activate  - Activate session by name or ID with smart matching and auto-activation
