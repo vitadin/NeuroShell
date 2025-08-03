@@ -1,0 +1,6 @@
+%% Test basic clipboard functionality
+\clip Hello World!
+\clip Testing with variable interpolation: ${@user}
+\set[message="Important data"]
+\clip The message is: ${message}
+\clip
