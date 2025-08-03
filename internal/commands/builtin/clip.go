@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.design/x/clipboard"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -85,15 +84,23 @@ func (c *ClipCommand) Execute(_ map[string]string, input string) error {
 		return nil
 	}
 
+	// Check if clipboard is available on this platform
+	if !clipboardAvailable {
+		return c.fallbackToVariable(input, "clipboard not available on this platform")
+	}
+
 	// Initialize clipboard - this is required for the library
-	err := clipboard.Init()
+	err := initClipboard()
 	if err != nil {
 		// Fallback: store in variable if clipboard unavailable
 		return c.fallbackToVariable(input, fmt.Sprintf("clipboard initialization failed: %v", err))
 	}
 
 	// Copy to system clipboard
-	clipboard.Write(clipboard.FmtText, []byte(input))
+	err = writeToClipboard(input)
+	if err != nil {
+		return c.fallbackToVariable(input, fmt.Sprintf("failed to write to clipboard: %v", err))
+	}
 
 	// Provide success feedback with character count
 	fmt.Printf("Copied %d characters to clipboard\n", len(input))

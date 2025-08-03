@@ -316,5 +316,87 @@ func TestClipCommand_CharacterCountAccuracy(t *testing.T) {
 	}
 }
 
+func TestClipCommand_Execute_PlatformSpecific(t *testing.T) {
+	cmd := &ClipCommand{}
+
+	// Setup test context and services
+	ctx := context.NewTestContext()
+	oldRegistry := services.GetGlobalRegistry()
+	services.SetGlobalRegistry(services.NewRegistry())
+	context.SetGlobalContext(ctx)
+
+	// Register variable service
+	err := services.GetGlobalRegistry().RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+	err = services.GetGlobalRegistry().InitializeAll()
+	require.NoError(t, err)
+
+	// Capture stdout
+	oldStdout := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	// Test with actual content
+	err = cmd.Execute(nil, "Platform test content")
+	assert.NoError(t, err)
+
+	// Restore stdout and check output
+	_ = w.Close()
+	os.Stdout = oldStdout
+	output, _ := io.ReadAll(r)
+	outputStr := string(output)
+
+	// On platforms where clipboard is available, should show "Copied"
+	// On platforms where clipboard is not available (Linux), should show fallback behavior
+	if clipboardAvailable {
+		assert.Contains(t, outputStr, "Copied 21 characters to clipboard")
+	} else {
+		// Linux fallback behavior
+		assert.Contains(t, outputStr, "Failed to copy to clipboard: clipboard not available on this platform")
+		assert.Contains(t, outputStr, "Stored 21 characters in _clipboard variable")
+
+		// Verify content was stored in _clipboard variable
+		variableService, err := services.GetGlobalVariableService()
+		require.NoError(t, err)
+		clipboardValue, err := variableService.Get("_clipboard")
+		assert.NoError(t, err)
+		assert.Equal(t, "Platform test content", clipboardValue)
+	}
+
+	// Cleanup
+	t.Cleanup(func() {
+		services.SetGlobalRegistry(oldRegistry)
+		context.ResetGlobalContext()
+	})
+}
+
+func TestClipCommand_ClipboardAvailability(t *testing.T) {
+	// This test documents the expected platform behavior
+	t.Logf("Clipboard available on this platform: %v", clipboardAvailable)
+
+	// Platform-specific expectations
+	if clipboardAvailable {
+		t.Log("Expected: Direct clipboard access available")
+
+		// Test that init function exists and can be called
+		err := initClipboard()
+		// Don't assert success since we might be in a headless environment
+		// but the function should exist and not panic
+		t.Logf("Clipboard init result: %v", err)
+	} else {
+		t.Log("Expected: Fallback to _clipboard variable")
+
+		// Test that init function returns expected error
+		err := initClipboard()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "clipboard not available")
+
+		// Test that write function returns expected error
+		err = writeToClipboard("test")
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "clipboard not available")
+	}
+}
+
 // Interface compliance check
 var _ neurotypes.Command = (*ClipCommand)(nil)
