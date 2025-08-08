@@ -3,13 +3,14 @@ package statemachine
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/commands/builtin"
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // setupStackTestEnvironment creates a test environment with all necessary services

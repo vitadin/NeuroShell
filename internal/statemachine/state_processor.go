@@ -7,12 +7,13 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/charmbracelet/log"
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/charmbracelet/log"
 )
 
 // StateProcessor handles individual command processing through the proven pipeline.

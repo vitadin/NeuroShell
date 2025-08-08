@@ -6,11 +6,12 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"neuroshell/internal/logger"
+	"neuroshell/internal/stringprocessing"
+
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
-	"neuroshell/internal/logger"
-	"neuroshell/internal/stringprocessing"
 )
 
 // MarkdownService provides markdown rendering capabilities for NeuroShell using Glamour.

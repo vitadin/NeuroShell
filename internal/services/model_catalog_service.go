@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"gopkg.in/yaml.v3"
 	"neuroshell/internal/data/embedded"
 	"neuroshell/pkg/neurotypes"
+
+	"gopkg.in/yaml.v3"
 )
 
 // ModelCatalogService provides model catalog operations for NeuroShell.

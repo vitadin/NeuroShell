@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"gopkg.in/yaml.v3"
 	"neuroshell/internal/data/embedded"
 	"neuroshell/pkg/neurotypes"
+
+	"gopkg.in/yaml.v3"
 )
 
 // ProviderCatalogService provides provider catalog operations for NeuroShell.

@@ -4,8 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseInput_BackslashPrefix(t *testing.T) {

@@ -7,11 +7,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/parser"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Command implements the \render command for styling and highlighting text.

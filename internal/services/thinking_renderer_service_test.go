@@ -4,8 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/charmbracelet/lipgloss"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 // MockRenderConfig provides a test implementation of RenderConfig interface.

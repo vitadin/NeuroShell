@@ -3,11 +3,12 @@ package builtin
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 	"neuroshell/pkg/stringprocessing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIfNotCommand_Name(t *testing.T) {

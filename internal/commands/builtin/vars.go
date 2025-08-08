@@ -6,10 +6,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss/list"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/charmbracelet/lipgloss/list"
 )
 
 // VarsCommand implements the \vars command for listing variables with filtering capabilities.

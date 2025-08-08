@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"testing"
 
+	"neuroshell/pkg/neurotypes"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"neuroshell/pkg/neurotypes"
 )
 
 func TestNewOpenAIReasoningClient(t *testing.T) {

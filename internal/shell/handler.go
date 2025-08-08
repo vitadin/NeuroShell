@@ -5,7 +5,6 @@ package shell
 import (
 	"strings"
 
-	"github.com/abiosoft/ishell/v2"
 	_ "neuroshell/internal/commands/assert"   // Import assert commands (init functions)
 	_ "neuroshell/internal/commands/builtin"  // Import for side effects (init functions)
 	_ "neuroshell/internal/commands/llm"      // Import llm commands (init functions)
@@ -17,6 +16,8 @@ import (
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
 	"neuroshell/internal/statemachine"
+
+	"github.com/abiosoft/ishell/v2"
 )
 
 // ProcessInput handles user input from the interactive shell and executes commands.

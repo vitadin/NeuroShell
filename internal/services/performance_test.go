@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"neuroshell/internal/context"
+
+	"github.com/stretchr/testify/require"
 )
 
 // Comprehensive performance tests for service operations
