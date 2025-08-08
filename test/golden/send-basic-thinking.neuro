@@ -1,0 +1,26 @@
+%% Basic send command test with thinking blocks
+%% Tests the core user workflow: just use \send and everything works
+%% This verifies auto-session creation, auto-model creation, and thinking blocks
+
+\set _style dark1
+
+\echo === Basic Send with Thinking Blocks Test ===
+\echo Testing seamless \send workflow with mock LLM thinking blocks
+
+%% Use \send directly - should auto-create session and model
+\echo Testing first message...
+\send Hello, can you help me with a simple question?
+
+\echo Testing follow-up message...
+\send What's the weather like today?
+
+\echo Testing third message to verify conversation flow...
+\send Thanks for your help!
+
+%% Show the results
+\echo Session created by \send command:
+\session-show
+
+\echo Active model created by \send command:
+\get[#active_model_name]
+\echo Model: ${#active_model_name}

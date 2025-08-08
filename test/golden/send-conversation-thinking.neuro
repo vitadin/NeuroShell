@@ -1,0 +1,34 @@
+%% Multi-turn conversation test with thinking blocks
+%% Tests progressive conversation context and thinking block evolution
+%% This verifies that thinking blocks reflect growing conversation history
+
+\set _style dark1
+
+\echo === Send Conversation Flow with Thinking Blocks Test ===
+\echo Testing multi-turn conversation with context-aware thinking blocks
+
+%% Start a focused conversation about a specific topic
+\echo Starting conversation about programming...
+\send I'm learning Python programming. Can you help me understand variables?
+
+\echo Asking follow-up question...
+\send What's the difference between local and global variables in Python?
+
+\echo Getting more specific...
+\send Can you show me an example of variable scope issues?
+
+\echo Adding complexity to the conversation...
+\send How do I avoid common variable scope mistakes in my Python functions?
+
+\echo Final question to test conversation memory...
+\send Based on our discussion about Python variables and scope, what's the best practice for naming variables?
+
+\echo Conversation summary:
+\session-show
+
+\echo Checking conversation context:
+\get[1]
+\echo Latest assistant response length: ${#1} characters
+
+\get[2] 
+\echo Latest user message: ${2}
