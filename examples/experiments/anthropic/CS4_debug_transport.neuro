@@ -1,0 +1,98 @@
+%% Claude Sonnet 4 Debug Transport Test
+%% Purpose: Test CS4 model with debug transport integration
+%% This validates that debug transport captures HTTP requests for Anthropic models
+
+\set _style dark1
+
+\echo === Claude Sonnet 4 Debug Transport Validation Test ===
+\echo Testing CS4 with debug transport to capture HTTP request/response details
+\echo
+
+%% ============================================================================
+%% API SETUP
+%% ============================================================================
+\echo Phase 1: Activating Anthropic API key from environment...
+
+%% Load and activate the Anthropic API key from local environment
+\llm-api-load[provider=anthropic]
+\llm-api-activate[provider=anthropic, key=local.ANTHROPIC_API_KEY]
+
+%% Verify API key is activated
+\llm-api-load[provider=anthropic]
+\echo
+
+%% Create and activate Anthropic client explicitly
+\echo Step 1.1: Creating Anthropic client...
+\anthropic-client-new
+\llm-client-activate ANC
+\echo
+
+%% ============================================================================
+%% CS4 DEBUG TRANSPORT TEST
+%% ============================================================================
+\echo Phase 2: Testing CS4 (Claude Sonnet 4) with debug transport...
+\model-new[catalog_id="CS4", temperature="0.8", max_tokens="4096", top_p="0.95", top_k="50", thinking_budget="8192"] claude-sonnet-4-debug-test
+
+%% Check that the CS4 model was created successfully
+\echo Step 2.1: Check CS4 model creation with parameters...
+\model-status
+
+%% Activate the CS4 model for use
+\echo Step 2.2: Activate CS4 model for use...
+\model-activate claude-sonnet-4-debug-test
+
+%% Verify the CS4 model is active
+\echo Step 2.3: Verify CS4 model is active...
+\echo Active model: ${#active_model_name}
+\echo Provider: ${#active_model_provider}
+
+%% CS4 Progressive Session Context Test with Extended Thinking
+\echo Step 2.4: Testing CS4 session context with progressive conversation and extended thinking...
+\echo This tests whether Claude Sonnet 4 receives and uses the full session context.
+\echo
+
+%% Message 1: Setup a complex reasoning scenario
+\echo CS4 Message 1: Setting up a complex reasoning problem...
+\send I'm working on a logic puzzle. There are 5 houses in a row, each painted a different color (red, blue, green, yellow, white). Each house has a different pet (cat, dog, bird, fish, rabbit). I need to figure out which pet lives in which colored house. Here's my first clue: The red house has a cat.
+
+\echo === Debug Transport Capture (Message 1) ===
+\echo-json ${_debug_network}
+\echo
+
+%% Message 2: Add more constraints (requires context)
+\echo CS4 Message 2: Building on the clue from Message 1...
+\send Great! Now here's the second clue: The blue house is immediately to the left of the house with the dog. Can you start reasoning through what we know so far?
+
+\echo === Debug Transport Capture (Message 2) ===
+\echo-json ${_debug_network}
+\echo
+
+%% Message 3: Build on previous reasoning (requires context from both messages)
+\echo CS4 Message 3: Adding complexity to test extended thinking...
+\send Perfect reasoning! Here's clue 3: The house with the fish is exactly 2 positions away from the green house. Given all our clues so far, what are the possible arrangements? Use your extended thinking to work through this systematically.
+
+\echo === Debug Transport Capture (Message 3) ===
+\echo-json ${_debug_network}
+\echo
+
+%% Message 4: Memory and synthesis test
+\echo CS4 Message 4: Testing memory and synthesis capabilities...
+\send Excellent analysis! Now, can you summarize all the clues I've given you and your current deductions? Also, what additional information would help us solve this puzzle completely?
+
+\echo === Debug Transport Capture (Message 4) ===
+\echo-json ${_debug_network}
+\echo
+
+%% CS4 test complete
+\echo Step 2.5: CS4 debug transport test complete. Checking session...
+\session-list
+\session-show
+
+%% CS4 cleanup
+\echo Step 2.6: Cleanup - deleting the CS4 test model...
+\model-delete claude-sonnet-4-debug-test
+\model-status
+
+\echo === Claude Sonnet 4 Debug Transport Test Complete ===
+\echo Final debug transport capture:
+\echo-json ${_debug_network}
