@@ -1,0 +1,46 @@
+%% Send with explicit model activation test
+%% Tests \send command with pre-activated different model types
+%% This verifies thinking blocks work with various model providers
+
+\set _style dark1
+
+\echo === Send with Model Workflow and Thinking Blocks Test ===
+\echo Testing \send with explicit model activation and thinking blocks
+
+%% Test 1: Send with Claude Sonnet 4 (Anthropic with extended thinking)
+\echo Setting up Anthropic Claude Sonnet 4...
+\anthropic-client-new claude-client
+\get[_client_id]
+\model-new[catalog_id="CS4", thinking_budget=1000, description="Claude with thinking"] claude-model
+\model-activate claude-model
+\echo Active model: ${#active_model_name}
+
+\send Can you analyze this logic problem for me?
+
+%% Test 2: Switch to Gemini model with thinking
+\echo Switching to Gemini model...
+\gemini-client-new gemini-client
+\get[_client_id]
+\model-new[catalog_id="GM25F", thinking_budget=1024, description="Gemini with thinking"] gemini-model
+\model-activate gemini-model
+\echo Active model: ${#active_model_name}
+
+\send What's the difference between recursive and iterative algorithms?
+
+%% Test 3: Switch back to OpenAI reasoning model
+\echo Switching to OpenAI reasoning model...
+\openai-client-new openai-client
+\get[_client_id] 
+\model-new[catalog_id="O1R", description="OpenAI reasoning model"] reasoning-model
+\model-activate reasoning-model
+\echo Active model: ${#active_model_name}
+
+\send Solve this step by step: If I have 3 apples and give away 1, then buy 2 more, how many do I have?
+
+%% Show final session state
+\echo Final conversation summary:
+\session-show
+
+\echo Model information:
+\get[#active_model_name]
+\echo Final active model: ${#active_model_name}

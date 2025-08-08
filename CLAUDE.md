@@ -99,24 +99,13 @@ ${user_variable}        → User-defined (no special prefix)
 
 ### Three-Layer Architecture
 
-```
-┌──────────────────────────────────┐
-│         Command Layer            │
-│  (\send, \set, \get, etc.)      │
-├──────────────────────────────────┤
-│        Service Layer             │
-│  ┌─────────┐ ┌─────────┐       │
-│  │Variable │ │Session  │       │
-│  │Service  │ │Service  │  ...  │
-│  └─────────┘ └─────────┘       │
-├──────────────────────────────────┤
-│        Context Layer             │
-│  • State Store (variables)       │
-│  • Session State                 │
-│  • Agent Connection              │
-│  • OS Interface                  │
-└──────────────────────────────────┘
-```
+NeuroShell implements a clean separation of concerns through three distinct layers:
+
+**Command Layer** (Top) - User-facing commands like `\send`, `\set`, `\get`, `\session-new`, `\model-activate` that parse user input and orchestrate operations across services.
+
+**Service Layer** (Middle) - Core business logic including VariableService for state management, ChatSessionService for conversation handling, ModelService for LLM model management, ClientFactoryService for LLM client creation, and BashService for system command execution.
+
+**Context Layer** (Bottom) - Global state management including variable storage, session persistence, LLM client connections, and system interface abstractions.
 
 ### Layer Responsibilities
 
@@ -150,22 +139,37 @@ ${user_variable}        → User-defined (no special prefix)
 ### Key Interfaces
 
 ```go
-// Simplified interface examples
-type Context interface {
-    GetVariable(name string) (string, error)
-    SetVariable(name string, value string) error
-    GetMessageHistory(n int) []Message
-    GetSessionState() SessionState
-}
-
+// Core service interface - all services implement this
 type Service interface {
     Name() string
-    Initialize(ctx Context) error
+    Initialize() error
+    GetServiceInfo() map[string]interface{}
 }
 
+// Command interface for builtin commands
 type Command interface {
     Name() string
-    Execute(args []string, input string, services ServiceRegistry) error
+    Description() string
+    Usage() string
+    ParseMode() ParseMode
+    Execute(options map[string]string, args []string, registry ServiceRegistry) error
+}
+
+// Global context for state management
+type NeuroContext interface {
+    GetVariable(name string) (string, error)
+    SetVariable(name string, value string) error
+    SetSystemVariable(name string, value string) error
+    GetAllVariables() map[string]string
+    InterpolateVariables(input string) (string, error)
+}
+
+// LLM client interface for provider abstraction
+type LLMClient interface {
+    GetProviderName() string
+    IsConfigured() bool
+    SendChatCompletion(messages []neurotypes.ChatMessage, model string, params map[string]interface{}) (*neurotypes.ChatResponse, error)
+    StreamChatCompletion(messages []neurotypes.ChatMessage, model string, params map[string]interface{}) (<-chan neurotypes.ChatResponse, error)
 }
 ```
 
@@ -176,45 +180,78 @@ type Command interface {
 - **Parser**: participle for command syntax
 - **Configuration**: viper
 
-## 6. Development Phases
+## 6. Current Implementation Status
 
-### Phase 1: Core Shell (MVP)
-- Basic command system
-- Variable interpolation
-- Session management
-- Script execution
+### ✅ Completed Features
+- **Command System**: Full `\command[options] message` syntax with 50+ builtin commands
+- **Multi-Provider LLM Support**: Anthropic Claude, OpenAI GPT/o1, Google Gemini, Moonshot Kimi
+- **Advanced Session Management**: Create, activate, copy, edit, export/import sessions
+- **Model Management**: Catalog-based model creation with provider-specific parameters
+- **Variable System**: User, system (`@`), command output (`_`), and metadata (`#`) variables
+- **Script Execution**: Batch mode with `.neuro` files and comprehensive stdlib
+- **Shell Integration**: `\bash` command with timeout and variable capture
+- **Thinking Blocks**: Provider-specific thinking block rendering for reasoning models
+- **Testing Framework**: Golden file testing with 178+ end-to-end tests
 
-### Phase 2: Enhanced Integration
-- Multi-agent support
-- Advanced templating
-- Conditional execution
-- Error recovery
+### 🚧 Active Development
+- **Performance Optimization**: Benchmarking and optimization of core services
+- **Enhanced Error Handling**: Better error messages and recovery mechanisms
+- **Documentation**: Comprehensive help system and user guides
 
-### Phase 3: Ecosystem
-- Plugin system
-- Package manager for scripts
-- Cloud session sync
-- Team collaboration features
+### 🔮 Future Enhancements
+- **Plugin System**: External command and service plugins
+- **Web Interface**: Browser-based shell for remote access
+- **Team Features**: Shared sessions and collaborative workflows
+- **IDE Integration**: VSCode extension and editor plugins
 
 ## 7. Example Workflows
 
-### Data Analysis
+### Basic LLM Interaction
 ```neuro
-\bash[ls data/*.csv > ${_output}]
-\set[files="${_output}"]
-\send Analyze trends across these files: ${files}
-\set[analysis="${1}"]
-\send Create visualizations for: ${analysis}
-\save[name="quarterly_report"]
+%% Simple conversation with auto-model creation
+\send Hello, can you help me with Python programming?
+\send What's the difference between lists and tuples?
+\session-show  %% View conversation history
 ```
 
-### Code Review
+### Multi-Provider Model Comparison
 ```neuro
-\templates/code_review.neuro
-\bash[git diff main > ${_output}]
-\send Review these changes: ${_output}
-\extract[pattern="LGTM|Needs work", from="${1}", to="decision"]
-\bash[echo "${decision}" > review_status.txt]
+%% Compare responses across different LLM providers
+\anthropic-client-new claude-client
+\model-new[catalog_id="CS4", thinking_budget=1000] claude-model
+\model-activate claude-model
+\send Explain quantum computing in simple terms
+
+\gemini-client-new gemini-client  
+\model-new[catalog_id="GM25P", thinking_budget=2048] gemini-model
+\model-activate gemini-model
+\send Explain quantum computing in simple terms
+
+%% Compare the responses
+\echo Claude response: ${1}
+\echo Gemini response: ${3}
+```
+
+### Data Analysis Workflow
+```neuro
+%% Analyze data with LLM assistance
+\session-new[system="You are a data analyst expert"] analysis-session
+\bash[head -10 data.csv > ${_output}]
+\send Here's a sample of my dataset: ${_output}. What insights can you provide?
+\bash[python analyze.py > ${_output}]
+\send Based on this analysis output: ${_output}, what recommendations do you have?
+\session-export[format="json"] analysis_results.json
+```
+
+### Code Review Assistant
+```neuro
+%% Set up specialized session for code review
+\session-new[system="You are a senior software engineer doing code review"] review-session
+\bash[git diff HEAD~1 > ${_output}]
+\send Please review these changes: ${_output}
+\send What potential issues or improvements do you see?
+\get[1]  %% Get the review feedback
+\bash[echo "${1}" > code_review.md]  %% Save review to file
 ```
 
 ## 8. Success Metrics
@@ -231,6 +268,53 @@ type Command interface {
 - Multi-modal support (images, files)
 - Distributed session state
 
-## 10.
+## 10. Development Workflow
 
-Everytime run testing, make sure you add `EDITOR=echo` before calling testing command (e.g. `go test`)
+### Building and Testing
+
+For development, always run:
+
+```bash
+# Build all binaries with clean lint and format
+just build
+
+# Run comprehensive test suite
+just test
+```
+
+### Testing Requirements
+
+When running Go tests directly, always prefix with `EDITOR=echo` to prevent editor popups:
+
+```bash
+# Correct way to run Go tests
+EDITOR=echo go test ./internal/services/...
+EDITOR=echo go test -v ./internal/commands/builtin/...
+
+# Available test commands
+just test-unit        # Service and utility tests
+just test-commands    # Command tests  
+just test-e2e         # End-to-end golden file tests
+just test-all-units   # All unit tests combined
+```
+
+### Code Quality
+
+```bash
+just format    # Format code and organize imports
+just lint      # Run all linters and formatters
+just imports   # Organize Go imports only
+```
+
+### End-to-End Testing
+
+```bash
+# Run specific e2e test
+./bin/neurotest run send-basic-thinking
+
+# Record new test case
+./bin/neurotest record my-new-test
+
+# Run all e2e tests
+just test-e2e
+```

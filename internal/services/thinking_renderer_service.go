@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/termenv"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
 // ThinkingRendererService provides sophisticated rendering capabilities for thinking blocks.

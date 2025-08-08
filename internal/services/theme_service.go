@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/list"
-	"gopkg.in/yaml.v3"
 	"neuroshell/internal/data/embedded"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/list"
+	"gopkg.in/yaml.v3"
 )
 
 // ThemeService provides theme management for NeuroShell styling.

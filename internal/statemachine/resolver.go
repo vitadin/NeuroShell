@@ -6,11 +6,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/charmbracelet/log"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/data/embedded"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/charmbracelet/log"
 )
 
 // CommandResolver handles command resolution through the priority system.

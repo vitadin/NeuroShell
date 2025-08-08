@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/log"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
+
+	"github.com/charmbracelet/log"
 )
 
 // TryHandler manages try block error boundaries and error capture.

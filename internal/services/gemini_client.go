@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"strings"
 
-	"google.golang.org/genai"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
+
+	"google.golang.org/genai"
 )
 
 // GeminiThinkingInfo contains information about thinking blocks found in Gemini responses.

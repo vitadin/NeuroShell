@@ -1,0 +1,46 @@
+%% Send with session management test
+%% Tests \send command with explicit session creation and management
+%% This verifies session-specific thinking blocks and context isolation
+
+\set _style dark1
+
+\echo === Send with Session Management and Thinking Blocks Test ===
+\echo Testing \send with named sessions and context management
+
+%% Test 1: Create a specific session for math problems
+\echo Creating math session...
+\session-new[system="You are a math tutor who explains problems step by step."] math-session
+\session-activate math-session
+\echo Active session: ${#active_session_name}
+
+\send What's the area of a circle with radius 5?
+
+\send Now, what's the circumference of the same circle?
+
+%% Test 2: Create a different session for programming questions
+\echo Creating programming session...
+\session-new[system="You are a programming mentor who helps with coding questions."] code-session
+\session-activate code-session  
+\echo Active session: ${#active_session_name}
+
+\send How do I iterate through a list in Python?
+
+\send What's the difference between append() and extend() methods?
+
+%% Test 3: Switch back to math session to test context isolation
+\echo Switching back to math session...
+\session-activate math-session
+\echo Active session: ${#active_session_name}
+
+\send Earlier we calculated a circle with radius 5. What would be the area if the radius was 10?
+
+%% Show both session states
+\echo Math session summary:
+\session-show[session=math-session]
+
+\echo Programming session summary:
+\session-show[session=code-session]
+
+\echo Current active session:
+\get[#active_session_name]
+\echo Active: ${#active_session_name}

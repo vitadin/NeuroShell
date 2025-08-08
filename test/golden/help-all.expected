@@ -60,6 +60,7 @@ System & Tools:
   \check               - Check service initialization status and availability
   \clip                - Copy text to system clipboard
   \editor              - Open external editor for composing input
+  \license             - Display NeuroShell license information and store license details in system variables
   \render              - Style and highlight text using lipgloss with keyword support
   \version             - Show NeuroShell version information and store details in system variables
 Testing & Debugging:

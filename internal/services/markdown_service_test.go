@@ -5,11 +5,12 @@ import (
 	"strings"
 	"testing"
 
+	"neuroshell/internal/context"
+
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"neuroshell/internal/context"
 )
 
 func TestMarkdownService_Name(t *testing.T) {

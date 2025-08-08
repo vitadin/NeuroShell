@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/log"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
+
+	"github.com/charmbracelet/log"
 )
 
 // SilentHandler manages silent block boundaries and output suppression.

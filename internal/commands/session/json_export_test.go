@@ -6,11 +6,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	neuroshellcontext "neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestJSONExportCommand_Name(t *testing.T) {

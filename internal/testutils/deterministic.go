@@ -7,8 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/google/uuid"
 )
 
 var (

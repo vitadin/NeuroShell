@@ -6,11 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/termenv"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
 // CallCommand implements the \llm-call command for orchestrating LLM API calls.

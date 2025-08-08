@@ -9,9 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"neuroshell/internal/version"
+
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
-	"neuroshell/internal/version"
 )
 
 var (

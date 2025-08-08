@@ -5,12 +5,13 @@ package statemachine
 
 import (
 	"fmt"
-	"github.com/charmbracelet/log"
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
 	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/charmbracelet/log"
 )
 
 // StackMachine implements the stack-based execution engine for NeuroShell.

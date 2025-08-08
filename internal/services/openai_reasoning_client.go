@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"neuroshell/internal/logger"
+	"neuroshell/pkg/neurotypes"
+
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
 	"github.com/openai/openai-go/packages/param"
 	"github.com/openai/openai-go/responses"
 	"github.com/openai/openai-go/shared"
-	"neuroshell/internal/logger"
-	"neuroshell/pkg/neurotypes"
 )
 
 // OpenAIReasoningClient implements the LLMClient interface with dual API support.

@@ -177,7 +177,7 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 	systemCommands := map[string]bool{
 		"check": true, "clip": true,
 
-		"editor": true, "render": true, "version": true, "change-log-show": true,
+		"editor": true, "render": true, "version": true, "license": true, "change-log-show": true,
 	}
 
 	modelCommands := map[string]bool{

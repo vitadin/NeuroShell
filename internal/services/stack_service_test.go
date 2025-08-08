@@ -3,9 +3,10 @@ package services
 import (
 	"testing"
 
+	"neuroshell/internal/context"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"neuroshell/internal/context"
 )
 
 func TestNewStackService(t *testing.T) {

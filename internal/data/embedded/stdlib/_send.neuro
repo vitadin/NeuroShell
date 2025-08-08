@@ -19,7 +19,7 @@
 
 %% Step 3: Ensure active model - create default if no active model
 \silent \get[#active_model_name]
-\silent \if-not[condition="${#active_model_name}"] \model-new[catalog_id="O4M"] default_model
+\silent \if-not[condition="${#active_model_name}"] \model-new[catalog_id="O4MC"] default_model
 
 %% Step 4: Ensure active client is available 
 %% Since we have an active model, we should have an active client ID available

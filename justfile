@@ -22,6 +22,11 @@ default:
     @echo "  ensure-build      - Ensure binaries are built (alias for build-if-needed)"
     @echo "  build-all         - Build for multiple platforms"
     @echo ""
+    @echo "Code Quality:"
+    @echo "  format            - Format Go code and organize imports"
+    @echo "  imports           - Organize Go imports only"
+    @echo "  lint              - Run all linters and formatting"
+    @echo ""
     @echo "CI/CD Commands:"
     @echo "  check-ci          - Run all CI checks locally (fast, avoids rebuilds)"
     @echo "  check-ci-clean    - Run all CI checks with clean rebuild"
@@ -243,10 +248,49 @@ test-coverage-check:
         exit 1; \
     fi
 
+# Format Go code and organize imports
+format:
+    @echo "Formatting Go code and organizing imports..."
+    @if ! command -v goimports >/dev/null 2>&1; then \
+        echo "Installing goimports..."; \
+        go install golang.org/x/tools/cmd/goimports@latest; \
+    fi
+    @if command -v goimports >/dev/null 2>&1; then \
+        goimports -w .; \
+    elif [ -f "$(go env GOPATH)/bin/goimports" ]; then \
+        $(go env GOPATH)/bin/goimports -w .; \
+    elif [ -f "$HOME/go/bin/goimports" ]; then \
+        $HOME/go/bin/goimports -w .; \
+    else \
+        echo "❌ goimports not found after installation"; \
+        exit 1; \
+    fi
+    gofmt -s -w .
+    @echo "Code formatting complete"
+
+# Organize imports only (without other formatting)
+imports:
+    @echo "Organizing Go imports..."
+    @if ! command -v goimports >/dev/null 2>&1; then \
+        echo "Installing goimports..."; \
+        go install golang.org/x/tools/cmd/goimports@latest; \
+    fi
+    @if command -v goimports >/dev/null 2>&1; then \
+        goimports -w .; \
+    elif [ -f "$(go env GOPATH)/bin/goimports" ]; then \
+        $(go env GOPATH)/bin/goimports -w .; \
+    elif [ -f "$HOME/go/bin/goimports" ]; then \
+        $HOME/go/bin/goimports -w .; \
+    else \
+        echo "❌ goimports not found after installation"; \
+        exit 1; \
+    fi
+    @echo "Import organization complete"
+
 # Run linting and formatting
 lint:
     @echo "Running linters..."
-    gofmt -s -w .
+    just format
     go vet ./...
     @echo "Running golangci-lint..."
     @if ! command -v golangci-lint >/dev/null 2>&1; then \

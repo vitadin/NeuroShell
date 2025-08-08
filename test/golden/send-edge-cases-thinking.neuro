@@ -1,0 +1,47 @@
+%% Send edge cases test with thinking blocks
+%% Tests \send command with various edge cases and special characters
+%% This verifies robust thinking block handling in unusual scenarios
+
+\set _style dark1
+
+\echo === Send Edge Cases with Thinking Blocks Test ===
+\echo Testing \send with edge cases and special content
+
+%% Test 1: Long message
+\echo Testing with long message...
+\send This is a very long message that contains multiple sentences and ideas to test how the thinking blocks handle longer input text. The message includes various concepts like programming, mathematics, science, and general knowledge questions. It should trigger thinking blocks that can process and reason about longer content while maintaining readability and proper formatting. This tests the system's ability to handle substantial user input without breaking the thinking block rendering or conversation flow.
+
+%% Test 2: Special characters and symbols  
+\echo Testing with special characters...
+\send Hello! Can you help me understand these symbols: @#$%^&*()_+-=[]{}|;':\",./<>?~ and émojis like café, résumé, naïve?
+
+%% Test 3: Code snippets in message
+\echo Testing with code content...
+\send Here's a Python function: def hello_world(): print("Hello, World!") return True. Can you explain how this works?
+
+%% Test 4: Mathematical expressions
+\echo Testing with math expressions...
+\send Calculate: (2x + 3y = 15) and (x - y = 1) where x, y ∈ ℝ. Also, what's ∫(x² + 2x + 1)dx?
+
+%% Test 5: Multiline-style content (using escape sequences)
+\echo Testing multiline content...
+\send This message has multiple lines:\nLine 1: Introduction\nLine 2: Main content\nLine 3: Conclusion\nHow do you process this structure?
+
+%% Test 6: Mixed languages and Unicode
+\echo Testing Unicode and mixed languages...
+\send Hello 世界! Bonjour le monde! ¿Hóla mundo? Привет мир! Can you respond in multiple languages?
+
+%% Test 7: Empty follow-up (test minimal input)
+\echo Testing with very short message...
+\send Yes.
+
+%% Show final state
+\echo Final session summary:
+\session-show
+
+\echo Message history check:
+\get[1]
+\echo Latest response length: ${#1} chars
+
+\get[2]
+\echo Latest user message was: ${2}

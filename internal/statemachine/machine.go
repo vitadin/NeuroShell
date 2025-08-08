@@ -3,10 +3,11 @@
 package statemachine
 
 import (
-	"github.com/charmbracelet/log"
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/charmbracelet/log"
 )
 
 // StateMachine provides a simple driver interface for the stack-based execution engine.

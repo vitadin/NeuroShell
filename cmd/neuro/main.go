@@ -7,12 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/abiosoft/ishell/v2"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/chzyer/readline"
-	"github.com/muesli/termenv"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	_ "neuroshell/internal/commands/assert"  // Import assert commands (init functions)
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
 	_ "neuroshell/internal/commands/render"  // Import render commands (init functions)
@@ -23,6 +17,13 @@ import (
 	"neuroshell/internal/shell"
 	"neuroshell/internal/statemachine"
 	"neuroshell/internal/version"
+
+	"github.com/abiosoft/ishell/v2"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/chzyer/readline"
+	"github.com/muesli/termenv"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -241,6 +242,7 @@ func runShell(_ *cobra.Command, _ []string) {
 	sh.DeleteCmd("help")
 
 	sh.Println(fmt.Sprintf("Neuro Shell v%s - LLM-integrated shell environment", version.GetVersion()))
+	sh.Println("Licensed under LGPL v3 (\\license for details)")
 	sh.Println("Type '\\help' for Neuro commands, Ctrl+E for editor, or '\\exit' to quit.")
 
 	sh.NotFound(shell.ProcessInput)

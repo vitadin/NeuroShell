@@ -3,10 +3,11 @@ package builtin
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"neuroshell/internal/context"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTryCommand_Name(t *testing.T) {

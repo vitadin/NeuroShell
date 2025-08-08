@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/openai/openai-go"
-	"github.com/openai/openai-go/option"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
+
+	"github.com/openai/openai-go"
+	"github.com/openai/openai-go/option"
 )
 
 // OpenAIClient implements the LLMClient interface for OpenAI's API.
