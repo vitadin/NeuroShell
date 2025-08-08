@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
 )
@@ -253,6 +254,18 @@ type DefaultRenderConfig struct {
 
 // GetStyle returns a basic lipgloss style for the given element.
 func (c *DefaultRenderConfig) GetStyle(element string) lipgloss.Style {
+	// Check if colors should be disabled
+	if lipgloss.ColorProfile() == termenv.Ascii {
+		// Return style without colors
+		switch element {
+		case "italic":
+			return lipgloss.NewStyle().Italic(true)
+		default:
+			return lipgloss.NewStyle()
+		}
+	}
+
+	// Normal colored styles
 	switch element {
 	case "info":
 		return lipgloss.NewStyle().Foreground(lipgloss.Color("244")) // Medium gray

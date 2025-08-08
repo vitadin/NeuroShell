@@ -7,6 +7,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/charmbracelet/glamour"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/stringprocessing"
 )
@@ -211,6 +213,11 @@ func (m *MarkdownService) getCurrentTheme() string {
 
 // mapThemeToGlamourStyle maps NeuroShell theme names to Glamour styles.
 func (m *MarkdownService) mapThemeToGlamourStyle(themeName string) string {
+	// Check if colors should be disabled (--no-color flag or NO_COLOR environment variable)
+	if lipgloss.ColorProfile() == termenv.Ascii {
+		return "notty" // Plain text, no colors
+	}
+
 	switch strings.ToLower(themeName) {
 	case "dark", "dark1":
 		return "dark"

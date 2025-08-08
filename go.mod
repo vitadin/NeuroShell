@@ -12,6 +12,7 @@ require (
 	github.com/chzyer/readline v1.5.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
+	github.com/muesli/termenv v0.16.0
 	github.com/openai/openai-go v1.8.3
 	github.com/sergi/go-diff v1.4.0
 	github.com/spf13/cobra v1.9.1
@@ -59,7 +60,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.27 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
-	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect

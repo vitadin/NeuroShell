@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"neuroshell/internal/context"
@@ -172,7 +174,13 @@ func TestMarkdownService_MapThemeToGlamourStyle(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.themeName, func(t *testing.T) {
 			result := service.mapThemeToGlamourStyle(tc.themeName)
-			assert.Equal(t, tc.expectedStyle, result)
+
+			// If color profile is ASCII (no color), all themes should return "notty"
+			if lipgloss.ColorProfile() == termenv.Ascii {
+				assert.Equal(t, "notty", result, "When color profile is ASCII, should always return notty")
+			} else {
+				assert.Equal(t, tc.expectedStyle, result)
+			}
 		})
 	}
 }

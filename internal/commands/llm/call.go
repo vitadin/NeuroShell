@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -610,24 +611,42 @@ func (c *CommandRenderConfig) GetStyle(element string) lipgloss.Style {
 		return lipgloss.NewStyle()
 	}
 
+	// Get the base style from theme
+	var baseStyle lipgloss.Style
 	switch element {
 	case "info":
-		return c.theme.Info
+		baseStyle = c.theme.Info
 	case "italic":
-		return c.theme.Italic
+		baseStyle = c.theme.Italic
 	case "background":
-		return c.theme.Background
+		baseStyle = c.theme.Background
 	case "warning":
-		return c.theme.Warning
+		baseStyle = c.theme.Warning
 	case "highlight":
-		return c.theme.Highlight
+		baseStyle = c.theme.Highlight
 	case "bold":
-		return c.theme.Bold
+		baseStyle = c.theme.Bold
 	case "underline":
-		return c.theme.Underline
+		baseStyle = c.theme.Underline
 	default:
-		return c.theme.Info // Default to info style
+		baseStyle = c.theme.Info // Default to info style
 	}
+
+	// Check if colors should be disabled (NO_COLOR environment variable or --no-color flag)
+	// This respects the global color profile setting
+	if lipgloss.ColorProfile() == termenv.Ascii {
+		// Strip all colors from the style, keeping only formatting
+		return lipgloss.NewStyle().
+			Bold(baseStyle.GetBold()).
+			Italic(baseStyle.GetItalic()).
+			Underline(baseStyle.GetUnderline()).
+			Strikethrough(baseStyle.GetStrikethrough()).
+			Reverse(baseStyle.GetReverse()).
+			Blink(baseStyle.GetBlink()).
+			Faint(baseStyle.GetFaint())
+	}
+
+	return baseStyle
 }
 
 // GetTheme returns the current theme name.

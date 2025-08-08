@@ -8,7 +8,9 @@ import (
 	"path/filepath"
 
 	"github.com/abiosoft/ishell/v2"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/chzyer/readline"
+	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	_ "neuroshell/internal/commands/assert"  // Import assert commands (init functions)
@@ -27,6 +29,7 @@ var (
 	logLevel    string
 	logFile     string
 	testMode    bool
+	noColor     bool
 	showVersion bool
 )
 
@@ -92,6 +95,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "", "Set log level (debug|info|warn|error) [default: info]")
 	rootCmd.PersistentFlags().StringVar(&logFile, "log-file", "", "Write logs to file instead of stderr")
 	rootCmd.PersistentFlags().BoolVar(&testMode, "test-mode", false, "Run in deterministic test mode")
+	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colored output")
 	rootCmd.PersistentFlags().BoolVar(&showVersion, "version", false, "Show version information")
 
 	// Add version command flags
@@ -125,6 +129,11 @@ func initConfig() {
 	if err := logger.Configure(logLevel, logFile, testMode); err != nil {
 		fmt.Fprintf(os.Stderr, "Error configuring logger: %v\n", err)
 		os.Exit(1)
+	}
+
+	// Configure lipgloss color output based on CLI flags, environment, and test mode
+	if noColor || testMode || os.Getenv("NO_COLOR") != "" {
+		lipgloss.SetColorProfile(termenv.Ascii)
 	}
 }
 

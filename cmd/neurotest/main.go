@@ -495,7 +495,7 @@ func runNeuroScript(scriptPath string) (string, error) {
 	}
 
 	// Use neuro batch command to run the script
-	cmd := exec.Command(neurocmd, "batch", absPath, "--test-mode")
+	cmd := exec.Command(neurocmd, "batch", absPath, "--test-mode", "--no-color")
 
 	// Set environment variables for consistent testing
 	cmd.Env = append(os.Environ(),
