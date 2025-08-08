@@ -84,32 +84,13 @@ func (c *GeminiClient) initializeClientIfNeeded() error {
 func (c *GeminiClient) SendChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (string, error) {
 	logger.Debug("Gemini SendChatCompletion starting", "model", modelConfig.BaseModel)
 
-	// Initialize client if needed
-	if err := c.initializeClientIfNeeded(); err != nil {
-		return "", fmt.Errorf("failed to initialize Gemini client: %w", err)
-	}
-
-	// Convert session messages to Gemini format
-	contents := c.convertMessagesToGemini(session)
-	logger.Debug("Messages converted", "content_count", len(contents))
-
-	// Build generation config from model parameters and session
-	config := c.buildGenerationConfig(modelConfig, session)
-
-	// Send request to Gemini
-	ctx := context.Background()
-	result, err := c.client.Models.GenerateContent(
-		ctx,
-		modelConfig.BaseModel,
-		contents,
-		config,
-	)
+	// Use shared request logic to get raw response
+	result, err := c.sendChatCompletionRequest(session, modelConfig)
 	if err != nil {
-		logger.Error("Gemini request failed", "error", err)
-		return "", fmt.Errorf("gemini request failed: %w", err)
+		return "", err
 	}
 
-	// Process response with thinking blocks
+	// Process response with formatted thinking (traditional processing)
 	content, thinkingInfo := c.processGeminiResponse(result)
 	if content == "" {
 		logger.Error("No content in Gemini response")
@@ -120,11 +101,9 @@ func (c *GeminiClient) SendChatCompletion(session *neurotypes.ChatSession, model
 	return content, nil
 }
 
-// SendStructuredCompletion sends a chat completion request to Google Gemini and returns structured response.
-// This method separates thinking blocks from regular text content for proper rendering control.
-func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
-	logger.Debug("Gemini SendStructuredCompletion starting", "model", modelConfig.BaseModel)
-
+// sendChatCompletionRequest handles the core request logic shared by both SendChatCompletion and SendStructuredCompletion.
+// Returns the raw Gemini response for processing.
+func (c *GeminiClient) sendChatCompletionRequest(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*genai.GenerateContentResponse, error) {
 	// Initialize client if needed
 	if err := c.initializeClientIfNeeded(); err != nil {
 		return nil, fmt.Errorf("failed to initialize Gemini client: %w", err)
@@ -148,6 +127,20 @@ func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession,
 	if err != nil {
 		logger.Error("Gemini request failed", "error", err)
 		return nil, fmt.Errorf("gemini request failed: %w", err)
+	}
+
+	return result, nil
+}
+
+// SendStructuredCompletion sends a chat completion request to Google Gemini and returns structured response.
+// This method reuses SendChatCompletion logic and post-processes the response to separate thinking blocks.
+func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	logger.Debug("Gemini SendStructuredCompletion starting", "model", modelConfig.BaseModel)
+
+	// Use shared request logic to get raw response
+	result, err := c.sendChatCompletionRequest(session, modelConfig)
+	if err != nil {
+		return nil, err
 	}
 
 	// Process response with structured thinking block extraction

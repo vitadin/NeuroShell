@@ -79,62 +79,19 @@ func (c *AnthropicClient) initializeClientIfNeeded() error {
 func (c *AnthropicClient) SendChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (string, error) {
 	logger.Debug("Anthropic SendChatCompletion starting", "model", modelConfig.BaseModel)
 
-	// Initialize client if needed
-	if err := c.initializeClientIfNeeded(); err != nil {
-		return "", fmt.Errorf("failed to initialize Anthropic client: %w", err)
-	}
-
-	// Convert session messages to Anthropic format
-	messages, additionalSystemInstructions := c.convertMessagesToAnthropic(session)
-	logger.Debug("Messages converted", "message_count", len(messages))
-
-	// Build message parameters - use BetaMessageNewParams for thinking support
-	params := anthropic.BetaMessageNewParams{
-		Model:     anthropic.Model(modelConfig.BaseModel),
-		MaxTokens: 1024, // Default, will be overridden by parameters if set
-		Messages:  messages,
-	}
-
-	// Add system prompt if present
-	var systemPrompt string
-	if session.SystemPrompt != "" {
-		systemPrompt = session.SystemPrompt
-	}
-
-	// Combine with any additional system instructions from conversation
-	if additionalSystemInstructions != "" {
-		if systemPrompt != "" {
-			systemPrompt += "\n\n" + additionalSystemInstructions
-		} else {
-			systemPrompt = additionalSystemInstructions
-		}
-	}
-
-	if systemPrompt != "" {
-		params.System = []anthropic.BetaTextBlockParam{
-			{Text: systemPrompt},
-		}
-		logger.Debug("System prompt added", "system_prompt", systemPrompt)
-	}
-
-	// Apply other model parameters
-	c.applyModelParameters(&params, modelConfig)
-
-	// Send request using beta API for thinking support
-	logger.Debug("Sending Anthropic beta request", "model", modelConfig.BaseModel)
-	message, err := c.client.Beta.Messages.New(context.Background(), params)
+	// Use shared request logic to get raw response
+	message, err := c.sendChatCompletionRequest(session, modelConfig)
 	if err != nil {
-		logger.Error("Anthropic request failed", "error", err)
-		return "", fmt.Errorf("anthropic request failed: %w", err)
+		return "", err
 	}
 
-	// Extract response content
+	// Extract response content with formatted thinking (traditional processing)
 	if len(message.Content) == 0 {
 		logger.Error("No response content returned")
 		return "", fmt.Errorf("no response content returned")
 	}
 
-	// Process all content blocks (text, thinking, redacted_thinking)
+	// Process all content blocks (text, thinking, redacted_thinking) with formatting
 	content, thinkingInfo := c.processResponseBlocks(message.Content)
 
 	if content == "" {
@@ -146,11 +103,9 @@ func (c *AnthropicClient) SendChatCompletion(session *neurotypes.ChatSession, mo
 	return content, nil
 }
 
-// SendStructuredCompletion sends a chat completion request to Anthropic and returns structured response.
-// This method separates thinking blocks from regular text content for proper rendering control.
-func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
-	logger.Debug("Anthropic SendStructuredCompletion starting", "model", modelConfig.BaseModel)
-
+// sendChatCompletionRequest handles the core request logic shared by both SendChatCompletion and SendStructuredCompletion.
+// Returns the raw Anthropic message response for processing.
+func (c *AnthropicClient) sendChatCompletionRequest(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*anthropic.BetaMessage, error) {
 	// Initialize client if needed
 	if err := c.initializeClientIfNeeded(); err != nil {
 		return nil, fmt.Errorf("failed to initialize Anthropic client: %w", err)
@@ -200,7 +155,26 @@ func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSessi
 		return nil, fmt.Errorf("anthropic request failed: %w", err)
 	}
 
-	// Extract response content and thinking blocks
+	return message, nil
+}
+
+// SendStructuredCompletion sends a chat completion request to Anthropic and returns structured response.
+// This method reuses SendChatCompletion logic and post-processes the response to separate thinking blocks.
+func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	logger.Debug("Anthropic SendStructuredCompletion starting", "model", modelConfig.BaseModel)
+
+	// Initialize client if needed
+	if err := c.initializeClientIfNeeded(); err != nil {
+		return nil, fmt.Errorf("failed to initialize Anthropic client: %w", err)
+	}
+
+	// Reuse the core logic from SendChatCompletion but return raw response blocks for structured processing
+	message, err := c.sendChatCompletionRequest(session, modelConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract response content and thinking blocks separately (structured processing)
 	if len(message.Content) == 0 {
 		logger.Error("No response content returned")
 		return nil, fmt.Errorf("no response content returned")

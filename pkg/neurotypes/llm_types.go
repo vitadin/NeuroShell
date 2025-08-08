@@ -31,17 +31,18 @@ type ThinkingBlock struct {
 // and provides a common way to interact with them.
 type LLMClient interface {
 	// SendChatCompletion sends a chat completion request and returns the full response.
-	// Deprecated: Use SendStructuredCompletion for better thinking content separation.
+	// This is the core method that handles the actual LLM API communication.
+	// Response includes both thinking content and regular text formatted together.
 	SendChatCompletion(session *ChatSession, model *ModelConfig) (string, error)
 
 	// StreamChatCompletion sends a streaming chat completion request.
 	// It returns a channel that receives response chunks as they arrive.
-	// Deprecated: Will be replaced with structured streaming in future versions.
+	// This is the core streaming method for real-time response delivery.
 	StreamChatCompletion(session *ChatSession, model *ModelConfig) (<-chan StreamChunk, error)
 
 	// SendStructuredCompletion sends a chat completion request and returns structured response.
 	// This separates thinking/reasoning content from regular text for proper rendering control.
-	// Returns an error if the client doesn't support structured responses.
+	// Internally uses SendChatCompletion and processes the response to extract thinking blocks.
 	SendStructuredCompletion(session *ChatSession, model *ModelConfig) (*StructuredLLMResponse, error)
 
 	// GetProviderName returns the name of the LLM provider (e.g., "openai", "anthropic").
