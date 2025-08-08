@@ -146,6 +146,84 @@ func (c *AnthropicClient) SendChatCompletion(session *neurotypes.ChatSession, mo
 	return content, nil
 }
 
+// SendStructuredCompletion sends a chat completion request to Anthropic and returns structured response.
+// This method separates thinking blocks from regular text content for proper rendering control.
+func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	logger.Debug("Anthropic SendStructuredCompletion starting", "model", modelConfig.BaseModel)
+
+	// Initialize client if needed
+	if err := c.initializeClientIfNeeded(); err != nil {
+		return nil, fmt.Errorf("failed to initialize Anthropic client: %w", err)
+	}
+
+	// Convert session messages to Anthropic format
+	messages, additionalSystemInstructions := c.convertMessagesToAnthropic(session)
+	logger.Debug("Messages converted", "message_count", len(messages))
+
+	// Build message parameters - use BetaMessageNewParams for thinking support
+	params := anthropic.BetaMessageNewParams{
+		Model:     anthropic.Model(modelConfig.BaseModel),
+		MaxTokens: 1024, // Default, will be overridden by parameters if set
+		Messages:  messages,
+	}
+
+	// Add system prompt if present
+	var systemPrompt string
+	if session.SystemPrompt != "" {
+		systemPrompt = session.SystemPrompt
+	}
+
+	// Combine with any additional system instructions from conversation
+	if additionalSystemInstructions != "" {
+		if systemPrompt != "" {
+			systemPrompt += "\n\n" + additionalSystemInstructions
+		} else {
+			systemPrompt = additionalSystemInstructions
+		}
+	}
+
+	if systemPrompt != "" {
+		params.System = []anthropic.BetaTextBlockParam{
+			{Text: systemPrompt},
+		}
+		logger.Debug("System prompt added", "system_prompt", systemPrompt)
+	}
+
+	// Apply other model parameters
+	c.applyModelParameters(&params, modelConfig)
+
+	// Send request using beta API for thinking support
+	logger.Debug("Sending Anthropic beta request", "model", modelConfig.BaseModel)
+	message, err := c.client.Beta.Messages.New(context.Background(), params)
+	if err != nil {
+		logger.Error("Anthropic request failed", "error", err)
+		return nil, fmt.Errorf("anthropic request failed: %w", err)
+	}
+
+	// Extract response content and thinking blocks
+	if len(message.Content) == 0 {
+		logger.Error("No response content returned")
+		return nil, fmt.Errorf("no response content returned")
+	}
+
+	// Process all content blocks and extract thinking blocks separately
+	textContent, thinkingBlocks := c.processResponseBlocksStructured(message.Content)
+
+	if textContent == "" {
+		logger.Error("Empty response content")
+		return nil, fmt.Errorf("empty response content")
+	}
+
+	// Create structured response
+	structuredResponse := &neurotypes.StructuredLLMResponse{
+		TextContent:    textContent,
+		ThinkingBlocks: thinkingBlocks,
+	}
+
+	logger.Debug("Anthropic structured response received", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))
+	return structuredResponse, nil
+}
+
 // SetDebugTransport sets the HTTP transport for network debugging.
 func (c *AnthropicClient) SetDebugTransport(transport http.RoundTripper) {
 	c.debugTransport = transport
@@ -357,4 +435,51 @@ func (c *AnthropicClient) processResponseBlocks(blocks []anthropic.BetaContentBl
 	}
 
 	return content, info
+}
+
+// processResponseBlocksStructured processes all content blocks from Anthropic beta response for structured output.
+// Separates text content from thinking blocks instead of discarding thinking content.
+func (c *AnthropicClient) processResponseBlocksStructured(blocks []anthropic.BetaContentBlockUnion) (string, []neurotypes.ThinkingBlock) {
+	var textContent string
+	var thinkingBlocks []neurotypes.ThinkingBlock
+
+	for _, block := range blocks {
+		// Handle text blocks
+		textBlock := block.AsText()
+		if textBlock.Type == "text" {
+			textContent += textBlock.Text
+			logger.Debug("Text block processed for structured response", "text_length", len(textBlock.Text))
+			continue
+		}
+
+		// Handle thinking blocks - extract instead of discarding
+		thinkingBlock := block.AsThinking()
+		if thinkingBlock.Type == "thinking" {
+			thinkingBlocks = append(thinkingBlocks, neurotypes.ThinkingBlock{
+				Content:  thinkingBlock.Thinking,
+				Provider: "anthropic",
+				Type:     "thinking",
+			})
+			logger.Debug("Thinking block extracted for structured response", "thinking_length", len(thinkingBlock.Thinking))
+			continue
+		}
+
+		// Handle redacted thinking blocks - extract metadata
+		redactedBlock := block.AsRedactedThinking()
+		if redactedBlock.Type == "redacted_thinking" {
+			// For redacted thinking, we can't show the actual content but we can indicate it exists
+			thinkingBlocks = append(thinkingBlocks, neurotypes.ThinkingBlock{
+				Content:  "[Thinking content redacted by Anthropic]",
+				Provider: "anthropic",
+				Type:     "redacted_thinking",
+			})
+			logger.Debug("Redacted thinking block extracted for structured response", "data_length", len(redactedBlock.Data))
+			continue
+		}
+
+		// Unknown block type - log warning
+		logger.Debug("Unknown content block type encountered in structured response")
+	}
+
+	return textContent, thinkingBlocks
 }

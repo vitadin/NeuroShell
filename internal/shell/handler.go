@@ -137,6 +137,13 @@ func InitializeServices(testMode bool) error {
 		}
 	}
 
+	// Register ThinkingRendererService if not already registered
+	if !services.GetGlobalRegistry().HasService("thinking_renderer") {
+		if err := services.GetGlobalRegistry().RegisterService(services.NewThinkingRendererService()); err != nil {
+			return err
+		}
+	}
+
 	// Enhanced command resolution will be implemented later
 
 	// Initialize all services

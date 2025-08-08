@@ -105,6 +105,40 @@ func (s *LLMService) StreamCompletion(client neurotypes.LLMClient, session *neur
 	return responseChan, nil
 }
 
+// SendStructuredCompletion sends a chat completion request using the provided client and returns structured response.
+// This separates thinking/reasoning content from regular text for proper rendering control.
+func (s *LLMService) SendStructuredCompletion(client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	logger.ServiceOperation("llm", "send_structured_completion", "starting")
+
+	if !s.initialized {
+		logger.Error("LLM service not initialized")
+		return nil, fmt.Errorf("llm service not initialized")
+	}
+
+	if client == nil {
+		logger.Error("LLM client is nil")
+		return nil, fmt.Errorf("llm client cannot be nil")
+	}
+
+	if !client.IsConfigured() {
+		logger.Error("LLM client is not configured")
+		return nil, fmt.Errorf("llm client is not configured")
+	}
+
+	logger.Debug("Sending structured completion request", "provider", client.GetProviderName(), "model", model.BaseModel, "messages", len(session.Messages))
+
+	// Send the structured completion request using the client with session as-is
+	response, err := client.SendStructuredCompletion(session, model)
+	if err != nil {
+		logger.Error("Structured completion request failed", "error", err)
+		return nil, fmt.Errorf("structured completion request failed: %w", err)
+	}
+
+	logger.Debug("Structured completion request completed", "text_length", len(response.TextContent), "thinking_blocks", len(response.ThinkingBlocks))
+	logger.ServiceOperation("llm", "send_structured_completion", "completed")
+	return response, nil
+}
+
 // MockLLMService provides a mock implementation of LLMService for testing
 type MockLLMService struct {
 	initialized bool
@@ -201,6 +235,38 @@ func (m *MockLLMService) StreamCompletion(_ neurotypes.LLMClient, session *neuro
 	}()
 
 	return responseChan, nil
+}
+
+// SendStructuredCompletion mocks sending a structured completion request
+func (m *MockLLMService) SendStructuredCompletion(_ neurotypes.LLMClient, session *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	if !m.initialized {
+		return nil, fmt.Errorf("mock llm service not initialized")
+	}
+
+	// Create a mock response with message count and last message info for debugging
+	messageCount := len(session.Messages)
+	lastMessage := "no messages"
+	if messageCount > 0 {
+		lastMessage = session.Messages[messageCount-1].Content
+	}
+
+	textContent := fmt.Sprintf("This is a mocking reply (received %d messages, last: %s)", messageCount, lastMessage)
+
+	// Create mock thinking blocks for testing
+	thinkingBlocks := []neurotypes.ThinkingBlock{
+		{
+			Content:  "This is a mock thinking process for testing structured responses.",
+			Provider: "mock",
+			Type:     "thinking",
+		},
+	}
+
+	structuredResponse := &neurotypes.StructuredLLMResponse{
+		TextContent:    textContent,
+		ThinkingBlocks: thinkingBlocks,
+	}
+
+	return structuredResponse, nil
 }
 
 // SetMockResponse sets a mock response for a specific model

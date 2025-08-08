@@ -410,3 +410,99 @@ func TestOpenAIReasoningClient_LazyInitialization(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, client.client)
 }
+
+// Test SendStructuredCompletion method
+func TestOpenAIReasoningClient_SendStructuredCompletion_NotConfigured(t *testing.T) {
+	client := NewOpenAIReasoningClient("")
+
+	session := &neurotypes.ChatSession{
+		ID:       "test-session",
+		Name:     "test",
+		Messages: []neurotypes.Message{{Role: "user", Content: "Hello"}},
+	}
+
+	modelConfig := &neurotypes.ModelConfig{
+		BaseModel: "o1-preview",
+		Provider:  "openai",
+	}
+
+	response, err := client.SendStructuredCompletion(session, modelConfig)
+
+	assert.Error(t, err)
+	assert.Nil(t, response)
+	assert.Contains(t, err.Error(), "failed to initialize OpenAI client")
+}
+
+func TestOpenAIReasoningClient_IsReasoningModel(t *testing.T) {
+	client := NewOpenAIReasoningClient("test-key")
+
+	tests := []struct {
+		name     string
+		config   *neurotypes.ModelConfig
+		expected bool
+	}{
+		{
+			name: "reasoning model with reasoning_effort parameter",
+			config: &neurotypes.ModelConfig{
+				BaseModel:  "o1-preview",
+				Parameters: map[string]interface{}{"reasoning_effort": "medium"},
+			},
+			expected: true,
+		},
+		{
+			name: "regular model without reasoning_effort parameter",
+			config: &neurotypes.ModelConfig{
+				BaseModel:  "gpt-4",
+				Parameters: map[string]interface{}{"temperature": 0.7},
+			},
+			expected: false,
+		},
+		{
+			name: "o-series model without reasoning_effort parameter",
+			config: &neurotypes.ModelConfig{
+				BaseModel:  "o1-mini",
+				Parameters: map[string]interface{}{"max_tokens": 1000},
+			},
+			expected: false,
+		},
+		{
+			name: "model with no parameters",
+			config: &neurotypes.ModelConfig{
+				BaseModel: "gpt-4",
+			},
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := client.isReasoningModel(tt.config)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestOpenAIReasoningClient_StructuredResponseInterface(t *testing.T) {
+	client := NewOpenAIReasoningClient("")
+
+	// Verify the client implements the LLMClient interface with SendStructuredCompletion
+	var llmClient neurotypes.LLMClient = client
+
+	session := &neurotypes.ChatSession{
+		ID:       "test-session",
+		Name:     "test",
+		Messages: []neurotypes.Message{{Role: "user", Content: "Hello"}},
+	}
+
+	modelConfig := &neurotypes.ModelConfig{
+		BaseModel:  "o1-preview",
+		Provider:   "openai",
+		Parameters: map[string]interface{}{"reasoning_effort": "medium"},
+	}
+
+	// This will fail due to missing API key, but verifies the method signature
+	_, err := llmClient.SendStructuredCompletion(session, modelConfig)
+
+	assert.Error(t, err) // Expected to fail due to no API key
+	assert.Contains(t, err.Error(), "failed to initialize OpenAI client")
+}

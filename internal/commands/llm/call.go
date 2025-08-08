@@ -317,8 +317,8 @@ func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client ne
 	debugTransport := debugTransportService.CreateTransport()
 	client.SetDebugTransport(debugTransport)
 
-	// Make LLM call (debug capture happens automatically via transport)
-	response, err := llmService.SendCompletion(client, session, model)
+	// Make structured LLM call (debug capture happens automatically via transport)
+	structuredResponse, err := llmService.SendStructuredCompletion(client, session, model)
 	if err != nil {
 		return fmt.Errorf("LLM call failed: %w", err)
 	}
@@ -326,9 +326,29 @@ func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client ne
 	// Get captured debug data from the debug transport service
 	debugData := debugTransportService.GetCapturedData()
 
+	// Render thinking blocks if present
+	var fullResponse string
+	if len(structuredResponse.ThinkingBlocks) > 0 {
+		// Get thinking renderer service
+		thinkingRenderer, err := services.GetGlobalThinkingRendererService()
+		if err != nil {
+			// Fallback: just use text content if thinking renderer isn't available
+			fullResponse = structuredResponse.TextContent
+		} else {
+			// Render thinking blocks and combine with text content
+			renderedThinking := thinkingRenderer.RenderThinkingBlocks(structuredResponse.ThinkingBlocks)
+			fullResponse = renderedThinking + structuredResponse.TextContent
+		}
+	} else {
+		// No thinking blocks, just use text content
+		fullResponse = structuredResponse.TextContent
+	}
+
 	// Store response and debug data in variables
-	_ = variableService.SetSystemVariable("_output", response)
-	_ = variableService.SetSystemVariable("#llm_response", response)
+	_ = variableService.SetSystemVariable("_output", fullResponse)
+	_ = variableService.SetSystemVariable("#llm_response", fullResponse)
+	_ = variableService.SetSystemVariable("#llm_text_content", structuredResponse.TextContent)
+	_ = variableService.SetSystemVariable("#llm_thinking_blocks_count", fmt.Sprintf("%d", len(structuredResponse.ThinkingBlocks)))
 	_ = variableService.SetSystemVariable("#llm_call_success", "true")
 	_ = variableService.SetSystemVariable("#llm_call_mode", "sync")
 	_ = variableService.SetSystemVariable("_debug_network", debugData)

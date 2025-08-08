@@ -20,5 +20,6 @@ Service Status Check:
   [OK] stack                - available/initialized
   [OK] temporal-display     - available/initialized
   [OK] theme                - available/initialized
+  [OK] thinking_renderer    - available/initialized
   [OK] variable             - available/initialized
-Summary: 19/19 services healthy
+Summary: 20/20 services healthy

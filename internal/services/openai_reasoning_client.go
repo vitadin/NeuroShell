@@ -98,6 +98,26 @@ func (c *OpenAIReasoningClient) SendChatCompletion(session *neurotypes.ChatSessi
 	return c.sendChatCompletion(session, modelConfig)
 }
 
+// SendStructuredCompletion sends a chat completion request to OpenAI and returns structured response.
+// Automatically routes to appropriate endpoint and extracts reasoning blocks for reasoning models.
+func (c *OpenAIReasoningClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	logger.Debug("OpenAI SendStructuredCompletion starting", "model", modelConfig.BaseModel)
+
+	// Initialize client if needed
+	if err := c.initializeClientIfNeeded(); err != nil {
+		return nil, fmt.Errorf("failed to initialize OpenAI client: %w", err)
+	}
+
+	// Check if this is a reasoning model
+	isReasoningModel := c.isReasoningModel(modelConfig)
+	logger.Debug("Model type detected for structured completion", "is_reasoning", isReasoningModel, "model", modelConfig.BaseModel)
+
+	if isReasoningModel {
+		return c.sendStructuredReasoningCompletion(session, modelConfig)
+	}
+	return c.sendStructuredChatCompletion(session, modelConfig)
+}
+
 // StreamChatCompletion sends a streaming chat completion request to OpenAI.
 // Automatically routes to appropriate endpoint based on model type.
 func (c *OpenAIReasoningClient) StreamChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
@@ -269,6 +289,108 @@ func (c *OpenAIReasoningClient) sendReasoningCompletion(session *neurotypes.Chat
 
 	logger.Debug("OpenAI reasoning completion response received", "content_length", len(responseContent))
 	return responseContent, nil
+}
+
+// sendStructuredReasoningCompletion handles structured reasoning completions via /responses endpoint.
+// This separates reasoning summaries from response content instead of combining them.
+func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	// Convert session messages to responses API format
+	input := c.convertSessionToReasoningInput(session)
+	logger.Debug("Messages converted for structured reasoning completion")
+
+	// Build reasoning parameters
+	params := responses.ResponseNewParams{
+		Model: shared.ResponsesModel(modelConfig.BaseModel),
+		Input: input,
+	}
+
+	// Apply reasoning-specific parameters
+	c.applyReasoningParameters(&params, modelConfig)
+
+	// Send request to /responses endpoint
+	logger.Debug("Sending OpenAI structured reasoning completion request", "model", modelConfig.BaseModel)
+	response, err := c.client.Responses.New(context.Background(), params)
+	if err != nil {
+		logger.Error("OpenAI structured reasoning completion request failed", "error", err)
+		return nil, fmt.Errorf("openai structured reasoning completion request failed: %w", err)
+	}
+
+	// Extract response content from output items
+	if len(response.Output) == 0 {
+		logger.Error("No response output items returned from structured reasoning completion")
+		return nil, fmt.Errorf("no response output items returned")
+	}
+
+	// Process output items: separate reasoning summaries and message content
+	var textContent string
+	var thinkingBlocks []neurotypes.ThinkingBlock
+
+	logger.Debug("Structured reasoning response received", "output_count", len(response.Output))
+
+	for i, item := range response.Output {
+		logger.Debug("Processing output item for structured response", "index", i, "item_type", fmt.Sprintf("%T", item))
+
+		// Extract reasoning summaries as ThinkingBlocks instead of combining them
+		if reasoning := item.AsReasoning(); reasoning.Type == "reasoning" {
+			logger.Debug("Found reasoning output for structured response", "summary_count", len(reasoning.Summary), "status", reasoning.Status)
+			for _, summaryItem := range reasoning.Summary {
+				if summaryItem.Type == "summary_text" {
+					// Create ThinkingBlock for each reasoning summary
+					thinkingBlocks = append(thinkingBlocks, neurotypes.ThinkingBlock{
+						Content:  summaryItem.Text,
+						Provider: "openai",
+						Type:     "reasoning",
+					})
+					logger.Debug("Extracted reasoning summary as ThinkingBlock", "text_length", len(summaryItem.Text))
+				}
+			}
+		}
+
+		// Extract message content (same as regular reasoning completion)
+		if message := item.AsMessage(); message.Type == "message" && message.Role == "assistant" {
+			logger.Debug("Found message output for structured response", "role", message.Role)
+			// Process the content array
+			for _, contentItem := range message.Content {
+				// Check if this is text content
+				if text := contentItem.AsOutputText(); text.Type == "output_text" {
+					textContent += text.Text
+				}
+			}
+		}
+	}
+
+	if textContent == "" && len(thinkingBlocks) == 0 {
+		logger.Error("Empty response content from structured reasoning completion")
+		return nil, fmt.Errorf("empty response content")
+	}
+
+	// Create structured response with separated reasoning and text content
+	structuredResponse := &neurotypes.StructuredLLMResponse{
+		TextContent:    textContent,
+		ThinkingBlocks: thinkingBlocks,
+	}
+
+	logger.Debug("OpenAI structured reasoning completion response created", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))
+	return structuredResponse, nil
+}
+
+// sendStructuredChatCompletion handles structured regular chat completions via /chat/completions endpoint.
+// Since regular chat models don't have reasoning content, this returns empty thinking blocks.
+func (c *OpenAIReasoningClient) sendStructuredChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	// Use regular chat completion since non-reasoning models don't have thinking content
+	textContent, err := c.sendChatCompletion(session, modelConfig)
+	if err != nil {
+		return nil, fmt.Errorf("openai structured chat completion failed: %w", err)
+	}
+
+	// Create structured response with no thinking blocks (regular models don't provide reasoning)
+	structuredResponse := &neurotypes.StructuredLLMResponse{
+		TextContent:    textContent,
+		ThinkingBlocks: []neurotypes.ThinkingBlock{}, // Empty - regular models don't provide reasoning blocks
+	}
+
+	logger.Debug("OpenAI structured chat completion response created", "content_length", len(textContent), "thinking_blocks", 0)
+	return structuredResponse, nil
 }
 
 // streamChatCompletion handles streaming chat completions via /chat/completions endpoint.
