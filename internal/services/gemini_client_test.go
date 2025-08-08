@@ -671,6 +671,78 @@ func TestGeminiClient_InterfaceCompliance(_ *testing.T) {
 	var _ neurotypes.LLMClient = &GeminiClient{}
 }
 
+// Test SendStructuredCompletion method
+func TestGeminiClient_SendStructuredCompletion_NotConfigured(t *testing.T) {
+	client := NewGeminiClient("")
+
+	session := &neurotypes.ChatSession{
+		ID:       "test-session",
+		Name:     "test",
+		Messages: []neurotypes.Message{{Role: "user", Content: "Hello"}},
+	}
+
+	modelConfig := &neurotypes.ModelConfig{
+		BaseModel: "gemini-2.5-flash",
+		Provider:  "gemini",
+	}
+
+	response, err := client.SendStructuredCompletion(session, modelConfig)
+
+	assert.Error(t, err)
+	assert.Nil(t, response)
+	assert.Contains(t, err.Error(), "google API key not configured")
+}
+
+func TestGeminiClient_ProcessGeminiResponseStructured(t *testing.T) {
+	client := NewGeminiClient("test-key")
+
+	// Create a mock response with thinking and text parts
+	mockResponse := &genai.GenerateContentResponse{
+		Candidates: []*genai.Candidate{
+			{
+				Content: &genai.Content{
+					Parts: []*genai.Part{
+						{Text: "This is thinking content", Thought: true},
+						{Text: "This is the main response", Thought: false},
+					},
+				},
+			},
+		},
+	}
+
+	textContent, thinkingBlocks := client.processGeminiResponseStructured(mockResponse)
+
+	assert.Equal(t, "This is the main response", textContent)
+	assert.Len(t, thinkingBlocks, 1)
+	assert.Equal(t, "This is thinking content", thinkingBlocks[0].Content)
+	assert.Equal(t, "gemini", thinkingBlocks[0].Provider)
+	assert.Equal(t, "thinking", thinkingBlocks[0].Type)
+}
+
+func TestGeminiClient_StructuredResponseInterface(t *testing.T) {
+	client := NewGeminiClient("")
+
+	// Verify the client implements the LLMClient interface with SendStructuredCompletion
+	var llmClient neurotypes.LLMClient = client
+
+	session := &neurotypes.ChatSession{
+		ID:       "test-session",
+		Name:     "test",
+		Messages: []neurotypes.Message{{Role: "user", Content: "Hello"}},
+	}
+
+	modelConfig := &neurotypes.ModelConfig{
+		BaseModel: "gemini-2.5-flash",
+		Provider:  "gemini",
+	}
+
+	// This will fail due to missing API key, but verifies the method signature
+	_, err := llmClient.SendStructuredCompletion(session, modelConfig)
+
+	assert.Error(t, err) // Expected to fail due to no API key
+	assert.Contains(t, err.Error(), "google API key not configured")
+}
+
 // Real API Integration Tests (Require Valid API Key)
 
 func TestGeminiClient_SendChatCompletion_RealAPI(t *testing.T) {

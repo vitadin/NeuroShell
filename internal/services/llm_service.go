@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
@@ -105,6 +106,40 @@ func (s *LLMService) StreamCompletion(client neurotypes.LLMClient, session *neur
 	return responseChan, nil
 }
 
+// SendStructuredCompletion sends a chat completion request using the provided client and returns structured response.
+// This separates thinking/reasoning content from regular text for proper rendering control.
+func (s *LLMService) SendStructuredCompletion(client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	logger.ServiceOperation("llm", "send_structured_completion", "starting")
+
+	if !s.initialized {
+		logger.Error("LLM service not initialized")
+		return nil, fmt.Errorf("llm service not initialized")
+	}
+
+	if client == nil {
+		logger.Error("LLM client is nil")
+		return nil, fmt.Errorf("llm client cannot be nil")
+	}
+
+	if !client.IsConfigured() {
+		logger.Error("LLM client is not configured")
+		return nil, fmt.Errorf("llm client is not configured")
+	}
+
+	logger.Debug("Sending structured completion request", "provider", client.GetProviderName(), "model", model.BaseModel, "messages", len(session.Messages))
+
+	// Send the structured completion request using the client with session as-is
+	response, err := client.SendStructuredCompletion(session, model)
+	if err != nil {
+		logger.Error("Structured completion request failed", "error", err)
+		return nil, fmt.Errorf("structured completion request failed: %w", err)
+	}
+
+	logger.Debug("Structured completion request completed", "text_length", len(response.TextContent), "thinking_blocks", len(response.ThinkingBlocks))
+	logger.ServiceOperation("llm", "send_structured_completion", "completed")
+	return response, nil
+}
+
 // MockLLMService provides a mock implementation of LLMService for testing
 type MockLLMService struct {
 	initialized bool
@@ -201,6 +236,58 @@ func (m *MockLLMService) StreamCompletion(_ neurotypes.LLMClient, session *neuro
 	}()
 
 	return responseChan, nil
+}
+
+// SendStructuredCompletion mocks sending a structured completion request
+func (m *MockLLMService) SendStructuredCompletion(_ neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	if !m.initialized {
+		return nil, fmt.Errorf("mock llm service not initialized")
+	}
+
+	// Create a mock response with message count and last message info for debugging
+	messageCount := len(session.Messages)
+	lastMessage := "no messages"
+	if messageCount > 0 {
+		lastMessage = session.Messages[messageCount-1].Content
+	}
+
+	textContent := fmt.Sprintf("This is a mocking reply (received %d messages, last: %s)", messageCount, lastMessage)
+
+	// Determine provider from model configuration for provider-specific testing
+	provider := "mock"
+	if model != nil {
+		// Extract provider from model description or catalog ID for testing
+		desc := strings.ToLower(model.Description)
+		catalogID := strings.ToLower(model.CatalogID)
+
+		switch {
+		case strings.Contains(desc, "anthropic") || strings.Contains(catalogID, "claude"):
+			provider = "anthropic"
+		case strings.Contains(desc, "gemini") || strings.Contains(catalogID, "gemini"):
+			provider = "gemini"
+		case strings.Contains(desc, "openai") || strings.Contains(catalogID, "gpt"):
+			provider = "openai"
+		}
+	}
+
+	// Create content-aware thinking blocks that reflect the actual message content
+	thinkingContent := fmt.Sprintf("Thinking about the user's message: \"%s\". This helps verify the message flow in tests. The user sent %d messages total, and I need to provide a helpful response.", lastMessage, messageCount)
+
+	// Create mock thinking blocks for testing
+	thinkingBlocks := []neurotypes.ThinkingBlock{
+		{
+			Content:  thinkingContent,
+			Provider: provider,
+			Type:     "thinking",
+		},
+	}
+
+	structuredResponse := &neurotypes.StructuredLLMResponse{
+		TextContent:    textContent,
+		ThinkingBlocks: thinkingBlocks,
+	}
+
+	return structuredResponse, nil
 }
 
 // SetMockResponse sets a mock response for a specific model

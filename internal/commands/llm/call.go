@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 	"neuroshell/internal/commands"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -317,8 +318,8 @@ func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client ne
 	debugTransport := debugTransportService.CreateTransport()
 	client.SetDebugTransport(debugTransport)
 
-	// Make LLM call (debug capture happens automatically via transport)
-	response, err := llmService.SendCompletion(client, session, model)
+	// Make structured LLM call (debug capture happens automatically via transport)
+	structuredResponse, err := llmService.SendStructuredCompletion(client, session, model)
 	if err != nil {
 		return fmt.Errorf("LLM call failed: %w", err)
 	}
@@ -326,9 +327,36 @@ func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client ne
 	// Get captured debug data from the debug transport service
 	debugData := debugTransportService.GetCapturedData()
 
+	// Render thinking blocks if present
+	var fullResponse string
+	if len(structuredResponse.ThinkingBlocks) > 0 {
+		// Get thinking renderer service
+		thinkingRenderer, err := services.GetGlobalThinkingRendererService()
+		if err != nil {
+			// Fallback: just use text content if thinking renderer isn't available
+			fullResponse = structuredResponse.TextContent
+		} else {
+			// Create render configuration with theme integration
+			renderConfig, err := c.createRenderConfig(variableService)
+			if err != nil {
+				// Fallback to legacy rendering if config creation fails
+				fullResponse = thinkingRenderer.RenderThinkingBlocksLegacy(structuredResponse.ThinkingBlocks) + structuredResponse.TextContent
+			} else {
+				// Render thinking blocks with sophisticated theming
+				renderedThinking := thinkingRenderer.RenderThinkingBlocks(structuredResponse.ThinkingBlocks, renderConfig)
+				fullResponse = renderedThinking + structuredResponse.TextContent
+			}
+		}
+	} else {
+		// No thinking blocks, just use text content
+		fullResponse = structuredResponse.TextContent
+	}
+
 	// Store response and debug data in variables
-	_ = variableService.SetSystemVariable("_output", response)
-	_ = variableService.SetSystemVariable("#llm_response", response)
+	_ = variableService.SetSystemVariable("_output", fullResponse)
+	_ = variableService.SetSystemVariable("#llm_response", fullResponse)
+	_ = variableService.SetSystemVariable("#llm_text_content", structuredResponse.TextContent)
+	_ = variableService.SetSystemVariable("#llm_thinking_blocks_count", fmt.Sprintf("%d", len(structuredResponse.ThinkingBlocks)))
 	_ = variableService.SetSystemVariable("#llm_call_success", "true")
 	_ = variableService.SetSystemVariable("#llm_call_mode", "sync")
 	_ = variableService.SetSystemVariable("_debug_network", debugData)
@@ -518,6 +546,132 @@ func (c *CallCommand) stopLLMDisplay(id string) {
 
 	// Stop the display, ignore errors (graceful degradation)
 	_ = temporalService.Stop(id)
+}
+
+// createRenderConfig creates a RenderConfig that integrates with the theme service.
+func (c *CallCommand) createRenderConfig(variableService *services.VariableService) (neurotypes.RenderConfig, error) {
+	// Get theme service for styling
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		return nil, fmt.Errorf("theme service not available: %w", err)
+	}
+
+	// Get current theme (try from variable, fallback to default)
+	themeName := "default"
+	if themeVar, err := variableService.Get("_theme"); err == nil && themeVar != "" {
+		themeName = themeVar
+	}
+
+	// Get theme configuration
+	theme := themeService.GetThemeByName(themeName)
+
+	// Create the command render config
+	config := &CommandRenderConfig{
+		theme:         theme,
+		themeName:     themeName,
+		showThinking:  true, // Default to showing thinking blocks
+		thinkingStyle: "full",
+		compactMode:   false,
+		maxWidth:      120, // Default terminal width
+	}
+
+	// Check for thinking display preferences in variables
+	if thinkingVar, err := variableService.Get("_thinking_display"); err == nil {
+		switch strings.ToLower(strings.TrimSpace(thinkingVar)) {
+		case "hidden", "false", "off":
+			config.showThinking = false
+		case "summary", "compact":
+			config.thinkingStyle = "summary"
+		case "full", "true", "on":
+			config.thinkingStyle = "full"
+		}
+	}
+
+	// Check for compact mode preference
+	if compactVar, err := variableService.Get("_compact_mode"); err == nil {
+		config.compactMode = strings.ToLower(strings.TrimSpace(compactVar)) == "true"
+	}
+
+	return config, nil
+}
+
+// CommandRenderConfig implements neurotypes.RenderConfig using the theme service.
+type CommandRenderConfig struct {
+	theme         *services.Theme
+	themeName     string
+	showThinking  bool
+	thinkingStyle string
+	compactMode   bool
+	maxWidth      int
+}
+
+// GetStyle returns theme-based styles for different elements.
+func (c *CommandRenderConfig) GetStyle(element string) lipgloss.Style {
+	if c.theme == nil {
+		return lipgloss.NewStyle()
+	}
+
+	// Get the base style from theme
+	var baseStyle lipgloss.Style
+	switch element {
+	case "info":
+		baseStyle = c.theme.Info
+	case "italic":
+		baseStyle = c.theme.Italic
+	case "background":
+		baseStyle = c.theme.Background
+	case "warning":
+		baseStyle = c.theme.Warning
+	case "highlight":
+		baseStyle = c.theme.Highlight
+	case "bold":
+		baseStyle = c.theme.Bold
+	case "underline":
+		baseStyle = c.theme.Underline
+	default:
+		baseStyle = c.theme.Info // Default to info style
+	}
+
+	// Check if colors should be disabled (NO_COLOR environment variable or --no-color flag)
+	// This respects the global color profile setting
+	if lipgloss.ColorProfile() == termenv.Ascii {
+		// Strip all colors from the style, keeping only formatting
+		return lipgloss.NewStyle().
+			Bold(baseStyle.GetBold()).
+			Italic(baseStyle.GetItalic()).
+			Underline(baseStyle.GetUnderline()).
+			Strikethrough(baseStyle.GetStrikethrough()).
+			Reverse(baseStyle.GetReverse()).
+			Blink(baseStyle.GetBlink()).
+			Faint(baseStyle.GetFaint())
+	}
+
+	return baseStyle
+}
+
+// GetTheme returns the current theme name.
+func (c *CommandRenderConfig) GetTheme() string {
+	return c.themeName
+}
+
+// IsCompactMode returns whether compact rendering is enabled.
+func (c *CommandRenderConfig) IsCompactMode() bool {
+	return c.compactMode
+}
+
+// GetMaxWidth returns the maximum width for content rendering.
+func (c *CommandRenderConfig) GetMaxWidth() int {
+	return c.maxWidth
+}
+
+// ShowThinking returns whether thinking blocks should be displayed.
+func (c *CommandRenderConfig) ShowThinking() bool {
+	return c.showThinking
+}
+
+// GetThinkingStyle returns the thinking display style preference.
+func (c *CommandRenderConfig) GetThinkingStyle() string {
+	return c.thinkingStyle
 }
 
 func init() {

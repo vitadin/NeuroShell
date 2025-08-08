@@ -644,3 +644,72 @@ func TestAnthropicClient_initializeClientIfNeeded_WithDebugTransport(t *testing.
 	assert.NoError(t, err)
 	assert.NotNil(t, client.client)
 }
+
+// Test SendStructuredCompletion method
+func TestAnthropicClient_SendStructuredCompletion_NotConfigured(t *testing.T) {
+	client := NewAnthropicClient("")
+
+	session := &neurotypes.ChatSession{
+		ID:       "test-session",
+		Name:     "test",
+		Messages: []neurotypes.Message{{Role: "user", Content: "Hello"}},
+	}
+
+	modelConfig := &neurotypes.ModelConfig{
+		BaseModel: "claude-3-5-sonnet-20241022",
+		Provider:  "anthropic",
+	}
+
+	response, err := client.SendStructuredCompletion(session, modelConfig)
+
+	assert.Error(t, err)
+	assert.Nil(t, response)
+	assert.Contains(t, err.Error(), "anthropic API key not configured")
+}
+
+func TestAnthropicClient_ProcessResponseBlocksStructured(t *testing.T) {
+	client := NewAnthropicClient("test-key")
+
+	// Create mock content blocks for testing
+	blocks := []anthropic.BetaContentBlockUnion{
+		// Mock text block
+		{},
+		// Mock thinking block
+		{},
+		// Mock redacted thinking block
+		{},
+	}
+
+	// Note: This is a unit test for the processing logic structure
+	// The actual processResponseBlocksStructured method would need real Anthropic SDK types
+	// which are complex to mock. This test validates the interface exists.
+	textContent, thinkingBlocks := client.processResponseBlocksStructured(blocks)
+
+	// Verify the method returns expected types
+	assert.IsType(t, "", textContent)
+	assert.IsType(t, []neurotypes.ThinkingBlock{}, thinkingBlocks)
+}
+
+func TestAnthropicClient_StructuredResponseInterface(t *testing.T) {
+	client := NewAnthropicClient("")
+
+	// Verify the client implements the LLMClient interface with SendStructuredCompletion
+	var llmClient neurotypes.LLMClient = client
+
+	session := &neurotypes.ChatSession{
+		ID:       "test-session",
+		Name:     "test",
+		Messages: []neurotypes.Message{{Role: "user", Content: "Hello"}},
+	}
+
+	modelConfig := &neurotypes.ModelConfig{
+		BaseModel: "claude-3-5-sonnet-20241022",
+		Provider:  "anthropic",
+	}
+
+	// This will fail due to missing API key, but verifies the method signature
+	_, err := llmClient.SendStructuredCompletion(session, modelConfig)
+
+	assert.Error(t, err) // Expected to fail due to no API key
+	assert.Contains(t, err.Error(), "anthropic API key not configured")
+}

@@ -1,0 +1,19 @@
+Anthropic client ready: ANC:da1c321d (configured: true, extended thinking: supported)
+_client_id = ANC:da1c321d
+Created session 'provider-test-session' (ID: 00000001)
+Testing Anthropic provider thinking blocks
+Created model 'test-claude' (ID: 00000002, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Activated model 'test-claude' (ID: 00000002, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Testing Gemini provider thinking blocks
+Created model 'test-gemini' (ID: 00000004, Provider: gemini, Base: gemini-2.5-flash)
+Activated model 'test-gemini' (ID: 00000004, Provider: gemini, Base: gemini-2.5-flash)
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Testing OpenAI provider thinking blocks
+Created model 'test-openai' (ID: 00000006, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Activated model 'test-openai' (ID: 00000006, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Testing mock provider thinking blocks
+Created model 'test-mock' (ID: 00000008, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Activated model 'test-mock' (ID: 00000008, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Added user message to session '00000001-0000-4000-8000-000000000001'

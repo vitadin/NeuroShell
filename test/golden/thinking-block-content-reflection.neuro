@@ -1,0 +1,37 @@
+%% Content reflection thinking block test
+%% Tests that thinking blocks accurately reflect the received message content
+%% This ensures the message flow works correctly through the system
+
+%% Setup test variables, client, and session
+\set[test_topic="machine learning"]
+\set[test_number=42]
+\anthropic-client-new content-test-client
+\get[_client_id]
+\model-new[catalog_id="CS4", max_tokens=300, description="Mock model for content reflection testing"] content-model
+\model-activate content-model
+\session-new content-test-session
+
+%% Test basic message reflection
+\echo Testing basic message content reflection
+\session-add-usermsg Can you explain artificial intelligence?
+\llm-call
+
+%% Test message with variable interpolation
+\echo Testing variable interpolation in thinking content  
+\session-add-usermsg Tell me about ${test_topic} algorithms and their applications.
+\llm-call
+
+%% Test message with numbers and special content
+\echo Testing messages with numbers and special characters
+\session-add-usermsg What is the significance of the number ${test_number} in programming?
+\llm-call
+
+%% Test longer, complex message reflection
+\echo Testing complex message reflection
+\session-add-usermsg How do neural networks process information, and what are the key differences between supervised, unsupervised, and reinforcement learning approaches in modern AI systems?
+\llm-call
+
+%% Test that message count increases correctly
+\echo Testing message count progression  
+\session-add-usermsg This should be message number 5 in our conversation.
+\llm-call

@@ -1,0 +1,30 @@
+%% Basic thinking block functionality test
+%% Tests core thinking block rendering using mock LLM service
+%% This verifies that thinking blocks appear with correct formatting
+
+\set _style dark1
+
+\echo === Basic Thinking Block Test ===
+\echo Testing thinking block rendering with mock LLM service
+
+%% Setup mock client using Anthropic (will be mocked in test mode)
+\anthropic-client-new thinking-test-client
+\get[_client_id]
+
+%% Create model for testing (CS4 = Claude Sonnet 4 from catalog)
+\model-new[catalog_id="CS4", max_tokens=200, description="Test model for thinking blocks"] thinking-test-model
+\model-activate thinking-test-model
+\echo Active model: ${#active_model_name}
+
+%% Test thinking blocks with progressive conversation
+\echo Testing thinking block message 1...
+\send Hello, can you help me solve a simple math problem?
+
+\echo Testing thinking block message 2...
+\send What is 2 + 2?
+
+\echo Testing thinking block message 3...
+\send Can you explain the process of photosynthesis in plants?
+
+\echo Session summary:
+\session-show

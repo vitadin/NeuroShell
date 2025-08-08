@@ -11,16 +11,39 @@ type StreamChunk struct {
 	Error   error  // Any error that occurred during streaming
 }
 
+// StructuredLLMResponse represents a structured response from an LLM provider.
+// It separates clean text content from thinking/reasoning blocks for proper rendering control.
+type StructuredLLMResponse struct {
+	TextContent    string          // Clean main response content (user-facing)
+	ThinkingBlocks []ThinkingBlock // Extracted thinking/reasoning content
+}
+
+// ThinkingBlock represents a block of thinking/reasoning content from an LLM.
+// This unified structure handles thinking content from all providers (Anthropic, Gemini, OpenAI).
+type ThinkingBlock struct {
+	Content  string // The actual thinking/reasoning text content
+	Provider string // Source provider: "anthropic", "gemini", "openai"
+	Type     string // Block type: "thinking", "redacted_thinking", "reasoning"
+}
+
 // LLMClient defines the interface for LLM provider implementations.
 // This interface abstracts different LLM providers (OpenAI, Anthropic, etc.)
 // and provides a common way to interact with them.
 type LLMClient interface {
 	// SendChatCompletion sends a chat completion request and returns the full response.
+	// This is the core method that handles the actual LLM API communication.
+	// Response includes both thinking content and regular text formatted together.
 	SendChatCompletion(session *ChatSession, model *ModelConfig) (string, error)
 
 	// StreamChatCompletion sends a streaming chat completion request.
 	// It returns a channel that receives response chunks as they arrive.
+	// This is the core streaming method for real-time response delivery.
 	StreamChatCompletion(session *ChatSession, model *ModelConfig) (<-chan StreamChunk, error)
+
+	// SendStructuredCompletion sends a chat completion request and returns structured response.
+	// This separates thinking/reasoning content from regular text for proper rendering control.
+	// Internally uses SendChatCompletion and processes the response to extract thinking blocks.
+	SendStructuredCompletion(session *ChatSession, model *ModelConfig) (*StructuredLLMResponse, error)
 
 	// GetProviderName returns the name of the LLM provider (e.g., "openai", "anthropic").
 	GetProviderName() string
@@ -58,4 +81,9 @@ type LLMService interface {
 	// StreamCompletion sends a streaming chat completion request using the provided client.
 	// The session is sent as-is - message manipulation is the caller's responsibility.
 	StreamCompletion(client LLMClient, session *ChatSession, model *ModelConfig) (<-chan StreamChunk, error)
+
+	// SendStructuredCompletion sends a chat completion request using the provided client and returns structured response.
+	// This separates thinking/reasoning content from regular text for proper rendering control.
+	// Debug transport capture happens transparently via the client's debug transport.
+	SendStructuredCompletion(client LLMClient, session *ChatSession, model *ModelConfig) (*StructuredLLMResponse, error)
 }

@@ -60,6 +60,24 @@ func (m *MockLLMClient) IsConfigured() bool {
 	return m.configured
 }
 
+func (m *MockLLMClient) SendStructuredCompletion(_ *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	// Mock thinking blocks for testing
+	thinkingBlocks := []neurotypes.ThinkingBlock{
+		{
+			Content:  "This is mock thinking content for testing.",
+			Provider: "mock",
+			Type:     "thinking",
+		},
+	}
+
+	response := &neurotypes.StructuredLLMResponse{
+		TextContent:    m.response,
+		ThinkingBlocks: thinkingBlocks,
+	}
+
+	return response, nil
+}
+
 // Test LLMService with mock client
 func TestLLMService_SendCompletion(t *testing.T) {
 	service := NewLLMService()
@@ -244,4 +262,55 @@ func TestLLMService_SendCompletion_UnconfiguredClient(t *testing.T) {
 	_, err = service.SendCompletion(client, session, modelConfig)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "llm client is not configured")
+}
+
+// Test LLMService SendStructuredCompletion
+func TestLLMService_SendStructuredCompletion(t *testing.T) {
+	service := NewLLMService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	client := NewMockLLMClient()
+	session := &neurotypes.ChatSession{
+		ID:       "test-session",
+		Name:     "test",
+		Messages: []neurotypes.Message{{Role: "user", Content: "Hello"}},
+	}
+
+	modelConfig := &neurotypes.ModelConfig{
+		BaseModel: "gpt-4",
+		Provider:  "openai",
+	}
+
+	response, err := service.SendStructuredCompletion(client, session, modelConfig)
+
+	require.NoError(t, err)
+	assert.NotNil(t, response)
+	assert.Equal(t, "This is a mock LLM response.", response.TextContent)
+	assert.Len(t, response.ThinkingBlocks, 1)
+	assert.Equal(t, "This is mock thinking content for testing.", response.ThinkingBlocks[0].Content)
+	assert.Equal(t, "mock", response.ThinkingBlocks[0].Provider)
+	assert.Equal(t, "thinking", response.ThinkingBlocks[0].Type)
+}
+
+func TestLLMService_SendStructuredCompletion_NotInitialized(t *testing.T) {
+	service := NewLLMService()
+
+	client := NewMockLLMClient()
+	session := &neurotypes.ChatSession{
+		ID:       "test-session",
+		Name:     "test",
+		Messages: []neurotypes.Message{{Role: "user", Content: "Hello"}},
+	}
+
+	modelConfig := &neurotypes.ModelConfig{
+		BaseModel: "gpt-4",
+		Provider:  "openai",
+	}
+
+	response, err := service.SendStructuredCompletion(client, session, modelConfig)
+
+	assert.Error(t, err)
+	assert.Nil(t, response)
+	assert.Contains(t, err.Error(), "llm service not initialized")
 }

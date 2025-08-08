@@ -84,9 +84,29 @@ func (c *GeminiClient) initializeClientIfNeeded() error {
 func (c *GeminiClient) SendChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (string, error) {
 	logger.Debug("Gemini SendChatCompletion starting", "model", modelConfig.BaseModel)
 
+	// Use shared request logic to get raw response
+	result, err := c.sendChatCompletionRequest(session, modelConfig)
+	if err != nil {
+		return "", err
+	}
+
+	// Process response with formatted thinking (traditional processing)
+	content, thinkingInfo := c.processGeminiResponse(result)
+	if content == "" {
+		logger.Error("No content in Gemini response")
+		return "", fmt.Errorf("no content in response")
+	}
+
+	logger.Debug("Gemini response received", "content_length", len(content), "thinking_blocks", thinkingInfo.ThinkingBlocks, "text_blocks", thinkingInfo.TextBlocks)
+	return content, nil
+}
+
+// sendChatCompletionRequest handles the core request logic shared by both SendChatCompletion and SendStructuredCompletion.
+// Returns the raw Gemini response for processing.
+func (c *GeminiClient) sendChatCompletionRequest(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*genai.GenerateContentResponse, error) {
 	// Initialize client if needed
 	if err := c.initializeClientIfNeeded(); err != nil {
-		return "", fmt.Errorf("failed to initialize Gemini client: %w", err)
+		return nil, fmt.Errorf("failed to initialize Gemini client: %w", err)
 	}
 
 	// Convert session messages to Gemini format
@@ -106,18 +126,38 @@ func (c *GeminiClient) SendChatCompletion(session *neurotypes.ChatSession, model
 	)
 	if err != nil {
 		logger.Error("Gemini request failed", "error", err)
-		return "", fmt.Errorf("gemini request failed: %w", err)
+		return nil, fmt.Errorf("gemini request failed: %w", err)
 	}
 
-	// Process response with thinking blocks
-	content, thinkingInfo := c.processGeminiResponse(result)
-	if content == "" {
-		logger.Error("No content in Gemini response")
-		return "", fmt.Errorf("no content in response")
+	return result, nil
+}
+
+// SendStructuredCompletion sends a chat completion request to Google Gemini and returns structured response.
+// This method reuses SendChatCompletion logic and post-processes the response to separate thinking blocks.
+func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	logger.Debug("Gemini SendStructuredCompletion starting", "model", modelConfig.BaseModel)
+
+	// Use shared request logic to get raw response
+	result, err := c.sendChatCompletionRequest(session, modelConfig)
+	if err != nil {
+		return nil, err
 	}
 
-	logger.Debug("Gemini response received", "content_length", len(content), "thinking_blocks", thinkingInfo.ThinkingBlocks, "text_blocks", thinkingInfo.TextBlocks)
-	return content, nil
+	// Process response with structured thinking block extraction
+	textContent, thinkingBlocks := c.processGeminiResponseStructured(result)
+	if textContent == "" && len(thinkingBlocks) == 0 {
+		logger.Error("No content in Gemini structured response")
+		return nil, fmt.Errorf("no content in response")
+	}
+
+	// Create structured response
+	structuredResponse := &neurotypes.StructuredLLMResponse{
+		TextContent:    textContent,
+		ThinkingBlocks: thinkingBlocks,
+	}
+
+	logger.Debug("Gemini structured response received", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))
+	return structuredResponse, nil
 }
 
 // SetDebugTransport sets the HTTP transport for network debugging.
@@ -333,4 +373,41 @@ func (c *GeminiClient) processGeminiResponse(result *genai.GenerateContentRespon
 	}
 
 	return contentBuilder.String(), info
+}
+
+// processGeminiResponseStructured processes all content from Gemini response for structured output.
+// Separates thinking blocks from text content instead of mixing them with formatting.
+func (c *GeminiClient) processGeminiResponseStructured(result *genai.GenerateContentResponse) (string, []neurotypes.ThinkingBlock) {
+	var textContent strings.Builder
+	var thinkingBlocks []neurotypes.ThinkingBlock
+
+	// Process all candidates (usually just one)
+	for _, candidate := range result.Candidates {
+		if candidate.Content == nil {
+			continue
+		}
+
+		// Process all parts in the content
+		for _, part := range candidate.Content.Parts {
+			if part.Text == "" {
+				continue // Skip empty parts
+			}
+
+			if part.Thought {
+				// This is a thinking block - extract separately
+				thinkingBlocks = append(thinkingBlocks, neurotypes.ThinkingBlock{
+					Content:  part.Text,
+					Provider: "gemini",
+					Type:     "thinking",
+				})
+				logger.Debug("Gemini thinking block extracted for structured response", "thinking_length", len(part.Text))
+			} else {
+				// This is regular text content - no formatting
+				textContent.WriteString(part.Text)
+				logger.Debug("Gemini text block processed for structured response", "text_length", len(part.Text))
+			}
+		}
+	}
+
+	return textContent.String(), thinkingBlocks
 }

@@ -128,6 +128,27 @@ func (c *OpenAIClient) SendChatCompletion(session *neurotypes.ChatSession, model
 	return content, nil
 }
 
+// SendStructuredCompletion sends a chat completion request to OpenAI and returns structured response.
+// Since regular OpenAI models don't have native thinking content, this returns regular text with no thinking blocks.
+func (c *OpenAIClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	logger.Debug("OpenAI SendStructuredCompletion starting", "model", modelConfig.BaseModel)
+
+	// Use regular completion since OpenAI chat models don't have native thinking content
+	textContent, err := c.SendChatCompletion(session, modelConfig)
+	if err != nil {
+		return nil, fmt.Errorf("openai structured completion failed: %w", err)
+	}
+
+	// Create structured response with no thinking blocks (regular models don't provide thinking blocks)
+	structuredResponse := &neurotypes.StructuredLLMResponse{
+		TextContent:    textContent,
+		ThinkingBlocks: []neurotypes.ThinkingBlock{}, // Empty - regular models don't provide thinking blocks
+	}
+
+	logger.Debug("OpenAI structured response created", "content_length", len(textContent), "thinking_blocks", 0)
+	return structuredResponse, nil
+}
+
 // StreamChatCompletion sends a streaming chat completion request to OpenAI.
 func (c *OpenAIClient) StreamChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
 	logger.Debug("OpenAI StreamChatCompletion starting", "model", modelConfig.BaseModel)

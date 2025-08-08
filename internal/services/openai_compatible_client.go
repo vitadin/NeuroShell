@@ -210,6 +210,27 @@ func (c *OpenAICompatibleClient) SendChatCompletion(session *neurotypes.ChatSess
 	return content, nil
 }
 
+// SendStructuredCompletion sends a chat completion request to the OpenAI-compatible API and returns structured response.
+// Since OpenAI-compatible models don't have native thinking content, this returns regular text with no thinking blocks.
+func (c *OpenAICompatibleClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+	logger.Debug("OpenAI-compatible SendStructuredCompletion starting", "model", modelConfig.BaseModel, "baseURL", c.baseURL)
+
+	// Use regular completion since OpenAI-compatible models don't have native thinking content
+	textContent, err := c.SendChatCompletion(session, modelConfig)
+	if err != nil {
+		return nil, fmt.Errorf("openai-compatible structured completion failed: %w", err)
+	}
+
+	// Create structured response with no thinking blocks (compatible models don't provide thinking blocks)
+	structuredResponse := &neurotypes.StructuredLLMResponse{
+		TextContent:    textContent,
+		ThinkingBlocks: []neurotypes.ThinkingBlock{}, // Empty - compatible models don't provide thinking blocks
+	}
+
+	logger.Debug("OpenAI-compatible structured response created", "content_length", len(textContent), "thinking_blocks", 0)
+	return structuredResponse, nil
+}
+
 // SetDebugTransport sets the HTTP transport for network debugging.
 // Currently, debug transport is not implemented for OpenAI-compatible client - this is a placeholder.
 func (c *OpenAICompatibleClient) SetDebugTransport(_ http.RoundTripper) {

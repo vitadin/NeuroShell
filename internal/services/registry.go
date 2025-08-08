@@ -376,3 +376,23 @@ func (r *Registry) GetProviderCatalogService() (*ProviderCatalogService, error) 
 func GetGlobalProviderCatalogService() (*ProviderCatalogService, error) {
 	return GetGlobalRegistry().GetProviderCatalogService()
 }
+
+// GetThinkingRendererService retrieves the thinking renderer service with proper type casting.
+func (r *Registry) GetThinkingRendererService() (*ThinkingRendererService, error) {
+	service, err := r.GetService("thinking-renderer")
+	if err != nil {
+		return nil, err
+	}
+
+	thinkingRendererService, ok := service.(*ThinkingRendererService)
+	if !ok {
+		return nil, fmt.Errorf("thinking renderer service has incorrect type")
+	}
+
+	return thinkingRendererService, nil
+}
+
+// GetGlobalThinkingRendererService returns the thinking renderer service from the global registry.
+func GetGlobalThinkingRendererService() (*ThinkingRendererService, error) {
+	return GetGlobalRegistry().GetThinkingRendererService()
+}

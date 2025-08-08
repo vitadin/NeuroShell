@@ -21,11 +21,12 @@ Output: [OK] autocomplete - available/initialized
 [OK] stack - available/initialized
 [OK] temporal-display - available/initialized
 [OK] theme - available/initialized
+[OK] thinking-renderer - available/initialized
 [OK] variable - available/initialized
 %%> "\\echo Failed services: ${_check_failed_services}"
 Failed services:
 %%> "\\echo Total services: ${_check_total_services}"
-Total services: 19
+Total services: 20
 %%> "\\echo Failed count: ${_check_failed_count}"
 Failed count: 0
 %%> "\\check[service=bash, quiet=true]"
