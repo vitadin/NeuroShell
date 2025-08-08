@@ -158,6 +158,7 @@ func (t *ThinkingRendererService) createThinkingBox(providerLabel string, block 
 		// Normal mode: clean multi-line format with simple indentation
 		result.WriteString("\n")
 		result.WriteString(fmt.Sprintf("--- %s ---\n", providerLabel))
+		result.WriteString("\n")
 
 		// Indent content lines
 		contentLines := strings.Split(content, "\n")
@@ -167,7 +168,8 @@ func (t *ThinkingRendererService) createThinkingBox(providerLabel string, block 
 			}
 		}
 
-		// Add end marker
+		// Add end marker on its own line
+		result.WriteString("\n")
 		result.WriteString("--- End thinking ---\n")
 		result.WriteString("\n")
 	}
