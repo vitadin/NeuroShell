@@ -256,6 +256,9 @@ type ParameterDefinition struct {
 	// Description provides help text for the parameter
 	Description string `yaml:"description" json:"description"`
 
+	// Notes provides additional usage notes or constraints for the parameter
+	Notes string `yaml:"notes,omitempty" json:"notes,omitempty"`
+
 	// Constraints defines validation rules for the parameter value
 	Constraints *ParameterConstraints `yaml:"constraints,omitempty" json:"constraints,omitempty"`
 }

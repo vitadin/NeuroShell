@@ -1,0 +1,98 @@
+%% Claude Opus 4 Debug Transport Test
+%% Purpose: Test CO4 model with debug transport integration
+%% This validates that debug transport captures HTTP requests for Anthropic models
+
+\set _style dark1
+
+\echo === Claude Opus 4 Debug Transport Validation Test ===
+\echo Testing CO4 with debug transport to capture HTTP request/response details
+\echo
+
+%% ============================================================================
+%% API SETUP
+%% ============================================================================
+\echo Phase 1: Activating Anthropic API key from environment...
+
+%% Load and activate the Anthropic API key from local environment
+\llm-api-load[provider=anthropic]
+\llm-api-activate[provider=anthropic, key=local.ANTHROPIC_API_KEY]
+
+%% Verify API key is activated
+\llm-api-load[provider=anthropic]
+\echo
+
+%% Create and activate Anthropic client explicitly
+\echo Step 1.1: Creating Anthropic client...
+\anthropic-client-new
+\llm-client-activate ANC
+\echo
+
+%% ============================================================================
+%% CO4 DEBUG TRANSPORT TEST
+%% ============================================================================
+\echo Phase 2: Testing CO4 (Claude Opus 4) with debug transport...
+\model-new[catalog_id="CO4", temperature="1.0", max_tokens="32768", top_p="0.95", thinking_budget="16384"] claude-opus-4-debug-test
+
+%% Check that the CO4 model was created successfully
+\echo Step 2.1: Check CO4 model creation with parameters...
+\model-status
+
+%% Activate the CO4 model for use
+\echo Step 2.2: Activate CO4 model for use...
+\model-activate claude-opus-4-debug-test
+
+%% Verify the CO4 model is active
+\echo Step 2.3: Verify CO4 model is active...
+\echo Active model: ${#active_model_name}
+\echo Provider: ${#active_model_provider}
+
+%% CO4 Advanced Research Task with Extended Thinking
+\echo Step 2.4: Testing CO4 advanced research capabilities with extended thinking...
+\echo This tests Claude Opus 4's highest-level intelligence and reasoning.
+\echo
+
+%% Message 1: Complex multi-domain research question
+\echo CO4 Message 1: Setting up a complex research scenario...
+\send I'm researching the intersection of quantum computing and machine learning. Specifically, I want to understand how quantum algorithms might accelerate neural network training. Can you explain the key quantum algorithms (like Grover's and Shor's) and their potential applications to ML optimization problems?
+
+\echo === Debug Transport Capture (Message 1) ===
+\echo-json ${_debug_network}
+\echo
+
+%% Message 2: Deep dive into specific technical details
+\echo CO4 Message 2: Diving deeper into technical specifics...
+\send Excellent foundation! Now I need to understand the technical challenges. What are the main obstacles to implementing quantum machine learning algorithms today? Consider decoherence, error rates, and the NISQ era limitations. How do companies like IBM and Google approach these problems?
+
+\echo === Debug Transport Capture (Message 2) ===
+\echo-json ${_debug_network}
+\echo
+
+%% Message 3: Synthesis and forward-looking analysis
+\echo CO4 Message 3: Requesting synthesis and future predictions...
+\send Perfect analysis! Based on our discussion, can you synthesize a roadmap for the next 10 years of quantum machine learning? What breakthrough developments should we watch for, and which applications are most likely to show quantum advantage first? Use your extended thinking to consider multiple scenarios.
+
+\echo === Debug Transport Capture (Message 3) ===
+\echo-json ${_debug_network}
+\echo
+
+%% Message 4: Practical application and memory test
+\echo CO4 Message 4: Testing practical application and memory...
+\send Brilliant roadmap! Now, if I were starting a research project today combining quantum computing and ML, what specific problem would you recommend I focus on based on everything we've discussed? What would be the key milestones and resource requirements?
+
+\echo === Debug Transport Capture (Message 4) ===
+\echo-json ${_debug_network}
+\echo
+
+%% CO4 test complete
+\echo Step 2.5: CO4 debug transport test complete. Checking session...
+\session-list
+\session-show
+
+%% CO4 cleanup
+\echo Step 2.6: Cleanup - deleting the CO4 test model...
+\model-delete claude-opus-4-debug-test
+\model-status
+
+\echo === Claude Opus 4 Debug Transport Test Complete ===
+\echo Final debug transport capture:
+\echo-json ${_debug_network}

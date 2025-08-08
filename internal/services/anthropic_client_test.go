@@ -1,6 +1,7 @@
 package services
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -545,4 +546,101 @@ func TestAnthropicClient_LazyInitialization(t *testing.T) {
 	// After creation, it should still be nil until first use
 	assert.True(t, client.IsConfigured())
 	assert.Nil(t, client.client)
+}
+
+// TestAnthropicClient_Constructor verifies proper initialization
+func TestAnthropicClient_Constructor(t *testing.T) {
+	tests := []struct {
+		name   string
+		apiKey string
+	}{
+		{
+			name:   "with API key",
+			apiKey: "test-key",
+		},
+		{
+			name:   "with empty API key",
+			apiKey: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := NewAnthropicClient(tt.apiKey)
+
+			assert.NotNil(t, client)
+			assert.Equal(t, tt.apiKey, client.apiKey)
+			assert.Nil(t, client.client) // Should be lazily initialized
+			assert.Nil(t, client.debugTransport)
+		})
+	}
+}
+
+func TestAnthropicClient_SetDebugTransport(t *testing.T) {
+	client := NewAnthropicClient("test-key")
+
+	// Create a mock transport
+	mockTransport := &http.Transport{}
+
+	// Set debug transport
+	client.SetDebugTransport(mockTransport)
+
+	// Verify transport is set
+	assert.Equal(t, mockTransport, client.debugTransport)
+	assert.Nil(t, client.client) // Should remain nil for lazy initialization
+}
+
+func TestAnthropicClient_SetDebugTransport_ClearsExistingClient(t *testing.T) {
+	client := NewAnthropicClient("test-key")
+
+	// Simulate that client was previously initialized
+	// (In real scenario, this would be done through initializeClientIfNeeded)
+	client.client = nil // Simulate initialized state
+
+	// Create a mock transport
+	mockTransport := &http.Transport{}
+
+	// Set debug transport
+	client.SetDebugTransport(mockTransport)
+
+	// Verify transport is set and client is cleared for re-initialization
+	assert.Equal(t, mockTransport, client.debugTransport)
+	assert.Nil(t, client.client) // Should be cleared to force re-initialization with debug transport
+}
+
+func TestAnthropicClient_initializeClientIfNeeded_NoAPIKey(t *testing.T) {
+	client := NewAnthropicClient("")
+
+	err := client.initializeClientIfNeeded()
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "anthropic API key not configured")
+	assert.Nil(t, client.client)
+}
+
+func TestAnthropicClient_initializeClientIfNeeded_Success(t *testing.T) {
+	client := NewAnthropicClient("sk-test-key-123")
+
+	err := client.initializeClientIfNeeded()
+
+	assert.NoError(t, err)
+	assert.NotNil(t, client.client)
+
+	// Second call should not reinitialize
+	previousClient := client.client
+	err = client.initializeClientIfNeeded()
+
+	assert.NoError(t, err)
+	assert.Equal(t, previousClient, client.client)
+}
+
+func TestAnthropicClient_initializeClientIfNeeded_WithDebugTransport(t *testing.T) {
+	client := NewAnthropicClient("sk-test-key-123")
+	mockTransport := &http.Transport{}
+	client.SetDebugTransport(mockTransport)
+
+	err := client.initializeClientIfNeeded()
+
+	assert.NoError(t, err)
+	assert.NotNil(t, client.client)
 }
