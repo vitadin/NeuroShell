@@ -23,8 +23,9 @@ type ThinkingInfo struct {
 // It provides lazy initialization of the Anthropic client and handles
 // all Anthropic-specific communication logic.
 type AnthropicClient struct {
-	apiKey string
-	client *anthropic.Client
+	apiKey         string
+	client         *anthropic.Client
+	debugTransport http.RoundTripper
 }
 
 // NewAnthropicClient creates a new Anthropic client with lazy initialization.
@@ -56,11 +57,20 @@ func (c *AnthropicClient) initializeClientIfNeeded() error {
 		return fmt.Errorf("anthropic API key not configured")
 	}
 
-	// Create Anthropic client with API key
-	client := anthropic.NewClient(option.WithAPIKey(c.apiKey))
-	c.client = &client
+	// Create Anthropic client with API key and optional debug transport
+	var options []option.RequestOption
+	options = append(options, option.WithAPIKey(c.apiKey))
 
-	logger.Debug("Anthropic client initialized", "provider", "anthropic")
+	if c.debugTransport != nil {
+		httpClient := &http.Client{Transport: c.debugTransport}
+		options = append(options, option.WithHTTPClient(httpClient))
+		logger.Debug("Anthropic client initialized with debug transport", "provider", "anthropic")
+	} else {
+		logger.Debug("Anthropic client initialized", "provider", "anthropic")
+	}
+
+	client := anthropic.NewClient(options...)
+	c.client = &client
 	return nil
 }
 
@@ -136,10 +146,10 @@ func (c *AnthropicClient) SendChatCompletion(session *neurotypes.ChatSession, mo
 }
 
 // SetDebugTransport sets the HTTP transport for network debugging.
-// Currently, debug transport is not implemented for Anthropic client - this is a placeholder.
-func (c *AnthropicClient) SetDebugTransport(_ http.RoundTripper) {
-	// Dummy implementation - will be implemented later
-	// The Anthropic client will eventually use this transport for HTTP debugging
+func (c *AnthropicClient) SetDebugTransport(transport http.RoundTripper) {
+	c.debugTransport = transport
+	// Clear the existing client to force re-initialization with debug transport
+	c.client = nil
 }
 
 // StreamChatCompletion sends a streaming chat completion request to Anthropic.
