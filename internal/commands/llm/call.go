@@ -335,9 +335,16 @@ func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client ne
 			// Fallback: just use text content if thinking renderer isn't available
 			fullResponse = structuredResponse.TextContent
 		} else {
-			// Render thinking blocks and combine with text content
-			renderedThinking := thinkingRenderer.RenderThinkingBlocks(structuredResponse.ThinkingBlocks)
-			fullResponse = renderedThinking + structuredResponse.TextContent
+			// Create render configuration with theme integration
+			renderConfig, err := c.createRenderConfig(variableService)
+			if err != nil {
+				// Fallback to legacy rendering if config creation fails
+				fullResponse = thinkingRenderer.RenderThinkingBlocksLegacy(structuredResponse.ThinkingBlocks) + structuredResponse.TextContent
+			} else {
+				// Render thinking blocks with sophisticated theming
+				renderedThinking := thinkingRenderer.RenderThinkingBlocks(structuredResponse.ThinkingBlocks, renderConfig)
+				fullResponse = renderedThinking + structuredResponse.TextContent
+			}
 		}
 	} else {
 		// No thinking blocks, just use text content
@@ -538,6 +545,114 @@ func (c *CallCommand) stopLLMDisplay(id string) {
 
 	// Stop the display, ignore errors (graceful degradation)
 	_ = temporalService.Stop(id)
+}
+
+// createRenderConfig creates a RenderConfig that integrates with the theme service.
+func (c *CallCommand) createRenderConfig(variableService *services.VariableService) (neurotypes.RenderConfig, error) {
+	// Get theme service for styling
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		return nil, fmt.Errorf("theme service not available: %w", err)
+	}
+
+	// Get current theme (try from variable, fallback to default)
+	themeName := "default"
+	if themeVar, err := variableService.Get("_theme"); err == nil && themeVar != "" {
+		themeName = themeVar
+	}
+
+	// Get theme configuration
+	theme := themeService.GetThemeByName(themeName)
+
+	// Create the command render config
+	config := &CommandRenderConfig{
+		theme:         theme,
+		themeName:     themeName,
+		showThinking:  true, // Default to showing thinking blocks
+		thinkingStyle: "full",
+		compactMode:   false,
+		maxWidth:      120, // Default terminal width
+	}
+
+	// Check for thinking display preferences in variables
+	if thinkingVar, err := variableService.Get("_thinking_display"); err == nil {
+		switch strings.ToLower(strings.TrimSpace(thinkingVar)) {
+		case "hidden", "false", "off":
+			config.showThinking = false
+		case "summary", "compact":
+			config.thinkingStyle = "summary"
+		case "full", "true", "on":
+			config.thinkingStyle = "full"
+		}
+	}
+
+	// Check for compact mode preference
+	if compactVar, err := variableService.Get("_compact_mode"); err == nil {
+		config.compactMode = strings.ToLower(strings.TrimSpace(compactVar)) == "true"
+	}
+
+	return config, nil
+}
+
+// CommandRenderConfig implements neurotypes.RenderConfig using the theme service.
+type CommandRenderConfig struct {
+	theme         *services.Theme
+	themeName     string
+	showThinking  bool
+	thinkingStyle string
+	compactMode   bool
+	maxWidth      int
+}
+
+// GetStyle returns theme-based styles for different elements.
+func (c *CommandRenderConfig) GetStyle(element string) lipgloss.Style {
+	if c.theme == nil {
+		return lipgloss.NewStyle()
+	}
+
+	switch element {
+	case "info":
+		return c.theme.Info
+	case "italic":
+		return c.theme.Italic
+	case "background":
+		return c.theme.Background
+	case "warning":
+		return c.theme.Warning
+	case "highlight":
+		return c.theme.Highlight
+	case "bold":
+		return c.theme.Bold
+	case "underline":
+		return c.theme.Underline
+	default:
+		return c.theme.Info // Default to info style
+	}
+}
+
+// GetTheme returns the current theme name.
+func (c *CommandRenderConfig) GetTheme() string {
+	return c.themeName
+}
+
+// IsCompactMode returns whether compact rendering is enabled.
+func (c *CommandRenderConfig) IsCompactMode() bool {
+	return c.compactMode
+}
+
+// GetMaxWidth returns the maximum width for content rendering.
+func (c *CommandRenderConfig) GetMaxWidth() int {
+	return c.maxWidth
+}
+
+// ShowThinking returns whether thinking blocks should be displayed.
+func (c *CommandRenderConfig) ShowThinking() bool {
+	return c.showThinking
+}
+
+// GetThinkingStyle returns the thinking display style preference.
+func (c *CommandRenderConfig) GetThinkingStyle() string {
+	return c.thinkingStyle
 }
 
 func init() {

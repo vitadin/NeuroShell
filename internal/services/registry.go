@@ -379,7 +379,7 @@ func GetGlobalProviderCatalogService() (*ProviderCatalogService, error) {
 
 // GetThinkingRendererService retrieves the thinking renderer service with proper type casting.
 func (r *Registry) GetThinkingRendererService() (*ThinkingRendererService, error) {
-	service, err := r.GetService("thinking_renderer")
+	service, err := r.GetService("thinking-renderer")
 	if err != nil {
 		return nil, err
 	}

@@ -21,7 +21,7 @@ Output: [OK] autocomplete - available/initialized
 [OK] stack - available/initialized
 [OK] temporal-display - available/initialized
 [OK] theme - available/initialized
-[OK] thinking_renderer - available/initialized
+[OK] thinking-renderer - available/initialized
 [OK] variable - available/initialized
 %%> "\\echo Failed services: ${_check_failed_services}"
 Failed services:
