@@ -31,7 +31,7 @@
 %% CS4 DEBUG TRANSPORT TEST
 %% ============================================================================
 \echo Phase 2: Testing CS4 (Claude Sonnet 4) with debug transport...
-\model-new[catalog_id="CS4", temperature="0.8", max_tokens="4096", top_p="0.95", top_k="50", thinking_budget="8192"] claude-sonnet-4-debug-test
+\model-new[catalog_id="CS4", temperature="1.0", max_tokens="16384", top_p="0.95", thinking_budget="8192"] claude-sonnet-4-debug-test
 
 %% Check that the CS4 model was created successfully
 \echo Step 2.1: Check CS4 model creation with parameters...

@@ -55,6 +55,7 @@ Anthropic Models:
     Pricing: $3.00/1M input, $15.00/1M output tokens
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2024-11-01
+    Extended thinking supported
     Description: High intelligence with toggleable extended thinking
   [CO4] Claude Opus 4 (claude-opus-4-20250514)
     Provider: anthropic (ANC)
@@ -64,6 +65,13 @@ Anthropic Models:
     Pricing: $15.00/1M input, $75.00/1M output tokens
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2025-03-01
+    Extended thinking supported
+    Parameter Notes:
+      • temperature: Must be 1.0 when extended thinking (thinking_budget) is enabled
+      • max_tokens: Must be greater than thinking_budget when extended thinking is enabled
+      • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
+      • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
+      • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
     Description: Highest level of intelligence and capability
   [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
     Provider: anthropic (ANC)
@@ -73,6 +81,13 @@ Anthropic Models:
     Pricing: $3.00/1M input, $15.00/1M output tokens
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2025-03-01
+    Extended thinking supported
+    Parameter Notes:
+      • temperature: Must be 1.0 when extended thinking (thinking_budget) is enabled
+      • max_tokens: Must be greater than thinking_budget when extended thinking is enabled
+      • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
+      • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
+      • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
     Description: High intelligence and balanced performance
 %%> "\\model-catalog[search=coding]"
 Model Catalog - Search: 'coding' (3 models):

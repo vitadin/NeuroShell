@@ -484,6 +484,23 @@ func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, sh
 		result.WriteString(reasoningLine)
 	}
 
+	// Extended thinking support (for Anthropic models)
+	if c.hasExtendedThinking(model.Capabilities) {
+		extendedThinkingLine := fmt.Sprintf("    %s\n",
+			themeObj.Success.Render("Extended thinking supported"))
+		result.WriteString(extendedThinkingLine)
+	}
+
+	// Parameter notes and constraints
+	parameterNotes := c.getParameterNotes(model.Parameters)
+	if len(parameterNotes) > 0 {
+		result.WriteString(fmt.Sprintf("    %s\n", themeObj.Info.Render("Parameter Notes:")))
+		for _, note := range parameterNotes {
+			noteFormatted := fmt.Sprintf("      • %s\n", themeObj.Warning.Render(note))
+			result.WriteString(noteFormatted)
+		}
+	}
+
 	// Thinking mode information (for Gemini models)
 	if model.Features != nil && model.Features.ThinkingSupported != nil && *model.Features.ThinkingSupported {
 		var thinkingInfo []string
@@ -594,6 +611,32 @@ func (c *CatalogCommand) getThemeObject() *services.Theme {
 	}
 
 	return themeService.GetThemeByName(styleValue)
+}
+
+// hasExtendedThinking checks if the model has extended-thinking capability
+func (c *CatalogCommand) hasExtendedThinking(capabilities []string) bool {
+	for _, capability := range capabilities {
+		if capability == "extended-thinking" {
+			return true
+		}
+	}
+	return false
+}
+
+// getParameterNotes extracts all parameter notes from the model definition
+func (c *CatalogCommand) getParameterNotes(parameters []neurotypes.ParameterDefinition) []string {
+	var notes []string
+
+	// Collect all parameter notes
+	for _, param := range parameters {
+		if param.Notes != "" {
+			// Format the note with parameter name for clarity
+			formattedNote := fmt.Sprintf("%s: %s", param.Name, param.Notes)
+			notes = append(notes, formattedNote)
+		}
+	}
+
+	return notes
 }
 
 func init() {

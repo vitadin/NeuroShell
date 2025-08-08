@@ -29,6 +29,7 @@ parameters:
       min: 0.0
       max: 1.0
     description: "Controls randomness (0.0=deterministic, 1.0=creative)"
+    notes: "Must be 1.0 when extended thinking (thinking_budget) is enabled"
   - name: max_tokens
     type: int
     required: false
@@ -36,6 +37,7 @@ parameters:
       min: 1
       max: 64000
     description: "Maximum output tokens"
+    notes: "Must be greater than thinking_budget when extended thinking is enabled"
   - name: top_p
     type: float
     required: false
@@ -43,6 +45,7 @@ parameters:
       min: 0.0
       max: 1.0
     description: "Nucleus sampling parameter"
+    notes: "Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled"
   - name: top_k
     type: int
     required: false
@@ -50,6 +53,7 @@ parameters:
       min: 0
       max: 200
     description: "Top-k sampling parameter"
+    notes: "Cannot be used when extended thinking (thinking_budget) is enabled"
   - name: thinking_budget
     type: int
     required: false
@@ -57,3 +61,4 @@ parameters:
       min: 0
       max: 24576
     description: "Extended thinking token budget (0=disabled, -1=dynamic)"
+    notes: "When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0"
