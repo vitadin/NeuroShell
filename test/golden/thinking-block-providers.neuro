@@ -1,0 +1,36 @@
+%% Provider-specific thinking block rendering test
+%% Tests that different providers get correct thinking block labels
+%% This verifies anthropic, gemini, openai, and mock provider rendering
+
+%% Setup client and session for testing
+\anthropic-client-new provider-test-client
+\get[_client_id]
+\session-new provider-test-session
+
+%% Test Anthropic/Claude provider rendering
+\echo Testing Anthropic provider thinking blocks
+\model-new[catalog_id="CS4", max_tokens=100, description="Anthropic Claude model for testing thinking blocks"] test-claude
+\model-activate test-claude
+\session-add-usermsg This is a test message for Claude thinking blocks.
+\llm-call
+
+%% Test Gemini provider rendering  
+\echo Testing Gemini provider thinking blocks
+\model-new[catalog_id="GM25F", max_tokens=100, description="Gemini model for testing thinking blocks"] test-gemini
+\model-activate test-gemini
+\session-add-usermsg This is a test message for Gemini thinking blocks.
+\llm-call
+
+%% Test OpenAI provider rendering
+\echo Testing OpenAI provider thinking blocks
+\model-new[catalog_id="CS4", max_tokens=100, description="OpenAI GPT model for testing thinking blocks"] test-openai
+\model-activate test-openai  
+\session-add-usermsg This is a test message for OpenAI thinking blocks.
+\llm-call
+
+%% Test default/mock provider rendering
+\echo Testing mock provider thinking blocks
+\model-new[catalog_id="CS4", max_tokens=100, description="Mock model for testing thinking blocks"] test-mock
+\model-activate test-mock
+\session-add-usermsg This is a test message for mock thinking blocks.
+\llm-call

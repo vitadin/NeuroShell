@@ -1,0 +1,51 @@
+%% Integration test for thinking block full workflow
+%% Tests complete thinking block functionality in realistic scenarios
+%% This covers session management, model configuration, and multi-turn conversations
+
+%% Initialize test environment
+\echo Starting thinking block integration test
+\set[user_name="TestUser"]
+\set[topic="renewable energy"]
+
+%% Setup client for integration testing
+\anthropic-client-new integration-client
+\get[_client_id]
+
+%% Create and configure a session for the integration test
+\session-new integration-session
+\echo Created integration session for ${user_name}
+
+%% Setup a test model for thinking blocks
+\model-new[catalog_id="CS4", max_tokens=200, description="Integration test model for thinking block workflow"] integration-model
+\model-activate integration-model
+\echo Activated integration test model
+
+%% Test multi-turn conversation with thinking blocks
+\echo Testing multi-turn conversation with thinking blocks
+\session-add-usermsg Hello, I'm interested in learning about ${topic}. Can you help me understand the basics?
+\llm-call
+
+%% Follow up with a more specific question
+\echo Testing follow-up question with context
+\session-add-usermsg What are the main advantages of solar power compared to traditional fossil fuels?
+\llm-call
+
+%% Test with a complex technical question
+\echo Testing complex technical question
+\session-add-usermsg Can you explain how photovoltaic cells convert sunlight into electricity, and what factors affect their efficiency?
+\llm-call
+
+%% Test session state management
+\echo Checking session state with thinking blocks
+\session-show
+
+%% Test variable interpolation with thinking blocks
+\set[question_count=3]
+\echo Testing variable interpolation in messages
+\session-add-usermsg This is question number ${question_count} + 1. How do wind turbines generate electricity?
+\llm-call
+
+%% Final test - verify thinking blocks work with session management
+\echo Testing thinking blocks with session management
+\session-list
+\echo Integration test completed successfully

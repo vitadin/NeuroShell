@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 
 	"neuroshell/internal/logger"
 	"neuroshell/pkg/neurotypes"
@@ -238,7 +239,7 @@ func (m *MockLLMService) StreamCompletion(_ neurotypes.LLMClient, session *neuro
 }
 
 // SendStructuredCompletion mocks sending a structured completion request
-func (m *MockLLMService) SendStructuredCompletion(_ neurotypes.LLMClient, session *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+func (m *MockLLMService) SendStructuredCompletion(_ neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
 	if !m.initialized {
 		return nil, fmt.Errorf("mock llm service not initialized")
 	}
@@ -252,11 +253,31 @@ func (m *MockLLMService) SendStructuredCompletion(_ neurotypes.LLMClient, sessio
 
 	textContent := fmt.Sprintf("This is a mocking reply (received %d messages, last: %s)", messageCount, lastMessage)
 
+	// Determine provider from model configuration for provider-specific testing
+	provider := "mock"
+	if model != nil {
+		// Extract provider from model description or catalog ID for testing
+		desc := strings.ToLower(model.Description)
+		catalogID := strings.ToLower(model.CatalogID)
+
+		switch {
+		case strings.Contains(desc, "anthropic") || strings.Contains(catalogID, "claude"):
+			provider = "anthropic"
+		case strings.Contains(desc, "gemini") || strings.Contains(catalogID, "gemini"):
+			provider = "gemini"
+		case strings.Contains(desc, "openai") || strings.Contains(catalogID, "gpt"):
+			provider = "openai"
+		}
+	}
+
+	// Create content-aware thinking blocks that reflect the actual message content
+	thinkingContent := fmt.Sprintf("Thinking about the user's message: \"%s\". This helps verify the message flow in tests. The user sent %d messages total, and I need to provide a helpful response.", lastMessage, messageCount)
+
 	// Create mock thinking blocks for testing
 	thinkingBlocks := []neurotypes.ThinkingBlock{
 		{
-			Content:  "This is a mock thinking process for testing structured responses.",
-			Provider: "mock",
+			Content:  thinkingContent,
+			Provider: provider,
 			Type:     "thinking",
 		},
 	}

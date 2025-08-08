@@ -1,0 +1,32 @@
+Starting thinking block integration test
+Setting user_name = TestUser
+Setting topic = renewable energy
+Anthropic client ready: ANC:da1c321d (configured: true, extended thinking: supported)
+_client_id = ANC:da1c321d
+Created session 'integration-session' (ID: 00000001)
+Created integration session for TestUser
+Created model 'integration-model' (ID: 00000002, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Activated model 'integration-model' (ID: 00000002, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Activated integration test model
+Testing multi-turn conversation with thinking blocks
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Testing follow-up question with context
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Testing complex technical question
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Checking session state with thinking blocks
+Session: integration-session (ID: 00000001)
+System: You are a helpful assistant.
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:08
+Messages: 3 total
+[1] user (00:00:03): Hello, I'm interested in learning about ...an you help me understand the basics? (96 chars)
+[2] user (00:00:05): What are the main advantages of solar po...compared to traditional fossil fuels? (81 chars)
+[3] user (00:00:07): Can you explain how photovoltaic cells c...what factors affect their efficiency? (115 chars)
+Setting question_count = 3
+Testing variable interpolation in messages
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Testing thinking blocks with session management
+Sessions (1 total):
+  integration-session    (ID: 00000001, active, 4 messages, created: 2025-01-01)
+Integration test completed successfully
