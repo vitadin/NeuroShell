@@ -242,6 +242,7 @@ func runShell(_ *cobra.Command, _ []string) {
 	sh.DeleteCmd("help")
 
 	sh.Println(fmt.Sprintf("Neuro Shell v%s - LLM-integrated shell environment", version.GetVersion()))
+	sh.Println("Licensed under LGPL v3 (\\license for details)")
 	sh.Println("Type '\\help' for Neuro commands, Ctrl+E for editor, or '\\exit' to quit.")
 
 	sh.NotFound(shell.ProcessInput)
