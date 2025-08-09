@@ -1,0 +1,17 @@
+%% License basic test
+%% Tests \license command functionality and system variable storage
+
+\echo === License Basic Test ===
+\echo Testing \license command functionality
+
+%% Test 1: Display license information
+\license
+
+%% Test 2: Verify system variables are set
+\echo License system variables check:
+\get[#license_name]
+\get[#license_short_name] 
+\get[#license_url]
+
+%% Test 3: Show that variables can be used in interpolation
+\echo License summary: ${#license_short_name} - ${#license_name}
