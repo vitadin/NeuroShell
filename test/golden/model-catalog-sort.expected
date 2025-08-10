@@ -1,6 +1,7 @@
 Setting _echo_command = true
 %%> "\\model-catalog[sort=name]"
 Model Catalog (30 models):
+
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 4,096 tokens)
@@ -11,6 +12,7 @@ Model Catalog (30 models):
     Knowledge cutoff: 2023-08-01
     Version: 2024-02-29
     Description: Top-level intelligence, fluency, and understanding
+
   [CS37] Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 64,000 tokens)
@@ -22,6 +24,7 @@ Model Catalog (30 models):
     Extended thinking supported
     Version: 2025-02-19
     Description: High intelligence with toggleable extended thinking
+
   [CO4] Claude Opus 4 (claude-opus-4-20250514)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 32,000 tokens)
@@ -39,6 +42,7 @@ Model Catalog (30 models):
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
     Version: 2025-05-14
     Description: Highest level of intelligence and capability
+
   [CO41] Claude Opus 4.1 (claude-opus-4-1-20250805)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 32,000 tokens)
@@ -56,6 +60,7 @@ Model Catalog (30 models):
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
     Version: 2025-08-05
     Description: Highest level of intelligence and capability with enhanced API form validation
+
   [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 64,000 tokens)
@@ -74,6 +79,7 @@ Model Catalog (30 models):
     Version: 2025-05-14
     Last Updated: 2025-08-10
     Description: High intelligence and balanced performance
+
   [GM25F] Gemini 2.5 Flash (gemini-2.5-flash)
     Provider: gemini (GMC)
     Context: 1,048,576 tokens (max output: 65,536 tokens)
@@ -88,6 +94,7 @@ Model Catalog (30 models):
     Version: 2025-06-01
     Last Updated: 2025-08-10
     Description: Google's fast and efficient multimodal AI model optimized for speed and performance
+
   [GM25FL] Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
     Provider: gemini (GMC)
     Context: 1,048,576 tokens
@@ -99,6 +106,7 @@ Model Catalog (30 models):
     Thinking mode: range: 512-24576, default: disabled, can disable
     Version: 2025-07
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
+
   [GM25P] Gemini 2.5 Pro (gemini-2.5-pro)
     Provider: gemini (GMC)
     Context: 1,048,576 tokens (max output: 65,536 tokens)
@@ -112,6 +120,7 @@ Model Catalog (30 models):
     Version: 2025-06-01
     Last Updated: 2025-08-10
     Description: Google's most capable multimodal AI model with advanced reasoning capabilities
+
   [ORGM25FL] Google: Gemini 2.5 Flash Lite (google/gemini-2.5-flash-lite)
     Provider: openrouter (ORC)
     Context: 1,048,576 tokens
@@ -123,6 +132,7 @@ Model Catalog (30 models):
     Thinking mode: range: 512-24576, default: disabled, can disable
     Version: 2025-07
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
+
   [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
     Provider: openai (OAC)
     Context: 1,047,576 tokens (max output: 32,768 tokens)
@@ -135,6 +145,7 @@ Model Catalog (30 models):
     Version: 2025-04-14
     Last Updated: 2025-08-10
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
+
   [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
     Provider: openai (OAC)
     Context: 128,000 tokens (max output: 16,384 tokens)
@@ -146,6 +157,7 @@ Model Catalog (30 models):
     Knowledge cutoff: 2023-09-30
     Version: 2024-11-20
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
+
   [GPT5C] GPT-5 Chat (gpt-5)
     Provider: openai (OAC)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -158,6 +170,7 @@ Model Catalog (30 models):
     Reasoning tokens supported
     Snapshots: gpt-5, gpt-5-2025-08-07
     Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via chat completions endpoint.
+
   [GPT5MC] GPT-5 Mini Chat (gpt-5-mini-2025-08-07)
     Provider: openai (OAC)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -170,6 +183,7 @@ Model Catalog (30 models):
     Reasoning tokens supported
     Snapshots: gpt-5-mini-2025-08-07
     Description: A faster, more cost-efficient version of GPT-5 for well-defined tasks. Great for well-defined tasks and precise prompts via chat completions endpoint.
+
   [GPT5MR] GPT-5 Mini Responses (gpt-5-mini-2025-08-07)
     Provider: openai (OAR)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -182,6 +196,7 @@ Model Catalog (30 models):
     Reasoning tokens supported
     Snapshots: gpt-5-mini-2025-08-07
     Description: A faster, more cost-efficient version of GPT-5 for well-defined tasks. Great for well-defined tasks and precise prompts via responses endpoint.
+
   [GPT5NC] GPT-5 Nano Chat (gpt-5-nano-2025-08-07)
     Provider: openai (OAC)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -194,6 +209,7 @@ Model Catalog (30 models):
     Reasoning tokens supported
     Snapshots: gpt-5-nano-2025-08-07
     Description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via chat completions endpoint.
+
   [GPT5NR] GPT-5 Nano Responses (gpt-5-nano-2025-08-07)
     Provider: openai (OAR)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -206,6 +222,7 @@ Model Catalog (30 models):
     Reasoning tokens supported
     Snapshots: gpt-5-nano-2025-08-07
     Description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via responses endpoint.
+
   [GPT5R] GPT-5 Responses (gpt-5)
     Provider: openai (OAR)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -218,6 +235,7 @@ Model Catalog (30 models):
     Reasoning tokens supported
     Snapshots: gpt-5, gpt-5-2025-08-07
     Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via responses endpoint.
+
   [MK2] Kimi K2 (Moonshot) (kimi-k2-0711-preview)
     Provider: moonshot (MSC)
     Context: 128,000 tokens (max output: 32,768 tokens)
@@ -228,6 +246,7 @@ Model Catalog (30 models):
     Knowledge cutoff: 2024-12-01
     Version: 2024-07-11
     Description: Direct access to Kimi K2 via Moonshot AI platform, a trillion-parameter MoE model with 384 experts and advanced reasoning capabilities
+
   [ORK2] Kimi K2 (OpenRouter) (moonshotai/kimi-k2)
     Provider: openrouter (ORC)
     Context: 131,000 tokens (max output: 32,768 tokens)
@@ -237,6 +256,7 @@ Model Catalog (30 models):
     Features: streaming, function-calling
     Knowledge cutoff: 2024-12-01
     Description: Trillion-parameter MoE model with 32B active parameters via OpenRouter, optimized for advanced tool use, reasoning, and code synthesis
+
   [ORK2F] Kimi K2 Free (OpenRouter) (moonshotai/kimi-k2:free)
     Provider: openrouter (ORC)
     Context: 65,536 tokens (max output: 32,768 tokens)
@@ -246,6 +266,7 @@ Model Catalog (30 models):
     Features: streaming, function-calling
     Knowledge cutoff: 2024-12-01
     Description: Free access to Kimi K2 via OpenRouter, a trillion-parameter MoE model optimized for advanced tool use, reasoning, and code synthesis
+
   [O1R] o1 Reasoning (o1-2024-12-17)
     Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -259,6 +280,7 @@ Model Catalog (30 models):
     Version: 2024-12-17
     Last Updated: 2025-08-10
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
+
   [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
     Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -270,6 +292,7 @@ Model Catalog (30 models):
     Reasoning tokens supported
     Version: 2025-03-19
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
+
   [O3R] O3 Reasoning (o3)
     Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -282,6 +305,7 @@ Model Catalog (30 models):
     Reasoning tokens supported
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
+
   [O3PR] o3-pro Reasoning (o3-pro-2025-06-10)
     Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -295,6 +319,7 @@ Model Catalog (30 models):
     Version: 2025-06-10
     Last Updated: 2025-08-10
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
+
   [O4MC] O4-mini Chat (o4-mini)
     Provider: openai (OAC)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -306,6 +331,7 @@ Model Catalog (30 models):
     Knowledge cutoff: 2024-05-31
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Chat endpoint version.
+
   [O4MR] O4-mini Reasoning (o4-mini)
     Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -318,6 +344,7 @@ Model Catalog (30 models):
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.
+
   [ORQ3A] Qwen: Qwen3 235B A22B 2507 (qwen/qwen3-235b-a22b-07-25)
     Provider: openrouter (ORC)
     Context: 262,144 tokens
@@ -328,6 +355,7 @@ Model Catalog (30 models):
     Knowledge cutoff: 2025-07-01
     Version: 2025-07-25
     Description: Mixture-of-Experts model with 235B total/22B active parameters via OpenRouter, featuring thinking mode and advanced multilingual capabilities
+
   [ORQ3AT] Qwen: Qwen3 235B A22B Thinking 2507 (qwen/qwen3-235b-a22b-thinking-2507)
     Provider: openrouter (ORC)
     Context: 262,144 tokens (max output: 81,920 tokens)
@@ -338,6 +366,7 @@ Model Catalog (30 models):
     Knowledge cutoff: 2025-07-25
     Version: 2025-07-25
     Description: High-performance Mixture-of-Experts model optimized for complex reasoning tasks with thinking mode, activating 22B of 235B parameters per forward pass
+
   [ORG4] xAI: Grok 4 (x-ai/grok-4)
     Provider: openrouter (ORC)
     Context: 256,000 tokens
@@ -348,6 +377,7 @@ Model Catalog (30 models):
     Knowledge cutoff: 2025-07-09
     Version: 2025-07-09
     Description: Grok 4 is xAI's latest reasoning model with a 256k context window. It supports parallel tool calling, structured outputs, and both image and text inputs with mandatory reasoning capabilities.
+
   [ORGLM45] Z.AI: GLM 4.5 (z-ai/glm-4.5)
     Provider: openrouter (ORC)
     Context: 128,000 tokens
@@ -361,6 +391,7 @@ Model Catalog (30 models):
 %%> "\\model-catalog[sort=provider]"
 Model Catalog (30 models):
 Anthropic Models:
+
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 4,096 tokens)
@@ -371,6 +402,7 @@ Anthropic Models:
     Knowledge cutoff: 2023-08-01
     Version: 2024-02-29
     Description: Top-level intelligence, fluency, and understanding
+
   [CS37] Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 64,000 tokens)
@@ -382,6 +414,7 @@ Anthropic Models:
     Extended thinking supported
     Version: 2025-02-19
     Description: High intelligence with toggleable extended thinking
+
   [CO4] Claude Opus 4 (claude-opus-4-20250514)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 32,000 tokens)
@@ -399,6 +432,7 @@ Anthropic Models:
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
     Version: 2025-05-14
     Description: Highest level of intelligence and capability
+
   [CO41] Claude Opus 4.1 (claude-opus-4-1-20250805)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 32,000 tokens)
@@ -416,6 +450,7 @@ Anthropic Models:
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
     Version: 2025-08-05
     Description: Highest level of intelligence and capability with enhanced API form validation
+
   [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 64,000 tokens)
@@ -436,6 +471,7 @@ Anthropic Models:
     Description: High intelligence and balanced performance
 
 Gemini Models:
+
   [GM25F] Gemini 2.5 Flash (gemini-2.5-flash)
     Provider: gemini (GMC)
     Context: 1,048,576 tokens (max output: 65,536 tokens)
@@ -450,6 +486,7 @@ Gemini Models:
     Version: 2025-06-01
     Last Updated: 2025-08-10
     Description: Google's fast and efficient multimodal AI model optimized for speed and performance
+
   [GM25FL] Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
     Provider: gemini (GMC)
     Context: 1,048,576 tokens
@@ -461,6 +498,7 @@ Gemini Models:
     Thinking mode: range: 512-24576, default: disabled, can disable
     Version: 2025-07
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
+
   [GM25P] Gemini 2.5 Pro (gemini-2.5-pro)
     Provider: gemini (GMC)
     Context: 1,048,576 tokens (max output: 65,536 tokens)
@@ -476,6 +514,7 @@ Gemini Models:
     Description: Google's most capable multimodal AI model with advanced reasoning capabilities
 
 Moonshot Models:
+
   [MK2] Kimi K2 (Moonshot) (kimi-k2-0711-preview)
     Provider: moonshot (MSC)
     Context: 128,000 tokens (max output: 32,768 tokens)
@@ -488,6 +527,7 @@ Moonshot Models:
     Description: Direct access to Kimi K2 via Moonshot AI platform, a trillion-parameter MoE model with 384 experts and advanced reasoning capabilities
 
 Openai Models:
+
   [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
     Provider: openai (OAC)
     Context: 1,047,576 tokens (max output: 32,768 tokens)
@@ -500,6 +540,7 @@ Openai Models:
     Version: 2025-04-14
     Last Updated: 2025-08-10
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
+
   [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
     Provider: openai (OAC)
     Context: 128,000 tokens (max output: 16,384 tokens)
@@ -511,6 +552,7 @@ Openai Models:
     Knowledge cutoff: 2023-09-30
     Version: 2024-11-20
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
+
   [GPT5C] GPT-5 Chat (gpt-5)
     Provider: openai (OAC)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -523,6 +565,7 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: gpt-5, gpt-5-2025-08-07
     Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via chat completions endpoint.
+
   [GPT5MC] GPT-5 Mini Chat (gpt-5-mini-2025-08-07)
     Provider: openai (OAC)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -535,6 +578,7 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: gpt-5-mini-2025-08-07
     Description: A faster, more cost-efficient version of GPT-5 for well-defined tasks. Great for well-defined tasks and precise prompts via chat completions endpoint.
+
   [GPT5MR] GPT-5 Mini Responses (gpt-5-mini-2025-08-07)
     Provider: openai (OAR)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -547,6 +591,7 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: gpt-5-mini-2025-08-07
     Description: A faster, more cost-efficient version of GPT-5 for well-defined tasks. Great for well-defined tasks and precise prompts via responses endpoint.
+
   [GPT5NC] GPT-5 Nano Chat (gpt-5-nano-2025-08-07)
     Provider: openai (OAC)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -559,6 +604,7 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: gpt-5-nano-2025-08-07
     Description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via chat completions endpoint.
+
   [GPT5NR] GPT-5 Nano Responses (gpt-5-nano-2025-08-07)
     Provider: openai (OAR)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -571,6 +617,7 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: gpt-5-nano-2025-08-07
     Description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via responses endpoint.
+
   [GPT5R] GPT-5 Responses (gpt-5)
     Provider: openai (OAR)
     Context: 400,000 tokens (max output: 128,000 tokens)
@@ -583,6 +630,7 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: gpt-5, gpt-5-2025-08-07
     Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via responses endpoint.
+
   [O1R] o1 Reasoning (o1-2024-12-17)
     Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -596,6 +644,7 @@ Openai Models:
     Version: 2024-12-17
     Last Updated: 2025-08-10
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
+
   [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
     Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -607,6 +656,7 @@ Openai Models:
     Reasoning tokens supported
     Version: 2025-03-19
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
+
   [O3R] O3 Reasoning (o3)
     Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -619,6 +669,7 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: o3, o3-2025-04-16
     Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
+
   [O3PR] o3-pro Reasoning (o3-pro-2025-06-10)
     Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -632,6 +683,7 @@ Openai Models:
     Version: 2025-06-10
     Last Updated: 2025-08-10
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
+
   [O4MC] O4-mini Chat (o4-mini)
     Provider: openai (OAC)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -643,6 +695,7 @@ Openai Models:
     Knowledge cutoff: 2024-05-31
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Chat endpoint version.
+
   [O4MR] O4-mini Reasoning (o4-mini)
     Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -657,6 +710,7 @@ Openai Models:
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.
 
 Openrouter Models:
+
   [ORGM25FL] Google: Gemini 2.5 Flash Lite (google/gemini-2.5-flash-lite)
     Provider: openrouter (ORC)
     Context: 1,048,576 tokens
@@ -668,6 +722,7 @@ Openrouter Models:
     Thinking mode: range: 512-24576, default: disabled, can disable
     Version: 2025-07
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
+
   [ORK2] Kimi K2 (OpenRouter) (moonshotai/kimi-k2)
     Provider: openrouter (ORC)
     Context: 131,000 tokens (max output: 32,768 tokens)
@@ -677,6 +732,7 @@ Openrouter Models:
     Features: streaming, function-calling
     Knowledge cutoff: 2024-12-01
     Description: Trillion-parameter MoE model with 32B active parameters via OpenRouter, optimized for advanced tool use, reasoning, and code synthesis
+
   [ORK2F] Kimi K2 Free (OpenRouter) (moonshotai/kimi-k2:free)
     Provider: openrouter (ORC)
     Context: 65,536 tokens (max output: 32,768 tokens)
@@ -686,6 +742,7 @@ Openrouter Models:
     Features: streaming, function-calling
     Knowledge cutoff: 2024-12-01
     Description: Free access to Kimi K2 via OpenRouter, a trillion-parameter MoE model optimized for advanced tool use, reasoning, and code synthesis
+
   [ORQ3A] Qwen: Qwen3 235B A22B 2507 (qwen/qwen3-235b-a22b-07-25)
     Provider: openrouter (ORC)
     Context: 262,144 tokens
@@ -696,6 +753,7 @@ Openrouter Models:
     Knowledge cutoff: 2025-07-01
     Version: 2025-07-25
     Description: Mixture-of-Experts model with 235B total/22B active parameters via OpenRouter, featuring thinking mode and advanced multilingual capabilities
+
   [ORQ3AT] Qwen: Qwen3 235B A22B Thinking 2507 (qwen/qwen3-235b-a22b-thinking-2507)
     Provider: openrouter (ORC)
     Context: 262,144 tokens (max output: 81,920 tokens)
@@ -706,6 +764,7 @@ Openrouter Models:
     Knowledge cutoff: 2025-07-25
     Version: 2025-07-25
     Description: High-performance Mixture-of-Experts model optimized for complex reasoning tasks with thinking mode, activating 22B of 235B parameters per forward pass
+
   [ORG4] xAI: Grok 4 (x-ai/grok-4)
     Provider: openrouter (ORC)
     Context: 256,000 tokens
@@ -716,6 +775,7 @@ Openrouter Models:
     Knowledge cutoff: 2025-07-09
     Version: 2025-07-09
     Description: Grok 4 is xAI's latest reasoning model with a 256k context window. It supports parallel tool calling, structured outputs, and both image and text inputs with mandatory reasoning capabilities.
+
   [ORGLM45] Z.AI: GLM 4.5 (z-ai/glm-4.5)
     Provider: openrouter (ORC)
     Context: 128,000 tokens

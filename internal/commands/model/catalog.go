@@ -361,6 +361,9 @@ func (c *CatalogCommand) formatModelCatalog(models []neurotypes.ModelCatalogEntr
 func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, showProvider bool, modelToProvider map[string]string, themeObj *services.Theme) string {
 	var result strings.Builder
 
+	// Add empty line before each model for better visual separation
+	result.WriteString("\n")
+
 	// Model header: [ID] Display Name (technical_name) with prominent catalog ID
 	catalogID := themeObj.Highlight.Render(fmt.Sprintf("[%s]", model.ID))
 	displayName := themeObj.Command.Render(model.DisplayName)
