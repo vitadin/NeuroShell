@@ -66,13 +66,7 @@ jobs:
             just deps
 
       - run:
-          name: "CI Step 2: Run linter"
-          command: |
-            source $BASH_ENV
-            just lint
-
-      - run:
-          name: "CI Step 3: Run all unit tests (with race detection)"
+          name: "CI Step 2: Run all unit tests (with race detection)"
           command: |
             source $BASH_ENV
             echo "=== Running unit tests with race detection ==="
@@ -81,13 +75,13 @@ jobs:
           no_output_timeout: 10m
 
       - run:
-          name: "CI Step 4: Build binary"
+          name: "CI Step 3: Build binary (includes lint + format)"
           command: |
             source $BASH_ENV
             just build
 
       - run:
-          name: "CI Step 5: Run end-to-end tests"
+          name: "CI Step 4: Run end-to-end tests"
           command: |
             source $BASH_ENV
             just test-e2e
