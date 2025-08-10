@@ -1,0 +1,51 @@
+name: gpt-5
+id: GPT5R
+display_name: GPT-5 Responses
+provider: openai
+provider_catalog_id: OAR
+description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via responses endpoint.
+capabilities: [text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks]
+context_window: 400000
+max_output_tokens: 128000
+knowledge_cutoff: "2024-09-30"
+reasoning_tokens: true
+modalities: [text-input, text-output, image-input]
+pricing:
+  input_per_m_token: 1.25
+  output_per_m_token: 10.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  fine_tuning: true
+  vision: true
+  distillation: true
+  predicted_outputs: true
+  reasoning_supported: true
+  reasoning_effort_levels: ["low", "medium", "high"]
+  reasoning_default_effort: "medium"
+  reasoning_summary_supported: true
+tools: [web-search, file-search, image-generation, code-interpreter]
+snapshots: [gpt-5, gpt-5-2025-08-07]
+parameters:
+  - name: reasoning_effort
+    type: enum
+    required: false
+    default: "medium"
+    constraints:
+      enum: ["low", "medium", "high"]
+    description: "Reasoning effort level (low=speed/economy, medium=balanced, high=thorough)"
+  - name: reasoning_summary
+    type: enum
+    required: false
+    default: "auto"
+    constraints:
+      enum: ["auto"]
+    description: "Reasoning summary mode (auto recommended by OpenAI)"
+  - name: max_output_tokens
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 128000
+    description: "Maximum total output tokens including reasoning tokens"

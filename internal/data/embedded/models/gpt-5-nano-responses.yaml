@@ -1,0 +1,51 @@
+name: gpt-5-nano-2025-08-07
+id: GPT5NR
+display_name: GPT-5 Nano Responses
+provider: openai
+provider_catalog_id: OAR
+description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via responses endpoint.
+capabilities: [text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, summarization, classification, fastest]
+context_window: 400000
+max_output_tokens: 128000
+knowledge_cutoff: "2024-05-30"
+reasoning_tokens: true
+modalities: [text-input, text-output, image-input]
+pricing:
+  input_per_m_token: 0.05
+  output_per_m_token: 0.40
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  fine_tuning: true
+  vision: true
+  distillation: false
+  predicted_outputs: false
+  reasoning_supported: true
+  reasoning_effort_levels: ["low", "medium", "high"]
+  reasoning_default_effort: "medium"
+  reasoning_summary_supported: true
+tools: [web-search, file-search, code-interpreter, mcp, image-generation]
+snapshots: [gpt-5-nano-2025-08-07]
+parameters:
+  - name: reasoning_effort
+    type: enum
+    required: false
+    default: "medium"
+    constraints:
+      enum: ["low", "medium", "high"]
+    description: "Reasoning effort level (low=speed/economy, medium=balanced, high=thorough)"
+  - name: reasoning_summary
+    type: enum
+    required: false
+    default: "auto"
+    constraints:
+      enum: ["auto"]
+    description: "Reasoning summary mode (auto recommended by OpenAI)"
+  - name: max_output_tokens
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 128000
+    description: "Maximum total output tokens including reasoning tokens"

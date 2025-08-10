@@ -1,0 +1,42 @@
+name: gpt-5-nano-2025-08-07
+id: GPT5NC
+display_name: GPT-5 Nano Chat
+provider: openai
+provider_catalog_id: OAC
+description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via chat completions endpoint.
+capabilities: [text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, summarization, classification, fastest]
+context_window: 400000
+max_output_tokens: 128000
+knowledge_cutoff: "2024-05-30"
+reasoning_tokens: true
+modalities: [text-input, text-output, image-input]
+pricing:
+  input_per_m_token: 0.05
+  output_per_m_token: 0.40
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  fine_tuning: true
+  vision: true
+  distillation: false
+  predicted_outputs: false
+  reasoning_supported: true
+tools: [web-search, file-search, code-interpreter, mcp]
+snapshots: [gpt-5-nano-2025-08-07]
+parameters:
+  - name: temperature
+    type: float
+    required: false
+    default: 1.0
+    constraints:
+      min: 0.0
+      max: 2.0
+    description: "Controls randomness in responses"
+  - name: max_completion_tokens
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 128000
+    description: "Maximum output tokens"

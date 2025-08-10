@@ -1,6 +1,6 @@
 Setting _echo_command = true
 %%> "\\model-catalog[provider=\"openai\"]"
-Model Catalog (Openai) (8 models):
+Model Catalog (Openai) (14 models):
   [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
     Endpoint: OAC
     Context: 1,047,576 tokens (max output: 32,768 tokens)
@@ -21,6 +21,78 @@ Model Catalog (Openai) (8 models):
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
+  [GPT5C] GPT-5 Chat (gpt-5)
+    Endpoint: OAC
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.25/1M input, $10.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-09-30
+    Reasoning tokens supported
+    Snapshots: gpt-5, gpt-5-2025-08-07
+    Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via chat completions endpoint.
+  [GPT5MC] GPT-5 Mini Chat (gpt-5-mini-2025-08-07)
+    Endpoint: OAC
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, well-defined-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $0.25/1M input, $2.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-30
+    Reasoning tokens supported
+    Snapshots: gpt-5-mini-2025-08-07
+    Description: A faster, more cost-efficient version of GPT-5 for well-defined tasks. Great for well-defined tasks and precise prompts via chat completions endpoint.
+  [GPT5MR] GPT-5 Mini Responses (gpt-5-mini-2025-08-07)
+    Endpoint: OAR
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, well-defined-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $0.25/1M input, $2.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-30
+    Reasoning tokens supported
+    Snapshots: gpt-5-mini-2025-08-07
+    Description: A faster, more cost-efficient version of GPT-5 for well-defined tasks. Great for well-defined tasks and precise prompts via responses endpoint.
+  [GPT5NC] GPT-5 Nano Chat (gpt-5-nano-2025-08-07)
+    Endpoint: OAC
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, summarization, classification, fastest
+    Modalities: text-input, text-output, image-input
+    Pricing: $0.05/1M input, $0.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-30
+    Reasoning tokens supported
+    Snapshots: gpt-5-nano-2025-08-07
+    Description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via chat completions endpoint.
+  [GPT5NR] GPT-5 Nano Responses (gpt-5-nano-2025-08-07)
+    Endpoint: OAR
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, summarization, classification, fastest
+    Modalities: text-input, text-output, image-input
+    Pricing: $0.05/1M input, $0.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp, image-generation
+    Knowledge cutoff: 2024-05-30
+    Reasoning tokens supported
+    Snapshots: gpt-5-nano-2025-08-07
+    Description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via responses endpoint.
+  [GPT5R] GPT-5 Responses (gpt-5)
+    Endpoint: OAR
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.25/1M input, $10.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-09-30
+    Reasoning tokens supported
+    Snapshots: gpt-5, gpt-5-2025-08-07
+    Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via responses endpoint.
   [O1R] o1 Reasoning (o1-2024-12-17)
     Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)
@@ -89,7 +161,7 @@ Model Catalog (Openai) (8 models):
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.
 %%> "\\model-catalog[provider=\"openai\"]"
-Model Catalog (Openai) (8 models):
+Model Catalog (Openai) (14 models):
   [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
     Endpoint: OAC
     Context: 1,047,576 tokens (max output: 32,768 tokens)
@@ -110,6 +182,78 @@ Model Catalog (Openai) (8 models):
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
+  [GPT5C] GPT-5 Chat (gpt-5)
+    Endpoint: OAC
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.25/1M input, $10.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-09-30
+    Reasoning tokens supported
+    Snapshots: gpt-5, gpt-5-2025-08-07
+    Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via chat completions endpoint.
+  [GPT5MC] GPT-5 Mini Chat (gpt-5-mini-2025-08-07)
+    Endpoint: OAC
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, well-defined-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $0.25/1M input, $2.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-30
+    Reasoning tokens supported
+    Snapshots: gpt-5-mini-2025-08-07
+    Description: A faster, more cost-efficient version of GPT-5 for well-defined tasks. Great for well-defined tasks and precise prompts via chat completions endpoint.
+  [GPT5MR] GPT-5 Mini Responses (gpt-5-mini-2025-08-07)
+    Endpoint: OAR
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, well-defined-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $0.25/1M input, $2.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-30
+    Reasoning tokens supported
+    Snapshots: gpt-5-mini-2025-08-07
+    Description: A faster, more cost-efficient version of GPT-5 for well-defined tasks. Great for well-defined tasks and precise prompts via responses endpoint.
+  [GPT5NC] GPT-5 Nano Chat (gpt-5-nano-2025-08-07)
+    Endpoint: OAC
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, summarization, classification, fastest
+    Modalities: text-input, text-output, image-input
+    Pricing: $0.05/1M input, $0.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-30
+    Reasoning tokens supported
+    Snapshots: gpt-5-nano-2025-08-07
+    Description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via chat completions endpoint.
+  [GPT5NR] GPT-5 Nano Responses (gpt-5-nano-2025-08-07)
+    Endpoint: OAR
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, summarization, classification, fastest
+    Modalities: text-input, text-output, image-input
+    Pricing: $0.05/1M input, $0.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp, image-generation
+    Knowledge cutoff: 2024-05-30
+    Reasoning tokens supported
+    Snapshots: gpt-5-nano-2025-08-07
+    Description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via responses endpoint.
+  [GPT5R] GPT-5 Responses (gpt-5)
+    Endpoint: OAR
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.25/1M input, $10.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-09-30
+    Reasoning tokens supported
+    Snapshots: gpt-5, gpt-5-2025-08-07
+    Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via responses endpoint.
   [O1R] o1 Reasoning (o1-2024-12-17)
     Endpoint: OAR
     Context: 200,000 tokens (max output: 100,000 tokens)

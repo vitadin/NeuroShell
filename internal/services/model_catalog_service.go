@@ -87,6 +87,12 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, claudeOpus4Model)
 
+	claudeOpus41Model, err := m.loadModelFile(embedded.ClaudeOpus41ModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Claude Opus 4.1 model: %w", err)
+	}
+	allModels = append(allModels, claudeOpus41Model)
+
 	// Load Kimi K2 models
 	kimiK2FreeModel, err := m.loadModelFile(embedded.KimiK2FreeOpenRouterModelData)
 	if err != nil {
@@ -165,6 +171,42 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 		return nil, fmt.Errorf("failed to load o1-pro model: %w", err)
 	}
 	allModels = append(allModels, o1ProModel)
+
+	gpt5ChatModel, err := m.loadModelFile(embedded.GPT5ChatModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GPT-5 Chat model: %w", err)
+	}
+	allModels = append(allModels, gpt5ChatModel)
+
+	gpt5ResponsesModel, err := m.loadModelFile(embedded.GPT5ResponsesModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GPT-5 Responses model: %w", err)
+	}
+	allModels = append(allModels, gpt5ResponsesModel)
+
+	gpt5MiniChatModel, err := m.loadModelFile(embedded.GPT5MiniChatModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GPT-5 Mini Chat model: %w", err)
+	}
+	allModels = append(allModels, gpt5MiniChatModel)
+
+	gpt5MiniResponsesModel, err := m.loadModelFile(embedded.GPT5MiniResponsesModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GPT-5 Mini Responses model: %w", err)
+	}
+	allModels = append(allModels, gpt5MiniResponsesModel)
+
+	gpt5NanoChatModel, err := m.loadModelFile(embedded.GPT5NanoChatModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GPT-5 Nano Chat model: %w", err)
+	}
+	allModels = append(allModels, gpt5NanoChatModel)
+
+	gpt5NanoResponsesModel, err := m.loadModelFile(embedded.GPT5NanoResponsesModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GPT-5 Nano Responses model: %w", err)
+	}
+	allModels = append(allModels, gpt5NanoResponsesModel)
 
 	// Load Gemini models
 	gemini25ProModel, err := m.loadModelFile(embedded.Gemini25ProModelData)

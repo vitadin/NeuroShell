@@ -38,6 +38,11 @@ var Claude37OpusModelData []byte
 //go:embed models/claude-opus-4.yaml
 var ClaudeOpus4ModelData []byte
 
+// ClaudeOpus41ModelData contains the embedded Claude Opus 4.1 model YAML data.
+//
+//go:embed models/claude-opus-4-1.yaml
+var ClaudeOpus41ModelData []byte
+
 // KimiK2FreeOpenRouterModelData contains the embedded Kimi K2 Free (OpenRouter) model YAML data.
 //
 //go:embed models/kimi-k2-free-openrouter.yaml
@@ -77,6 +82,36 @@ var O3ProModelData []byte
 //
 //go:embed models/o1-openai.yaml
 var O1ModelData []byte
+
+// GPT5ChatModelData contains the embedded GPT-5 Chat model YAML data.
+//
+//go:embed models/gpt-5-chat.yaml
+var GPT5ChatModelData []byte
+
+// GPT5ResponsesModelData contains the embedded GPT-5 Responses model YAML data.
+//
+//go:embed models/gpt-5-responses.yaml
+var GPT5ResponsesModelData []byte
+
+// GPT5MiniChatModelData contains the embedded GPT-5 Mini Chat model YAML data.
+//
+//go:embed models/gpt-5-mini-chat.yaml
+var GPT5MiniChatModelData []byte
+
+// GPT5MiniResponsesModelData contains the embedded GPT-5 Mini Responses model YAML data.
+//
+//go:embed models/gpt-5-mini-responses.yaml
+var GPT5MiniResponsesModelData []byte
+
+// GPT5NanoChatModelData contains the embedded GPT-5 Nano Chat model YAML data.
+//
+//go:embed models/gpt-5-nano-chat.yaml
+var GPT5NanoChatModelData []byte
+
+// GPT5NanoResponsesModelData contains the embedded GPT-5 Nano Responses model YAML data.
+//
+//go:embed models/gpt-5-nano-responses.yaml
+var GPT5NanoResponsesModelData []byte
 
 // GPT4oModelData contains the embedded GPT-4o model YAML data.
 //

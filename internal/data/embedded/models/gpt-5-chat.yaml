@@ -1,0 +1,42 @@
+name: gpt-5
+id: GPT5C
+display_name: GPT-5 Chat
+provider: openai
+provider_catalog_id: OAC
+description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via chat completions endpoint.
+capabilities: [text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks]
+context_window: 400000
+max_output_tokens: 128000
+knowledge_cutoff: "2024-09-30"
+reasoning_tokens: true
+modalities: [text-input, text-output, image-input]
+pricing:
+  input_per_m_token: 1.25
+  output_per_m_token: 10.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  fine_tuning: true
+  vision: true
+  distillation: true
+  predicted_outputs: true
+  reasoning_supported: true
+tools: [web-search, file-search, image-generation, code-interpreter]
+snapshots: [gpt-5, gpt-5-2025-08-07]
+parameters:
+  - name: temperature
+    type: float
+    required: false
+    default: 1.0
+    constraints:
+      min: 0.0
+      max: 2.0
+    description: "Controls randomness in responses"
+  - name: max_completion_tokens
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 128000
+    description: "Maximum output tokens"
