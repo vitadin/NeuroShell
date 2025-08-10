@@ -78,6 +78,16 @@ var O3ProModelData []byte
 //go:embed models/o1-openai.yaml
 var O1ModelData []byte
 
+// GPT5ChatModelData contains the embedded GPT-5 Chat model YAML data.
+//
+//go:embed models/gpt-5-chat.yaml
+var GPT5ChatModelData []byte
+
+// GPT5ResponsesModelData contains the embedded GPT-5 Responses model YAML data.
+//
+//go:embed models/gpt-5-responses.yaml
+var GPT5ResponsesModelData []byte
+
 // GPT4oModelData contains the embedded GPT-4o model YAML data.
 //
 //go:embed models/gpt-4o-openai.yaml

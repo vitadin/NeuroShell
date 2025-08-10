@@ -166,6 +166,18 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, o1ProModel)
 
+	gpt5ChatModel, err := m.loadModelFile(embedded.GPT5ChatModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GPT-5 Chat model: %w", err)
+	}
+	allModels = append(allModels, gpt5ChatModel)
+
+	gpt5ResponsesModel, err := m.loadModelFile(embedded.GPT5ResponsesModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GPT-5 Responses model: %w", err)
+	}
+	allModels = append(allModels, gpt5ResponsesModel)
+
 	// Load Gemini models
 	gemini25ProModel, err := m.loadModelFile(embedded.Gemini25ProModelData)
 	if err != nil {

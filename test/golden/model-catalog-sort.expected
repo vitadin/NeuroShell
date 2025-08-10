@@ -1,6 +1,6 @@
 Setting _echo_command = true
 %%> "\\model-catalog[sort=name]"
-Model Catalog (23 models):
+Model Catalog (25 models):
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 4,096 tokens)
@@ -115,6 +115,30 @@ Model Catalog (23 models):
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
+  [GPT5C] GPT-5 Chat (gpt-5)
+    Provider: openai (OAC)
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.25/1M input, $10.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-09-30
+    Reasoning tokens supported
+    Snapshots: gpt-5, gpt-5-2025-08-07
+    Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via chat completions endpoint.
+  [GPT5R] GPT-5 Responses (gpt-5)
+    Provider: openai (OAR)
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.25/1M input, $10.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-09-30
+    Reasoning tokens supported
+    Snapshots: gpt-5, gpt-5-2025-08-07
+    Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via responses endpoint.
   [MK2] Kimi K2 (Moonshot) (kimi-k2-0711-preview)
     Provider: moonshot (MSC)
     Context: 128,000 tokens (max output: 32,768 tokens)
@@ -246,7 +270,7 @@ Model Catalog (23 models):
     Knowledge cutoff: 2025-07-25
     Description: Latest flagship foundation model purpose-built for agent-based applications with Mixture-of-Experts architecture and hybrid inference modes
 %%> "\\model-catalog[sort=provider]"
-Model Catalog (23 models):
+Model Catalog (25 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic (ANC)
@@ -364,6 +388,30 @@ Openai Models:
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
+  [GPT5C] GPT-5 Chat (gpt-5)
+    Provider: openai (OAC)
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.25/1M input, $10.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-09-30
+    Reasoning tokens supported
+    Snapshots: gpt-5, gpt-5-2025-08-07
+    Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via chat completions endpoint.
+  [GPT5R] GPT-5 Responses (gpt-5)
+    Provider: openai (OAR)
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.25/1M input, $10.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-09-30
+    Reasoning tokens supported
+    Snapshots: gpt-5, gpt-5-2025-08-07
+    Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via responses endpoint.
   [O1R] o1 Reasoning (o1-2024-12-17)
     Provider: openai (OAR)
     Context: 200,000 tokens (max output: 100,000 tokens)
