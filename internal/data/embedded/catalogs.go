@@ -88,6 +88,16 @@ var GPT5ChatModelData []byte
 //go:embed models/gpt-5-responses.yaml
 var GPT5ResponsesModelData []byte
 
+// GPT5MiniChatModelData contains the embedded GPT-5 Mini Chat model YAML data.
+//
+//go:embed models/gpt-5-mini-chat.yaml
+var GPT5MiniChatModelData []byte
+
+// GPT5MiniResponsesModelData contains the embedded GPT-5 Mini Responses model YAML data.
+//
+//go:embed models/gpt-5-mini-responses.yaml
+var GPT5MiniResponsesModelData []byte
+
 // GPT4oModelData contains the embedded GPT-4o model YAML data.
 //
 //go:embed models/gpt-4o-openai.yaml

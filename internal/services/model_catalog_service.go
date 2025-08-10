@@ -178,6 +178,18 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, gpt5ResponsesModel)
 
+	gpt5MiniChatModel, err := m.loadModelFile(embedded.GPT5MiniChatModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GPT-5 Mini Chat model: %w", err)
+	}
+	allModels = append(allModels, gpt5MiniChatModel)
+
+	gpt5MiniResponsesModel, err := m.loadModelFile(embedded.GPT5MiniResponsesModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load GPT-5 Mini Responses model: %w", err)
+	}
+	allModels = append(allModels, gpt5MiniResponsesModel)
+
 	// Load Gemini models
 	gemini25ProModel, err := m.loadModelFile(embedded.Gemini25ProModelData)
 	if err != nil {
