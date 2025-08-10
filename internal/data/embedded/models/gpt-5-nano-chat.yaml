@@ -1,18 +1,18 @@
-name: gpt-5-mini-2025-08-07
-id: GPT5MC
-display_name: GPT-5 Mini Chat
+name: gpt-5-nano-2025-08-07
+id: GPT5NC
+display_name: GPT-5 Nano Chat
 provider: openai
 provider_catalog_id: OAC
-description: A faster, more cost-efficient version of GPT-5 for well-defined tasks. Great for well-defined tasks and precise prompts via chat completions endpoint.
-capabilities: [text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, well-defined-tasks]
+description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via chat completions endpoint.
+capabilities: [text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, summarization, classification, fastest]
 context_window: 400000
 max_output_tokens: 128000
 knowledge_cutoff: "2024-05-30"
 reasoning_tokens: true
 modalities: [text-input, text-output, image-input]
 pricing:
-  input_per_m_token: 0.25
-  output_per_m_token: 2.00
+  input_per_m_token: 0.05
+  output_per_m_token: 0.40
 features:
   streaming: true
   function_calling: true
@@ -23,7 +23,7 @@ features:
   predicted_outputs: false
   reasoning_supported: true
 tools: [web-search, file-search, code-interpreter, mcp]
-snapshots: [gpt-5-mini-2025-08-07]
+snapshots: [gpt-5-nano-2025-08-07]
 parameters:
   - name: temperature
     type: float
