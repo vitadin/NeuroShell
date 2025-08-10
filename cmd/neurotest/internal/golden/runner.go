@@ -58,6 +58,11 @@ func (r *Runner) RunTest(testName string) error {
 	expectedOutput := strings.TrimRight(string(expectedContent), "\n")
 
 	if !r.normalizer.CompareWithPlaceholders(expectedOutput, cleanedOutput) {
+		// Show detailed comparison for failures
+		fmt.Printf("\n=== TEST FAILURE: %s ===\n", testName)
+		fmt.Printf("EXPECTED OUTPUT:\n%s\n", expectedOutput)
+		fmt.Printf("\nACTUAL OUTPUT:\n%s\n", cleanedOutput)
+		fmt.Printf("=== END FAILURE DETAILS ===\n\n")
 		return fmt.Errorf("test failed: output doesn't match expected")
 	}
 
