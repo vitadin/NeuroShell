@@ -56,7 +56,7 @@ func (r *CommandResolver) ResolveCommand(commandName string) (*neurotypes.StateM
 	}
 
 	// Priority 3: Try user scripts (lowest priority)
-	if strings.HasSuffix(commandName, ".neuro") {
+	if strings.HasSuffix(commandName, ".neuro") || strings.HasSuffix(commandName, ".neurorc") {
 		r.logger.Debug("Detected file path command", "command", commandName)
 		return r.resolveUserFilePath(commandName)
 	}

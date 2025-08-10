@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	_ "neuroshell/internal/commands/assert"  // Import assert commands (init functions)
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
@@ -32,6 +33,10 @@ var (
 	testMode    bool
 	noColor     bool
 	showVersion bool
+	// .neurorc control flags
+	noRC      bool
+	rcFile    string
+	confirmRC bool
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -99,6 +104,11 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colored output")
 	rootCmd.PersistentFlags().BoolVar(&showVersion, "version", false, "Show version information")
 
+	// Add .neurorc control flags
+	rootCmd.PersistentFlags().BoolVar(&noRC, "no-rc", false, "Skip .neurorc startup files")
+	rootCmd.PersistentFlags().StringVar(&rcFile, "rc-file", "", "Use specific startup script instead of .neurorc")
+	rootCmd.PersistentFlags().BoolVar(&confirmRC, "confirm-rc", false, "Prompt before executing .neurorc files")
+
 	// Add version command flags
 	versionCmd.Flags().Bool("detailed", false, "Show detailed version information")
 
@@ -113,6 +123,20 @@ func init() {
 	}
 	if err := viper.BindPFlag("test-mode", rootCmd.PersistentFlags().Lookup("test-mode")); err != nil {
 		fmt.Fprintf(os.Stderr, "Error binding test-mode flag: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Bind .neurorc control flags to viper
+	if err := viper.BindPFlag("no-rc", rootCmd.PersistentFlags().Lookup("no-rc")); err != nil {
+		fmt.Fprintf(os.Stderr, "Error binding no-rc flag: %v\n", err)
+		os.Exit(1)
+	}
+	if err := viper.BindPFlag("rc-file", rootCmd.PersistentFlags().Lookup("rc-file")); err != nil {
+		fmt.Fprintf(os.Stderr, "Error binding rc-file flag: %v\n", err)
+		os.Exit(1)
+	}
+	if err := viper.BindPFlag("confirm-rc", rootCmd.PersistentFlags().Lookup("confirm-rc")); err != nil {
+		fmt.Fprintf(os.Stderr, "Error binding confirm-rc flag: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -227,6 +251,12 @@ func runShell(_ *cobra.Command, _ []string) {
 
 	logger.Debug("Services initialized successfully")
 
+	// Execute .neurorc startup script if found
+	if err := executeNeuroRC(); err != nil {
+		logger.Error("Failed to execute .neurorc startup script", "error", err)
+		// Don't exit - just log the error and continue with shell startup
+	}
+
 	// Create shell with custom readline configuration
 	cfg := createCustomReadlineConfig()
 	sh := ishell.NewWithConfig(cfg)
@@ -285,9 +315,15 @@ func validateScriptFile(scriptPath string) error {
 		return fmt.Errorf("script file does not exist: %s", scriptPath)
 	}
 
-	// Check file extension
+	// Check file extension for regular scripts, but allow .neurorc files
+	baseName := filepath.Base(scriptPath)
+	if baseName == ".neurorc" {
+		// .neurorc files are valid startup scripts
+		return nil
+	}
+
 	if ext := filepath.Ext(scriptPath); ext != ".neuro" {
-		return fmt.Errorf("script file must have .neuro extension, got: %s", ext)
+		return fmt.Errorf("script file must have .neuro extension or be named .neurorc, got: %s", scriptPath)
 	}
 
 	return nil
@@ -303,4 +339,128 @@ func executeBatchScript(scriptPath string, ctx *context.NeuroContext) error {
 	// Add backslash prefix so state machine recognizes it as a file path command
 	commandInput := "\\" + scriptPath
 	return sm.Execute(commandInput)
+}
+
+// executeNeuroRC looks for and executes .neurorc startup scripts.
+//
+// Priority Order for Configuration:
+//  1. CLI flags (highest priority)
+//     - --no-rc: Skip all .neurorc files
+//     - --rc-file=PATH: Use specific startup script
+//     - --confirm-rc: Prompt before executing any .neurorc file
+//  2. Environment variables (medium priority)
+//     - NEURO_RC=0: Disable .neurorc processing
+//     - NEURO_RC_FILE=PATH: Use specific startup script
+//  3. Default file search (lowest priority)
+//     - Current directory .neurorc
+//     - User home directory .neurorc
+func executeNeuroRC() error {
+	// Priority 1: Check CLI flags first (--no-rc overrides everything)
+	if noRC {
+		logger.Debug("Skipping .neurorc - disabled by --no-rc flag")
+		return nil
+	}
+
+	// Priority 2: Check environment variables (NEURO_RC=0 overrides default search)
+	if os.Getenv("NEURO_RC") == "0" {
+		logger.Debug("Skipping .neurorc - disabled by NEURO_RC=0")
+		return nil
+	}
+
+	// Handle custom .neurorc file: CLI flag --rc-file takes priority over NEURO_RC_FILE
+	var customRC string
+	if rcFile != "" {
+		customRC = rcFile
+		logger.Debug("Using custom .neurorc from CLI flag", "path", customRC)
+	} else if envRC := os.Getenv("NEURO_RC_FILE"); envRC != "" {
+		customRC = envRC
+		logger.Debug("Using custom .neurorc from environment", "path", customRC)
+	}
+
+	if customRC != "" {
+		if _, err := os.Stat(customRC); err == nil {
+			if confirmRC && !confirmRCExecution(customRC) {
+				logger.Info("Skipping .neurorc - user declined confirmation")
+				return nil
+			}
+			logger.Info("Executing custom .neurorc file", "path", customRC)
+			return executeNeuroRCFile(customRC)
+		}
+		logger.Warn("Custom .neurorc file not found", "path", customRC)
+		return nil // Don't fall through to default search if custom file was specified
+	}
+
+	// Priority 3: Default file search - Current directory .neurorc (highest priority in search)
+	cwd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get current directory: %w", err)
+	}
+
+	currentDirRC := filepath.Join(cwd, ".neurorc")
+	if _, err := os.Stat(currentDirRC); err == nil {
+		if confirmRC && !confirmRCExecution(currentDirRC) {
+			logger.Info("Skipping .neurorc - user declined confirmation")
+			return nil
+		}
+		logger.Info("Executing .neurorc from current directory", "path", currentDirRC)
+		return executeNeuroRCFile(currentDirRC)
+	}
+
+	// Priority 3: Default file search - User home directory .neurorc (fallback)
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		logger.Debug("Failed to get home directory", "error", err)
+		return nil // Not fatal - just skip home directory .neurorc
+	}
+
+	homeDirRC := filepath.Join(homeDir, ".neurorc")
+	if _, err := os.Stat(homeDirRC); err == nil {
+		if confirmRC && !confirmRCExecution(homeDirRC) {
+			logger.Info("Skipping .neurorc - user declined confirmation")
+			return nil
+		}
+		logger.Info("Executing .neurorc from home directory", "path", homeDirRC)
+		return executeNeuroRCFile(homeDirRC)
+	}
+
+	logger.Debug("No .neurorc file found in current or home directory")
+	return nil
+}
+
+// executeNeuroRCFile executes a specific .neurorc file.
+func executeNeuroRCFile(rcPath string) error {
+	// Validate the file
+	if err := validateScriptFile(rcPath); err != nil {
+		return fmt.Errorf("invalid .neurorc file: %w", err)
+	}
+
+	// Get the global context for execution
+	ctx := shell.GetGlobalContext()
+	ctx.SetTestMode(testMode)
+
+	// Set global context for services to use
+	context.SetGlobalContext(ctx)
+
+	// Execute the .neurorc script using state machine
+	logger.Debug("Executing .neurorc via state machine", "script", rcPath)
+	sm := statemachine.NewStateMachineWithDefaults(ctx)
+	// Add backslash prefix so state machine recognizes it as a file path command
+	commandInput := "\\" + rcPath
+	return sm.Execute(commandInput)
+}
+
+// confirmRCExecution prompts the user for confirmation before executing a .neurorc file.
+func confirmRCExecution(rcPath string) bool {
+	fmt.Printf("Found .neurorc file: %s\n", rcPath)
+	fmt.Print("Execute startup script? [y/N]: ")
+
+	var response string
+	if _, err := fmt.Scanln(&response); err != nil {
+		// If there's an error reading input (e.g., non-interactive terminal), default to no
+		return false
+	}
+
+	// Accept y, Y, yes, YES as confirmation
+	response = strings.ToLower(strings.TrimSpace(response))
+	return response == "y" || response == "yes"
 }
