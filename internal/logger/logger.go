@@ -70,8 +70,8 @@ func Configure(logLevel string, logFile string, testMode bool) error {
 	// Configure for test mode
 	if testMode {
 		// In test mode, ensure deterministic output
-		Logger.SetTimeFormat("")       // No timestamps
-		Logger.SetLevel(log.InfoLevel) // Consistent level
+		Logger.SetTimeFormat("") // No timestamps
+		// Don't override log level - respect CLI flag
 	}
 
 	return nil
