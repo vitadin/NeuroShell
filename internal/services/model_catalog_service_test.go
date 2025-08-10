@@ -346,6 +346,74 @@ context_window: 1000
 		require.NoError(t, err)
 		assert.Equal(t, "", model.Name, "Empty YAML should return empty model")
 	})
+
+	t.Run("load model with last_updated and deprecated fields", func(t *testing.T) {
+		// Test loading model with the new last_updated and deprecated fields
+		model, err := service.loadModelFile([]byte(`
+name: test-model-with-metadata
+id: TM1
+provider: test
+display_name: Test Model
+description: Model with metadata fields
+capabilities: [text]
+context_window: 2000
+version: "2025-08-10"
+deprecated: false
+last_updated: "2025-08-10"
+`))
+		require.NoError(t, err)
+
+		assert.Equal(t, "test-model-with-metadata", model.Name)
+		assert.Equal(t, "TM1", model.ID)
+		assert.Equal(t, "test", model.Provider)
+		assert.Equal(t, "Test Model", model.DisplayName)
+		assert.Equal(t, "2025-08-10", model.Version)
+		assert.False(t, model.Deprecated)
+		require.NotNil(t, model.LastUpdated)
+		assert.Equal(t, "2025-08-10", *model.LastUpdated)
+	})
+
+	t.Run("load deprecated model", func(t *testing.T) {
+		// Test loading a deprecated model
+		model, err := service.loadModelFile([]byte(`
+name: deprecated-model
+id: DM1
+provider: test
+display_name: Deprecated Model
+description: This model is deprecated
+capabilities: [text]
+context_window: 1000
+version: "2024-01-01"
+deprecated: true
+last_updated: "2024-12-31"
+`))
+		require.NoError(t, err)
+
+		assert.Equal(t, "deprecated-model", model.Name)
+		assert.Equal(t, "DM1", model.ID)
+		assert.True(t, model.Deprecated)
+		require.NotNil(t, model.LastUpdated)
+		assert.Equal(t, "2024-12-31", *model.LastUpdated)
+	})
+
+	t.Run("load model without optional fields", func(t *testing.T) {
+		// Test that models without the new fields still work (backward compatibility)
+		model, err := service.loadModelFile([]byte(`
+name: minimal-model
+id: MM1
+provider: test
+display_name: Minimal Model
+description: Model without optional metadata
+capabilities: [text]
+context_window: 1500
+`))
+		require.NoError(t, err)
+
+		assert.Equal(t, "minimal-model", model.Name)
+		assert.Equal(t, "MM1", model.ID)
+		assert.False(t, model.Deprecated) // Default value
+		assert.Nil(t, model.LastUpdated)  // Should be nil when not provided
+	})
 }
 
 func TestModelCatalogService_GetModelByID(t *testing.T) {

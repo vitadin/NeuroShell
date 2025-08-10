@@ -24,6 +24,8 @@ features:
   reasoning_supported: false
 tools: [web-search, file-search, image-generation, code-interpreter]
 version: "2025-04-14"
+deprecated: false
+last_updated: "2025-08-10"
 parameters:
   - name: temperature
     type: float

@@ -10,6 +10,8 @@ Model Catalog (Openai) (14 models):
     Features: streaming, function-calling, structured-outputs, vision, fine-tuning
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
+    Version: 2025-04-14
+    Last Updated: 2025-08-10
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
   [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
     Endpoint: OAC
@@ -20,6 +22,7 @@ Model Catalog (Openai) (14 models):
     Features: streaming, function-calling, structured-outputs, vision, fine-tuning
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
+    Version: 2024-11-20
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
   [GPT5C] GPT-5 Chat (gpt-5)
     Endpoint: OAC
@@ -103,6 +106,8 @@ Model Catalog (Openai) (14 models):
     Tools: file-search
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
+    Version: 2024-12-17
+    Last Updated: 2025-08-10
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
     Endpoint: OAR
@@ -113,6 +118,7 @@ Model Catalog (Openai) (14 models):
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
+    Version: 2025-03-19
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
   [O3R] O3 Reasoning (o3)
     Endpoint: OAR
@@ -136,6 +142,8 @@ Model Catalog (Openai) (14 models):
     Tools: web-search, file-search, image-generation
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
+    Version: 2025-06-10
+    Last Updated: 2025-08-10
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
   [O4MC] O4-mini Chat (o4-mini)
     Endpoint: OAC
@@ -171,6 +179,8 @@ Model Catalog (Openai) (14 models):
     Features: streaming, function-calling, structured-outputs, vision, fine-tuning
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
+    Version: 2025-04-14
+    Last Updated: 2025-08-10
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
   [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
     Endpoint: OAC
@@ -181,6 +191,7 @@ Model Catalog (Openai) (14 models):
     Features: streaming, function-calling, structured-outputs, vision, fine-tuning
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
+    Version: 2024-11-20
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
   [GPT5C] GPT-5 Chat (gpt-5)
     Endpoint: OAC
@@ -264,6 +275,8 @@ Model Catalog (Openai) (14 models):
     Tools: file-search
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
+    Version: 2024-12-17
+    Last Updated: 2025-08-10
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
     Endpoint: OAR
@@ -274,6 +287,7 @@ Model Catalog (Openai) (14 models):
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
+    Version: 2025-03-19
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
   [O3R] O3 Reasoning (o3)
     Endpoint: OAR
@@ -297,6 +311,8 @@ Model Catalog (Openai) (14 models):
     Tools: web-search, file-search, image-generation
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
+    Version: 2025-06-10
+    Last Updated: 2025-08-10
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
   [O4MC] O4-mini Chat (o4-mini)
     Endpoint: OAC

@@ -554,6 +554,22 @@ func (c *CatalogCommand) formatModelEntry(model neurotypes.ModelCatalogEntry, sh
 		result.WriteString(snapshotsLine)
 	}
 
+	// Version information
+	if len(model.Version) > 0 {
+		versionLine := fmt.Sprintf("    %s %s\n",
+			themeObj.Info.Render("Version:"),
+			themeObj.Variable.Render(model.Version))
+		result.WriteString(versionLine)
+	}
+
+	// Last updated information
+	if model.LastUpdated != nil && len(*model.LastUpdated) > 0 {
+		lastUpdatedLine := fmt.Sprintf("    %s %s\n",
+			themeObj.Info.Render("Last Updated:"),
+			themeObj.Variable.Render(*model.LastUpdated))
+		result.WriteString(lastUpdatedLine)
+	}
+
 	// Deprecation status
 	if model.Deprecated {
 		deprecatedLine := fmt.Sprintf("    %s\n",

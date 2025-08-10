@@ -10,6 +10,7 @@ Anthropic Models:
     Pricing: $15.00/1M input, $75.00/1M output tokens
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2023-08-01
+    Version: 2024-02-29
     Description: Top-level intelligence, fluency, and understanding
 
 Openai Models:
@@ -35,6 +36,8 @@ Openai Models:
     Tools: web-search, file-search, image-generation
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
+    Version: 2025-06-10
+    Last Updated: 2025-08-10
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
 %%> "\\model-catalog[search=claude]"
 Model Catalog - Search: 'claude' (5 models):
@@ -47,6 +50,7 @@ Anthropic Models:
     Pricing: $15.00/1M input, $75.00/1M output tokens
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2023-08-01
+    Version: 2024-02-29
     Description: Top-level intelligence, fluency, and understanding
   [CS37] Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
     Provider: anthropic (ANC)
@@ -57,6 +61,7 @@ Anthropic Models:
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2024-11-01
     Extended thinking supported
+    Version: 2025-02-19
     Description: High intelligence with toggleable extended thinking
   [CO4] Claude Opus 4 (claude-opus-4-20250514)
     Provider: anthropic (ANC)
@@ -73,6 +78,7 @@ Anthropic Models:
       • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-05-14
     Description: Highest level of intelligence and capability
   [CO41] Claude Opus 4.1 (claude-opus-4-1-20250805)
     Provider: anthropic (ANC)
@@ -89,6 +95,7 @@ Anthropic Models:
       • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled. Cannot be used with temperature parameter.
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-08-05
     Description: Highest level of intelligence and capability with enhanced API form validation
   [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
     Provider: anthropic (ANC)
@@ -105,6 +112,8 @@ Anthropic Models:
       • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-05-14
+    Last Updated: 2025-08-10
     Description: High intelligence and balanced performance
 %%> "\\model-catalog[search=coding]"
 Model Catalog - Search: 'coding' (5 models):

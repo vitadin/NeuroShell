@@ -139,6 +139,11 @@ type ModelCatalogEntry struct {
 	// Deprecated: indicates if this model is deprecated and should not be used for new projects
 	Deprecated bool `yaml:"deprecated,omitempty" json:"deprecated,omitempty"`
 
+	// LastUpdated tracks when this model card was last updated with fresh information
+	// from the provider (pricing, description, capabilities, etc.)
+	// Format: "2025-01-15" (ISO date)
+	LastUpdated *string `yaml:"last_updated,omitempty" json:"last_updated,omitempty"`
+
 	// MaxOutputTokens is the maximum number of tokens the model can generate (if different from context window)
 	MaxOutputTokens *int `yaml:"max_output_tokens,omitempty" json:"max_output_tokens,omitempty"`
 
