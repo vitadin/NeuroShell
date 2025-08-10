@@ -1,0 +1,6 @@
+Setting test_script_path = test/fixtures/nested-variables-script.neuro
+Setting name = NeuroShell
+Setting version = 1.0
+Setting message = Welcome to NeuroShell v1.0
+message = Welcome to NeuroShell v1.0
+Script execution completed successfully

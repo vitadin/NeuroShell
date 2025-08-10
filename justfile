@@ -12,8 +12,10 @@ default:
     @echo "  test-context      - Run context tests only"
     @echo "  test-shell        - Run shell tests only"
     @echo "  test-all-units    - Run all unit, command, parser, context, and shell tests"
-    @echo "  test-e2e          - Run end-to-end tests"
-    @echo "  record-all-e2e    - Re-record all end-to-end test cases"
+    @echo "  test-e2e          - Run end-to-end tests (includes .neurorc tests)"
+    @echo "  test-neurorc      - Run .neurorc startup tests only"
+    @echo "  record-all-e2e    - Re-record all end-to-end test cases (includes .neurorc)"
+    @echo "  record-neurorc    - Re-record all .neurorc startup test cases"
     @echo "  test-bench        - Run benchmark tests"
     @echo ""
     @echo "Build Commands:"
@@ -242,9 +244,9 @@ test-coverage-check:
     fi; \
     echo "Current coverage: $$coverage%"; \
     if [ $$(echo "$$coverage >= 90" | bc) -eq 1 ]; then \
-        echo "✅ Coverage meets target (≥90%)"; \
+        echo "PASS Coverage meets target (>=90%)"; \
     else \
-        echo "❌ Coverage below target ($$coverage% < 90%)"; \
+        echo "FAIL Coverage below target ($$coverage% < 90%)"; \
         exit 1; \
     fi
 
@@ -262,7 +264,7 @@ format:
     elif [ -f "$HOME/go/bin/goimports" ]; then \
         $HOME/go/bin/goimports -w .; \
     else \
-        echo "❌ goimports not found after installation"; \
+        echo "ERROR goimports not found after installation"; \
         exit 1; \
     fi
     gofmt -s -w .
@@ -282,7 +284,7 @@ imports:
     elif [ -f "$HOME/go/bin/goimports" ]; then \
         $HOME/go/bin/goimports -w .; \
     else \
-        echo "❌ goimports not found after installation"; \
+        echo "ERROR goimports not found after installation"; \
         exit 1; \
     fi
     @echo "Import organization complete"
@@ -294,7 +296,7 @@ lint:
     go vet ./...
     @echo "Running golangci-lint..."
     @if ! command -v golangci-lint >/dev/null 2>&1; then \
-        echo "❌ golangci-lint not found. Please install it:"; \
+        echo "ERROR golangci-lint not found. Please install it:"; \
         echo "   brew install golangci-lint"; \
         exit 1; \
     fi
@@ -398,7 +400,7 @@ check-ci:
     just ensure-build
     @echo "5. Running end-to-end tests..."
     just test-e2e
-    @echo "✅ CI checks completed"
+    @echo "SUCCESS CI checks completed"
 
 # Run all CI checks locally (clean version - full rebuild)
 check-ci-clean:
@@ -413,7 +415,7 @@ check-ci-clean:
     just build
     @echo "5. Running end-to-end tests..."
     just test-e2e
-    @echo "✅ CI checks completed"
+    @echo "SUCCESS CI checks completed"
 
 # Run fast CI checks (skips linting and dependency updates)
 check-ci-fast:
@@ -424,7 +426,7 @@ check-ci-fast:
     just ensure-build
     @echo "3. Running end-to-end tests..."
     just test-e2e
-    @echo "✅ Fast CI checks completed"
+    @echo "SUCCESS Fast CI checks completed"
 
 # Initialize development environment
 init:
@@ -437,16 +439,30 @@ init:
 test-e2e: ensure-build
     @echo "Running end-to-end tests..."
     ./bin/neurotest --neuro-cmd="./bin/neuro" run-all
+    @echo "Running .neurorc startup tests..."
+    #!/bin/bash
+    for test_file in $(find test/golden/neurorc -maxdepth 1 -name "*.neurorc-test" -type f | sort); do \
+        test_name=$(basename "$test_file" .neurorc-test); \
+        echo "Testing $test_name..."; \
+        ./bin/neurotest run-neurorc "$test_name" >/dev/null 2>&1 && echo "PASS $test_name" || echo "FAIL $test_name"; \
+    done
     @echo "End-to-end tests complete"
 
 # Re-record all end-to-end test cases
 record-all-e2e: ensure-build
     #!/bin/bash
     echo "Re-recording all end-to-end test cases..."
+    echo "Recording standard e2e tests..."
     for test_file in $(find test/golden -maxdepth 1 -name "*.neuro" -type f | sort); do \
         test_name=$(basename "$test_file" .neuro); \
         echo "Recording $test_name..."; \
-        ./bin/neurotest --neuro-cmd="./bin/neuro" record "$test_name" >/dev/null 2>&1 && echo "✓ $test_name" || echo "✗ $test_name"; \
+        ./bin/neurotest --neuro-cmd="./bin/neuro" record "$test_name" >/dev/null 2>&1 && echo "RECORDED $test_name" || echo "FAILED $test_name"; \
+    done
+    echo "Recording .neurorc startup tests..."
+    for test_file in $(find test/golden/neurorc -maxdepth 1 -name "*.neurorc-test" -type f | sort); do \
+        test_name=$(basename "$test_file" .neurorc-test); \
+        echo "Recording $test_name..."; \
+        ./bin/neurotest record-neurorc "$test_name" >/dev/null 2>&1 && echo "RECORDED $test_name" || echo "FAILED $test_name"; \
     done
     echo "All end-to-end test cases re-recorded"
 
@@ -485,3 +501,28 @@ experiment-recordings EXPERIMENT:
     else \
         echo "No recordings found for {{EXPERIMENT}}"; \
     fi
+
+# Run .neurorc startup tests only
+test-neurorc: ensure-build
+    @echo "Running .neurorc startup tests..."
+    #!/bin/bash
+    for test_file in test/golden/neurorc/*.neurorc-test; do \
+        if [ -f "$test_file" ]; then \
+            test_name=$(basename "$test_file" .neurorc-test); \
+            echo "Testing $test_name..."; \
+            ./bin/neurotest run-neurorc "$test_name" >/dev/null 2>&1 && echo "PASS $test_name" || echo "FAIL $test_name"; \
+        fi; \
+    done
+
+# Re-record all .neurorc startup test cases
+record-neurorc: ensure-build
+    @echo "Re-recording all .neurorc startup test cases..."
+    #!/bin/bash
+    for test_file in test/golden/neurorc/*.neurorc-test; do \
+        if [ -f "$test_file" ]; then \
+            test_name=$(basename "$test_file" .neurorc-test); \
+            echo "Recording $test_name..."; \
+            ./bin/neurotest record-neurorc "$test_name" >/dev/null 2>&1 && echo "RECORDED $test_name" || echo "FAILED $test_name"; \
+        fi; \
+    done; \
+    echo "All .neurorc test cases re-recorded"

@@ -1,0 +1,23 @@
+# Environment variable NEURO_RC=0 test  
+# Tests that NEURO_RC=0 disables .neurorc execution
+
+--- description
+Test NEURO_RC=0 environment variable disables .neurorc execution
+
+--- working_dir_neurorc
+\echo This should NOT appear - disabled by env var
+\set[disabled_test="should_not_run"]
+
+--- env_vars
+NEURO_RC=0
+
+--- input_sequence
+\echo Testing NEURO_RC=0 environment variable
+\exit
+
+--- expected_contains
+Testing NEURO_RC=0 environment variable
+
+--- expected_not_contains
+This should NOT appear - disabled by env var
+Setting disabled_test = should_not_run

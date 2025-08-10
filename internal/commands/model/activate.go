@@ -293,7 +293,7 @@ func (c *ActivateCommand) activateModel(model *neurotypes.ModelConfig, modelServ
 			createCommand := c.generateClientNewCommand(preferredClientType, model)
 			if createCommand != "" {
 				stackService.PushCommand(createCommand)
-				activateCommand := fmt.Sprintf("\\silent \\llm-client-activate %s", preferredClientType)
+				activateCommand := fmt.Sprintf("\\try \\silent \\llm-client-activate %s", preferredClientType)
 				stackService.PushCommand(activateCommand)
 			}
 		} else {
@@ -489,11 +489,11 @@ func (c *ActivateCommand) generateClientNewCommand(catalogID string, model *neur
 		if c.hasReasoningParameters(model.Parameters) {
 			clientType = "OAR" // use reasoning for reasoning models
 		}
-		return fmt.Sprintf("\\silent \\openai-client-new[client_type=%s]", clientType)
+		return fmt.Sprintf("\\try \\silent \\openai-client-new[client_type=%s]", clientType)
 	case "ANC":
-		return "\\silent \\anthropic-client-new"
+		return "\\try \\silent \\anthropic-client-new"
 	case "GMC":
-		return "\\silent \\gemini-client-new"
+		return "\\try \\silent \\gemini-client-new"
 	default:
 		// For other providers, we don't have specialized commands yet
 		// This maintains backward compatibility while supporting the main providers

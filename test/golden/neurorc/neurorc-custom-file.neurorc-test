@@ -1,0 +1,27 @@
+# Custom RC file via --rc-file flag test
+# Tests that --rc-file flag uses specific startup script
+
+--- description
+Test --rc-file CLI flag uses specific startup script instead of .neurorc
+
+--- working_dir_neurorc
+\echo Default .neurorc - should NOT run
+\set[default_rc="should_not_execute"]
+
+--- input_sequence
+\exit
+
+--- cli_flags
+--rc-file=custom-startup.neuro
+
+--- custom_files
+custom-startup.neuro = \echo Custom startup script executed!\n\set[custom_startup="executed_successfully"]\n\echo custom_startup = ${custom_startup}
+
+--- expected_contains
+Custom startup script executed!
+Setting custom_startup = executed_successfully
+custom_startup = executed_successfully
+
+--- expected_not_contains
+Default .neurorc - should NOT run
+Setting default_rc = should_not_execute

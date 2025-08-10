@@ -350,7 +350,9 @@ Model Configurations (2 models):
     Active: true
 %%> "\\model-activate my-claude-4"
 Activated model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\try \\silent \\llm-client-activate OAC"
 %%> "\\silent \\llm-client-activate OAC"
+%%> "\\try \\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\get[#active_model_name]"
 #active_model_name = my-claude-4
@@ -358,7 +360,9 @@ Activated model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
 #active_model_provider = openai
 %%> "\\model-activate my-o3-model"
 Activated model 'my-o3-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\try \\silent \\llm-client-activate OAR"
 %%> "\\silent \\llm-client-activate OAR"
+%%> "\\try \\silent \\openai-client-new[client_type=OAR]"
 %%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\model-new[catalog_id=\"O4MC\", temperature=\"0.8\", description=\"Custom model\"] custom-model"
 Created model 'custom-model' (ID: 00000003, Provider: openai, Base: o4-mini)

@@ -1,0 +1,5 @@
+%% Test \run command with variable interpolation
+%% Set up variables and then run a script that uses them
+
+\set[test_script_path="test/fixtures/nested-variables-script.neuro"]
+\run ${test_script_path}

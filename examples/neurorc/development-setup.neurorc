@@ -1,0 +1,26 @@
+# Development-focused .neurorc startup script
+# Optimized for software development workflows
+
+# Set up development environment variables
+\set[dev_mode="true"]
+\set[code_review_mode="enabled"]
+\set[debug_level="info"]
+
+# Create development session with specialized system prompt
+\session-new[system="You are a senior software engineer and code reviewer. You specialize in Go, shell scripting, and system architecture. Always provide detailed explanations and consider edge cases. Focus on clean, maintainable code."] dev_session_${@date}
+
+# Set up code-friendly styling
+\set[_style="dark"]
+
+# Load common development variables
+\set[project_root="${@pwd}"]
+\set[git_branch="`git branch --show-current 2>/dev/null || echo 'unknown'`"]
+
+# Print development environment info
+\echo === Development Environment Setup ===
+\echo Project: ${@user}'s development session
+\echo Root: ${project_root}
+\echo Git branch: ${git_branch}
+\echo Session: dev_session_${@date}
+\echo Debug level: ${debug_level}
+\echo === Ready for development! ===

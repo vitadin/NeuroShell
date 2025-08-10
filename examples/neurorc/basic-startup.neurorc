@@ -1,0 +1,20 @@
+# Basic .neurorc startup script
+# This file will be automatically executed when starting NeuroShell
+# Place this file in your current working directory or home directory
+
+# Set up default variables
+\set[project_name="${@user}_workspace"]
+\set[default_theme="dark"]
+\set[session_prefix="daily_work"]
+
+# Create a default session for daily work
+\session-new[system="You are a helpful AI assistant for ${project_name}"] ${session_prefix}_${@date}
+
+# Set up styling
+\set[_style="${default_theme}"]
+
+# Print welcome message
+\echo Welcome to ${project_name}!
+\echo Current session: ${session_prefix}_${@date}
+\echo Theme: ${default_theme}
+\echo Ready to start your daily workflow.

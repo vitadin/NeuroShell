@@ -321,7 +321,7 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	// Auto-push model activation command to stack service for seamless UX
 	// Use precise ID-based activation to avoid any ambiguity
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		activateCommand := fmt.Sprintf("\\silent \\model-activate[id=true] %s", createdModel.ID)
+		activateCommand := fmt.Sprintf("\\try \\silent \\model-activate[id=true] %s", createdModel.ID)
 		stackService.PushCommand(activateCommand)
 	}
 
@@ -485,11 +485,11 @@ func (c *NewCommand) delegateToGeminiModelNew(args map[string]string, input stri
 func (c *NewCommand) generateClientNewCommand(provider string) string {
 	switch provider {
 	case "openai":
-		return "\\silent \\openai-client-new"
+		return "\\try \\silent \\openai-client-new"
 	case "anthropic":
-		return "\\silent \\anthropic-client-new"
+		return "\\try \\silent \\anthropic-client-new"
 	case "google":
-		return "\\silent \\gemini-client-new"
+		return "\\try \\silent \\gemini-client-new"
 	default:
 		// For unknown providers, return empty string (no client creation)
 		return ""

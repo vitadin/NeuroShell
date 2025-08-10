@@ -1,0 +1,6 @@
+%% Test script with nested variable interpolation
+\set[name="NeuroShell"]
+\set[version="1.0"]
+\set[message="Welcome to ${name} v${version}"]
+\get[message]
+\echo Script execution completed successfully

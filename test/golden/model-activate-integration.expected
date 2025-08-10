@@ -11,7 +11,9 @@ Created model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\model-activate primary-model"
 Activated model 'primary-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\try \\silent \\llm-client-activate OAC"
 %%> "\\silent \\llm-client-activate OAC"
+%%> "\\try \\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\model-status"
 Model Configurations (2 models):
@@ -32,7 +34,9 @@ Model Configurations (2 models):
     Description: OpenAI O3 Reasoning model
 %%> "\\model-activate secondary-model"
 Activated model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\try \\silent \\llm-client-activate OAR"
 %%> "\\silent \\llm-client-activate OAR"
+%%> "\\try \\silent \\openai-client-new[client_type=OAR]"
 %%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\model-status"
 Model Configurations (2 models):

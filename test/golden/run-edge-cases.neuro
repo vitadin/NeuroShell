@@ -1,0 +1,11 @@
+%% Test \run command edge cases
+%% Test empty input, whitespace, and other edge cases
+
+%% Test empty input (should show usage)
+\try \run
+
+%% Test whitespace input (should show usage)
+\try \run    
+
+%% Test with a simple working case for comparison
+\run test/fixtures/simple-script.neuro

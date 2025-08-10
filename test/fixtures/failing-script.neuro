@@ -1,0 +1,5 @@
+%% Script that contains failing commands for error testing
+\echo Starting failing script
+\bash false
+\echo This should not be reached due to error
+\set[should_not_exist="failure"]

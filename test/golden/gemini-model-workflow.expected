@@ -75,7 +75,9 @@ Model Configurations (3 models):
     Description: Gemini Gemini 2.5 Pro model
 %%> "\\model-activate flash-direct"
 Activated model 'flash-direct' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\try \\silent \\llm-client-activate GMC"
 %%> "\\silent \\llm-client-activate GMC"
+%%> "\\try \\silent \\gemini-client-new"
 %%> "\\silent \\gemini-client-new"
 %%> "\\get[#active_model_name]"
 #active_model_name = flash-direct
@@ -83,7 +85,9 @@ Activated model 'flash-direct' (ID: 00000001, Provider: gemini, Base: gemini-2.5
 #active_model_provider = gemini
 %%> "\\model-activate pro-delegated"
 Activated model 'pro-delegated' (ID: 00000002, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\try \\silent \\llm-client-activate GMC"
 %%> "\\silent \\llm-client-activate GMC"
+%%> "\\try \\silent \\gemini-client-new"
 %%> "\\silent \\gemini-client-new"
 %%> "\\get[#active_model_name]"
 #active_model_name = pro-delegated
@@ -137,7 +141,9 @@ Model Configurations (5 models):
     Description: Gemini Gemini 2.5 Pro model
 %%> "\\model-activate perf-pro"
 Activated model 'perf-pro' (ID: 00000005, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\try \\silent \\llm-client-activate GMC"
 %%> "\\silent \\llm-client-activate GMC"
+%%> "\\try \\silent \\gemini-client-new"
 %%> "\\silent \\gemini-client-new"
 %%> "\\get[#active_model_name]"
 #active_model_name = perf-pro

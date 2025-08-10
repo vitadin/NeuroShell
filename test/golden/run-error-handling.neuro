@@ -1,0 +1,11 @@
+%% Test \run command error handling
+%% Test both nonexistent script and script with failing commands
+
+%% Test nonexistent script (should fail gracefully)
+\try \run test/fixtures/nonexistent-script.neuro
+
+%% Test script with failing command (without \try, should fail)
+\try \run test/fixtures/failing-script.neuro
+
+%% Verify variables after errors
+\get[#last_error]
