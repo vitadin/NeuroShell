@@ -1,0 +1,8 @@
+%% Script that runs another script (chaining test)
+\echo Starting chain script
+\set[chain_step="1"]
+\get[chain_step]
+\run test/fixtures/simple-script.neuro
+\set[chain_step="2"]
+\get[chain_step]
+\echo Chain script completed

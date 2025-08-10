@@ -23,6 +23,7 @@ Core Commands:
   \openai-model-new    - Create OpenAI model configurations with reasoning support
   \provider-catalog    - List available LLM providers from embedded catalog
   \render-markdown     - Render markdown content to ANSI terminal output using Glamour
+  \run                 - Execute a NeuroShell script file
   \send                - Send message to LLM agent
   \set                 - Set a variable
   \set-env             - Set an environment variable

@@ -1,0 +1,4 @@
+%% Simple test script for \run command testing
+\echo Hello from simple script
+\set[script_var="executed"]
+\get[script_var]

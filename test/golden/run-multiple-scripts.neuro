@@ -1,0 +1,19 @@
+%% Test running multiple scripts in sequence
+%% Verify that stack service handles LIFO order correctly
+
+\echo Starting multiple script execution test
+\set[execution_counter="0"]
+
+%% Run first script
+\run test/fixtures/simple-script.neuro
+
+%% Check variable set by first script
+\get[script_var]
+
+%% Run second script 
+\run test/fixtures/nested-variables-script.neuro
+
+%% Check variables set by second script
+\get[message]
+
+\echo Multiple script execution completed

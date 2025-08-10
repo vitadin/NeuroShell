@@ -16,7 +16,9 @@ Created model 'another-claude' (ID: 00000003, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\model-activate openai"
 Activated model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\try \\silent \\llm-client-activate OAR"
 %%> "\\silent \\llm-client-activate OAR"
+%%> "\\try \\silent \\openai-client-new[client_type=OAR]"
 %%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\get[#active_model_name]"
 #active_model_name = my-openai-model
@@ -28,7 +30,9 @@ _output = OpenAI client ready: OAR:b10394de (type: OAR)
 Setting id_prefix = 00000002-0000-4000-8000-000000000002
 %%> "\\model-activate[id=true] ${id_prefix}"
 Activated model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\try \\silent \\llm-client-activate OAR"
 %%> "\\silent \\llm-client-activate OAR"
+%%> "\\try \\silent \\openai-client-new[client_type=OAR]"
 %%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\get[#active_model_name]"
 #active_model_name = my-openai-model
@@ -36,7 +40,9 @@ Activated model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
 _output = OpenAI client ready: OAR:b10394de (type: OAR)
 %%> "\\model-activate MY-CLAUDE"
 Activated model 'my-claude-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\try \\silent \\llm-client-activate OAC"
 %%> "\\silent \\llm-client-activate OAC"
+%%> "\\try \\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\get[#active_model_name]"
 #active_model_name = my-claude-model

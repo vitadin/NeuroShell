@@ -1,0 +1,9 @@
+Starting chain script
+Setting chain_step = 1
+chain_step = 1
+Hello from simple script
+Setting script_var = executed
+script_var = executed
+Setting chain_step = 2
+chain_step = 2
+Chain script completed

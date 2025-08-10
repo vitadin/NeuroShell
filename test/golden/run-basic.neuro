@@ -1,0 +1,4 @@
+%% Test basic \run command functionality
+%% Execute a simple script from fixtures
+
+\run test/fixtures/simple-script.neuro

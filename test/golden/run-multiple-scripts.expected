@@ -1,0 +1,13 @@
+Starting multiple script execution test
+Setting execution_counter = 0
+Hello from simple script
+Setting script_var = executed
+script_var = executed
+script_var = executed
+Setting name = NeuroShell
+Setting version = 1.0
+Setting message = Welcome to NeuroShell v1.0
+message = Welcome to NeuroShell v1.0
+Script execution completed successfully
+message = Welcome to NeuroShell v1.0
+Multiple script execution completed

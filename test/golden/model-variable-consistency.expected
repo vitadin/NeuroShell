@@ -18,7 +18,9 @@ Created model 'third-model' (ID: 00000003, Provider: openai, Base: o4-mini)
 #model_count = 
 %%> "\\model-activate first-model"
 Activated model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\try \\silent \\llm-client-activate OAC"
 %%> "\\silent \\llm-client-activate OAC"
+%%> "\\try \\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\get[#active_model_name]"
 #active_model_name = first-model
@@ -30,7 +32,9 @@ Activated model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 #active_model_base = o4-mini
 %%> "\\model-activate second-model"
 Activated model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\try \\silent \\llm-client-activate OAR"
 %%> "\\silent \\llm-client-activate OAR"
+%%> "\\try \\silent \\openai-client-new[client_type=OAR]"
 %%> "\\silent \\openai-client-new[client_type=OAR]"
 %%> "\\get[#active_model_name]"
 #active_model_name = second-model
@@ -86,7 +90,9 @@ Deleted model 'second-model' (ID: 00000002, Provider: openai, Base: o3)
 #model_count = 3
 %%> "\\model-activate first-model"
 Activated model 'first-model' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\try \\silent \\llm-client-activate OAC"
 %%> "\\silent \\llm-client-activate OAC"
+%%> "\\try \\silent \\openai-client-new[client_type=OAC]"
 %%> "\\silent \\openai-client-new[client_type=OAC]"
 %%> "\\get[#active_model_name]"
 #active_model_name = first-model

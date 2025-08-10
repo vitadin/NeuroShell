@@ -1,0 +1,4 @@
+%% Test \run command chaining (script calls another script)
+%% This tests that the stack service correctly handles nested script execution
+
+\run test/fixtures/chain-scripts.neuro
