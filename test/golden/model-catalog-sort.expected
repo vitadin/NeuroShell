@@ -403,6 +403,7 @@ Anthropic Models:
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
     Description: High intelligence and balanced performance
+
 Gemini Models:
   [GM25F] Gemini 2.5 Flash (gemini-2.5-flash)
     Provider: gemini (GMC)
@@ -437,6 +438,7 @@ Gemini Models:
     Knowledge cutoff: 2025-01-01
     Thinking mode: range: 128-32768, default: dynamic, cannot disable
     Description: Google's most capable multimodal AI model with advanced reasoning capabilities
+
 Moonshot Models:
   [MK2] Kimi K2 (Moonshot) (kimi-k2-0711-preview)
     Provider: moonshot (MSC)
@@ -447,6 +449,7 @@ Moonshot Models:
     Features: streaming, function-calling
     Knowledge cutoff: 2024-12-01
     Description: Direct access to Kimi K2 via Moonshot AI platform, a trillion-parameter MoE model with 384 experts and advanced reasoning capabilities
+
 Openai Models:
   [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
     Provider: openai (OAC)
@@ -607,6 +610,7 @@ Openai Models:
     Reasoning tokens supported
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.
+
 Openrouter Models:
   [ORGM25FL] Google: Gemini 2.5 Flash Lite (google/gemini-2.5-flash-lite)
     Provider: openrouter (ORC)

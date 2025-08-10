@@ -37,6 +37,7 @@ Activated session 'debug_session' (ID: 00000003, Messages: 0)
 _error = Multiple sessions match name 'work'. Please be more specific:
   work_session_1 (ID: 00000001, messages: 0)
   work_session_2 (ID: 00000002, messages: 0)
+
 Tip: Use the full name or a longer ID prefix to uniquely identify the session.
 %%> "\\try \\session-activate[id=true] 000000"
 %%> "\\session-activate[id=true] 000000"
@@ -46,6 +47,7 @@ _error = Multiple sessions match ID prefix '000000'. Please be more specific:
   ID: 00000002 (name: work_session_2, messages: 0)
   ID: 00000003 (name: debug_session, messages: 0)
   ID: 00000004 (name: project_alpha, messages: 0)
+
 Tip: Use the full name or a longer ID prefix to uniquely identify the session.
 %%> "\\session-delete work_session_1"
 Deleted session 'work_session_1' (ID: 00000001)

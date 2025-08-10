@@ -50,6 +50,7 @@ Model Configurations (4 models):
     Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
     Description: Gemini Gemini 2.5 Flash model
+
   delegated-full (00000004)
     Provider: gemini
     Base Model: gemini-2.5-flash
@@ -58,6 +59,7 @@ Model Configurations (4 models):
     Created: 2025-01-01 00:00:04
     Description: Gemini Gemini 2.5 Flash model
     Active: true
+
   delegated-lite (00000003)
     Provider: gemini
     Base Model: gemini-2.5-flash-lite
@@ -65,6 +67,7 @@ Model Configurations (4 models):
     Parameters: 1 (temperature=0.7)
     Created: 2025-01-01 00:00:03
     Description: Delegated Flash Lite model
+
   delegated-pro (00000002)
     Provider: gemini
     Base Model: gemini-2.5-pro

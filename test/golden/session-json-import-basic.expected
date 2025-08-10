@@ -26,6 +26,7 @@ System: You are a helpful test assistant for import testing
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:01
 Messages: 3 total
+
 [1] user (10:30:00): Hello, can you help me test the import functionality?
 [2] assistant (10:30:05): Hello! Yes, I'd be happy to help you tes...ge should be preserved during import. (123 chars)
 [3] user (10:30:10): Great! Let's verify that all conversation history is maintained.

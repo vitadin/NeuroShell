@@ -42,6 +42,7 @@ Messages: 0 total
 _error = Multiple sessions match name 'work_project'. Please be more specific:
   work_project_alpha (ID: 00000001, messages: 0)
   work_project_beta (ID: 00000002, messages: 0)
+
 Tip: Use the full name or a longer ID prefix to uniquely identify the session.
 %%> "\\try \\session-show[id=true] 000000"
 %%> "\\session-show[id=true] 000000"
@@ -50,11 +51,13 @@ _error = Multiple sessions match ID prefix '000000'. Please be more specific:
   ID: 00000001 (name: work_project_alpha, messages: 0)
   ID: 00000002 (name: work_project_beta, messages: 0)
   ID: 00000003 (name: debug_session, messages: 0)
+
 Tip: Use the full name or a longer ID prefix to uniquely identify the session.
 %%> "\\try \\session-show nonexistent_session"
 %%> "\\session-show nonexistent_session"
 %%> "\\get[_error]"
 _error = No sessions found matching name 'nonexistent_session'.
+
 Available sessions:
   work_project_alpha (ID: 00000001)
   work_project_beta (ID: 00000002)
@@ -63,6 +66,7 @@ Available sessions:
 %%> "\\session-show[id=true] xyz999"
 %%> "\\get[_error]"
 _error = No sessions found matching ID prefix 'xyz999'.
+
 Available sessions:
   ID: 00000001 (name: work_project_alpha)
   ID: 00000002 (name: work_project_beta)

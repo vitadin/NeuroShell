@@ -4,6 +4,7 @@ _status = 1
 _error = catalog_id 'CS4' is not a Gemini model (provider: anthropic). Use \gemini-model-new only for Gemini models
 _status = 1
 _error = model name is required. Usage: \gemini-model-new[catalog_id=<ID>, thinking_budget=<budget>, temperature=0.7, max_tokens=1000, ...] model_name
+
 Examples:
   \gemini-model-new[catalog_id=GM25F] my-flash                               %% Create Gemini Flash with defaults
   \gemini-model-new[catalog_id=GM25F, thinking_budget=2048] reasoning-flash  %% Create Flash with fixed thinking budget
@@ -11,12 +12,14 @@ Examples:
   \gemini-model-new[catalog_id=GM25F, thinking_budget=-1] dynamic-flash      %% Create Flash with dynamic thinking
   \gemini-model-new[catalog_id=GM25P, thinking_budget=16384] thorough-pro    %% Create Pro with large thinking budget
   \gemini-model-new[catalog_id=GM25FL, temperature=0.9] creative-lite        %% Create Flash Lite with high temperature
+
 Options:
   catalog_id - Short model ID from catalog (GM25F, GM25P, GM25FL, etc.)
   thinking_budget - Thinking tokens budget (-1=dynamic, 0=disabled, positive=fixed token count)
   temperature - Sampling temperature (0.0-2.0)
   max_tokens - Maximum completion tokens
   description - Human-readable description
+
 Note: catalog_id is required.
       thinking_budget ranges vary by model:
       - GM25F (Flash): 0-24576 tokens, can disable

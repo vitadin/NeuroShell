@@ -1,30 +1,52 @@
 Setting _echo_command = true
 %%> "\\render-markdown # Café Menu with 🚀"
+
   # Café Menu with 🚀                                                         
+
 %%> "\\render-markdown Welcome to **café naïve** with _résumé_ content"
+
   Welcome to **café naïve** with *résumé* content                             
+
 %%> "\\render-markdown ## Languages\\n- 日本語 (Japanese)\\n- Ελληνικά (Greek)\\n- Русский (Russian)"
+
   ## Languages\n- 日本語 (Japanese)\n- Ελληνικά (Greek)\n- Русский (Russian)  
+
 %%> "\\render-markdown ```javascript\\nfunction café() {\\n  return \"🚀 rocket\";\\n}\\n```"
+
   javascript\nfunction café() {\n  return "🚀 rocket";\n}\n                   
+
 %%> "\\render-markdown Visit [café website](https://café.example.com) for more 🚀 content"
+
   Visit café website https://café.example.com for more 🚀 content             
+
 %%> "\\render-markdown **Symbols**: — (em-dash), – (en-dash), \"\" (quotes), … (ellipsis)"
+
   **Symbols**: — (em-dash), – (en-dash), "" (quotes), … (ellipsis)            
+
 %%> "\\render-markdown > \"The café serves the best résumé\" — Anonymous 🌟"
+
+                                                                              
   | "The café serves the best résumé" — Anonymous 🌟                          
+
 %%> "\\set[cafe_name=\"Café Naïve\"]"
 Setting cafe_name = Café Naïve
 %%> "\\set[rocket=\"🚀\"]"
 Setting rocket = 🚀
 %%> "\\render-markdown ## ${cafe_name}\\nWelcome to our ${rocket} café!"
+
   ## Café Naïve\nWelcome to our 🚀 café!                                      
+
 %%> "\\render-markdown[raw=false] # Café\\nWith newline and **bold** text"
+
   # Café                                                                      
+                                                                              
   With newline and **bold** text                                              
+
 %%> "\\render-markdown ### Complex Example\\n**Bold café** with _italic 日本語_ and `code 🚀`\\n\\n- Currency: € £ ¥\\n- Math: π ≠ ∞\\n- Quotes: \"Hello\" — world"
+
   ### Complex Example\n**Bold café** with *italic 日本語* and code 🚀\n\n-    
   Currency: € £ ¥\n- Math: π ≠ ∞\n- Quotes: "Hello" — world                   
+
 %%> "\\get[_output]"
 _output = 
   ### Complex Example\n**Bold café** with *italic 日本語* and code 🚀\n\n-    

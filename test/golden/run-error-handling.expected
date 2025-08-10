@@ -1,3 +1,4 @@
+ ERROR  CommandResolver : Path resolution failed path=test/fixtures/nonexistent-script.neuro error="file not found: /Users/<username>/GolandProjects/NeuroShell/test/fixtures/nonexistent-script.neuro"
 Starting failing script
 Exit status: 1
 #last_error = 

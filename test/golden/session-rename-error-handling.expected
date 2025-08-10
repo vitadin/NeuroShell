@@ -4,14 +4,18 @@ Setting _echo_command = true
 %%> "\\get[_error]"
 _error = no session specified and no active session found: no active session. Usage: \session-rename[session=session_id] new_session_name
 \session-rename new_session_name
+
 Examples:
   \session-rename My New Session                                                  %% Rename active session
   \session-rename[session=work] Development Session                              %% Rename specific session
   \session-rename[session=old_name] "Project Alpha"                              %% Name with spaces (quoted)
   \session-rename[session=temp] ${project_name}                                  %% Using variable
+
 Options:
   session - Session name or ID (optional, defaults to active session)
+
 Input: New session name (must be valid and unique)
+
 Note: Session names must be unique and follow naming conventions.
       Names are automatically validated and processed for consistency.
       The session retains all its content and history after renaming.

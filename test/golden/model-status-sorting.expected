@@ -23,6 +23,7 @@ Model Configurations (3 models):
     Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:02
     Description: OpenAI O4-mini Chat model
+
   middle-model (00000003)
     Provider: openai
     Base Model: gpt-4.1-2025-04-14
@@ -31,6 +32,7 @@ Model Configurations (3 models):
     Created: 2025-01-01 00:00:03
     Description: OpenAI GPT-4.1 Chat model
     Active: true
+
   zebra-model (00000001)
     Provider: openai
     Base Model: o3
@@ -38,6 +40,7 @@ Model Configurations (3 models):
     Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:01
     Description: OpenAI O3 Reasoning model
+
 %%> "\\model-status[sort=\"provider\"]"
 Model Configurations (3 models):
   alpha-model (00000002)
@@ -47,6 +50,7 @@ Model Configurations (3 models):
     Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:02
     Description: OpenAI O4-mini Chat model
+
   middle-model (00000003)
     Provider: openai
     Base Model: gpt-4.1-2025-04-14
@@ -55,6 +59,7 @@ Model Configurations (3 models):
     Created: 2025-01-01 00:00:03
     Description: OpenAI GPT-4.1 Chat model
     Active: true
+
   zebra-model (00000001)
     Provider: openai
     Base Model: o3
@@ -62,6 +67,7 @@ Model Configurations (3 models):
     Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:01
     Description: OpenAI O3 Reasoning model
+
 %%> "\\model-status[sort=\"created\"]"
 Model Configurations (3 models):
   zebra-model (00000001)
@@ -71,6 +77,7 @@ Model Configurations (3 models):
     Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:01
     Description: OpenAI O3 Reasoning model
+
   alpha-model (00000002)
     Provider: openai
     Base Model: o4-mini
@@ -78,6 +85,7 @@ Model Configurations (3 models):
     Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:02
     Description: OpenAI O4-mini Chat model
+
   middle-model (00000003)
     Provider: openai
     Base Model: gpt-4.1-2025-04-14
@@ -86,6 +94,7 @@ Model Configurations (3 models):
     Created: 2025-01-01 00:00:03
     Description: OpenAI GPT-4.1 Chat model
     Active: true
+
 %%> "\\try \\model-status[sort=\"invalid\"]"
 %%> "\\model-status[sort=\"invalid\"]"
 %%> "\\get[#model_count]"

@@ -73,6 +73,7 @@ System: You are a test assistant for round-trip testing
 Created: 2025-01-01 00:00:08
 Updated: 2025-01-01 00:00:08
 Messages: 3 total
+
 [1] user (00:00:02): Can you help me test the export-import workflow?
 [2] assistant (00:00:04): Absolutely! I'll help you verify that th...preserves all session data correctly. (112 chars)
 [3] user (00:00:06): Perfect! Let's make sure all messages are preserved.

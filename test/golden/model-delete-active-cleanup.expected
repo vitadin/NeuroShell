@@ -40,6 +40,7 @@ Model Configurations (1 models):
     Created: 2025-01-01 00:00:02
     Description: OpenAI O3 Reasoning model
     Active: true
+
 %%> "\\try \\model-activate current-model"
 %%> "\\model-activate current-model"
 %%> "\\model-activate backup-model"

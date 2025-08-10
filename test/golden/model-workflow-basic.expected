@@ -340,6 +340,7 @@ Model Configurations (2 models):
     Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
     Description: OpenAI O4-mini Chat model
+
   my-o3-model (00000002)
     Provider: openai
     Base Model: o3
@@ -348,6 +349,7 @@ Model Configurations (2 models):
     Created: 2025-01-01 00:00:02
     Description: OpenAI O3 Reasoning model
     Active: true
+
 %%> "\\model-activate my-claude-4"
 Activated model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\try \\silent \\llm-client-activate OAC"
@@ -379,6 +381,7 @@ Model Configurations (3 models):
     Created: 2025-01-01 00:00:03
     Description: Custom model
     Active: true
+
   my-claude-4 (00000001)
     Provider: openai
     Base Model: o4-mini
@@ -386,6 +389,7 @@ Model Configurations (3 models):
     Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
     Description: OpenAI O4-mini Chat model
+
   my-o3-model (00000002)
     Provider: openai
     Base Model: o3
@@ -393,6 +397,7 @@ Model Configurations (3 models):
     Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
     Description: OpenAI O3 Reasoning model
+
 %%> "\\model-delete my-claude-4"
 Deleted model 'my-claude-4' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\silent \\model-activate"
@@ -406,6 +411,7 @@ Model Configurations (2 models):
     Created: 2025-01-01 00:00:03
     Description: Custom model
     Active: true
+
   my-o3-model (00000002)
     Provider: openai
     Base Model: o3
@@ -413,6 +419,7 @@ Model Configurations (2 models):
     Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
     Description: OpenAI O3 Reasoning model
+
 %%> "\\get[#active_model_name]"
 #active_model_name = custom-model
 %%> "\\model-delete my-o3-model"

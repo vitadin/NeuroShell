@@ -10,6 +10,7 @@ Added user message to session '00000001-0000-4000-8000-000000000001'
 %%> "\\get[_error]"
 _error = idx parameter is required. Usage: \session-edit-msg[idx=N, session=session_id] new_message_content
 \session-edit-msg[idx=.N] new_message_content
+
 Examples:
   \session-edit-msg[idx=1] Edit the last message content                         %% Reverse order: 1=last, 2=second-to-last
   \session-edit-msg[idx=2] Edit second-to-last message                          %% Reverse order
@@ -17,10 +18,13 @@ Examples:
   \session-edit-msg[idx=.3] Edit the third message                              %% Normal order
   \session-edit-msg[session=work, idx=1] Edit last message in work session     %% Specific session
   \session-edit-msg[idx=1] ${new_content}                                       %% Using variable
+
 Options:
   idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
   session - Session name or ID (optional, defaults to active session)
+
 Input: New message content to replace the existing content
+
 Note: Indexing systems:
       - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
       - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
@@ -30,6 +34,7 @@ Note: Indexing systems:
 %%> "\\get[_error]"
 _error = new message content is required. Usage: \session-edit-msg[idx=N, session=session_id] new_message_content
 \session-edit-msg[idx=.N] new_message_content
+
 Examples:
   \session-edit-msg[idx=1] Edit the last message content                         %% Reverse order: 1=last, 2=second-to-last
   \session-edit-msg[idx=2] Edit second-to-last message                          %% Reverse order
@@ -37,10 +42,13 @@ Examples:
   \session-edit-msg[idx=.3] Edit the third message                              %% Normal order
   \session-edit-msg[session=work, idx=1] Edit last message in work session     %% Specific session
   \session-edit-msg[idx=1] ${new_content}                                       %% Using variable
+
 Options:
   idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
   session - Session name or ID (optional, defaults to active session)
+
 Input: New message content to replace the existing content
+
 Note: Indexing systems:
       - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
       - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
@@ -50,6 +58,7 @@ Note: Indexing systems:
 %%> "\\get[_error]"
 _error = new message content is required. Usage: \session-edit-msg[idx=N, session=session_id] new_message_content
 \session-edit-msg[idx=.N] new_message_content
+
 Examples:
   \session-edit-msg[idx=1] Edit the last message content                         %% Reverse order: 1=last, 2=second-to-last
   \session-edit-msg[idx=2] Edit second-to-last message                          %% Reverse order
@@ -57,10 +66,13 @@ Examples:
   \session-edit-msg[idx=.3] Edit the third message                              %% Normal order
   \session-edit-msg[session=work, idx=1] Edit last message in work session     %% Specific session
   \session-edit-msg[idx=1] ${new_content}                                       %% Using variable
+
 Options:
   idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
   session - Session name or ID (optional, defaults to active session)
+
 Input: New message content to replace the existing content
+
 Note: Indexing systems:
       - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
       - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
@@ -70,6 +82,7 @@ Note: Indexing systems:
 %%> "\\get[_error]"
 _error = invalid index 'abc': invalid reverse order index number: strconv.Atoi: parsing "abc": invalid syntax. Usage: \session-edit-msg[idx=N, session=session_id] new_message_content
 \session-edit-msg[idx=.N] new_message_content
+
 Examples:
   \session-edit-msg[idx=1] Edit the last message content                         %% Reverse order: 1=last, 2=second-to-last
   \session-edit-msg[idx=2] Edit second-to-last message                          %% Reverse order
@@ -77,10 +90,13 @@ Examples:
   \session-edit-msg[idx=.3] Edit the third message                              %% Normal order
   \session-edit-msg[session=work, idx=1] Edit last message in work session     %% Specific session
   \session-edit-msg[idx=1] ${new_content}                                       %% Using variable
+
 Options:
   idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
   session - Session name or ID (optional, defaults to active session)
+
 Input: New message content to replace the existing content
+
 Note: Indexing systems:
       - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
       - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
@@ -90,6 +106,7 @@ Note: Indexing systems:
 %%> "\\get[_error]"
 _error = invalid index '.': invalid normal order index format (use .1, .2, .3, etc.). Usage: \session-edit-msg[idx=N, session=session_id] new_message_content
 \session-edit-msg[idx=.N] new_message_content
+
 Examples:
   \session-edit-msg[idx=1] Edit the last message content                         %% Reverse order: 1=last, 2=second-to-last
   \session-edit-msg[idx=2] Edit second-to-last message                          %% Reverse order
@@ -97,10 +114,13 @@ Examples:
   \session-edit-msg[idx=.3] Edit the third message                              %% Normal order
   \session-edit-msg[session=work, idx=1] Edit last message in work session     %% Specific session
   \session-edit-msg[idx=1] ${new_content}                                       %% Using variable
+
 Options:
   idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
   session - Session name or ID (optional, defaults to active session)
+
 Input: New message content to replace the existing content
+
 Note: Indexing systems:
       - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
       - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
@@ -110,6 +130,7 @@ Note: Indexing systems:
 %%> "\\get[_error]"
 _error = invalid index '.abc': invalid normal order index number: strconv.Atoi: parsing "abc": invalid syntax. Usage: \session-edit-msg[idx=N, session=session_id] new_message_content
 \session-edit-msg[idx=.N] new_message_content
+
 Examples:
   \session-edit-msg[idx=1] Edit the last message content                         %% Reverse order: 1=last, 2=second-to-last
   \session-edit-msg[idx=2] Edit second-to-last message                          %% Reverse order
@@ -117,10 +138,13 @@ Examples:
   \session-edit-msg[idx=.3] Edit the third message                              %% Normal order
   \session-edit-msg[session=work, idx=1] Edit last message in work session     %% Specific session
   \session-edit-msg[idx=1] ${new_content}                                       %% Using variable
+
 Options:
   idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
   session - Session name or ID (optional, defaults to active session)
+
 Input: New message content to replace the existing content
+
 Note: Indexing systems:
       - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
       - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
@@ -130,6 +154,7 @@ Note: Indexing systems:
 %%> "\\get[_error]"
 _error = invalid index '2': reverse order index 2 is out of bounds (session has 1 messages). Usage: \session-edit-msg[idx=N, session=session_id] new_message_content
 \session-edit-msg[idx=.N] new_message_content
+
 Examples:
   \session-edit-msg[idx=1] Edit the last message content                         %% Reverse order: 1=last, 2=second-to-last
   \session-edit-msg[idx=2] Edit second-to-last message                          %% Reverse order
@@ -137,10 +162,13 @@ Examples:
   \session-edit-msg[idx=.3] Edit the third message                              %% Normal order
   \session-edit-msg[session=work, idx=1] Edit last message in work session     %% Specific session
   \session-edit-msg[idx=1] ${new_content}                                       %% Using variable
+
 Options:
   idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
   session - Session name or ID (optional, defaults to active session)
+
 Input: New message content to replace the existing content
+
 Note: Indexing systems:
       - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
       - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
@@ -150,6 +178,7 @@ Note: Indexing systems:
 %%> "\\get[_error]"
 _error = invalid index '0': reverse order index 0 is out of bounds (session has 1 messages). Usage: \session-edit-msg[idx=N, session=session_id] new_message_content
 \session-edit-msg[idx=.N] new_message_content
+
 Examples:
   \session-edit-msg[idx=1] Edit the last message content                         %% Reverse order: 1=last, 2=second-to-last
   \session-edit-msg[idx=2] Edit second-to-last message                          %% Reverse order
@@ -157,10 +186,13 @@ Examples:
   \session-edit-msg[idx=.3] Edit the third message                              %% Normal order
   \session-edit-msg[session=work, idx=1] Edit last message in work session     %% Specific session
   \session-edit-msg[idx=1] ${new_content}                                       %% Using variable
+
 Options:
   idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
   session - Session name or ID (optional, defaults to active session)
+
 Input: New message content to replace the existing content
+
 Note: Indexing systems:
       - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
       - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
@@ -170,6 +202,7 @@ Note: Indexing systems:
 %%> "\\get[_error]"
 _error = invalid index '.2': normal order index 2 is out of bounds (session has 1 messages). Usage: \session-edit-msg[idx=N, session=session_id] new_message_content
 \session-edit-msg[idx=.N] new_message_content
+
 Examples:
   \session-edit-msg[idx=1] Edit the last message content                         %% Reverse order: 1=last, 2=second-to-last
   \session-edit-msg[idx=2] Edit second-to-last message                          %% Reverse order
@@ -177,10 +210,13 @@ Examples:
   \session-edit-msg[idx=.3] Edit the third message                              %% Normal order
   \session-edit-msg[session=work, idx=1] Edit last message in work session     %% Specific session
   \session-edit-msg[idx=1] ${new_content}                                       %% Using variable
+
 Options:
   idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
   session - Session name or ID (optional, defaults to active session)
+
 Input: New message content to replace the existing content
+
 Note: Indexing systems:
       - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
       - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
@@ -190,6 +226,7 @@ Note: Indexing systems:
 %%> "\\get[_error]"
 _error = invalid index '.0': normal order index 0 is out of bounds (session has 1 messages). Usage: \session-edit-msg[idx=N, session=session_id] new_message_content
 \session-edit-msg[idx=.N] new_message_content
+
 Examples:
   \session-edit-msg[idx=1] Edit the last message content                         %% Reverse order: 1=last, 2=second-to-last
   \session-edit-msg[idx=2] Edit second-to-last message                          %% Reverse order
@@ -197,10 +234,13 @@ Examples:
   \session-edit-msg[idx=.3] Edit the third message                              %% Normal order
   \session-edit-msg[session=work, idx=1] Edit last message in work session     %% Specific session
   \session-edit-msg[idx=1] ${new_content}                                       %% Using variable
+
 Options:
   idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
   session - Session name or ID (optional, defaults to active session)
+
 Input: New message content to replace the existing content
+
 Note: Indexing systems:
       - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
       - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.

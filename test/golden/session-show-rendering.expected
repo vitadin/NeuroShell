@@ -17,6 +17,7 @@ System: This is an extremely long system prompt that shoul...rate the smart trun
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:07
 Messages: 3 total
+
 [1] user (00:00:02): \"This is a user message with some content to demonstrate message rendering\"
 [2] assistant (00:00:04): \"This is an assistant response that pro...isplayed in the session show output\" (151 chars)
 [3] user (00:00:06): \"Here is another user message that cont...monstrate multiple message handling\" (125 chars)
@@ -66,12 +67,15 @@ System: You are a helpful assistant.
 Created: 2025-01-01 00:00:08
 Updated: 2025-01-01 00:00:32
 Messages: 12 total
+
 [1] user (00:00:09): \"Message 1: First user message\"
 [2] assistant (00:00:11): \"Message 2: First assistant response\"
 [3] user (00:00:13): \"Message 3: Second user message\"
 [4] assistant (00:00:15): \"Message 4: Second assistant response\"
 [5] user (00:00:17): \"Message 5: Third user message\"
+
 ... (2 more messages) ...
+
 [8] assistant (00:00:23): \"Message 8: Fourth assistant response\"
 [9] user (00:00:25): \"Message 9: Fifth user message\"
 [10] assistant (00:00:27): \"Message 10: Fifth assistant response\"

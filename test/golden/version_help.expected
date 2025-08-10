@@ -1,7 +1,11 @@
 Command: version
+
 Description: Show NeuroShell version information and store details in system variables
+
 Usage: \version
+
 Parse Mode: Key-Value (supports [key=value] syntax)
+
 Examples:
   \version
     %% Show version information and store details in system variables
@@ -9,6 +13,7 @@ Examples:
     %% Show version and then display the stored version string
   \version\n\echo Codename: ${#version_codename}
     %% Show version and then display the stored codename
+
 Stored Variables:
   ${#version} - Full version string with build metadata (version_info)
     Example: #version = "0.2.0+530.a455fa8"
@@ -28,6 +33,7 @@ Stored Variables:
     Example: #version_go_version = "go1.24.4"
   ${#version_platform} - Target platform (OS/architecture) (version_info)
     Example: #version_platform = "darwin/arm64"
+
 Notes:
   Displays formatted version information to console
   Automatically stores detailed version components in system variables with # prefix

@@ -52,6 +52,7 @@ System: You are a test assistant
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:13
 Messages: 4 total
+
 [1] user (00:00:02): Edited first message (was first user)
 [2] assistant (00:00:04): Edited second message (was first assistant)
 [3] user (00:00:06): Edited second-to-last message (was second user)
