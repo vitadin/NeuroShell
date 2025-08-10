@@ -1,4 +1,5 @@
-package main
+// Package neurorc provides testing functionality for .neurorc startup behavior.
+package neurorc
 
 import (
 	"fmt"
@@ -8,71 +9,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
+	"neuroshell/cmd/neurotest/shared"
 )
 
-// diffNeuroRCTest shows differences in .neurorc startup test output
-func diffNeuroRCTest(_ *cobra.Command, args []string) error {
-	testName := args[0]
-
-	if verbose {
-		fmt.Printf("Showing diff for .neurorc startup test: %s\n", testName)
-	}
-
-	// Check if neuro command exists
-	if err := checkNeuroCommand(); err != nil {
-		return err
-	}
-
-	// Find the test configuration file
-	configFile, err := findNeuroRCTestConfig(testName)
-	if err != nil {
-		return err
-	}
-
-	// Parse test configuration
-	config, err := parseNeuroRCTestConfig(configFile)
-	if err != nil {
-		return err
-	}
-
-	// Check if expected file exists
-	expectedFile := filepath.Join(testDir, "neurorc", testName+".expected")
-	if _, err := os.Stat(expectedFile); os.IsNotExist(err) {
-		return fmt.Errorf("expected output file not found: %s", expectedFile)
-	}
-
-	// Read expected output
-	expectedBytes, err := os.ReadFile(expectedFile)
-	if err != nil {
-		return fmt.Errorf("failed to read expected output: %w", err)
-	}
-	expected := string(expectedBytes)
-
-	// Create isolated test environment
-	testEnv, err := createNeuroRCTestEnvironment(config)
-	if err != nil {
-		return err
-	}
-	defer cleanupNeuroRCTestEnvironment(testEnv)
-
-	// Run the .neurorc startup test
-	actual, err := runNeuroRCShellTest(testEnv, config)
-	if err != nil {
-		return fmt.Errorf("failed to run .neurorc startup test: %w", err)
-	}
-
-	// Show enhanced diff
-	showDetailedDiff(expected, actual, testName)
-
-	return nil
-}
-
-// findNeuroRCTestConfig finds the test configuration file for a .neurorc test
-func findNeuroRCTestConfig(testName string) (string, error) {
+// FindTestConfig finds the test configuration file for a .neurorc test
+func FindTestConfig(testName string) (string, error) {
 	// Try different possible locations
 	candidates := []string{
-		filepath.Join(testDir, "neurorc", testName+".neurorc-test"),
+		filepath.Join("test/golden", "neurorc", testName+".neurorc-test"),
 		filepath.Join("test/neurorc", testName+".neurorc-test"),
 		testName + ".neurorc-test",
 		testName,
@@ -87,17 +31,17 @@ func findNeuroRCTestConfig(testName string) (string, error) {
 	return "", fmt.Errorf(".neurorc test config not found for test: %s\nTried: %v", testName, candidates)
 }
 
-// parseNeuroRCTestConfig parses a .neurorc test configuration file
-func parseNeuroRCTestConfig(configFile string) (*NeuroRCTestConfig, error) {
+// ParseTestConfig parses a .neurorc test configuration file
+func ParseTestConfig(configFile string) (*TestConfig, error) {
 	content, err := os.ReadFile(configFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	config := &NeuroRCTestConfig{
+	config := &TestConfig{
 		Name:        filepath.Base(strings.TrimSuffix(configFile, ".neurorc-test")),
 		Description: "Basic .neurorc startup test",
-		Setup:       NeuroRCTestSetup{},
+		Setup:       TestSetup{},
 		CLIFlags:    []string{},
 		EnvVars:     make(map[string]string),
 		InputSeq:    []string{"\\exit"},
@@ -153,7 +97,7 @@ func parseNeuroRCTestConfig(configFile string) (*NeuroRCTestConfig, error) {
 }
 
 // applyConfigSection applies a parsed configuration section to the config
-func applyConfigSection(config *NeuroRCTestConfig, section, content string) error {
+func applyConfigSection(config *TestConfig, section, content string) error {
 	switch section {
 	case "description":
 		config.Description = content
@@ -206,8 +150,8 @@ func applyConfigSection(config *NeuroRCTestConfig, section, content string) erro
 	return nil
 }
 
-// createNeuroRCTestEnvironment creates an isolated test environment
-func createNeuroRCTestEnvironment(config *NeuroRCTestConfig) (*NeuroRCTestEnvironment, error) {
+// CreateTestEnvironment creates an isolated test environment
+func CreateTestEnvironment(config *TestConfig) (*TestEnvironment, error) {
 	// Create main temporary directory
 	tempDir, err := os.MkdirTemp("", "neurotest-neurorc-*")
 	if err != nil {
@@ -228,7 +172,7 @@ func createNeuroRCTestEnvironment(config *NeuroRCTestConfig) (*NeuroRCTestEnviro
 		return nil, fmt.Errorf("failed to create home directory: %w", err)
 	}
 
-	testEnv := &NeuroRCTestEnvironment{
+	testEnv := &TestEnvironment{
 		TempDir:     tempDir,
 		WorkingDir:  workingDir,
 		HomeDir:     homeDir,
@@ -239,7 +183,7 @@ func createNeuroRCTestEnvironment(config *NeuroRCTestConfig) (*NeuroRCTestEnviro
 	if config.Setup.WorkingDirNeuroRC != "" {
 		neuroRCPath := filepath.Join(workingDir, ".neurorc")
 		if err := os.WriteFile(neuroRCPath, []byte(config.Setup.WorkingDirNeuroRC), 0644); err != nil {
-			cleanupNeuroRCTestEnvironment(testEnv)
+			CleanupTestEnvironment(testEnv)
 			return nil, fmt.Errorf("failed to create working dir .neurorc: %w", err)
 		}
 		testEnv.ConfigFiles["working/.neurorc"] = neuroRCPath
@@ -248,7 +192,7 @@ func createNeuroRCTestEnvironment(config *NeuroRCTestConfig) (*NeuroRCTestEnviro
 	if config.Setup.HomeDirNeuroRC != "" {
 		neuroRCPath := filepath.Join(homeDir, ".neurorc")
 		if err := os.WriteFile(neuroRCPath, []byte(config.Setup.HomeDirNeuroRC), 0644); err != nil {
-			cleanupNeuroRCTestEnvironment(testEnv)
+			CleanupTestEnvironment(testEnv)
 			return nil, fmt.Errorf("failed to create home dir .neurorc: %w", err)
 		}
 		testEnv.ConfigFiles["home/.neurorc"] = neuroRCPath
@@ -258,11 +202,11 @@ func createNeuroRCTestEnvironment(config *NeuroRCTestConfig) (*NeuroRCTestEnviro
 	for filename, content := range config.Setup.CustomFiles {
 		customFilePath := filepath.Join(workingDir, filename)
 		if err := os.MkdirAll(filepath.Dir(customFilePath), 0755); err != nil {
-			cleanupNeuroRCTestEnvironment(testEnv)
+			CleanupTestEnvironment(testEnv)
 			return nil, fmt.Errorf("failed to create custom file directory: %w", err)
 		}
 		if err := os.WriteFile(customFilePath, []byte(content), 0644); err != nil {
-			cleanupNeuroRCTestEnvironment(testEnv)
+			CleanupTestEnvironment(testEnv)
 			return nil, fmt.Errorf("failed to create custom file %s: %w", filename, err)
 		}
 		testEnv.ConfigFiles[filename] = customFilePath
@@ -271,24 +215,66 @@ func createNeuroRCTestEnvironment(config *NeuroRCTestConfig) (*NeuroRCTestEnviro
 	return testEnv, nil
 }
 
-// cleanupNeuroRCTestEnvironment removes the isolated test environment
-func cleanupNeuroRCTestEnvironment(testEnv *NeuroRCTestEnvironment) {
+// CleanupTestEnvironment removes the isolated test environment
+func CleanupTestEnvironment(testEnv *TestEnvironment) {
 	if testEnv != nil && testEnv.TempDir != "" {
 		_ = os.RemoveAll(testEnv.TempDir)
 	}
 }
 
-// runNeuroRCShellTest runs the shell test in the isolated environment
-func runNeuroRCShellTest(testEnv *NeuroRCTestEnvironment, config *NeuroRCTestConfig) (string, error) {
+// RunShellTest runs the shell test in the isolated environment
+func RunShellTest(testEnv *TestEnvironment, config *TestConfig) (string, error) {
+	// Get the current working directory to resolve paths relative to the project root
+	originalWd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("failed to get current working directory: %w", err)
+	}
+
+	// Get the neuro command and resolve it to an absolute path
+	neuroCmd := shared.DefaultNeuroCmd
+	if err := shared.CheckNeuroCommand(neuroCmd); err != nil {
+		return "", fmt.Errorf("neuro command not available: %w", err)
+	}
+
+	// Determine actual command with absolute path
+	actualCmd := neuroCmd
+	if neuroCmd == "neuro" {
+		if absPath, err := filepath.Abs("./bin/neuro"); err == nil {
+			if _, err := os.Stat(absPath); err == nil {
+				actualCmd = absPath
+			}
+		}
+		if actualCmd == "neuro" {
+			if absPath, err := filepath.Abs("bin/neuro"); err == nil {
+				if _, err := os.Stat(absPath); err == nil {
+					actualCmd = absPath
+				}
+			}
+		}
+		// If we're still using "neuro", try to resolve it from the original working directory
+		if actualCmd == "neuro" {
+			if absPath, err := filepath.Abs(filepath.Join(originalWd, "bin/neuro")); err == nil {
+				if _, err := os.Stat(absPath); err == nil {
+					actualCmd = absPath
+				}
+			}
+		}
+	} else if !filepath.IsAbs(neuroCmd) {
+		// Convert relative path to absolute
+		if absPath, err := filepath.Abs(neuroCmd); err == nil {
+			actualCmd = absPath
+		}
+	}
+
 	// Prepare the command arguments
-	args := []string{"shell", "--test-mode", "--no-color"}
+	args := []string{"--log-level", "error", "shell", "--test-mode", "--no-color"}
 	args = append(args, config.CLIFlags...)
 
 	// Prepare input sequence
 	inputSeq := strings.Join(config.InputSeq, "\n") + "\n"
 
 	// Create the command
-	cmd := exec.Command(neurocmd, args...)
+	cmd := exec.Command(actualCmd, args...)
 
 	// Set working directory
 	cmd.Dir = testEnv.WorkingDir
@@ -296,8 +282,7 @@ func runNeuroRCShellTest(testEnv *NeuroRCTestEnvironment, config *NeuroRCTestCon
 	// Set up environment variables
 	cmd.Env = []string{
 		"HOME=" + testEnv.HomeDir,
-		"NEURO_LOG_LEVEL=fatal", // Minimize log noise
-		"NO_COLOR=1",            // Disable colors for consistent output
+		"NO_COLOR=1", // Disable colors for consistent output
 		"PATH=" + os.Getenv("PATH"),
 		"TERM=xterm", // Set consistent terminal
 	}
@@ -342,12 +327,12 @@ func runNeuroRCShellTest(testEnv *NeuroRCTestEnvironment, config *NeuroRCTestCon
 	}
 
 	// Clean up the output
-	cleanOutput := cleanNeuroRCOutput(string(output))
+	cleanOutput := CleanOutput(string(output))
 	return cleanOutput, nil
 }
 
-// cleanNeuroRCOutput removes shell startup messages and other noise specific to .neurorc tests
-func cleanNeuroRCOutput(output string) string {
+// CleanOutput removes shell startup messages and other noise specific to .neurorc tests
+func CleanOutput(output string) string {
 	lines := strings.Split(output, "\n")
 	var cleanLines []string
 

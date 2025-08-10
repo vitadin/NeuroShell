@@ -1,11 +1,16 @@
 Setting _echo_command = true
 %%> "\\help[session-new]"
 Command: session-new
+
 Description: Create new chat session for LLM interactions
+
 Usage: \session-new[system=system_prompt] [session_name]
+
 Parse Mode: Key-Value (supports [key=value] syntax)
+
 Options:
   system - System prompt for LLM context (default: helpful assistant)
+
 Examples:
   \session-new
     %% Create session with auto-generated name (e.g., 'Session 1')
@@ -17,6 +22,7 @@ Examples:
     %% Create session with quoted name containing spaces
   \session-new debug-${@date}
     %% Create session with interpolated variables in name
+
 Stored Variables:
   ${#session_id} - Unique identifier of the created session (system_metadata)
     Example: 550e8400-e29b-41d4
@@ -30,6 +36,7 @@ Stored Variables:
     Example: 2024-01-15 14:30:25
   ${_output} - Command result message (command_output)
     Example: Created session 'work' (ID: 550e8400)
+
 Notes:
   Session name is optional. If not provided, an auto-generated name is used
   Use quotes if the name contains special characters or spaces

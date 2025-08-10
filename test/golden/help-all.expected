@@ -1,4 +1,5 @@
 Neuro Shell - Available Commands
+
 Core Commands:
   \anthropic-client-new - Create new Anthropic client with automatic key resolution and extended thinking support
   \bash                - Execute system commands via bash
@@ -32,6 +33,7 @@ Core Commands:
   \try                 - Execute commands with error capture and handling
   \vars                - List variables with optional filtering
   \write               - Write content to a file with overwrite or append modes
+
 Session Management:
     Basic Management:
       \session-activate  - Activate session by name or ID with smart matching and auto-activation
@@ -43,19 +45,24 @@ Session Management:
       \session-new       - Create new chat session for LLM interactions
       \session-rename    - Change session name
       \session-show      - Display detailed session information with smart content rendering
+
     Conversation:
       \session-add-assistantmsg - Add assistant message to specified session
       \session-add-usermsg - Add user message to specified session
       \session-edit-msg  - Edit message content by index using dual indexing system
+
     Import/Export:
       \session-export    - Export chat session in specified format
       \session-import    - Import chat session from file with format auto-detection
       \session-json-export - Export chat session to JSON file
       \session-json-import - Import chat session from JSON file
+
+
 Model Management:
   \model-catalog       - List available LLM models from embedded catalog
   \model-new           - Create new LLM model configuration
   \model-status        - Display status and details of model configurations
+
 System & Tools:
   \change-log-show     - Show NeuroShell development change log with search capabilities
   \check               - Check service initialization status and availability
@@ -64,7 +71,9 @@ System & Tools:
   \license             - Display NeuroShell license information and store license details in system variables
   \render              - Style and highlight text using lipgloss with keyword support
   \version             - Show NeuroShell version information and store details in system variables
+
 Testing & Debugging:
   \assert-equal        - Compare two values for equality
+
 Note: Text without \ prefix is sent to LLM automatically
 Use \help[command] for detailed help on any command

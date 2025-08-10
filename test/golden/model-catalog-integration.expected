@@ -179,6 +179,7 @@ Model Configurations (2 models):
     Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
     Description: OpenAI O4-mini Chat model
+
   openai-o3-instance (00000002)
     Provider: openai
     Base Model: o3
@@ -187,6 +188,7 @@ Model Configurations (2 models):
     Created: 2025-01-01 00:00:02
     Description: OpenAI O3 Reasoning model
     Active: true
+
 %%> "\\get[#model_count]"
 #model_count = 2
 %%> "\\model-activate claude-s4-instance"
@@ -218,6 +220,7 @@ Model Configurations (2 models):
     Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
     Description: OpenAI O4-mini Chat model
+
   openai-o3-instance (00000002)
     Provider: openai
     Base Model: o3
@@ -226,5 +229,6 @@ Model Configurations (2 models):
     Created: 2025-01-01 00:00:02
     Description: OpenAI O3 Reasoning model
     Active: true
+
 %%> "\\get[#model_count]"
 #model_count = 2

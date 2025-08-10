@@ -3,6 +3,7 @@ Setting _echo_command = true
 Service Status Check:
 ====================
   [FAIL] nonexistent_service  - not available (service nonexistent_service not found)
+
 Summary: 0/1 services healthy
 Some services are not available or not initialized.
 %%> "\\echo Check status: ${_check_status}"

@@ -25,6 +25,7 @@ Model Configurations (2 models):
     Created: 2025-01-01 00:00:01
     Description: OpenAI O4-mini Chat model
     Active: true
+
   secondary-model (00000002)
     Provider: openai
     Base Model: o3
@@ -32,6 +33,7 @@ Model Configurations (2 models):
     Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
     Created: 2025-01-01 00:00:02
     Description: OpenAI O3 Reasoning model
+
 %%> "\\model-activate secondary-model"
 Activated model 'secondary-model' (ID: 00000002, Provider: openai, Base: o3)
 %%> "\\try \\silent \\llm-client-activate OAR"
@@ -47,6 +49,7 @@ Model Configurations (2 models):
     Parameters: 1 (temperature=1)
     Created: 2025-01-01 00:00:01
     Description: OpenAI O4-mini Chat model
+
   secondary-model (00000002)
     Provider: openai
     Base Model: o3
@@ -55,6 +58,7 @@ Model Configurations (2 models):
     Created: 2025-01-01 00:00:02
     Description: OpenAI O3 Reasoning model
     Active: true
+
 %%> "\\get[#active_model_name]"
 #active_model_name = secondary-model
 %%> "\\get[#active_model_provider]"

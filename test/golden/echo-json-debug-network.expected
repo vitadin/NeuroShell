@@ -11,12 +11,18 @@ Setting "response_time": "2024-01-01T12:00:01Z" =
 Setting "timing": {"request_time": "2024-01-01T12:00:00Z" = 
 Setting "url": "https://api.openai.com/v1/chat/completions" = 
 Setting debug_network = {"http_request": {"method": "POST"
+%%> "\\echo === DEBUG NETWORK DATA (Default) ==="
+=== DEBUG NETWORK DATA (Default) ===
 %%> "\\echo-json ${debug_network}"
 Error: Invalid JSON - unexpected end of JSON input
 Original input: {"http_request": {"method": "POST"
+%%> "\\echo === DEBUG NETWORK DATA (Compact) ==="
+=== DEBUG NETWORK DATA (Compact) ===
 %%> "\\echo-json[indent=0] ${debug_network}"
 Error: Invalid JSON - unexpected end of JSON input
 Original input: {"http_request": {"method": "POST"
+%%> "\\echo === DEBUG NETWORK DATA (4-space) ==="
+=== DEBUG NETWORK DATA (4-space) ===
 %%> "\\echo-json[indent=4] ${debug_network}"
 Error: Invalid JSON - unexpected end of JSON input
 Original input: {"http_request": {"method": "POST"
@@ -32,9 +38,13 @@ Original input: {"http_request": {"method": "POST"
 Setting "duration": 500} = 
 Setting "response": {"status": 200} = 
 Setting simple_debug = {"request": {"method": "GET"}
+%%> "\\echo === SIMPLE DEBUG DATA ==="
+=== SIMPLE DEBUG DATA ===
 %%> "\\echo-json ${simple_debug}"
 Error: Invalid JSON - unexpected end of JSON input
 Original input: {"request": {"method": "GET"}
+%%> "\\echo === MALFORMED DEBUG DATA ==="
+=== MALFORMED DEBUG DATA ===
 %%> "\\echo-json {\"request\": {\"method\": \"POST\", \"incomplete\": }"
 Error: Invalid JSON - invalid character '}' looking for beginning of value
 Original input: {"request": {"method": "POST", "incomplete": }

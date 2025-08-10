@@ -3,25 +3,37 @@ Setting OPENAI_API_KEY = sk-test1234567890abcdef1234567890abcdef
 Setting ANTHROPIC_API_KEY = ant-test1234567890abcdef1234567890abcdef
 Setting MOONSHOT_API_KEY = moon-test1234567890abcdef1234567890abcdef
 ═══ Loading All API Keys ═══
+
   # LLM API Keys Found                                                        
+                                                                              
    Variable Name          | API Key                | Status                   
   ------------------------|------------------------|------------------------  
    os.ANTHROPIC_API_KEY   | ant...def              | INACTIVE                 
    os.MOONSHOT_API_KEY    | moo...def              | INACTIVE                 
    os.OPENAI_API_KEY      | sk-...def              | INACTIVE                 
+
 ═══ Testing Provider-Specific Filtering ═══
+
   # LLM API Keys Found (Openai only)                                          
+                                                                              
    Variable Name          | API Key                | Status                   
   ------------------------|------------------------|------------------------  
    os.OPENAI_API_KEY      | sk-...def              | INACTIVE                 
+
+
   # LLM API Keys Found (Anthropic only)                                       
+                                                                              
    Variable Name          | API Key                | Status                   
   ------------------------|------------------------|------------------------  
    os.ANTHROPIC_API_KEY   | ant...def              | INACTIVE                 
+
+
   # LLM API Keys Found (Moonshot only)                                        
+                                                                              
    Variable Name          | API Key                | Status                   
   ------------------------|------------------------|------------------------  
    os.MOONSHOT_API_KEY    | moo...def              | INACTIVE                 
+
 ═══ Activating OpenAI Key ═══
 ✓ Activated os.OPENAI_API_KEY API key for openai provider
   ${#active_openai_key} now contains the API key value
@@ -29,13 +41,17 @@ Setting MOONSHOT_API_KEY = moon-test1234567890abcdef1234567890abcdef
 ✓ Activated os.ANTHROPIC_API_KEY API key for anthropic provider
   ${#active_anthropic_key} now contains the API key value
 ═══ Final State with Active Keys ═══
+
   # LLM API Keys Found                                                        
+                                                                              
    Variable Name          | API Key                | Status                   
   ------------------------|------------------------|------------------------  
    os.ANTHROPIC_API_KEY   | ant...def              | **🟢 ACTIVE**            
    os.MOONSHOT_API_KEY    | moo...def              | INACTIVE                 
    os.OPENAI_API_KEY      | sk-...def              | **🟢 ACTIVE**            
+                                                                              
   **Active keys:** ${#active_openai_key}, ${#active_anthropic_key}            
+
 ═══ Activating Moonshot Key ═══
 ✓ Activated os.MOONSHOT_API_KEY API key for moonshot provider
   ${#active_moonshot_key} now contains the API key value

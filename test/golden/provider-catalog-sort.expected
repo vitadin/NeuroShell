@@ -57,6 +57,7 @@ Anthropic Providers:
     Headers: anthropic-version: 2023-06-01
     Description: Anthropic Claude chat completions API
     Implementation: Natively supported by NeuroShell
+
 Gemini Providers:
   [GMC] Google Gemini Chat (gemini)
     Provider: gemini
@@ -66,6 +67,7 @@ Gemini Providers:
     Headers: Content-Type: application/json, x-goog-api-key: {API_KEY}
     Description: Google Gemini generative AI chat completions API
     Implementation: Natively supported by NeuroShell
+
 Moonshot Providers:
   [MSC] Moonshot Chat Completions (openai-compatible)
     Provider: moonshot
@@ -74,6 +76,7 @@ Moonshot Providers:
     Client Type: openai-compatible
     Description: Moonshot AI chat completions API
     Implementation: Uses OpenAI-compatible API
+
 Openai Providers:
   [OAC] OpenAI Chat Completions (openai)
     Provider: openai
@@ -82,6 +85,7 @@ Openai Providers:
     Client Type: openai
     Description: OpenAI's chat completion API for GPT models
     Implementation: Natively supported by NeuroShell
+
 Openai-reasoning Providers:
   [OAR] OpenAI Responses API (openai_reasoning)
     Provider: openai-reasoning
@@ -90,6 +94,7 @@ Openai-reasoning Providers:
     Client Type: openai_reasoning
     Description: OpenAI's responses API for reasoning models (o3, o4-mini, o1, etc.)
     Implementation: Used for models with reasoning_tokens: true
+
 Openrouter Providers:
   [ORC] OpenRouter Chat Completions (openai-compatible)
     Provider: openrouter

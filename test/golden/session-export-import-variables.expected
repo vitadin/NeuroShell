@@ -111,6 +111,7 @@ System: You are a comprehensive test assistant for variable verification
 Created: 2025-01-01 00:00:12
 Updated: 2025-01-01 00:00:12
 Messages: 5 total
+
 [1] user (00:00:02): First test message
 [2] assistant (00:00:04): First response message
 [3] user (00:00:06): Second test message

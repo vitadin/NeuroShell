@@ -2,6 +2,8 @@ Setting _echo_command = true
 %%> "\\debug-params[style=blue,prefix=INFO,count=42,debug=true,format=json,level=trace,type=test,mode=dev] Complex parameter testing scenario"
 %%> "\\echo ==============================================="
 ===============================================
+%%> "\\echo DEBUG PARAMETERS - Script Parameter Analysis"
+DEBUG PARAMETERS - Script Parameter Analysis
 %%> "\\echo ==============================================="
 ===============================================
 %%> "\\echo === Core Parameter Variables ==="

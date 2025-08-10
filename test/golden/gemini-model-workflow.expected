@@ -58,6 +58,7 @@ Model Configurations (3 models):
     Parameters: 2 (temperature=1, thinking_budget=2048)
     Created: 2025-01-01 00:00:01
     Description: Gemini Gemini 2.5 Flash model
+
   lite-direct (00000003)
     Provider: gemini
     Base Model: gemini-2.5-flash-lite
@@ -66,6 +67,7 @@ Model Configurations (3 models):
     Created: 2025-01-01 00:00:03
     Description: Gemini Gemini 2.5 Flash Lite model
     Active: true
+
   pro-delegated (00000002)
     Provider: gemini
     Base Model: gemini-2.5-pro
@@ -73,6 +75,7 @@ Model Configurations (3 models):
     Parameters: 2 (temperature=1, thinking_budget=-1)
     Created: 2025-01-01 00:00:02
     Description: Gemini Gemini 2.5 Pro model
+
 %%> "\\model-activate flash-direct"
 Activated model 'flash-direct' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
 %%> "\\try \\silent \\llm-client-activate GMC"
@@ -110,6 +113,7 @@ Model Configurations (5 models):
     Parameters: 2 (temperature=0.9, thinking_budget=0)
     Created: 2025-01-01 00:00:04
     Description: Fast Flash without thinking
+
   flash-direct (00000001)
     Provider: gemini
     Base Model: gemini-2.5-flash
@@ -117,6 +121,7 @@ Model Configurations (5 models):
     Parameters: 2 (temperature=1, thinking_budget=2048)
     Created: 2025-01-01 00:00:01
     Description: Gemini Gemini 2.5 Flash model
+
   lite-direct (00000003)
     Provider: gemini
     Base Model: gemini-2.5-flash-lite
@@ -124,6 +129,7 @@ Model Configurations (5 models):
     Parameters: 1 (temperature=0.8)
     Created: 2025-01-01 00:00:03
     Description: Gemini Gemini 2.5 Flash Lite model
+
   perf-pro (00000005)
     Provider: gemini
     Base Model: gemini-2.5-pro
@@ -132,6 +138,7 @@ Model Configurations (5 models):
     Created: 2025-01-01 00:00:05
     Description: High-performance Pro
     Active: true
+
   pro-delegated (00000002)
     Provider: gemini
     Base Model: gemini-2.5-pro
@@ -139,6 +146,7 @@ Model Configurations (5 models):
     Parameters: 2 (temperature=1, thinking_budget=-1)
     Created: 2025-01-01 00:00:02
     Description: Gemini Gemini 2.5 Pro model
+
 %%> "\\model-activate perf-pro"
 Activated model 'perf-pro' (ID: 00000005, Provider: gemini, Base: gemini-2.5-pro)
 %%> "\\try \\silent \\llm-client-activate GMC"
@@ -162,6 +170,7 @@ Model Configurations (3 models):
     Parameters: 2 (temperature=0.9, thinking_budget=0)
     Created: 2025-01-01 00:00:04
     Description: Fast Flash without thinking
+
   perf-pro (00000005)
     Provider: gemini
     Base Model: gemini-2.5-pro
@@ -170,6 +179,7 @@ Model Configurations (3 models):
     Created: 2025-01-01 00:00:05
     Description: High-performance Pro
     Active: true
+
   pro-delegated (00000002)
     Provider: gemini
     Base Model: gemini-2.5-pro
@@ -177,6 +187,7 @@ Model Configurations (3 models):
     Parameters: 2 (temperature=1, thinking_budget=-1)
     Created: 2025-01-01 00:00:02
     Description: Gemini Gemini 2.5 Pro model
+
 %%> "\\get[#active_model_name]"
 #active_model_name = perf-pro
 %%> "\\gemini-model-new[catalog_id=\"GM25FL\", thinking_budget=\"-1\"] final-lite"

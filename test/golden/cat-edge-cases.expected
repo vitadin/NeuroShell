@@ -3,8 +3,12 @@ Setting _echo_command = true
 %%> "\\get[_output]"
 _output = 
 %%> "\\cat test/fixtures/only-newlines.txt"
+
+
 %%> "\\get[_output]"
 _output = 
+
+
 %%> "\\cat test/fixtures/single-line.txt"
 This file has only one line without newline
 %%> "\\get[_output]"
