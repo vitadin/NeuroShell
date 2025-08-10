@@ -9,6 +9,7 @@ Model Catalog (30 models):
     Pricing: $15.00/1M input, $75.00/1M output tokens
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2023-08-01
+    Version: 2024-02-29
     Description: Top-level intelligence, fluency, and understanding
   [CS37] Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
     Provider: anthropic (ANC)
@@ -19,6 +20,7 @@ Model Catalog (30 models):
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2024-11-01
     Extended thinking supported
+    Version: 2025-02-19
     Description: High intelligence with toggleable extended thinking
   [CO4] Claude Opus 4 (claude-opus-4-20250514)
     Provider: anthropic (ANC)
@@ -35,6 +37,7 @@ Model Catalog (30 models):
       • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-05-14
     Description: Highest level of intelligence and capability
   [CO41] Claude Opus 4.1 (claude-opus-4-1-20250805)
     Provider: anthropic (ANC)
@@ -51,6 +54,7 @@ Model Catalog (30 models):
       • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled. Cannot be used with temperature parameter.
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-08-05
     Description: Highest level of intelligence and capability with enhanced API form validation
   [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
     Provider: anthropic (ANC)
@@ -67,6 +71,8 @@ Model Catalog (30 models):
       • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-05-14
+    Last Updated: 2025-08-10
     Description: High intelligence and balanced performance
   [GM25F] Gemini 2.5 Flash (gemini-2.5-flash)
     Provider: gemini (GMC)
@@ -79,6 +85,8 @@ Model Catalog (30 models):
     Knowledge cutoff: 2025-01-01
     Thinking mode: range: 0-24576, default: dynamic, can disable
     Snapshots: gemini-2.5-flash, gemini-2.5-flash-preview-05-20
+    Version: 2025-06-01
+    Last Updated: 2025-08-10
     Description: Google's fast and efficient multimodal AI model optimized for speed and performance
   [GM25FL] Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
     Provider: gemini (GMC)
@@ -89,6 +97,7 @@ Model Catalog (30 models):
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-01
     Thinking mode: range: 512-24576, default: disabled, can disable
+    Version: 2025-07
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
   [GM25P] Gemini 2.5 Pro (gemini-2.5-pro)
     Provider: gemini (GMC)
@@ -100,6 +109,8 @@ Model Catalog (30 models):
     Tools: code-execution, search-grounding
     Knowledge cutoff: 2025-01-01
     Thinking mode: range: 128-32768, default: dynamic, cannot disable
+    Version: 2025-06-01
+    Last Updated: 2025-08-10
     Description: Google's most capable multimodal AI model with advanced reasoning capabilities
   [ORGM25FL] Google: Gemini 2.5 Flash Lite (google/gemini-2.5-flash-lite)
     Provider: openrouter (ORC)
@@ -110,6 +121,7 @@ Model Catalog (30 models):
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-01
     Thinking mode: range: 512-24576, default: disabled, can disable
+    Version: 2025-07
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
   [G41C] GPT-4.1 Chat (gpt-4.1-2025-04-14)
     Provider: openai (OAC)
@@ -120,6 +132,8 @@ Model Catalog (30 models):
     Features: streaming, function-calling, structured-outputs, vision, fine-tuning
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
+    Version: 2025-04-14
+    Last Updated: 2025-08-10
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
   [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
     Provider: openai (OAC)
@@ -130,6 +144,7 @@ Model Catalog (30 models):
     Features: streaming, function-calling, structured-outputs, vision, fine-tuning
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
+    Version: 2024-11-20
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
   [GPT5C] GPT-5 Chat (gpt-5)
     Provider: openai (OAC)
@@ -211,6 +226,7 @@ Model Catalog (30 models):
     Pricing: $0.15/1M input, $2.50/1M output tokens
     Features: streaming, function-calling
     Knowledge cutoff: 2024-12-01
+    Version: 2024-07-11
     Description: Direct access to Kimi K2 via Moonshot AI platform, a trillion-parameter MoE model with 384 experts and advanced reasoning capabilities
   [ORK2] Kimi K2 (OpenRouter) (moonshotai/kimi-k2)
     Provider: openrouter (ORC)
@@ -240,6 +256,8 @@ Model Catalog (30 models):
     Tools: file-search
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
+    Version: 2024-12-17
+    Last Updated: 2025-08-10
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
     Provider: openai (OAR)
@@ -250,6 +268,7 @@ Model Catalog (30 models):
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
+    Version: 2025-03-19
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
   [O3R] O3 Reasoning (o3)
     Provider: openai (OAR)
@@ -273,6 +292,8 @@ Model Catalog (30 models):
     Tools: web-search, file-search, image-generation
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
+    Version: 2025-06-10
+    Last Updated: 2025-08-10
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
   [O4MC] O4-mini Chat (o4-mini)
     Provider: openai (OAC)
@@ -305,6 +326,7 @@ Model Catalog (30 models):
     Pricing: $0.12/1M input, $0.59/1M output tokens
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-07-01
+    Version: 2025-07-25
     Description: Mixture-of-Experts model with 235B total/22B active parameters via OpenRouter, featuring thinking mode and advanced multilingual capabilities
   [ORQ3AT] Qwen: Qwen3 235B A22B Thinking 2507 (qwen/qwen3-235b-a22b-thinking-2507)
     Provider: openrouter (ORC)
@@ -314,6 +336,7 @@ Model Catalog (30 models):
     Pricing: $0.12/1M input, $0.12/1M output tokens
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-07-25
+    Version: 2025-07-25
     Description: High-performance Mixture-of-Experts model optimized for complex reasoning tasks with thinking mode, activating 22B of 235B parameters per forward pass
   [ORG4] xAI: Grok 4 (x-ai/grok-4)
     Provider: openrouter (ORC)
@@ -323,6 +346,7 @@ Model Catalog (30 models):
     Pricing: $3.00/1M input, $15.00/1M output tokens
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2025-07-09
+    Version: 2025-07-09
     Description: Grok 4 is xAI's latest reasoning model with a 256k context window. It supports parallel tool calling, structured outputs, and both image and text inputs with mandatory reasoning capabilities.
   [ORGLM45] Z.AI: GLM 4.5 (z-ai/glm-4.5)
     Provider: openrouter (ORC)
@@ -332,6 +356,7 @@ Model Catalog (30 models):
     Pricing: $0.60/1M input, $2.20/1M output tokens
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-07-25
+    Version: 2025-07-25
     Description: Latest flagship foundation model purpose-built for agent-based applications with Mixture-of-Experts architecture and hybrid inference modes
 %%> "\\model-catalog[sort=provider]"
 Model Catalog (30 models):
@@ -344,6 +369,7 @@ Anthropic Models:
     Pricing: $15.00/1M input, $75.00/1M output tokens
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2023-08-01
+    Version: 2024-02-29
     Description: Top-level intelligence, fluency, and understanding
   [CS37] Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
     Provider: anthropic (ANC)
@@ -354,6 +380,7 @@ Anthropic Models:
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2024-11-01
     Extended thinking supported
+    Version: 2025-02-19
     Description: High intelligence with toggleable extended thinking
   [CO4] Claude Opus 4 (claude-opus-4-20250514)
     Provider: anthropic (ANC)
@@ -370,6 +397,7 @@ Anthropic Models:
       • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-05-14
     Description: Highest level of intelligence and capability
   [CO41] Claude Opus 4.1 (claude-opus-4-1-20250805)
     Provider: anthropic (ANC)
@@ -386,6 +414,7 @@ Anthropic Models:
       • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled. Cannot be used with temperature parameter.
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-08-05
     Description: Highest level of intelligence and capability with enhanced API form validation
   [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
     Provider: anthropic (ANC)
@@ -402,6 +431,8 @@ Anthropic Models:
       • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-05-14
+    Last Updated: 2025-08-10
     Description: High intelligence and balanced performance
 
 Gemini Models:
@@ -416,6 +447,8 @@ Gemini Models:
     Knowledge cutoff: 2025-01-01
     Thinking mode: range: 0-24576, default: dynamic, can disable
     Snapshots: gemini-2.5-flash, gemini-2.5-flash-preview-05-20
+    Version: 2025-06-01
+    Last Updated: 2025-08-10
     Description: Google's fast and efficient multimodal AI model optimized for speed and performance
   [GM25FL] Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
     Provider: gemini (GMC)
@@ -426,6 +459,7 @@ Gemini Models:
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-01
     Thinking mode: range: 512-24576, default: disabled, can disable
+    Version: 2025-07
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
   [GM25P] Gemini 2.5 Pro (gemini-2.5-pro)
     Provider: gemini (GMC)
@@ -437,6 +471,8 @@ Gemini Models:
     Tools: code-execution, search-grounding
     Knowledge cutoff: 2025-01-01
     Thinking mode: range: 128-32768, default: dynamic, cannot disable
+    Version: 2025-06-01
+    Last Updated: 2025-08-10
     Description: Google's most capable multimodal AI model with advanced reasoning capabilities
 
 Moonshot Models:
@@ -448,6 +484,7 @@ Moonshot Models:
     Pricing: $0.15/1M input, $2.50/1M output tokens
     Features: streaming, function-calling
     Knowledge cutoff: 2024-12-01
+    Version: 2024-07-11
     Description: Direct access to Kimi K2 via Moonshot AI platform, a trillion-parameter MoE model with 384 experts and advanced reasoning capabilities
 
 Openai Models:
@@ -460,6 +497,8 @@ Openai Models:
     Features: streaming, function-calling, structured-outputs, vision, fine-tuning
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2024-05-31
+    Version: 2025-04-14
+    Last Updated: 2025-08-10
     Description: GPT-4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.
   [G4OC] GPT-4o Chat (gpt-4o-2024-11-20)
     Provider: openai (OAC)
@@ -470,6 +509,7 @@ Openai Models:
     Features: streaming, function-calling, structured-outputs, vision, fine-tuning
     Tools: web-search, file-search, image-generation, code-interpreter
     Knowledge cutoff: 2023-09-30
+    Version: 2024-11-20
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
   [GPT5C] GPT-5 Chat (gpt-5)
     Provider: openai (OAC)
@@ -553,6 +593,8 @@ Openai Models:
     Tools: file-search
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
+    Version: 2024-12-17
+    Last Updated: 2025-08-10
     Description: The o1 series of models are trained with reinforcement learning to perform complex reasoning. o1 models think before they answer, producing a long internal chain of thought before responding to the user.
   [O1PR] o1-pro Reasoning (o1-pro-2025-03-19)
     Provider: openai (OAR)
@@ -563,6 +605,7 @@ Openai Models:
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2023-09-30
     Reasoning tokens supported
+    Version: 2025-03-19
     Description: The o1 series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o1-pro model uses more compute to think harder and provide consistently better answers.
   [O3R] O3 Reasoning (o3)
     Provider: openai (OAR)
@@ -586,6 +629,8 @@ Openai Models:
     Tools: web-search, file-search, image-generation
     Knowledge cutoff: 2024-05-31
     Reasoning tokens supported
+    Version: 2025-06-10
+    Last Updated: 2025-08-10
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
   [O4MC] O4-mini Chat (o4-mini)
     Provider: openai (OAC)
@@ -621,6 +666,7 @@ Openrouter Models:
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-01
     Thinking mode: range: 512-24576, default: disabled, can disable
+    Version: 2025-07
     Description: Lightweight reasoning model optimized for ultra-low latency and cost efficiency with improved throughput and faster token generation. Supports text, image, video, audio, and PDF inputs with structured outputs, function calling, code execution, URL context, search grounding, and thinking mode.
   [ORK2] Kimi K2 (OpenRouter) (moonshotai/kimi-k2)
     Provider: openrouter (ORC)
@@ -648,6 +694,7 @@ Openrouter Models:
     Pricing: $0.12/1M input, $0.59/1M output tokens
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-07-01
+    Version: 2025-07-25
     Description: Mixture-of-Experts model with 235B total/22B active parameters via OpenRouter, featuring thinking mode and advanced multilingual capabilities
   [ORQ3AT] Qwen: Qwen3 235B A22B Thinking 2507 (qwen/qwen3-235b-a22b-thinking-2507)
     Provider: openrouter (ORC)
@@ -657,6 +704,7 @@ Openrouter Models:
     Pricing: $0.12/1M input, $0.12/1M output tokens
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-07-25
+    Version: 2025-07-25
     Description: High-performance Mixture-of-Experts model optimized for complex reasoning tasks with thinking mode, activating 22B of 235B parameters per forward pass
   [ORG4] xAI: Grok 4 (x-ai/grok-4)
     Provider: openrouter (ORC)
@@ -666,6 +714,7 @@ Openrouter Models:
     Pricing: $3.00/1M input, $15.00/1M output tokens
     Features: streaming, function-calling, structured-outputs, vision
     Knowledge cutoff: 2025-07-09
+    Version: 2025-07-09
     Description: Grok 4 is xAI's latest reasoning model with a 256k context window. It supports parallel tool calling, structured outputs, and both image and text inputs with mandatory reasoning capabilities.
   [ORGLM45] Z.AI: GLM 4.5 (z-ai/glm-4.5)
     Provider: openrouter (ORC)
@@ -675,4 +724,5 @@ Openrouter Models:
     Pricing: $0.60/1M input, $2.20/1M output tokens
     Features: streaming, function-calling, structured-outputs
     Knowledge cutoff: 2025-07-25
+    Version: 2025-07-25
     Description: Latest flagship foundation model purpose-built for agent-based applications with Mixture-of-Experts architecture and hybrid inference modes

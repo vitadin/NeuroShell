@@ -20,6 +20,8 @@ features:
   extended_thinking: true
   multilingual: true
 version: "2025-05-14"
+deprecated: false
+last_updated: "2025-08-10"
 parameters:
   - name: temperature
     type: float

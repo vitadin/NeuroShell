@@ -27,6 +27,8 @@ features:
   thinking_can_disable: false
 tools: [code-execution, search-grounding]
 version: "2025-06-01"
+deprecated: false
+last_updated: "2025-08-10"
 parameters:
   - name: temperature
     type: float
