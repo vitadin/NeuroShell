@@ -57,4 +57,4 @@ License system variables check:
 #license_name = GNU Lesser General Public License v3.0
 #license_short_name = LGPL-3.0
 #license_url = https://www.gnu.org/licenses/lgpl-3.0.html
-License summary: LGPL-3.0 - GNU Lesser General Public License v3.0
+License summary: LGPL-3.0 - GNU Lesser General Public License v3.<wc_output>

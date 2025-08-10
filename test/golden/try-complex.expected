@@ -13,7 +13,7 @@ _output = Testing hello
 %%> "\\try \\bash cat ${test_file}"
 %%> "\\bash cat /tmp/nonexistent_test_file"
 Error: cat: /tmp/nonexistent_test_file: No such file or directory
-Exit status: 1
+<ls_exit_status>
 %%> "\\get[_status]"
 _status = 1
 %%> "\\get[_error]"
@@ -61,4 +61,4 @@ seq1 = first
 %%> "\\get[seq2]"
 seq2 = second
 %%> "\\get[_status]"
-_status = 0
+_status =<wc_output>

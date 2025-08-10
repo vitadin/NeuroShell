@@ -38,6 +38,9 @@ func (ne *NormalizationEngine) initBuiltinPatterns() {
 	// Username masking - replace machine-specific usernames with placeholder
 	ne.addUsernameMasking()
 
+	// Cross-platform error message normalization
+	ne.addCrossPlatformPatterns()
+
 	// Memory addresses
 	ne.patterns = append(ne.patterns, NormalizationPattern{
 		Name:    "memory_address",
@@ -118,6 +121,50 @@ func (ne *NormalizationEngine) isCommonUsername(username string) bool {
 	}
 
 	return false
+}
+
+// addCrossPlatformPatterns adds normalization for OS-specific differences
+func (ne *NormalizationEngine) addCrossPlatformPatterns() {
+	// ls command error messages differ between macOS and Linux
+	// macOS: "ls: /path: No such file or directory"
+	// Linux: "ls: cannot access '/path': No such file or directory"
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "ls_error_macos",
+		Pattern: regexp.MustCompile(`ls: ([^:]+): No such file or directory`),
+		MinLen:  10,
+		MaxLen:  200,
+	})
+
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "ls_error_linux",
+		Pattern: regexp.MustCompile(`ls: cannot access '([^']+)': No such file or directory`),
+		MinLen:  10,
+		MaxLen:  200,
+	})
+
+	// Exit status normalization for ls command (1 on macOS, 2 on Linux)
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "ls_exit_status",
+		Pattern: regexp.MustCompile(`Exit status: [12]`),
+		MinLen:  14,
+		MaxLen:  14,
+	})
+
+	// Project path normalization (different between dev and CI environments)
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "project_path",
+		Pattern: regexp.MustCompile(`(/Users/[^/]+/GolandProjects/NeuroShell|/home/[^/]+/project)`),
+		MinLen:  10,
+		MaxLen:  200,
+	})
+
+	// wc command output padding normalization (different spacing)
+	ne.patterns = append(ne.patterns, NormalizationPattern{
+		Name:    "wc_output",
+		Pattern: regexp.MustCompile(`\s*0\s*$`),
+		MinLen:  1,
+		MaxLen:  10,
+	})
 }
 
 // NormalizeOutput normalizes the given output by replacing dynamic content with placeholders

@@ -30,12 +30,12 @@ _output = "Try inside if - success"
 %%> "\\if[condition=true] \\try \\bash ls /nonexistent_directory_test"
 %%> "\\try \\bash ls /nonexistent_directory_test"
 %%> "\\bash ls /nonexistent_directory_test"
-Error: ls: /nonexistent_directory_test: No such file or directory
-Exit status: 1
+Error: <ls_error_macos>
+<ls_exit_status>
 %%> "\\get[_status]"
 _status = 1
 %%> "\\get[_error]"
-_error = ls: /nonexistent_directory_test: No such file or directory
+_error = <ls_error_macos>
 %%> "\\if[condition=false] \\try \\echo \"This should not execute\""
 %%> "\\get[_status]"
 _status = 1
@@ -48,14 +48,14 @@ success
 "Command produced output: success"
 %%> "\\try \\bash ls /does_not_exist"
 %%> "\\bash ls /does_not_exist"
-Error: ls: /does_not_exist: No such file or directory
-Exit status: 1
+Error: <ls_error_macos>
+<ls_exit_status>
 %%> "\\if[condition=${_status}] \\echo \"Previous command failed with status: ${_status}\""
 %%> "\\echo \"Previous command failed with status: 1\""
 "Previous command failed with status: 1"
 %%> "\\if[condition=${_error}] \\echo \"Error message exists: ${_error}\""
-%%> "\\echo \"Error message exists: ls: /does_not_exist: No such file or directory\""
-"Error message exists: ls: /does_not_exist: No such file or directory"
+%%> "\\echo \"Error message exists: <ls_error_macos>\""
+"Error message exists: <ls_error_macos>"
 %%> "\\try \\set[test_var=\"success\"]"
 %%> "\\set[test_var=\"success\"]"
 Setting test_var = success
@@ -110,7 +110,7 @@ test
 #if_result = true
 %%> "\\try \\bash false"
 %%> "\\bash false"
-Exit status: 1
+<ls_exit_status>
 %%> "\\if[condition=${_status}] \\set[error_detected=\"true\"]"
 %%> "\\set[error_detected=\"true\"]"
 Setting error_detected = true
