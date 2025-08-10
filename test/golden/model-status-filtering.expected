@@ -95,4 +95,4 @@ No model configurations found matching filter: provider='nonexistent'
 %%> "\\get[#model_count]"
 #model_count = 4
 %%> "\\get[#model_filtered_count]"
-#model_filtered_count =<wc_output>
+#model_filtered_count = 0

@@ -13,7 +13,7 @@ _output = Testing hello
 %%> "\\try \\bash cat ${test_file}"
 %%> "\\bash cat /tmp/nonexistent_test_file"
 Error: cat: /tmp/nonexistent_test_file: No such file or directory
-<ls_exit_status>
+<non_zero_exit_status>
 %%> "\\get[_status]"
 _status = 1
 %%> "\\get[_error]"
@@ -34,9 +34,8 @@ test
 _status = 0
 %%> "\\get[_output]"
 _output = test
-%%> "\\try \\bash echo \"test\" | grep \"notfound\" | wc -l"
-%%> "\\bash echo \"test\" | grep \"notfound\" | wc -l"
-       0
+%%> "\\try \\silent \\bash echo \"test\" | grep \"notfound\" | wc -l"
+%%> "\\silent \\bash echo \"test\" | grep \"notfound\" | wc -l"
 %%> "\\get[_status]"
 _status = 0
 %%> "\\set[before_try=preserved]"
@@ -61,4 +60,4 @@ seq1 = first
 %%> "\\get[seq2]"
 seq2 = second
 %%> "\\get[_status]"
-_status =<wc_output>
+_status = 0

@@ -31,7 +31,7 @@ _output = "Try inside if - success"
 %%> "\\try \\bash ls /nonexistent_directory_test"
 %%> "\\bash ls /nonexistent_directory_test"
 Error: <ls_error_macos>
-<ls_exit_status>
+<non_zero_exit_status>
 %%> "\\get[_status]"
 _status = 1
 %%> "\\get[_error]"
@@ -49,7 +49,7 @@ success
 %%> "\\try \\bash ls /does_not_exist"
 %%> "\\bash ls /does_not_exist"
 Error: <ls_error_macos>
-<ls_exit_status>
+<non_zero_exit_status>
 %%> "\\if[condition=${_status}] \\echo \"Previous command failed with status: ${_status}\""
 %%> "\\echo \"Previous command failed with status: 1\""
 "Previous command failed with status: 1"
@@ -110,7 +110,7 @@ test
 #if_result = true
 %%> "\\try \\bash false"
 %%> "\\bash false"
-<ls_exit_status>
+<non_zero_exit_status>
 %%> "\\if[condition=${_status}] \\set[error_detected=\"true\"]"
 %%> "\\set[error_detected=\"true\"]"
 Setting error_detected = true

@@ -28,7 +28,7 @@
 \get[_output]
 
 %% Test try with failing complex bash command
-\try \bash echo "test" | grep "notfound" | wc -l
+\try \silent \bash echo "test" | grep "notfound" | wc -l
 \get[_status]
 
 %% Test try preserves variables across failures

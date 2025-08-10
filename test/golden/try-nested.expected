@@ -13,7 +13,7 @@ _output = nested success
 %%> "\\try \\bash ls /nonexistent_nested"
 %%> "\\bash ls /nonexistent_nested"
 Error: <ls_error_macos>
-<ls_exit_status>
+<non_zero_exit_status>
 %%> "\\get[_status]"
 _status = 0
 %%> "\\get[_error]"

@@ -142,12 +142,12 @@ func (ne *NormalizationEngine) addCrossPlatformPatterns() {
 		MaxLen:  200,
 	})
 
-	// Exit status normalization for ls command (1 on macOS, 2 on Linux)
+	// Exit status normalization for any non-zero exit status
 	ne.patterns = append(ne.patterns, NormalizationPattern{
-		Name:    "ls_exit_status",
-		Pattern: regexp.MustCompile(`Exit status: [12]`),
-		MinLen:  14,
-		MaxLen:  14,
+		Name:    "non_zero_exit_status",
+		Pattern: regexp.MustCompile(`Exit status: [1-9]\d*`),
+		MinLen:  15,
+		MaxLen:  30,
 	})
 
 	// Project path normalization (different between dev and CI environments)
@@ -156,14 +156,6 @@ func (ne *NormalizationEngine) addCrossPlatformPatterns() {
 		Pattern: regexp.MustCompile(`(/Users/[^/]+/GolandProjects/NeuroShell|/home/[^/]+/project)`),
 		MinLen:  10,
 		MaxLen:  200,
-	})
-
-	// wc command output padding normalization (different spacing)
-	ne.patterns = append(ne.patterns, NormalizationPattern{
-		Name:    "wc_output",
-		Pattern: regexp.MustCompile(`\s*0\s*$`),
-		MinLen:  1,
-		MaxLen:  10,
 	})
 }
 

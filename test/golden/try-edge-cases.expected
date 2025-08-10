@@ -42,7 +42,7 @@ _status = 0
 %%> "\\bash sh -c 'echo \"stdout\"; echo \"stderr\" >&2; exit 1'"
 stdout
 Error: stderr
-<ls_exit_status>
+<non_zero_exit_status>
 %%> "\\get[_status]"
 _status = 1
 %%> "\\get[_error]"
@@ -56,8 +56,8 @@ _status = 0
 %%> "\\try \\bash ls /nonexistent"
 %%> "\\bash ls /nonexistent"
 Error: <ls_error_macos>
-<ls_exit_status>
+<non_zero_exit_status>
 %%> "\\bash echo \"after try\""
 after try
 %%> "\\get[_status]"
-_status =<wc_output>
+_status = 0

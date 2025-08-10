@@ -11,7 +11,7 @@ _output = success test
 %%> "\\try \\bash ls /nonexistent_directory_xyz"
 %%> "\\bash ls /nonexistent_directory_xyz"
 Error: <ls_error_macos>
-<ls_exit_status>
+<non_zero_exit_status>
 %%> "\\get[_status]"
 _status = 1
 %%> "\\get[_error]"
