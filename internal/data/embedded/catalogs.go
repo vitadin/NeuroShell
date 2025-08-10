@@ -38,6 +38,11 @@ var Claude37OpusModelData []byte
 //go:embed models/claude-opus-4.yaml
 var ClaudeOpus4ModelData []byte
 
+// ClaudeOpus41ModelData contains the embedded Claude Opus 4.1 model YAML data.
+//
+//go:embed models/claude-opus-4-1.yaml
+var ClaudeOpus41ModelData []byte
+
 // KimiK2FreeOpenRouterModelData contains the embedded Kimi K2 Free (OpenRouter) model YAML data.
 //
 //go:embed models/kimi-k2-free-openrouter.yaml

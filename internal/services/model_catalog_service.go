@@ -87,6 +87,12 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, claudeOpus4Model)
 
+	claudeOpus41Model, err := m.loadModelFile(embedded.ClaudeOpus41ModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Claude Opus 4.1 model: %w", err)
+	}
+	allModels = append(allModels, claudeOpus41Model)
+
 	// Load Kimi K2 models
 	kimiK2FreeModel, err := m.loadModelFile(embedded.KimiK2FreeOpenRouterModelData)
 	if err != nil {

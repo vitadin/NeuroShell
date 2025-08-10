@@ -82,7 +82,8 @@ func TestModelCatalogService_GetModelCatalog(t *testing.T) {
 
 			// Check provider types based on model names
 			if model.Name == "claude-3-7-sonnet-20250219" || model.Name == "claude-sonnet-4-20250514" ||
-				model.Name == "claude-3-7-opus-20240229" || model.Name == "claude-opus-4-20250514" {
+				model.Name == "claude-3-7-opus-20240229" || model.Name == "claude-opus-4-20250514" ||
+				model.Name == "claude-opus-4-1-20250805" {
 				hasAnthropic = true
 			}
 			if model.Name == "o3" {

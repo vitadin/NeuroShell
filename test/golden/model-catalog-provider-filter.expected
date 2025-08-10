@@ -161,7 +161,7 @@ Model Catalog (Openai) (14 models):
     Snapshots: o4-mini, o4-mini-2025-04-16
     Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.
 %%> "\\model-catalog[provider=anthropic]"
-Model Catalog (Anthropic) (4 models):
+Model Catalog (Anthropic) (5 models):
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Endpoint: ANC
     Context: 200,000 tokens (max output: 4,096 tokens)
@@ -197,6 +197,22 @@ Model Catalog (Anthropic) (4 models):
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
     Description: Highest level of intelligence and capability
+  [CO41] Claude Opus 4.1 (claude-opus-4-1-20250805)
+    Endpoint: ANC
+    Context: 200,000 tokens (max output: 32,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $15.00/1M input, $75.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-03-01
+    Extended thinking supported
+    Parameter Notes:
+      • temperature: Must be 1.0 when extended thinking (thinking_budget) is enabled. Cannot be used with top_p parameter.
+      • max_tokens: Must be greater than thinking_budget when extended thinking is enabled
+      • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled. Cannot be used with temperature parameter.
+      • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
+      • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Description: Highest level of intelligence and capability with enhanced API form validation
   [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
     Endpoint: ANC
     Context: 200,000 tokens (max output: 64,000 tokens)
@@ -214,7 +230,7 @@ Model Catalog (Anthropic) (4 models):
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
     Description: High intelligence and balanced performance
 %%> "\\model-catalog[provider=all]"
-Model Catalog (29 models):
+Model Catalog (30 models):
 Anthropic Models:
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
     Provider: anthropic (ANC)
@@ -251,6 +267,22 @@ Anthropic Models:
       • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
       • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
     Description: Highest level of intelligence and capability
+  [CO41] Claude Opus 4.1 (claude-opus-4-1-20250805)
+    Provider: anthropic (ANC)
+    Context: 200,000 tokens (max output: 32,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $15.00/1M input, $75.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-03-01
+    Extended thinking supported
+    Parameter Notes:
+      • temperature: Must be 1.0 when extended thinking (thinking_budget) is enabled. Cannot be used with top_p parameter.
+      • max_tokens: Must be greater than thinking_budget when extended thinking is enabled
+      • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled. Cannot be used with temperature parameter.
+      • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
+      • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Description: Highest level of intelligence and capability with enhanced API form validation
   [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
     Provider: anthropic (ANC)
     Context: 200,000 tokens (max output: 64,000 tokens)
