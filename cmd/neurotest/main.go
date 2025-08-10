@@ -17,7 +17,7 @@ import (
 
 var (
 	testDir             = "test/golden"
-	neurocmd            = "neuro"
+	neurocmd            = "neuro" // Will be resolved by checkNeuroCommand()
 	verbose             bool
 	testTimeout         = 30 // seconds
 	normalizationEngine *NormalizationEngine
@@ -126,6 +126,37 @@ with unique session IDs and metadata.`,
 	RunE: recordAllExperiments,
 }
 
+// recordNeuroRCCmd records a new .neurorc startup test case
+var recordNeuroRCCmd = &cobra.Command{
+	Use:   "record-neurorc <testname>",
+	Short: "Record a .neurorc startup test case",
+	Long: `Record a .neurorc startup test case by running the shell with specified
+.neurorc configuration and capturing the startup behavior. This tests the
+auto-startup functionality in an isolated environment.`,
+	Args: cobra.ExactArgs(1),
+	RunE: recordNeuroRCTest,
+}
+
+// runNeuroRCCmd runs a specific .neurorc startup test case
+var runNeuroRCCmd = &cobra.Command{
+	Use:   "run-neurorc <testname>",
+	Short: "Run a .neurorc startup test case",
+	Long: `Run a .neurorc startup test case and compare its behavior with the expected
+golden file. This tests shell startup behavior and .neurorc auto-execution.`,
+	Args: cobra.ExactArgs(1),
+	RunE: runNeuroRCTest,
+}
+
+// diffNeuroRCCmd shows differences in .neurorc startup test output
+var diffNeuroRCCmd = &cobra.Command{
+	Use:   "diff-neurorc <testname>",
+	Short: "Show differences in .neurorc startup test output",
+	Long: `Show detailed differences between the expected and actual output
+from a .neurorc startup test case.`,
+	Args: cobra.ExactArgs(1),
+	RunE: diffNeuroRCTest,
+}
+
 func main() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -140,7 +171,7 @@ func init() {
 	// Add global flags
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
 	rootCmd.PersistentFlags().StringVar(&testDir, "test-dir", "test/golden", "Test directory")
-	rootCmd.PersistentFlags().StringVar(&neurocmd, "neuro-cmd", "./bin/neuro", "Neuro command to test")
+	rootCmd.PersistentFlags().StringVar(&neurocmd, "neuro-cmd", "neuro", "Neuro command to test (will try ./bin/neuro, then PATH)")
 	rootCmd.PersistentFlags().IntVar(&testTimeout, "timeout", 30, "Test timeout in seconds")
 
 	// Add version command flags
@@ -158,6 +189,11 @@ func init() {
 	rootCmd.AddCommand(recordExperimentCmd)
 	rootCmd.AddCommand(runExperimentCmd)
 	rootCmd.AddCommand(recordAllExperimentsCmd)
+
+	// Add .neurorc startup test commands
+	rootCmd.AddCommand(recordNeuroRCCmd)
+	rootCmd.AddCommand(runNeuroRCCmd)
+	rootCmd.AddCommand(diffNeuroRCCmd)
 }
 
 // recordTest records a new test case by running the .neuro script
@@ -461,11 +497,92 @@ func showDetailedDiff(expected, actual, testName string) {
 
 // checkNeuroCommand verifies that the neuro command is available
 func checkNeuroCommand() error {
-	_, err := exec.LookPath(neurocmd)
-	if err != nil {
-		return fmt.Errorf("neuro command not found: %s\nMake sure it's installed and in PATH", neurocmd)
+	originalCmd := neurocmd
+
+	// If user explicitly provided a command other than "neuro", try it as-is first
+	if originalCmd != "neuro" {
+		// First try the provided command as-is (handles absolute paths)
+		if filepath.IsAbs(originalCmd) {
+			if _, err := os.Stat(originalCmd); err == nil {
+				return nil
+			}
+			return fmt.Errorf("neuro command not found: %s", originalCmd)
+		}
+
+		// For relative paths, try to find it relative to current working directory
+		if _, err := os.Stat(originalCmd); err == nil {
+			return nil
+		}
 	}
-	return nil
+
+	// Try common locations for the neuro binary
+	candidates := []string{
+		"./bin/neuro", // Local build
+		"bin/neuro",   // Local build (alternative path)
+		"neuro",       // PATH lookup
+	}
+
+	// If user provided a specific command, add it to candidates
+	if originalCmd != "neuro" && originalCmd != "./bin/neuro" {
+		candidates = append([]string{originalCmd}, candidates...)
+	}
+
+	// Try to resolve relative to project root if we're in a subdirectory
+	if cwd, err := os.Getwd(); err == nil {
+		searchDir := cwd
+		for {
+			// Check if we're in the NeuroShell project root
+			if _, err := os.Stat(filepath.Join(searchDir, "go.mod")); err == nil {
+				// Add project-relative candidates
+				for _, candidate := range []string{"bin/neuro", "./bin/neuro"} {
+					projectPath := filepath.Join(searchDir, candidate)
+					candidates = append(candidates, projectPath)
+				}
+				break
+			}
+			parent := filepath.Dir(searchDir)
+			if parent == searchDir {
+				break // Reached filesystem root
+			}
+			searchDir = parent
+		}
+	}
+
+	// Try each candidate
+	var triedPaths []string
+	for _, candidate := range candidates {
+		triedPaths = append(triedPaths, candidate)
+
+		// Try as absolute path
+		if filepath.IsAbs(candidate) {
+			if _, err := os.Stat(candidate); err == nil {
+				neurocmd = candidate
+				return nil
+			}
+			continue
+		}
+
+		// Try as relative path
+		if _, err := os.Stat(candidate); err == nil {
+			// Convert to absolute path for consistency
+			if absPath, err := filepath.Abs(candidate); err == nil {
+				neurocmd = absPath
+			} else {
+				neurocmd = candidate
+			}
+			return nil
+		}
+
+		// Try using exec.LookPath for PATH resolution (for non-path candidates)
+		if !strings.Contains(candidate, "/") {
+			if resolvedPath, err := exec.LookPath(candidate); err == nil {
+				neurocmd = resolvedPath
+				return nil
+			}
+		}
+	}
+
+	return fmt.Errorf("neuro command not found\nTried paths: %v\nMake sure the neuro binary exists and is executable", triedPaths)
 }
 
 // findNeuroScript finds the .neuro script file for a test
@@ -748,4 +865,180 @@ func recordAllExperiments(_ *cobra.Command, _ []string) error {
 	}
 
 	return nil
+}
+
+// .neurorc startup testing functionality
+
+// NeuroRCTestConfig defines the configuration for a .neurorc startup test
+type NeuroRCTestConfig struct {
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Setup       NeuroRCTestSetup  `json:"setup"`
+	CLIFlags    []string          `json:"cli_flags"`
+	EnvVars     map[string]string `json:"env_vars"`
+	InputSeq    []string          `json:"input_sequence"`
+	ExpectedOut []string          `json:"expected_contains"`
+	ExpectedNot []string          `json:"expected_not_contains"`
+	Timeout     int               `json:"timeout_seconds"`
+}
+
+// NeuroRCTestSetup defines the test environment setup
+type NeuroRCTestSetup struct {
+	WorkingDirNeuroRC string            `json:"working_dir_neurorc"`
+	HomeDirNeuroRC    string            `json:"home_dir_neurorc"`
+	CustomFiles       map[string]string `json:"custom_files"` // filename -> content
+}
+
+// NeuroRCTestEnvironment represents an isolated test environment
+type NeuroRCTestEnvironment struct {
+	TempDir     string
+	WorkingDir  string
+	HomeDir     string
+	ConfigFiles map[string]string
+}
+
+// recordNeuroRCTest records a new .neurorc startup test case
+func recordNeuroRCTest(_ *cobra.Command, args []string) error {
+	testName := args[0]
+
+	if verbose {
+		fmt.Printf("Recording .neurorc startup test: %s\n", testName)
+	}
+
+	// Check if neuro command exists
+	if err := checkNeuroCommand(); err != nil {
+		return err
+	}
+
+	// Find the test configuration file
+	configFile, err := findNeuroRCTestConfig(testName)
+	if err != nil {
+		return err
+	}
+
+	// Parse test configuration
+	config, err := parseNeuroRCTestConfig(configFile)
+	if err != nil {
+		return err
+	}
+
+	if verbose {
+		fmt.Printf("Loaded test config: %s\n", config.Description)
+	}
+
+	// Create isolated test environment
+	testEnv, err := createNeuroRCTestEnvironment(config)
+	if err != nil {
+		return err
+	}
+	defer cleanupNeuroRCTestEnvironment(testEnv)
+
+	// Run the .neurorc startup test
+	output, err := runNeuroRCShellTest(testEnv, config)
+	if err != nil {
+		return fmt.Errorf("failed to run .neurorc startup test: %w", err)
+	}
+
+	// Save the output as expected result
+	expectedFile := filepath.Join(testDir, "neurorc", testName+".expected")
+	if err := os.MkdirAll(filepath.Dir(expectedFile), 0755); err != nil {
+		return fmt.Errorf("failed to create test directory: %w", err)
+	}
+
+	if err := os.WriteFile(expectedFile, []byte(output), 0644); err != nil {
+		return fmt.Errorf("failed to write expected output: %w", err)
+	}
+
+	fmt.Printf("Recorded .neurorc startup test: %s\n", testName)
+	fmt.Printf("Expected output saved to: %s\n", expectedFile)
+
+	return nil
+}
+
+// runNeuroRCTest runs a specific .neurorc startup test case
+func runNeuroRCTest(_ *cobra.Command, args []string) error {
+	testName := args[0]
+
+	if verbose {
+		fmt.Printf("Running .neurorc startup test: %s\n", testName)
+	}
+
+	// Check if neuro command exists
+	if err := checkNeuroCommand(); err != nil {
+		return err
+	}
+
+	// Find the test configuration file
+	configFile, err := findNeuroRCTestConfig(testName)
+	if err != nil {
+		return err
+	}
+
+	// Parse test configuration
+	config, err := parseNeuroRCTestConfig(configFile)
+	if err != nil {
+		return err
+	}
+
+	// Check if expected file exists
+	expectedFile := filepath.Join(testDir, "neurorc", testName+".expected")
+	if _, err := os.Stat(expectedFile); os.IsNotExist(err) {
+		return fmt.Errorf("expected output file not found: %s\nRun 'neurotest record-neurorc %s' first", expectedFile, testName)
+	}
+
+	// Read expected output
+	expectedBytes, err := os.ReadFile(expectedFile)
+	if err != nil {
+		return fmt.Errorf("failed to read expected output: %w", err)
+	}
+	expected := string(expectedBytes)
+
+	// Create isolated test environment
+	testEnv, err := createNeuroRCTestEnvironment(config)
+	if err != nil {
+		return err
+	}
+	defer cleanupNeuroRCTestEnvironment(testEnv)
+
+	// Run the .neurorc startup test
+	actual, err := runNeuroRCShellTest(testEnv, config)
+	if err != nil {
+		return fmt.Errorf("failed to run .neurorc startup test: %w", err)
+	}
+
+	// Smart comparison with normalization
+	var passed bool
+	var normalized bool
+
+	// First try exact match
+	if strings.TrimSpace(actual) == strings.TrimSpace(expected) {
+		passed = true
+	} else {
+		// Try smart comparison with placeholders
+		if normalizationEngine.CompareWithPlaceholders(expected, actual) {
+			passed = true
+			normalized = true
+		} else {
+			// Try normalized comparison
+			normalizedExpected := normalizationEngine.NormalizeOutput(expected)
+			normalizedActual := normalizationEngine.NormalizeOutput(actual)
+			if strings.TrimSpace(normalizedActual) == strings.TrimSpace(normalizedExpected) {
+				passed = true
+				normalized = true
+			}
+		}
+	}
+
+	if passed {
+		if normalized && verbose {
+			fmt.Printf("PASS: %s (using smart comparison)\n", testName)
+		} else {
+			fmt.Printf("PASS: %s\n", testName)
+		}
+		return nil
+	}
+
+	fmt.Printf("FAIL: %s\n", testName)
+	showDetailedDiff(expected, actual, testName)
+	return fmt.Errorf("test failed: output mismatch")
 }

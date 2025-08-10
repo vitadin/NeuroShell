@@ -1,0 +1,29 @@
+# CLI flag --no-rc test
+# Tests that --no-rc flag skips all .neurorc files
+
+--- description
+Test --no-rc CLI flag skips all .neurorc files
+
+--- working_dir_neurorc
+\echo This should NOT appear - working dir .neurorc
+\set[should_not_run="true"]
+
+--- home_dir_neurorc
+\echo This should NOT appear - home dir .neurorc
+\set[should_not_run_home="true"]
+
+--- cli_flags
+--no-rc
+
+--- input_sequence
+\echo Testing --no-rc flag
+\exit
+
+--- expected_contains
+Testing --no-rc flag
+
+--- expected_not_contains
+This should NOT appear - working dir .neurorc
+This should NOT appear - home dir .neurorc
+Setting should_not_run = true
+Setting should_not_run_home = true

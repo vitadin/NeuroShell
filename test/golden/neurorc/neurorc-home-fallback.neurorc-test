@@ -1,0 +1,18 @@
+# Home directory .neurorc fallback test
+# Tests .neurorc execution from home directory when no local file exists
+
+--- description
+Test home directory .neurorc fallback when no working directory .neurorc exists
+
+--- home_dir_neurorc
+\echo Home .neurorc loaded!
+\set[home_var="from_home_neurorc"]
+\echo home_var = ${home_var}
+
+--- input_sequence
+\exit
+
+--- expected_contains
+Home .neurorc loaded!
+Setting home_var = from_home_neurorc
+home_var = from_home_neurorc

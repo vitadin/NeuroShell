@@ -1,0 +1,26 @@
+# Priority test - current directory overrides home directory
+# Tests that working directory .neurorc takes priority over home directory
+
+--- description
+Test that current directory .neurorc overrides home directory .neurorc
+
+--- working_dir_neurorc
+\echo Current directory .neurorc executed (correct priority)
+\set[priority_test="current_dir_wins"]
+
+--- home_dir_neurorc
+\echo Home directory .neurorc - this should NOT appear
+\set[priority_test="home_dir_should_not_run"]
+
+--- input_sequence
+\get[priority_test]
+\exit
+
+--- expected_contains
+Current directory .neurorc executed (correct priority)
+Setting priority_test = current_dir_wins
+priority_test = current_dir_wins
+
+--- expected_not_contains
+Home directory .neurorc - this should NOT appear
+Setting priority_test = home_dir_should_not_run

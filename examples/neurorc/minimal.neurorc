@@ -1,0 +1,8 @@
+# Minimal .neurorc startup script
+# Just the essentials
+
+# Set up a basic session
+\session-new basic_session
+
+# Simple welcome
+\echo NeuroShell ready!

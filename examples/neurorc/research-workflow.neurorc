@@ -1,0 +1,30 @@
+# Research-focused .neurorc startup script
+# Optimized for academic and research workflows
+
+# Set up research environment variables
+\set[research_mode="true"]
+\set[citation_style="APA"]
+\set[analysis_level="detailed"]
+
+# Create research session with specialized system prompt
+\session-new[system="You are an expert research assistant with deep knowledge across multiple academic disciplines. You help with literature reviews, data analysis, experimental design, and academic writing. Always provide citations when possible and suggest follow-up research directions."] research_${@date}
+
+# Set up research-friendly styling
+\set[_style="light"]
+
+# Load research metadata
+\set[researcher="${@user}"]
+\set[session_date="${@date}"]
+\set[working_dir="${@pwd}"]
+
+# Print research environment info
+\echo === Research Session Initialized ===
+\echo Researcher: ${researcher}
+\echo Date: ${session_date}
+\echo Working directory: ${working_dir}
+\echo Citation style: ${citation_style}
+\echo Session: research_${@date}
+\echo === Ready for research! ===
+\echo
+\echo Tip: Use \\session-export to save your research session
+\echo      Use \\set[topic="your_research_topic"] to set current focus
