@@ -108,6 +108,24 @@ archives:
       - CLAUDE.md
       - docs/RELEASE_PROCESS.md
       - examples/neurorc/*.neurorc
+  - id: neuroshell-universal
+    builds:
+      - neuro-universal
+      - neurotest-universal
+    name_template: >-
+      {{- .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_universal
+    format: tar.gz
+    files:
+      - README.md
+      - LICENSE
+      - CLAUDE.md
+      - docs/RELEASE_PROCESS.md
+      - examples/neurorc/*.neurorc
+    # Only create for macOS
+    meta: true
+    allow_different_binary_count: true
 
 # Checksum configuration
 checksum:
@@ -235,26 +253,6 @@ universal_binaries:
     replace: false
     name_template: 'neurotest'
 
-# Additional archives for universal binaries
-archives:
-  - id: neuroshell-universal
-    builds:
-      - neuro-universal
-      - neurotest-universal
-    name_template: >-
-      {{- .ProjectName }}_
-      {{- .Version }}_
-      {{- .Os }}_universal
-    format: tar.gz
-    files:
-      - README.md
-      - LICENSE
-      - CLAUDE.md
-      - docs/RELEASE_PROCESS.md
-      - examples/neurorc/*.neurorc
-    # Only create for macOS
-    meta: true
-    allow_different_binary_count: true
 
 # SBOM (Software Bill of Materials) generation
 sboms:
