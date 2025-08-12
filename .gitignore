@@ -72,3 +72,7 @@ profile.out
 *.zip
 *.deb
 *.rpm
+
+# Release artifacts
+.release-notes.md
+checksums.txt
