@@ -1,0 +1,208 @@
+# GitHub Actions workflow for automated releases using GoReleaser v2
+# This workflow triggers on version tags and creates comprehensive GitHub releases
+# with cross-platform binaries and integrated changelog support.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on semantic version tags (e.g., v0.3.0, v1.0.0)
+
+permissions:
+  contents: write  # Required for creating releases and uploading assets
+  packages: write  # Required for potential future package publishing
+  issues: write    # Required for milestone management
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full git history for version calculation
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Set up Go environment
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.4'  # Match the version in go.mod
+          cache: true           # Enable Go module caching
+
+      # Verify Go installation and modules
+      - name: Verify Go setup
+        run: |
+          go version
+          go mod verify
+          go mod tidy
+
+      # Install yq for YAML processing (required by extract-changelog.sh)
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
+
+      # Extract version information
+      - name: Extract version info
+        id: version
+        run: |
+          # Get version from tag (remove 'v' prefix)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          
+          # Get codename for this version
+          CODENAME=""
+          case "${VERSION}" in
+            0.1.0) CODENAME="Hydra" ;;
+            0.2.0) CODENAME="Planaria" ;;
+            0.3.0) CODENAME="Aplysia" ;;
+            0.4.0) CODENAME="Octopus" ;;
+            0.5.0) CODENAME="Corvus" ;;
+            0.6.0) CODENAME="Rattus" ;;
+            0.7.0) CODENAME="Macaca" ;;
+            0.8.0) CODENAME="Pan" ;;
+            0.9.0) CODENAME="Tursiops" ;;
+            1.0.0) CODENAME="Sapiens" ;;
+            2.0.0) CODENAME="Synthia" ;;
+            *) 
+              # For patch versions, try to match the major.minor.0 pattern
+              BASE_VERSION=$(echo "${VERSION}" | sed 's/\.[0-9]*$/\.0/')
+              case "${BASE_VERSION}" in
+                0.1.0) CODENAME="Hydra" ;;
+                0.2.0) CODENAME="Planaria" ;;
+                0.3.0) CODENAME="Aplysia" ;;
+                0.4.0) CODENAME="Octopus" ;;
+                0.5.0) CODENAME="Corvus" ;;
+                0.6.0) CODENAME="Rattus" ;;
+                0.7.0) CODENAME="Macaca" ;;
+                0.8.0) CODENAME="Pan" ;;
+                0.9.0) CODENAME="Tursiops" ;;
+                1.0.0) CODENAME="Sapiens" ;;
+                2.0.0) CODENAME="Synthia" ;;
+              esac
+              ;;
+          esac
+          echo "codename=${CODENAME}" >> $GITHUB_OUTPUT
+          
+          # Create release title
+          if [[ -n "${CODENAME}" ]]; then
+            RELEASE_TITLE="NeuroShell v${VERSION} '${CODENAME}'"
+          else
+            RELEASE_TITLE="NeuroShell v${VERSION}"
+          fi
+          echo "release_title=${RELEASE_TITLE}" >> $GITHUB_OUTPUT
+          
+          echo "Version: ${VERSION}"
+          echo "Codename: ${CODENAME}"
+          echo "Release Title: ${RELEASE_TITLE}"
+
+      # Validate version consistency
+      - name: Validate version consistency
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          # Check if version exists in changelog
+          if ! yq eval ".entries[] | select(.version == \"${VERSION}\")" internal/data/embedded/change-logs/change-logs.yaml | grep -q .; then
+            echo "Error: No changelog entry found for version ${VERSION}"
+            echo "Available versions in changelog:"
+            yq eval '.entries[].version' internal/data/embedded/change-logs/change-logs.yaml
+            exit 1
+          fi
+          
+          echo "Version ${VERSION} found in changelog ✓"
+
+      # Extract changelog for this release
+      - name: Extract changelog
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          # Make script executable
+          chmod +x scripts/extract-changelog.sh
+          
+          # Extract changelog in GoReleaser format
+          CHANGELOG_CONTENT=$(scripts/extract-changelog.sh "${VERSION}" goreleaser)
+          
+          # Save changelog to file for GoReleaser
+          echo "${CHANGELOG_CONTENT}" > .release-notes.md
+          
+          # Also set as output (for debugging)
+          echo "Release notes extracted for version ${VERSION}"
+          echo "Preview:"
+          head -5 .release-notes.md
+
+      # Validate build before release
+      - name: Validate build
+        run: |
+          echo "Testing build process..."
+          # Quick build test (don't worry about linting - CircleCI handles that)
+          go build -v ./cmd/neuro
+          go build -v ./cmd/neurotest
+          echo "Build validation successful ✓"
+
+      # Run GoReleaser
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: '~> v2'  # Use GoReleaser v2
+          args: release --clean --release-notes=.release-notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Pass version information to GoReleaser
+          VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_TITLE: ${{ steps.version.outputs.release_title }}
+
+      # Post-release validation
+      - name: Validate release
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          
+          echo "Release created successfully!"
+          echo "Version: ${VERSION}"
+          echo "Tag: ${TAG}"
+          echo "Release Title: ${{ steps.version.outputs.release_title }}"
+          
+          # Check if release was created
+          if gh release view "${TAG}" --json name,tagName,publishedAt; then
+            echo "GitHub release verified ✓"
+          else
+            echo "Warning: Could not verify GitHub release"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Cleanup
+      - name: Cleanup
+        if: always()
+        run: |
+          # Remove temporary files
+          rm -f .release-notes.md
+          echo "Cleanup completed"
+
+  # Optional: Create a summary job for better visibility
+  summary:
+    name: Release Summary
+    needs: release
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Release Summary
+        run: |
+          if [[ "${{ needs.release.result }}" == "success" ]]; then
+            echo "✅ Release completed successfully!"
+            echo "🎉 NeuroShell ${{ needs.release.outputs.version }} has been released"
+            echo "🔗 Check the release at: https://github.com/${{ github.repository }}/releases/latest"
+          else
+            echo "❌ Release failed"
+            echo "🔍 Check the logs above for details"
+          fi

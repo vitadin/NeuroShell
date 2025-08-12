@@ -11,6 +11,7 @@ dist/
 # Root level binary (neuroshell)
 /neuroshell
 /neuro
+/neurotest
 
 # Test binary, built with `go test -c`
 *.test
