@@ -580,6 +580,17 @@ release-validate-goreleaser:
     fi
     echo ""
     
+    # Test release templates by doing a dry-run
+    echo "Testing release templates (dry-run mode)..."
+    if goreleaser release --snapshot --clean --skip=publish; then
+        echo "✅ GoReleaser release template test successful"
+        echo "   All templates and configurations validated"
+    else
+        echo "❌ GoReleaser release template test failed"
+        exit 1
+    fi
+    echo ""
+    
     echo "🎉 GoReleaser configuration validated successfully!"
 
 # Check release pipeline locally before pushing tags
