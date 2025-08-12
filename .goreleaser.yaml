@@ -1,0 +1,274 @@
+# GoReleaser v2 Configuration for NeuroShell
+# This configuration builds cross-platform binaries and creates GitHub releases
+# with integrated changelog and codename support.
+
+# Project metadata
+project_name: neuroshell
+
+# Environment variables
+env:
+  - CGO_ENABLED=0
+
+# Git configuration  
+git:
+  # Ignore untracked files (allow dirty working directory)
+  ignore_uncommitted: true
+
+# Before hooks - run before building
+before:
+  hooks:
+    # Ensure dependencies are up to date
+    - go mod tidy
+    # Generate any required files
+    - go generate ./...
+
+# Build configuration
+builds:
+  # Main CLI binary
+  - id: neuro
+    binary: neuro
+    main: ./cmd/neuro
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Exclude unsupported combinations
+    ignore:
+      - goos: windows
+        goarch: arm64
+    # Version injection using ldflags (matching justfile pattern)
+    ldflags:
+      - -s -w
+      - -X 'neuroshell/internal/version.Version={{.Version}}'
+      - -X 'neuroshell/internal/version.GitCommit={{.ShortCommit}}'
+      - -X 'neuroshell/internal/version.BuildDate={{.Date}}'
+    # Build tags and flags
+    tags:
+      - release
+    flags:
+      - -trimpath
+    mod_timestamp: '{{.CommitTimestamp}}'
+
+  # Testing binary
+  - id: neurotest
+    binary: neurotest
+    main: ./cmd/neurotest
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Exclude unsupported combinations
+    ignore:
+      - goos: windows
+        goarch: arm64
+    # Version injection
+    ldflags:
+      - -s -w
+      - -X 'neuroshell/internal/version.Version={{.Version}}'
+      - -X 'neuroshell/internal/version.GitCommit={{.ShortCommit}}'
+      - -X 'neuroshell/internal/version.BuildDate={{.Date}}'
+    # Build tags and flags
+    tags:
+      - release
+    flags:
+      - -trimpath
+    mod_timestamp: '{{.CommitTimestamp}}'
+
+# Archive configuration
+archives:
+  - id: neuroshell-archives
+    builds:
+      - neuro
+      - neurotest
+    # Naming format: neuroshell_v0.3.0_linux_amd64.tar.gz
+    name_template: >-
+      {{- .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # File format per OS
+    format_overrides:
+      - goos: windows
+        format: zip
+    # Files to include in archives
+    files:
+      - README.md
+      - LICENSE
+      - CLAUDE.md
+      - docs/RELEASE_PROCESS.md
+      - examples/neurorc/*.neurorc
+
+# Checksum configuration
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+# Source archive (automatically includes source code)
+source:
+  enabled: true
+  name_template: '{{ .ProjectName }}_{{ .Version }}_source'
+  format: tar.gz
+
+# Changelog configuration
+changelog:
+  # Disable automatic changelog generation - we'll use our YAML changelog
+  disable: true
+
+# GitHub Release configuration
+release:
+  # GitHub repository
+  github:
+    owner: vitadin  # Replace with actual GitHub username/org
+    name: NeuroShell  # Replace with actual repository name
+  
+  # Release naming with codename integration
+  name_template: >-
+    {{- $codenames := dict 
+        "0.1.0" "Hydra"
+        "0.2.0" "Planaria" 
+        "0.3.0" "Aplysia"
+        "0.4.0" "Octopus"
+        "0.5.0" "Corvus"
+        "0.6.0" "Rattus"
+        "0.7.0" "Macaca"
+        "0.8.0" "Pan"
+        "0.9.0" "Tursiops"
+        "1.0.0" "Sapiens"
+        "2.0.0" "Synthia" }}
+    {{- $baseVersion := regexReplaceAll "\\+.*$" .Version "" }}
+    {{- $codename := index $codenames $baseVersion }}
+    {{- if $codename }}
+      NeuroShell {{ .Version }} '{{ $codename }}'
+    {{- else }}
+      NeuroShell {{ .Version }}
+    {{- end }}
+
+  # Release body will be populated by changelog extraction script
+  body_template: |
+    ## NeuroShell {{ .Version }}{{ if .IsPrerelease }} (Pre-release){{ end }}
+    
+    **Release Date:** {{ .Date }}
+    **Commit:** {{ .ShortCommit }}
+    
+    ### What's Changed
+    
+    {{ .ReleaseNotes }}
+    
+    ### Downloads
+    
+    Choose the appropriate download for your platform:
+    
+    | Platform | Architecture | Download |
+    |----------|-------------|----------|
+    | Linux | x86_64 | `neuroshell_{{ .Version }}_linux_amd64.tar.gz` |
+    | Linux | ARM64 | `neuroshell_{{ .Version }}_linux_arm64.tar.gz` |
+    | macOS | Intel | `neuroshell_{{ .Version }}_darwin_amd64.tar.gz` |
+    | macOS | Apple Silicon | `neuroshell_{{ .Version }}_darwin_arm64.tar.gz` |
+    | Windows | x86_64 | `neuroshell_{{ .Version }}_windows_amd64.zip` |
+    
+    ### Installation
+    
+    1. Download the appropriate archive for your platform
+    2. Extract the archive: `tar -xzf neuroshell_{{ .Version }}_<platform>_<arch>.tar.gz`
+    3. Move the binaries to your PATH: `mv neuro neurotest /usr/local/bin/`
+    4. Verify installation: `neuro --version`
+    
+    ### Checksums
+    
+    Verify your download using the provided `checksums.txt` file:
+    ```bash
+    sha256sum -c checksums.txt
+    ```
+    
+    ---
+    
+    For more information, see the [Release Process Documentation](https://github.com/vitadin/NeuroShell/blob/main/docs/RELEASE_PROCESS.md).
+
+  # Release settings
+  prerelease: auto  # Auto-detect pre-release based on version
+  mode: replace     # Replace existing release if it exists
+  header: |
+    ## 🧠 NeuroShell Release
+    
+    Advanced AI shell environment for seamless LLM interaction and automation.
+  
+  footer: |
+    **Full Changelog**: https://github.com/vitadin/NeuroShell/blob/main/docs/CHANGELOG.md
+    
+    ---
+    
+    🐛 **Found a bug?** [Report it here](https://github.com/vitadin/NeuroShell/issues/new)
+    💡 **Have a feature request?** [Let us know](https://github.com/vitadin/NeuroShell/discussions)
+    📖 **Documentation**: [NeuroShell Docs](https://github.com/vitadin/NeuroShell/blob/main/CLAUDE.md)
+
+  # Disable automatic release creation (we'll use GitHub Actions)
+  disable: false
+  
+  # Skip if no changes
+  skip_upload: false
+
+# Metadata
+metadata:
+  mod_timestamp: '{{ .CommitTimestamp }}'
+
+# Universal binaries for macOS (combine Intel + Apple Silicon)
+universal_binaries:
+  - id: neuro-universal
+    ids:
+      - neuro
+    replace: false
+    name_template: 'neuro'
+  - id: neurotest-universal  
+    ids:
+      - neurotest
+    replace: false
+    name_template: 'neurotest'
+
+# Additional archives for universal binaries
+archives:
+  - id: neuroshell-universal
+    builds:
+      - neuro-universal
+      - neurotest-universal
+    name_template: >-
+      {{- .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_universal
+    format: tar.gz
+    files:
+      - README.md
+      - LICENSE
+      - CLAUDE.md
+      - docs/RELEASE_PROCESS.md
+      - examples/neurorc/*.neurorc
+    # Only create for macOS
+    meta: true
+    allow_different_binary_count: true
+
+# SBOM (Software Bill of Materials) generation
+sboms:
+  - id: neuroshell-sbom
+    artifacts: archive
+    documents:
+      - "{{ .ProjectName }}_{{ .Version }}_sbom.spdx.json"
+
+# Milestone configuration
+milestones:
+  - close: true
+    fail_on_error: false
+    name_template: '{{ .Version }}'
+
+# Announce configuration (disabled for now)
+announce:
+  skip: true

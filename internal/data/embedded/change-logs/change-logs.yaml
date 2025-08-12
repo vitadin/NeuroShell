@@ -3,8 +3,38 @@
 # Each entry represents a significant change, bug fix, or feature addition
 
 entries:
+  - id: "CL3"
+    version: "0.2.3+653"
+    date: "2025-08-12"
+    type: "feature"
+    title: "Automated Release Pipeline, Enhanced User Experience, and Advanced Debugging Tools"
+    description: "Implemented comprehensive GitHub Actions release pipeline with GoReleaser v2 integration for automated cross-platform releases. Added major user experience improvements including .neurorc auto-startup system, clipboard integration, file writing capabilities, and script execution commands. Enhanced debugging infrastructure with network transport logging, thinking block rendering for reasoning models, and comprehensive testing framework expansion. Introduced new model support including Claude Opus 4.1, GPT-5 Chat, and improved Gemini integration with structured completions."
+    impact: "Users now benefit from automated release distribution across all platforms, seamless startup configuration with .neurorc files, native clipboard operations, enhanced script automation with \\run and \\write commands, and improved debugging visibility for LLM interactions. The release process is fully automated with proper versioning and changelog integration. Development experience is significantly enhanced with expanded testing coverage and debugging tools."
+    files_changed: [
+      ".github/workflows/release.yml",
+      ".goreleaser.yaml", 
+      "docs/RELEASE_PROCESS.md",
+      "docs/CHANGELOG_TEMPLATE.md",
+      "scripts/extract-changelog.sh",
+      "internal/commands/builtin/clip.go",
+      "internal/commands/builtin/write.go",
+      "internal/commands/builtin/run.go",
+      "internal/commands/builtin/echo_json.go",
+      "internal/commands/builtin/license.go",
+      "internal/services/debug_transport_service.go",
+      "internal/services/thinking_renderer_service.go",
+      "internal/services/anthropic_client.go",
+      "internal/services/gemini_client.go",
+      "internal/services/chat_session_service.go",
+      "internal/data/embedded/models/claude-opus-4-1.yaml",
+      "internal/data/embedded/models/gpt-5-chat.yaml",
+      "cmd/neurotest/internal/*",
+      "test/golden/*",
+      "examples/neurorc/*",
+      "justfile"
+    ]
   - id: "CL2"
-    version: "0.2.2"
+    version: "0.2.2+573"
     date: "2025-07-31"
     type: "feature"
     title: "Session Import/Export, Model Parameter Validation, and Enhanced OpenAI Integration"
