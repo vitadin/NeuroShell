@@ -37,14 +37,9 @@ builds:
     goos:
       - linux
       - darwin
-      - windows
     goarch:
       - amd64
       - arm64
-    # Exclude unsupported combinations
-    ignore:
-      - goos: windows
-        goarch: arm64
     # Version injection using ldflags (matching justfile pattern)
     ldflags:
       - -s -w
@@ -67,14 +62,9 @@ builds:
     goos:
       - linux
       - darwin
-      - windows
     goarch:
       - amd64
       - arm64
-    # Exclude unsupported combinations
-    ignore:
-      - goos: windows
-        goarch: arm64
     # Version injection
     ldflags:
       - -s -w
@@ -91,9 +81,8 @@ builds:
 # Archive configuration
 archives:
   - id: neuroshell-archives
-    builds:
-      - neuro
-      - neurotest
+    # Use rlcp (builds reference) instead of deprecated builds
+    rlcp: true
     # Naming format: neuroshell_v0.3.0_linux_amd64.tar.gz
     name_template: >-
       {{- .ProjectName }}_
@@ -101,10 +90,6 @@ archives:
       {{- .Os }}_
       {{- .Arch }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-    # File format per OS
-    format_overrides:
-      - goos: windows
-        format: zip
     # Files to include in archives
     files:
       - README.md
@@ -113,21 +98,18 @@ archives:
       - docs/RELEASE_PROCESS.md
       - examples/neurorc/*.neurorc
   - id: neuroshell-universal
-    builds:
-      - neuro-universal
-      - neurotest-universal
-    name_template: >-
-      {{- .ProjectName }}_
-      {{- .Version }}_
-      {{- .Os }}_universal
-    format: tar.gz
+    # Use rlcp for universal binaries
+    rlcp: true
+    # Fixed template for universal binaries (no .Os available)
+    name_template: "{{ .ProjectName }}_{{ .Version }}_darwin_universal"
+    # Files to include
     files:
       - README.md
       - LICENSE
       - CLAUDE.md
       - docs/RELEASE_PROCESS.md
       - examples/neurorc/*.neurorc
-    # Only create for macOS
+    # Only include universal binary builds
     meta: true
     allow_different_binary_count: true
 
