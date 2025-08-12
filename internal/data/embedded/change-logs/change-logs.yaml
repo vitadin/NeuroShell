@@ -4,7 +4,7 @@
 
 entries:
   - id: "CL3"
-    version: "0.2.3+653"
+    version: "0.2.3"
     date: "2025-08-12"
     type: "feature"
     title: "Automated Release Pipeline, Enhanced User Experience, and Advanced Debugging Tools"
@@ -34,7 +34,7 @@ entries:
       "justfile"
     ]
   - id: "CL2"
-    version: "0.2.2+573"
+    version: "0.2.2"
     date: "2025-07-31"
     type: "feature"
     title: "Session Import/Export, Model Parameter Validation, and Enhanced OpenAI Integration"
