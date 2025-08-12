@@ -537,6 +537,51 @@ record-neurorc: ensure-build
 
 # Release Management Commands
 
+# Validate GoReleaser configuration locally
+release-validate-goreleaser:
+    #!/bin/bash
+    set -euo pipefail
+    
+    echo "🔧 GoReleaser Configuration Validation"
+    echo "======================================"
+    echo ""
+    
+    # Check if goreleaser is installed
+    if ! command -v goreleaser >/dev/null 2>&1; then
+        echo "❌ GoReleaser not found. Installing..."
+        if command -v brew >/dev/null 2>&1; then
+            brew install --cask goreleaser
+        else
+            echo "   Please install GoReleaser: https://goreleaser.com/install/"
+            exit 1
+        fi
+    fi
+    echo "✅ GoReleaser available: $(goreleaser --version | head -1)"
+    echo ""
+    
+    # Validate configuration syntax
+    echo "Validating .goreleaser.yaml syntax..."
+    if goreleaser check; then
+        echo "✅ GoReleaser configuration is valid"
+    else
+        echo "❌ GoReleaser configuration has errors"
+        exit 1
+    fi
+    echo ""
+    
+    # Test build without releasing (snapshot mode)
+    echo "Testing build process (snapshot mode)..."
+    if goreleaser build --snapshot --clean --single-target; then
+        echo "✅ GoReleaser build test successful"
+        echo "   Generated binaries in ./dist/ directory"
+    else
+        echo "❌ GoReleaser build test failed"
+        exit 1
+    fi
+    echo ""
+    
+    echo "🎉 GoReleaser configuration validated successfully!"
+
 # Check release pipeline locally before pushing tags
 release-check VERSION:
     #!/bin/bash
