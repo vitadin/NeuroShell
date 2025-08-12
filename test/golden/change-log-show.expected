@@ -1,7 +1,7 @@
 NeuroShell Change Log (2 entries):
 
 [CL2] Session Import/Export, Model Parameter Validation, and Enhanced OpenAI Integration
-  Version: 0.2.2
+  Version: 0.2.2+573
   Date: 2025-07-31
   Type: Feature
   Description: Added comprehensive session import/export system supporting JSON format with full data preservation. Implemented model parameter validation service with detailed parameter cards for all models. Enhanced OpenAI integration with O4 Mini chat/reasoning modes, streaming support, and improved client management. Upgraded neurotest framework with enhanced testing capabilities and new experiment scripts. Improved help command organization by removing quick examples and adding better categorization.

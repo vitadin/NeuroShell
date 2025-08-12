@@ -4,7 +4,7 @@
 
 entries:
   - id: "CL2"
-    version: "0.2.2"
+    version: "0.2.2+573"
     date: "2025-07-31"
     type: "feature"
     title: "Session Import/Export, Model Parameter Validation, and Enhanced OpenAI Integration"
