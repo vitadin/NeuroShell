@@ -64,20 +64,6 @@ func (p *ProviderCatalogService) GetProviderCatalog() ([]neurotypes.ProviderCata
 	}
 	allProviders = append(allProviders, anthropicChat)
 
-	// Load Moonshot providers
-	moonshotChat, err := p.loadProviderFile(embedded.MoonshotChatProviderData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load Moonshot chat provider: %w", err)
-	}
-	allProviders = append(allProviders, moonshotChat)
-
-	// Load OpenRouter providers
-	openrouterChat, err := p.loadProviderFile(embedded.OpenRouterChatProviderData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load OpenRouter chat provider: %w", err)
-	}
-	allProviders = append(allProviders, openrouterChat)
-
 	// Load Gemini providers
 	geminiChat, err := p.loadProviderFile(embedded.GeminiChatProviderData)
 	if err != nil {
@@ -146,7 +132,7 @@ func (p *ProviderCatalogService) SearchProviderCatalog(query string) ([]neurotyp
 
 // GetSupportedProviders returns a list of supported provider names.
 func (p *ProviderCatalogService) GetSupportedProviders() []string {
-	return []string{"openai", "anthropic", "moonshot", "openrouter", "gemini"}
+	return []string{"openai", "anthropic", "gemini"}
 }
 
 // GetValidCatalogIDs returns a list of all valid provider catalog IDs dynamically.

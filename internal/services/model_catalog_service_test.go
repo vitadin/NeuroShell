@@ -163,30 +163,11 @@ func TestModelCatalogService_GetModelCatalogByProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("get openrouter models", func(t *testing.T) {
+	t.Run("get unsupported provider models", func(t *testing.T) {
 		models, err := service.GetModelCatalogByProvider("openrouter")
-		require.NoError(t, err)
-		require.NotNil(t, models)
-		assert.Greater(t, len(models), 0, "Should have OpenRouter models")
-
-		// Verify all models are OpenRouter models
-		expectedOpenRouterModels := map[string]bool{
-			"moonshotai/kimi-k2":                 true,
-			"moonshotai/kimi-k2:free":            true,
-			"qwen/qwen3-235b-a22b-07-25":         true,
-			"x-ai/grok-4":                        true,
-			"qwen/qwen3-235b-a22b-thinking-2507": true,
-			"z-ai/glm-4.5":                       true,
-			"google/gemini-2.5-flash-lite":       true,
-		}
-		for _, model := range models {
-			assert.True(t,
-				expectedOpenRouterModels[model.Name],
-				"Should be a known OpenRouter model: %s", model.Name)
-			assert.Equal(t, "openrouter", model.Provider, "Provider should be openrouter")
-			assert.NotEmpty(t, model.DisplayName)
-			assert.Greater(t, model.ContextWindow, 0)
-		}
+		require.Error(t, err)
+		require.Nil(t, models)
+		assert.Contains(t, err.Error(), "unsupported provider: openrouter")
 	})
 
 	t.Run("case insensitive provider names", func(t *testing.T) {

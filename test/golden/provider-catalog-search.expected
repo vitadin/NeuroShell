@@ -29,7 +29,7 @@ Openai-reasoning Providers:
     Description: OpenAI's responses API for reasoning models (o3, o4-mini, o1, etc.)
     Implementation: Used for models with reasoning_tokens: true
 %%> "\\provider-catalog[search=chat]"
-Provider Catalog - Search: 'chat' (5 providers):
+Provider Catalog - Search: 'chat' (3 providers):
 Anthropic Providers:
   [ANC] Anthropic Claude Chat (openai-compatible)
     Provider: anthropic
@@ -49,15 +49,6 @@ Gemini Providers:
     Headers: Content-Type: application/json, x-goog-api-key: {API_KEY}
     Description: Google Gemini generative AI chat completions API
     Implementation: Natively supported by NeuroShell
-
-Moonshot Providers:
-  [MSC] Moonshot Chat Completions (openai-compatible)
-    Provider: moonshot
-    Base URL: https://api.moonshot.ai/v1
-    Endpoint: /chat/completions
-    Client Type: openai-compatible
-    Description: Moonshot AI chat completions API
-    Implementation: Uses OpenAI-compatible API
 
 Openai Providers:
   [OAC] OpenAI Chat Completions (openai)
@@ -67,18 +58,8 @@ Openai Providers:
     Client Type: openai
     Description: OpenAI's chat completion API for GPT models
     Implementation: Natively supported by NeuroShell
-
-Openrouter Providers:
-  [ORC] OpenRouter Chat Completions (openai-compatible)
-    Provider: openrouter
-    Base URL: https://openrouter.ai/api/v1
-    Endpoint: /chat/completions
-    Client Type: openai-compatible
-    Headers: HTTP-Referer: https://github.com/vitadin/NeuroShell, X-Title: NeuroShell
-    Description: OpenRouter unified API access to multiple LLM providers
-    Implementation: Uses OpenAI-compatible API
 %%> "\\provider-catalog[search=API]"
-Provider Catalog - Search: 'API' (6 providers):
+Provider Catalog - Search: 'API' (4 providers):
 Anthropic Providers:
   [ANC] Anthropic Claude Chat (openai-compatible)
     Provider: anthropic
@@ -98,15 +79,6 @@ Gemini Providers:
     Headers: Content-Type: application/json, x-goog-api-key: {API_KEY}
     Description: Google Gemini generative AI chat completions API
     Implementation: Natively supported by NeuroShell
-
-Moonshot Providers:
-  [MSC] Moonshot Chat Completions (openai-compatible)
-    Provider: moonshot
-    Base URL: https://api.moonshot.ai/v1
-    Endpoint: /chat/completions
-    Client Type: openai-compatible
-    Description: Moonshot AI chat completions API
-    Implementation: Uses OpenAI-compatible API
 
 Openai Providers:
   [OAC] OpenAI Chat Completions (openai)
@@ -125,13 +97,3 @@ Openai-reasoning Providers:
     Client Type: openai_reasoning
     Description: OpenAI's responses API for reasoning models (o3, o4-mini, o1, etc.)
     Implementation: Used for models with reasoning_tokens: true
-
-Openrouter Providers:
-  [ORC] OpenRouter Chat Completions (openai-compatible)
-    Provider: openrouter
-    Base URL: https://openrouter.ai/api/v1
-    Endpoint: /chat/completions
-    Client Type: openai-compatible
-    Headers: HTTP-Referer: https://github.com/vitadin/NeuroShell, X-Title: NeuroShell
-    Description: OpenRouter unified API access to multiple LLM providers
-    Implementation: Uses OpenAI-compatible API

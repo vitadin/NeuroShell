@@ -12,15 +12,13 @@ The ClientFactory service contains hard-coded values that should be configurable
 
 ```go
 // Hard-coded base URLs and headers
-case "openrouter":
-    client = f.createOpenAICompatibleClient(apiKey, "openrouter", "https://openrouter.ai/api/v1")
-case "moonshot":
-    client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
 case "anthropic":
     config := OpenAICompatibleConfig{
         BaseURL: "https://api.anthropic.com/v1",
         Headers: map[string]string{"anthropic-version": "2023-06-01"},
     }
+case "gemini":
+    client = NewGeminiClient(apiKey)
 ```
 
 ### 2. Architecture Violations
@@ -101,17 +99,14 @@ defaults := map[string]string{
     "NEURO_OPENAI_BASE_URL":    "https://api.openai.com/v1",
     "NEURO_OPENAI_ENDPOINT":    "/chat/completions",
     
-    // OpenRouter  
-    "NEURO_OPENROUTER_BASE_URL": "https://openrouter.ai/api/v1",
-    "NEURO_OPENROUTER_HEADERS":  "HTTP-Referer=https://github.com/vitadin/NeuroShell,X-Title=NeuroShell",
-    
-    // Moonshot
-    "NEURO_MOONSHOT_BASE_URL":   "https://api.moonshot.ai/v1",
-    
     // Anthropic
     "NEURO_ANTHROPIC_BASE_URL":  "https://api.anthropic.com/v1",
     "NEURO_ANTHROPIC_ENDPOINT":  "/messages",
     "NEURO_ANTHROPIC_HEADERS":   "anthropic-version=2023-06-01",
+    
+    // Gemini
+    "NEURO_GEMINI_BASE_URL":     "https://generativelanguage.googleapis.com/v1beta",
+    "NEURO_GEMINI_ENDPOINT":     "/models",
 }
 ```
 
@@ -122,10 +117,10 @@ Support environment variable overrides:
 ```bash
 # Override base URLs
 export NEURO_OPENAI_BASE_URL="https://my-proxy.com/v1"
-export MOONSHOT_BASE_URL="https://custom-moonshot.com/v1"
+export NEURO_GEMINI_BASE_URL="https://custom-gemini.com/v1"
 
 # Override headers
-export NEURO_OPENROUTER_HEADERS="Custom-Header=value,Another=value2"
+export NEURO_ANTHROPIC_HEADERS="Custom-Header=value,Another=value2"
 ```
 
 ### Phase 2: ClientFactory Refactoring
@@ -139,8 +134,10 @@ Replace provider switch statements with configuration-driven approach:
 switch provider {
 case "openai":
     client = NewOpenAIClient(apiKey)
-case "openrouter":
-    client = f.createOpenAICompatibleClient(apiKey, "openrouter", "https://openrouter.ai/api/v1")
+case "anthropic":
+    client = NewAnthropicClient(apiKey)
+case "gemini":
+    client = NewGeminiClient(apiKey)
 // ...
 }
 
@@ -171,14 +168,10 @@ func (f *ClientFactoryService) CreateClient(config ClientConfig) (neurotypes.LLM
     switch config.ProviderType {
     case "openai":
         client = NewOpenAIClient(config.APIKey)
-    case "openai-compatible":
-        client = NewOpenAICompatibleClient(OpenAICompatibleConfig{
-            ProviderName: config.Provider,
-            APIKey:       config.APIKey,
-            BaseURL:      config.BaseURL,
-            Headers:      config.Headers,
-            Endpoint:     config.Endpoint,
-        })
+    case "anthropic":
+        client = NewAnthropicClient(config.APIKey)
+    case "gemini":
+        client = NewGeminiClient(config.APIKey)
     default:
         return nil, "", fmt.Errorf("unsupported provider type: %s", config.ProviderType)
     }
@@ -261,7 +254,7 @@ For advanced use cases, create specialized commands:
 ```go
 // \llm-client-get-openai[key=..., base_url=...]
 // \llm-client-get-anthropic[key=..., version=...]
-// \llm-client-get-openrouter[key=..., app_name=...]
+// \llm-client-get-gemini[key=..., api_version=...]
 ```
 
 ### Phase 4: Variable System Integration
@@ -273,17 +266,17 @@ Expose configuration as variables:
 ```bash
 # Base URLs
 ${NEURO_OPENAI_BASE_URL}
-${NEURO_OPENROUTER_BASE_URL} 
-${NEURO_MOONSHOT_BASE_URL}
 ${NEURO_ANTHROPIC_BASE_URL}
+${NEURO_GEMINI_BASE_URL}
 
 # Headers
-${NEURO_OPENROUTER_HEADERS}
 ${NEURO_ANTHROPIC_HEADERS}
+${NEURO_GEMINI_HEADERS}
 
 # API Keys (from configuration service)
 ${NEURO_OPENAI_API_KEY}
 ${NEURO_ANTHROPIC_API_KEY}
+${NEURO_GEMINI_API_KEY}
 ```
 
 #### 4.2 Variable Interpolation Support
@@ -309,14 +302,15 @@ Commands support variable interpolation:
 ```bash
 # Override default base URLs
 export NEURO_OPENAI_BASE_URL="https://my-openai-proxy.com/v1"
-export MOONSHOT_BASE_URL="https://custom-moonshot.ai/v1"
+export NEURO_GEMINI_BASE_URL="https://custom-gemini.ai/v1"
 
 # Custom headers
-export NEURO_OPENROUTER_HEADERS="Custom-App=MyApp,Version=1.0"
+export NEURO_ANTHROPIC_HEADERS="Custom-App=MyApp,Version=1.0"
 
 # API keys
 export NEURO_OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
+export GOOGLE_API_KEY="AIza..."
 ```
 
 ### .env Files
@@ -324,11 +318,11 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 ```bash
 # ~/.config/neuroshell/.env
 NEURO_OPENAI_BASE_URL=https://corporate-proxy.com/openai/v1
-NEURO_OPENROUTER_HEADERS=Corporate-ID=12345,Department=AI
+NEURO_ANTHROPIC_HEADERS=Corporate-ID=12345,Department=AI
 
 # ./.env (project-specific)
-MOONSHOT_BASE_URL=https://dev-moonshot.company.com/v1
-MOONSHOT_API_KEY=dev-key-123
+NEURO_GEMINI_BASE_URL=https://dev-gemini.company.com/v1
+GOOGLE_API_KEY=dev-key-123
 ```
 
 ### Command Usage
@@ -346,7 +340,7 @@ MOONSHOT_API_KEY=dev-key-123
 
 # Complex configuration
 \set[proxy_base="https://proxy.company.com"]
-\llm-client-get[provider=anthropic, base_url=${proxy_base}/anthropic/v1]
+\llm-client-get[provider=gemini, base_url=${proxy_base}/gemini/v1]
 ```
 
 ## Migration Strategy
@@ -465,7 +459,7 @@ Add configuration validation and health checks:
 Support for complex variable operations:
 
 ```bash
-\set[providers="openai,anthropic,moonshot"]
+\set[providers="openai,anthropic,gemini"]
 \for[provider in ${providers}] {
   \llm-client-get[provider=${provider}]
 }

@@ -62,7 +62,7 @@ func TestProviderCatalogService_GetProviderCatalog(t *testing.T) {
 		require.NotNil(t, providers)
 
 		// Verify we get providers from all expected providers
-		assert.Equal(t, 6, len(providers), "Should have exactly 6 providers")
+		assert.Equal(t, 4, len(providers), "Should have exactly 4 providers")
 
 		// Check that we have providers from all expected providers
 		providerNames := make(map[string]bool)
@@ -80,7 +80,7 @@ func TestProviderCatalogService_GetProviderCatalog(t *testing.T) {
 		}
 
 		// Verify all expected providers are present
-		expectedProviders := []string{"openai", "openai-reasoning", "anthropic", "moonshot", "openrouter", "gemini"}
+		expectedProviders := []string{"openai", "openai-reasoning", "anthropic", "gemini"}
 		for _, expected := range expectedProviders {
 			assert.True(t, providerNames[expected], "Should have provider: %s", expected)
 		}
@@ -132,31 +132,16 @@ func TestProviderCatalogService_GetProvidersByProvider(t *testing.T) {
 
 	t.Run("get moonshot providers", func(t *testing.T) {
 		providers, err := service.GetProvidersByProvider("moonshot")
-		require.NoError(t, err)
-		require.NotNil(t, providers)
-		assert.Equal(t, 1, len(providers), "Should have exactly 1 Moonshot provider")
-
-		provider := providers[0]
-		assert.Equal(t, "MSC", provider.ID)
-		assert.Equal(t, "moonshot", provider.Provider)
-		assert.Equal(t, "openai-compatible", provider.ClientType)
-		assert.Contains(t, provider.BaseURL, "api.moonshot.ai")
+		require.Error(t, err)
+		require.Nil(t, providers)
+		assert.Contains(t, err.Error(), "unsupported provider: moonshot")
 	})
 
 	t.Run("get openrouter providers", func(t *testing.T) {
 		providers, err := service.GetProvidersByProvider("openrouter")
-		require.NoError(t, err)
-		require.NotNil(t, providers)
-		assert.Equal(t, 1, len(providers), "Should have exactly 1 OpenRouter provider")
-
-		provider := providers[0]
-		assert.Equal(t, "ORC", provider.ID)
-		assert.Equal(t, "openrouter", provider.Provider)
-		assert.Equal(t, "openai-compatible", provider.ClientType)
-		assert.Contains(t, provider.BaseURL, "openrouter.ai")
-		assert.NotEmpty(t, provider.Headers, "OpenRouter should have headers")
-		assert.Equal(t, "https://github.com/vitadin/NeuroShell", provider.Headers["HTTP-Referer"])
-		assert.Equal(t, "NeuroShell", provider.Headers["X-Title"])
+		require.Error(t, err)
+		require.Nil(t, providers)
+		assert.Contains(t, err.Error(), "unsupported provider: openrouter")
 	})
 
 	t.Run("get gemini providers", func(t *testing.T) {
@@ -295,7 +280,7 @@ func TestProviderCatalogService_SearchProviderCatalog(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, providers)
 		// Should return all providers since empty query matches everything
-		assert.Equal(t, 6, len(providers), "Empty search should return all providers")
+		assert.Equal(t, 4, len(providers), "Empty search should return all providers")
 	})
 }
 
@@ -307,10 +292,8 @@ func TestProviderCatalogService_GetSupportedProviders(t *testing.T) {
 	require.NotNil(t, providers)
 	assert.Contains(t, providers, "openai")
 	assert.Contains(t, providers, "anthropic")
-	assert.Contains(t, providers, "moonshot")
-	assert.Contains(t, providers, "openrouter")
 	assert.Contains(t, providers, "gemini")
-	assert.Equal(t, 5, len(providers), "Should have exactly 5 supported providers")
+	assert.Equal(t, 3, len(providers), "Should have exactly 3 supported providers")
 }
 
 func TestProviderCatalogService_GetProviderByID(t *testing.T) {
@@ -411,7 +394,7 @@ func TestProviderCatalogService_validateUniqueIDs(t *testing.T) {
 		providers := []neurotypes.ProviderCatalogEntry{
 			{ID: "OAC", Provider: "openai", DisplayName: "OpenAI Chat"},
 			{ID: "ANC", Provider: "anthropic", DisplayName: "Anthropic Chat"},
-			{ID: "MSC", Provider: "moonshot", DisplayName: "Moonshot Chat"},
+			{ID: "GMC", Provider: "gemini", DisplayName: "Gemini Chat"},
 		}
 		err := service.validateUniqueIDs(providers)
 		assert.NoError(t, err)
@@ -468,10 +451,8 @@ func TestProviderCatalogService_normalizeID(t *testing.T) {
 		{"Oac", "OAC"},
 		{"ANC", "ANC"},
 		{"anc", "ANC"},
-		{"MSC", "MSC"},
-		{"msc", "MSC"},
-		{"ORC", "ORC"},
-		{"orc", "ORC"},
+		{"GMC", "GMC"},
+		{"gmc", "GMC"},
 		{"", ""},
 	}
 
@@ -489,7 +470,7 @@ func TestProviderCatalogService_IDValidationIntegration(t *testing.T) {
 	t.Run("real catalog has unique IDs", func(t *testing.T) {
 		providers, err := service.GetProviderCatalog()
 		require.NoError(t, err)
-		assert.Equal(t, 6, len(providers), "Should have 6 providers in catalog")
+		assert.Equal(t, 4, len(providers), "Should have 4 providers in catalog")
 
 		// Verify all providers have IDs
 		for _, provider := range providers {
@@ -506,7 +487,7 @@ func TestProviderCatalogService_IDValidationIntegration(t *testing.T) {
 	})
 
 	t.Run("expected provider IDs exist", func(t *testing.T) {
-		expectedIDs := []string{"OAC", "OAR", "ANC", "MSC", "ORC", "GMC"}
+		expectedIDs := []string{"OAC", "OAR", "ANC", "GMC"}
 
 		for _, expectedID := range expectedIDs {
 			provider, err := service.GetProviderByID(expectedID)

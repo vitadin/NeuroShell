@@ -167,10 +167,6 @@ func (c *ClientActivateCommand) getClientTypeDescription(clientID string) string
 		return "type: Anthropic"
 	case strings.HasPrefix(clientID, "GMC:"):
 		return "type: Gemini"
-	case strings.HasPrefix(clientID, "ORC:"):
-		return "type: OpenRouter"
-	case strings.HasPrefix(clientID, "MSC:"):
-		return "type: Moonshot"
 	default:
 		return "type: Unknown"
 	}

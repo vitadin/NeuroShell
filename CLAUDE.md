@@ -184,7 +184,7 @@ type LLMClient interface {
 
 ### ✅ Completed Features
 - **Command System**: Full `\command[options] message` syntax with 50+ builtin commands
-- **Multi-Provider LLM Support**: Anthropic Claude, OpenAI GPT/o1, Google Gemini, Moonshot Kimi
+- **Multi-Provider LLM Support**: Anthropic Claude, OpenAI GPT/o1, Google Gemini
 - **Advanced Session Management**: Create, activate, copy, edit, export/import sessions
 - **Model Management**: Catalog-based model creation with provider-specific parameters
 - **Variable System**: User, system (`@`), command output (`_`), and metadata (`#`) variables

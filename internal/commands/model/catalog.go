@@ -34,14 +34,12 @@ func (c *CatalogCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the model-catalog command.
 func (c *CatalogCommand) Usage() string {
-	return `\model-catalog[provider=openai|anthropic|openrouter|moonshot|gemini|all, sort=name|provider, search=query]
+	return `\model-catalog[provider=openai|anthropic|gemini|all, sort=name|provider, search=query]
 
 Examples:
   \model-catalog                              %% List all available models (default: sorted by provider)
   \model-catalog[provider=openai]             %% List OpenAI models only
   \model-catalog[provider=anthropic]          %% List Anthropic models only
-  \model-catalog[provider=openrouter]         %% List OpenRouter models only
-  \model-catalog[provider=moonshot]           %% List Moonshot models only
   \model-catalog[provider=gemini]             %% List Google Gemini models only
   \model-catalog[sort=name]                   %% Sort models alphabetically by name
   \model-catalog[search=gpt-4]                %% Search for models containing "gpt-4"
@@ -51,7 +49,7 @@ Examples:
   \model-catalog[search=claude,sort=name]     %% Search for Claude models, sorted by name
 
 Options:
-  provider - Filter by provider: openai, anthropic, openrouter, moonshot, gemini, all (default: all)
+  provider - Filter by provider: openai, anthropic, gemini, all (default: all)
   sort     - Sort order: name (alphabetical), provider (by provider then name)
   search   - Search query to filter models by ID, name, display name, or description
 
@@ -66,12 +64,12 @@ func (c *CatalogCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\model-catalog[provider=openai|anthropic|openrouter|moonshot|gemini|all, sort=name|provider, search=query]",
+		Usage:       "\\model-catalog[provider=openai|anthropic|gemini|all, sort=name|provider, search=query]",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "provider",
-				Description: "Filter by provider: openai, anthropic, openrouter, moonshot, gemini, all",
+				Description: "Filter by provider: openai, anthropic, gemini, all",
 				Required:    false,
 				Type:        "string",
 				Default:     "all",
@@ -186,7 +184,7 @@ func (c *CatalogCommand) Execute(args map[string]string, _ string) error {
 
 	// Build model-to-provider mapping
 	modelToProvider := make(map[string]string)
-	for _, supportedProvider := range []string{"anthropic", "openai", "openrouter", "moonshot"} {
+	for _, supportedProvider := range []string{"anthropic", "openai", "gemini"} {
 		providerModels, err := modelCatalogService.GetModelCatalogByProvider(supportedProvider)
 		if err != nil {
 			return fmt.Errorf("failed to get %s models for mapping: %w", supportedProvider, err)
@@ -224,15 +222,13 @@ func (c *CatalogCommand) Execute(args map[string]string, _ string) error {
 // validateArguments checks if the provided provider and sort options are valid.
 func (c *CatalogCommand) validateArguments(provider, sortBy string) error {
 	validProviders := map[string]bool{
-		"all":        true,
-		"openai":     true,
-		"anthropic":  true,
-		"openrouter": true,
-		"moonshot":   true,
-		"gemini":     true,
+		"all":       true,
+		"openai":    true,
+		"anthropic": true,
+		"gemini":    true,
 	}
 	if !validProviders[provider] {
-		return fmt.Errorf("invalid provider option '%s'. Valid options: all, openai, anthropic, openrouter, moonshot, gemini", provider)
+		return fmt.Errorf("invalid provider option '%s'. Valid options: all, openai, anthropic, gemini", provider)
 	}
 
 	validSorts := map[string]bool{

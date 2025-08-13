@@ -93,55 +93,6 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, claudeOpus41Model)
 
-	// Load Kimi K2 models
-	kimiK2FreeModel, err := m.loadModelFile(embedded.KimiK2FreeOpenRouterModelData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load Kimi K2 Free (OpenRouter) model: %w", err)
-	}
-	allModels = append(allModels, kimiK2FreeModel)
-
-	kimiK2Model, err := m.loadModelFile(embedded.KimiK2OpenRouterModelData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load Kimi K2 (OpenRouter) model: %w", err)
-	}
-	allModels = append(allModels, kimiK2Model)
-
-	kimiK2MoonshotModel, err := m.loadModelFile(embedded.KimiK2MoonshotModelData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load Kimi K2 (Moonshot) model: %w", err)
-	}
-	allModels = append(allModels, kimiK2MoonshotModel)
-
-	qwen3235BModel, err := m.loadModelFile(embedded.Qwen3235BOpenRouterModelData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load Qwen3-235B (OpenRouter) model: %w", err)
-	}
-	allModels = append(allModels, qwen3235BModel)
-
-	grok4Model, err := m.loadModelFile(embedded.Grok4OpenRouterModelData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load Grok-4 (OpenRouter) model: %w", err)
-	}
-	allModels = append(allModels, grok4Model)
-
-	qwen3235BA22BThinkingModel, err := m.loadModelFile(embedded.Qwen3235BA22BThinkingOpenRouterModelData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load Qwen3 235B A22B Thinking (OpenRouter) model: %w", err)
-	}
-	allModels = append(allModels, qwen3235BA22BThinkingModel)
-
-	glm45Model, err := m.loadModelFile(embedded.GLM45OpenRouterModelData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load GLM 4.5 (OpenRouter) model: %w", err)
-	}
-	allModels = append(allModels, glm45Model)
-
-	gemini25FlashLiteOpenRouterModel, err := m.loadModelFile(embedded.Gemini25FlashLiteOpenRouterModelData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load Gemini 2.5 Flash Lite (OpenRouter) model: %w", err)
-	}
-	allModels = append(allModels, gemini25FlashLiteOpenRouterModel)
-
 	gpt41Model, err := m.loadModelFile(embedded.GPT41ModelData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load GPT-4.1 model: %w", err)

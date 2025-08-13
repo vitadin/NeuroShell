@@ -41,7 +41,7 @@ Openai-reasoning Providers:
 %%> "\\set[provider_count=4]"
 Setting provider_count = 4
 %%> "\\provider-catalog"
-Provider Catalog (6 providers):
+Provider Catalog (4 providers):
 Anthropic Providers:
   [ANC] Anthropic Claude Chat (openai-compatible)
     Provider: anthropic
@@ -62,15 +62,6 @@ Gemini Providers:
     Description: Google Gemini generative AI chat completions API
     Implementation: Natively supported by NeuroShell
 
-Moonshot Providers:
-  [MSC] Moonshot Chat Completions (openai-compatible)
-    Provider: moonshot
-    Base URL: https://api.moonshot.ai/v1
-    Endpoint: /chat/completions
-    Client Type: openai-compatible
-    Description: Moonshot AI chat completions API
-    Implementation: Uses OpenAI-compatible API
-
 Openai Providers:
   [OAC] OpenAI Chat Completions (openai)
     Provider: openai
@@ -88,13 +79,3 @@ Openai-reasoning Providers:
     Client Type: openai_reasoning
     Description: OpenAI's responses API for reasoning models (o3, o4-mini, o1, etc.)
     Implementation: Used for models with reasoning_tokens: true
-
-Openrouter Providers:
-  [ORC] OpenRouter Chat Completions (openai-compatible)
-    Provider: openrouter
-    Base URL: https://openrouter.ai/api/v1
-    Endpoint: /chat/completions
-    Client Type: openai-compatible
-    Headers: HTTP-Referer: https://github.com/vitadin/NeuroShell, X-Title: NeuroShell
-    Description: OpenRouter unified API access to multiple LLM providers
-    Implementation: Uses OpenAI-compatible API
