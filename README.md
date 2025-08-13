@@ -9,7 +9,7 @@ A specialized shell environment for seamless interaction with LLM agents. NeuroS
 
 ## Features
 
-- **Multi-Provider LLM Support**: Anthropic Claude, OpenAI GPT/o1, Google Gemini, Moonshot Kimi
+- **Multi-Provider LLM Support**: Anthropic Claude, OpenAI GPT/o1, Google Gemini
 - **Advanced Session Management**: Create, activate, copy, edit, export/import conversations
 - **Thinking Blocks**: Visual reasoning display for supported models
 - **Variable System**: User, system, command output, and metadata variables with interpolation

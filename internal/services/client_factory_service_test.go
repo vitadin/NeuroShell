@@ -50,18 +50,6 @@ func TestClientFactoryService_GetClientForProvider(t *testing.T) {
 			expectError:       false,
 		},
 		{
-			name:              "successful ORC client creation",
-			providerCatalogID: "ORC",
-			apiKey:            "sk-or-test-key",
-			expectError:       false,
-		},
-		{
-			name:              "successful MSC client creation",
-			providerCatalogID: "MSC",
-			apiKey:            "sk-ms-test-key",
-			expectError:       false,
-		},
-		{
 			name:              "successful ANC client creation",
 			providerCatalogID: "ANC",
 			apiKey:            "sk-ant-test-key",
@@ -92,7 +80,7 @@ func TestClientFactoryService_GetClientForProvider(t *testing.T) {
 			providerCatalogID: "UNSUPPORTED",
 			apiKey:            "test-key",
 			expectError:       true,
-			errorMsg:          "unsupported provider catalog ID 'UNSUPPORTED'. Supported catalog IDs: OAC, OAR, ORC, MSC, ANC, GMC",
+			errorMsg:          "unsupported provider catalog ID 'UNSUPPORTED'. Supported catalog IDs: OAC, OAR, ANC, GMC",
 		},
 	}
 
@@ -115,8 +103,7 @@ func TestClientFactoryService_GetClientForProvider(t *testing.T) {
 				assert.NotNil(t, client)
 				// Note: client.GetProviderName() returns the underlying provider name, not catalog ID
 				expectedProviderName := map[string]string{
-					"OAC": "openai", "OAR": "openai", "ORC": "openrouter",
-					"MSC": "moonshot", "ANC": "anthropic", "GMC": "gemini",
+					"OAC": "openai", "OAR": "openai", "ANC": "anthropic", "GMC": "gemini",
 				}[tt.providerCatalogID]
 				assert.Equal(t, expectedProviderName, client.GetProviderName())
 			}
@@ -268,7 +255,7 @@ func TestClientFactoryService_ErrorMessages(t *testing.T) {
 			name:              "unsupported provider catalog ID",
 			providerCatalogID: "INVALID",
 			apiKey:            "test-key",
-			expected:          "unsupported provider catalog ID 'INVALID'. Supported catalog IDs: OAC, OAR, ORC, MSC, ANC, GMC",
+			expected:          "unsupported provider catalog ID 'INVALID'. Supported catalog IDs: OAC, OAR, ANC, GMC",
 		},
 	}
 

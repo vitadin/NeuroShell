@@ -24,7 +24,7 @@ Create a new command `\llm-api-show` that uses an enhanced Configuration Service
 ```
 
 **Options:**
-- `provider`: Filter by provider (`openai`, `anthropic`, `openrouter`, `moonshot`, `all`) - default: `all`
+- `provider`: Filter by provider (`openai`, `anthropic`, `gemini`, `all`) - default: `all`
 
 **Note**: Removed `format` option per requirements
 
@@ -45,7 +45,7 @@ type APIKeySource struct {
 // (c) Local .env file (./.env)
 
 func (cs *ConfigurationService) GetAllAPIKeys() ([]APIKeySource, error) {
-    providers := []string{"openai", "anthropic", "openrouter", "moonshot"}
+    providers := []string{"openai", "anthropic", "gemini"}
     var keys []APIKeySource
     
     // Scan OS environment
@@ -82,7 +82,7 @@ os.MY_OPENAI_WORK_KEY = "sk-def..."     # From OS env MY_OPENAI_WORK_KEY
 ```
 #active_openai_key = "os.A_OPENAI_KEY"      # Points to which source variable
 #active_anthropic_key = "local.ANTHROPIC_KEY" 
-#active_moonshot_key = "config.MOONSHOT_API_KEY"
+#active_gemini_key = "config.GEMINI_API_KEY"
 ```
 
 **User Access Pattern**:

@@ -172,7 +172,7 @@ func TestProviderCatalogCommand_validateArguments(t *testing.T) {
 	cmd := &CatalogCommand{}
 
 	t.Run("valid providers", func(t *testing.T) {
-		validProviders := []string{"all", "openai", "anthropic", "openrouter", "moonshot", "gemini"}
+		validProviders := []string{"all", "openai", "anthropic", "gemini"}
 		for _, provider := range validProviders {
 			err := cmd.validateArguments(provider, "name")
 			assert.NoError(t, err, "Provider %s should be valid", provider)
@@ -220,10 +220,10 @@ func TestProviderCatalogCommand_filterProvidersBySearch(t *testing.T) {
 			Description: "Anthropic Claude chat completions API",
 		},
 		{
-			ID:          "MSC",
-			Provider:    "moonshot",
-			DisplayName: "Moonshot Chat Completions",
-			Description: "Moonshot AI chat completions API",
+			ID:          "GMC",
+			Provider:    "gemini",
+			DisplayName: "Google Gemini Chat",
+			Description: "Google Gemini generative AI API",
 		},
 	}
 
@@ -279,7 +279,6 @@ func TestProviderCatalogCommand_sortProviders(t *testing.T) {
 
 	// Create test providers
 	providers := []neurotypes.ProviderCatalogEntry{
-		{ID: "MSC", Provider: "moonshot", DisplayName: "Moonshot Chat Completions"},
 		{ID: "OAC", Provider: "openai", DisplayName: "OpenAI Chat Completions"},
 		{ID: "ANC", Provider: "anthropic", DisplayName: "Anthropic Claude Chat"},
 	}
@@ -292,8 +291,7 @@ func TestProviderCatalogCommand_sortProviders(t *testing.T) {
 
 		// Should be sorted alphabetically by display name
 		assert.Equal(t, "Anthropic Claude Chat", testProviders[0].DisplayName)
-		assert.Equal(t, "Moonshot Chat Completions", testProviders[1].DisplayName)
-		assert.Equal(t, "OpenAI Chat Completions", testProviders[2].DisplayName)
+		assert.Equal(t, "OpenAI Chat Completions", testProviders[1].DisplayName)
 	})
 
 	t.Run("sort by provider", func(t *testing.T) {
@@ -303,10 +301,9 @@ func TestProviderCatalogCommand_sortProviders(t *testing.T) {
 		cmd.sortProviders(testProviders, "provider", "all")
 
 		// Should be sorted by provider then by name
-		// Anthropic providers first, then moonshot, then openai
+		// Anthropic providers first, then openai
 		assert.Contains(t, testProviders[0].Provider, "anthropic")
-		assert.Contains(t, testProviders[1].Provider, "moonshot")
-		assert.Contains(t, testProviders[2].Provider, "openai")
+		assert.Contains(t, testProviders[1].Provider, "openai")
 	})
 }
 

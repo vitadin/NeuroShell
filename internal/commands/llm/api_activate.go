@@ -65,10 +65,6 @@ func (c *APIActivateCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Activate an Anthropic key from config .env file",
 			},
 			{
-				Command:     "\\llm-api-activate[provider=moonshot, key=local.MOONSHOT_KEY]",
-				Description: "Activate a Moonshot key from local .env file",
-			},
-			{
 				Command:     "\\llm-api-activate[provider=gemini, key=os.GOOGLE_API_KEY]",
 				Description: "Activate a Gemini key from OS environment variables",
 			},

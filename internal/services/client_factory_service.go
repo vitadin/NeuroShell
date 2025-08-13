@@ -69,16 +69,12 @@ func (f *ClientFactoryService) GetClientForProvider(providerCatalogID, apiKey st
 		client = NewOpenAIClient(apiKey)
 	case "OAR": // OpenAI Reasoning/Responses
 		client = NewOpenAIReasoningClient(apiKey)
-	case "ORC": // OpenRouter Chat
-		client = f.createOpenAICompatibleClient(apiKey, "openrouter", "https://openrouter.ai/api/v1")
-	case "MSC": // Moonshot Chat
-		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
 	case "ANC": // Anthropic Chat
 		client = NewAnthropicClient(apiKey)
 	case "GMC": // Gemini Chat
 		client = NewGeminiClient(apiKey)
 	default:
-		return nil, fmt.Errorf("unsupported provider catalog ID '%s'. Supported catalog IDs: OAC, OAR, ORC, MSC, ANC, GMC", providerCatalogID)
+		return nil, fmt.Errorf("unsupported provider catalog ID '%s'. Supported catalog IDs: OAC, OAR, ANC, GMC", providerCatalogID)
 	}
 
 	// Store client in context cache
@@ -137,16 +133,12 @@ func (f *ClientFactoryService) GetClientWithID(providerCatalogID, apiKey string)
 		client = NewOpenAIClient(apiKey)
 	case "OAR": // OpenAI Reasoning/Responses
 		client = NewOpenAIReasoningClient(apiKey)
-	case "ORC": // OpenRouter Chat
-		client = f.createOpenAICompatibleClient(apiKey, "openrouter", "https://openrouter.ai/api/v1")
-	case "MSC": // Moonshot Chat
-		client = f.createOpenAICompatibleClient(apiKey, "moonshot", "https://api.moonshot.ai/v1")
 	case "ANC": // Anthropic Chat
 		client = NewAnthropicClient(apiKey)
 	case "GMC": // Gemini Chat
 		client = NewGeminiClient(apiKey)
 	default:
-		return nil, "", fmt.Errorf("unsupported provider catalog ID '%s'. Supported catalog IDs: OAC, OAR, ORC, MSC, ANC, GMC", providerCatalogID)
+		return nil, "", fmt.Errorf("unsupported provider catalog ID '%s'. Supported catalog IDs: OAC, OAR, ANC, GMC", providerCatalogID)
 	}
 
 	// Store client in context cache
@@ -228,27 +220,4 @@ func (f *ClientFactoryService) ClearCache() {
 	ctx := neuroshellcontext.GetGlobalContext()
 	ctx.ClearLLMClients()
 	logger.Debug("Client cache cleared")
-}
-
-// createOpenAICompatibleClient creates a new OpenAI-compatible client with the specified provider name and base URL.
-func (f *ClientFactoryService) createOpenAICompatibleClient(apiKey, providerName, baseURL string) neurotypes.LLMClient {
-	// Build headers map with provider-specific defaults
-	headers := make(map[string]string)
-
-	// Set default headers for OpenRouter
-	if providerName == "openrouter" {
-		headers["HTTP-Referer"] = "https://github.com/vitadin/NeuroShell"
-		headers["X-Title"] = "NeuroShell"
-	}
-
-	// Create client configuration
-	config := OpenAICompatibleConfig{
-		ProviderName: providerName,
-		APIKey:       apiKey,
-		BaseURL:      baseURL,
-		Headers:      headers,
-	}
-
-	logger.Debug("Creating OpenAI-compatible client", "provider", providerName, "baseURL", baseURL, "headerCount", len(headers))
-	return NewOpenAICompatibleClient(config)
 }

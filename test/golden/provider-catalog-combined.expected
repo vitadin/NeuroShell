@@ -8,7 +8,7 @@ Provider Catalog (Openai) (1 providers):
     Description: OpenAI's chat completion API for GPT models
     Implementation: Natively supported by NeuroShell
 %%> "\\provider-catalog[search=chat,sort=name]"
-Provider Catalog - Search: 'chat' (5 providers):
+Provider Catalog - Search: 'chat' (3 providers):
   [ANC] Anthropic Claude Chat (openai-compatible)
     Provider: anthropic
     Base URL: https://api.anthropic.com/v1
@@ -25,13 +25,6 @@ Provider Catalog - Search: 'chat' (5 providers):
     Headers: Content-Type: application/json, x-goog-api-key: {API_KEY}
     Description: Google Gemini generative AI chat completions API
     Implementation: Natively supported by NeuroShell
-  [MSC] Moonshot Chat Completions (openai-compatible)
-    Provider: moonshot
-    Base URL: https://api.moonshot.ai/v1
-    Endpoint: /chat/completions
-    Client Type: openai-compatible
-    Description: Moonshot AI chat completions API
-    Implementation: Uses OpenAI-compatible API
   [OAC] OpenAI Chat Completions (openai)
     Provider: openai
     Base URL: https://api.openai.com/v1
@@ -39,14 +32,6 @@ Provider Catalog - Search: 'chat' (5 providers):
     Client Type: openai
     Description: OpenAI's chat completion API for GPT models
     Implementation: Natively supported by NeuroShell
-  [ORC] OpenRouter Chat Completions (openai-compatible)
-    Provider: openrouter
-    Base URL: https://openrouter.ai/api/v1
-    Endpoint: /chat/completions
-    Client Type: openai-compatible
-    Headers: HTTP-Referer: https://github.com/vitadin/NeuroShell, X-Title: NeuroShell
-    Description: OpenRouter unified API access to multiple LLM providers
-    Implementation: Uses OpenAI-compatible API
 %%> "\\provider-catalog[provider=anthropic,search=claude]"
 Provider Catalog (Anthropic) - Search: 'claude' (1 providers):
   [ANC] Anthropic Claude Chat (openai-compatible)
@@ -57,11 +42,4 @@ Provider Catalog (Anthropic) - Search: 'claude' (1 providers):
     Description: Anthropic Claude chat completions API
     Implementation: Natively supported by NeuroShell
 %%> "\\provider-catalog[provider=openrouter,sort=name,search=unified]"
-Provider Catalog (Openrouter) - Search: 'unified' (1 providers):
-  [ORC] OpenRouter Chat Completions (openai-compatible)
-    Base URL: https://openrouter.ai/api/v1
-    Endpoint: /chat/completions
-    Client Type: openai-compatible
-    Headers: HTTP-Referer: https://github.com/vitadin/NeuroShell, X-Title: NeuroShell
-    Description: OpenRouter unified API access to multiple LLM providers
-    Implementation: Uses OpenAI-compatible API
+FATA Script execution failed error="command execution failed: invalid provider option 'openrouter'. Valid options: all, openai, anthropic, gemini"

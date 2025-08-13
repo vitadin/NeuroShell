@@ -33,7 +33,7 @@ func (c *APILoadCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the llm-api-load command.
 func (c *APILoadCommand) Usage() string {
-	return "\\llm-api-load[provider=openai|anthropic|openrouter|moonshot|gemini|all]"
+	return "\\llm-api-load[provider=openai|anthropic|gemini|all]"
 }
 
 // HelpInfo returns structured help information for the llm-api-load command.
@@ -46,7 +46,7 @@ func (c *APILoadCommand) HelpInfo() neurotypes.HelpInfo {
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "provider",
-				Description: "Filter by provider (openai, anthropic, openrouter, moonshot, gemini, all)",
+				Description: "Filter by provider (openai, anthropic, gemini, all)",
 				Required:    false,
 				Type:        "string",
 				Default:     "all",
@@ -73,7 +73,7 @@ func (c *APILoadCommand) HelpInfo() neurotypes.HelpInfo {
 		Notes: []string{
 			"Variables are collected from OS environment variables, config .env, and local .env files",
 			"Only API-related variables are shown based on intelligent filtering:",
-			"  • Variables containing provider names: openai, anthropic, openrouter, moonshot, gemini, google",
+			"  • Variables containing provider names: openai, anthropic, gemini, google",
 			"  • Variables containing API keywords: api, key, secret (case-insensitive)",
 			"Keys are stored as source-prefixed variables (e.g., os.OPENAI_API_KEY)",
 			"Active keys are marked with ACTIVE status when set via \\llm-api-activate",
