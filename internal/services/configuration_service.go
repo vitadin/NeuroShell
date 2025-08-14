@@ -17,6 +17,17 @@ type APIKeySource struct {
 	Provider     string // "openai" (detected)
 }
 
+// ConfigPaths represents configuration file paths and their loading status
+type ConfigPaths struct {
+	ConfigDir       string // Configuration directory path
+	ConfigEnvPath   string // Config .env file path (if exists)
+	ConfigEnvLoaded bool   // Whether config .env was loaded
+	LocalEnvPath    string // Local .env file path (if exists)
+	LocalEnvLoaded  bool   // Whether local .env was loaded
+	NeuroRCPath     string // Executed .neurorc file path
+	NeuroRCExecuted bool   // Whether .neurorc was executed
+}
+
 // ConfigurationService provides configuration management for NeuroShell.
 // It follows the three-layer architecture by being stateless and interacting only with Context.
 // All configuration values are loaded and stored in the context's configuration map.
@@ -278,4 +289,47 @@ func (c *ConfigurationService) GetSupportedProviders() []string {
 
 	ctx := neuroshellcontext.GetGlobalContext()
 	return ctx.GetSupportedProviders()
+}
+
+// GetConfigurationPaths returns configuration file paths and their loading status.
+// This information is determined by checking paths and file existence directly via context.
+func (c *ConfigurationService) GetConfigurationPaths() (*ConfigPaths, error) {
+	if !c.initialized {
+		return nil, fmt.Errorf("configuration service not initialized")
+	}
+
+	ctx := neuroshellcontext.GetGlobalContext()
+
+	// Get configuration directory
+	configDir, err := ctx.GetUserConfigDir()
+	if err != nil {
+		configDir = "" // Default to empty if cannot get
+	}
+
+	// Check config .env file
+	configEnvPath := ""
+	configEnvLoaded := false
+	if configDir != "" {
+		configEnvPath = configDir + "/.env"
+		configEnvLoaded = ctx.FileExists(configEnvPath)
+	}
+
+	// Check local .env file
+	localEnvPath := ""
+	localEnvLoaded := false
+	workDir, err := ctx.GetWorkingDir()
+	if err == nil {
+		localEnvPath = workDir + "/.env"
+		localEnvLoaded = ctx.FileExists(localEnvPath)
+	}
+
+	return &ConfigPaths{
+		ConfigDir:       configDir,
+		ConfigEnvPath:   configEnvPath,
+		ConfigEnvLoaded: configEnvLoaded,
+		LocalEnvPath:    localEnvPath,
+		LocalEnvLoaded:  localEnvLoaded,
+		NeuroRCPath:     "",    // Will be set by command from system variables
+		NeuroRCExecuted: false, // Will be set by command from system variables
+	}, nil
 }

@@ -441,6 +441,14 @@ func executeNeuroRCFile(rcPath string) error {
 	// Set global context for services to use
 	context.SetGlobalContext(ctx)
 
+	// Store .neurorc execution information in system variables
+	if err := ctx.SetSystemVariable("#neurorc_path", rcPath); err != nil {
+		logger.Error("Failed to set #neurorc_path system variable", "error", err)
+	}
+	if err := ctx.SetSystemVariable("#neurorc_executed", "true"); err != nil {
+		logger.Error("Failed to set #neurorc_executed system variable", "error", err)
+	}
+
 	// Execute the .neurorc script using state machine
 	logger.Debug("Executing .neurorc via state machine", "script", rcPath)
 	sm := statemachine.NewStateMachineWithDefaults(ctx)
