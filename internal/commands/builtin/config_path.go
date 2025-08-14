@@ -45,10 +45,6 @@ func (c *ConfigPathCommand) HelpInfo() neurotypes.HelpInfo {
 				Command:     "\\config-path",
 				Description: "Show configuration directory and loaded file paths",
 			},
-			{
-				Command:     "\\config-path\\n\\echo Config dir: ${#config_dir}",
-				Description: "Show config paths and then display the stored config directory",
-			},
 		},
 		StoredVariables: []neurotypes.HelpStoredVariable{
 			{
@@ -56,6 +52,12 @@ func (c *ConfigPathCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Configuration directory path",
 				Type:        "path_info",
 				Example:     "#config_dir = \"/home/user/.config/neuroshell\"",
+			},
+			{
+				Name:        "#config_dir_exists",
+				Description: "Whether configuration directory exists",
+				Type:        "path_info",
+				Example:     "#config_dir_exists = \"true\"",
 			},
 			{
 				Name:        "#config_env_path",
@@ -139,6 +141,9 @@ func (c *ConfigPathCommand) Execute(_ map[string]string, _ string) error {
 			fmt.Printf("Warning: failed to set #config_dir: %v\n", err)
 		}
 	}
+	if err := variableService.SetSystemVariable("#config_dir_exists", fmt.Sprintf("%v", paths.ConfigDirExists)); err != nil {
+		fmt.Printf("Warning: failed to set #config_dir_exists: %v\n", err)
+	}
 
 	if paths.ConfigEnvPath != "" {
 		if err := variableService.SetSystemVariable("#config_env_path", paths.ConfigEnvPath); err != nil {
@@ -160,7 +165,11 @@ func (c *ConfigPathCommand) Execute(_ map[string]string, _ string) error {
 
 	// Display configuration directory
 	if paths.ConfigDir != "" {
-		fmt.Printf("Config Directory: %s\n", paths.ConfigDir)
+		status := "not found"
+		if paths.ConfigDirExists {
+			status = "exists"
+		}
+		fmt.Printf("Config Directory: %s (%s)\n", paths.ConfigDir, status)
 	}
 
 	// Display config .env status
