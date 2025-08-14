@@ -45,6 +45,11 @@ func (a *AutoCompleteService) Do(line []rune, pos int) (newLine [][]rune, offset
 	wordStart := a.findWordStart(lineStr, pos)
 	wordEnd := pos
 
+	// Ensure wordEnd doesn't exceed string length
+	if wordEnd > len(lineStr) {
+		wordEnd = len(lineStr)
+	}
+
 	// Extract the word being completed
 	currentWord := ""
 	if wordStart < wordEnd {
@@ -83,6 +88,10 @@ func (a *AutoCompleteService) findWordStart(line string, pos int) int {
 	// Standard word boundary detection
 	// Start from cursor position and work backwards
 	for i := pos - 1; i >= 0; i-- {
+		// Safety check to prevent index out of bounds
+		if i >= len(line) {
+			continue
+		}
 		char := line[i]
 		// Stop at spaces, brackets, or special characters that typically separate words
 		if char == ' ' || char == '[' || char == ']' || char == ',' || char == '=' {
@@ -119,17 +128,22 @@ func (a *AutoCompleteService) getCompletions(line string, pos int, currentWord s
 		return a.getVariableCompletions(currentWord)
 	}
 
-	// Priority 2: Check if we're completing a command name (starts with \)
+	// Priority 2: Check if we're after \help command for command name completion
+	if a.isAfterHelpCommand(line, pos) {
+		return a.getHelpCommandCompletions(currentWord)
+	}
+
+	// Priority 3: Check if we're completing a command name (starts with \)
 	if strings.HasPrefix(currentWord, "\\") {
 		return a.getCommandCompletions(currentWord)
 	}
 
-	// Priority 3: Check if we're inside brackets for option completion
+	// Priority 4: Check if we're inside brackets for option completion
 	if a.isInsideBrackets(line, pos) {
 		return a.getOptionCompletions(line, pos, currentWord)
 	}
 
-	// Priority 4: Check if we're at the beginning of input (no \ prefix)
+	// Priority 5: Check if we're at the beginning of input (no \ prefix)
 	if pos == 0 || (pos > 0 && line[0] != '\\') {
 		// Complete with common commands
 		return a.getCommandCompletions("\\" + currentWord)
@@ -160,6 +174,39 @@ func (a *AutoCompleteService) getCommandCompletions(prefix string) []string {
 	for _, cmdName := range commandList {
 		if strings.HasPrefix(cmdName, commandPrefix) {
 			completions = append(completions, "\\"+cmdName)
+		}
+	}
+
+	// Sort completions alphabetically
+	sort.Strings(completions)
+
+	// Ensure we return an empty slice instead of nil
+	if completions == nil {
+		return make([]string, 0)
+	}
+	return completions
+}
+
+// getHelpCommandCompletions returns command name completions for use after \help.
+// Unlike getCommandCompletions, this returns command names without the backslash prefix.
+func (a *AutoCompleteService) getHelpCommandCompletions(prefix string) []string {
+	// Get all registered commands from global context
+	globalCtx := context.GetGlobalContext()
+	if globalCtx == nil {
+		return []string{}
+	}
+
+	neuroCtx, ok := globalCtx.(*context.NeuroContext)
+	if !ok {
+		return []string{}
+	}
+
+	commandList := neuroCtx.GetRegisteredCommands()
+
+	var completions []string
+	for _, cmdName := range commandList {
+		if strings.HasPrefix(cmdName, prefix) {
+			completions = append(completions, cmdName) // No backslash prefix for help context
 		}
 	}
 
@@ -305,6 +352,28 @@ func (a *AutoCompleteService) isInsideBrackets(line string, pos int) bool {
 
 	// We're inside brackets if the last [ is after the last ]
 	return lastBracketOpen > lastBracketClose
+}
+
+// isAfterHelpCommand checks if the cursor is positioned after \help for command name completion.
+// This handles both space syntax (\help command) and bracket syntax (\help[command]).
+func (a *AutoCompleteService) isAfterHelpCommand(line string, pos int) bool {
+	// Check for space syntax: \help followed by space(s)
+	if strings.HasPrefix(line, "\\help ") {
+		// Make sure cursor is after the space(s)
+		spaceEnd := 6 // length of "\help "
+		for spaceEnd < len(line) && line[spaceEnd] == ' ' {
+			spaceEnd++
+		}
+		return pos >= spaceEnd
+	}
+
+	// Check for bracket syntax: \help[
+	if strings.HasPrefix(line, "\\help[") && pos >= 6 {
+		// Make sure we're inside the brackets or right after the opening bracket
+		return a.isInsideBrackets(line, pos) || pos == 6
+	}
+
+	return false
 }
 
 func init() {

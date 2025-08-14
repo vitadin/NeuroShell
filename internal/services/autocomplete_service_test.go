@@ -239,6 +239,79 @@ func TestAutoCompleteService_IsInsideBrackets(t *testing.T) {
 	}
 }
 
+func TestAutoCompleteService_IsAfterHelpCommand(t *testing.T) {
+	service := NewAutoCompleteService()
+
+	tests := []struct {
+		name     string
+		line     string
+		pos      int
+		expected bool
+	}{
+		{
+			name:     "after help with space - cursor after space",
+			line:     "\\help ",
+			pos:      6,
+			expected: true,
+		},
+		{
+			name:     "after help with space - cursor in middle of command",
+			line:     "\\help send",
+			pos:      8,
+			expected: true,
+		},
+		{
+			name:     "after help with space - cursor before space",
+			line:     "\\help ",
+			pos:      5,
+			expected: false,
+		},
+		{
+			name:     "after help with multiple spaces",
+			line:     "\\help  ",
+			pos:      7,
+			expected: true,
+		},
+		{
+			name:     "help with bracket syntax - inside brackets",
+			line:     "\\help[se",
+			pos:      8,
+			expected: true,
+		},
+		{
+			name:     "help with bracket syntax - at opening bracket",
+			line:     "\\help[",
+			pos:      6,
+			expected: true, // Should be true since user is right after the bracket and ready to complete command names
+		},
+		{
+			name:     "help with bracket syntax - before opening bracket",
+			line:     "\\help[",
+			pos:      5,
+			expected: false,
+		},
+		{
+			name:     "not help command",
+			line:     "\\send hello",
+			pos:      8,
+			expected: false,
+		},
+		{
+			name:     "partial help command",
+			line:     "\\hel send",
+			pos:      7,
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := service.isAfterHelpCommand(tt.line, tt.pos)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
 func TestAutoCompleteService_GetCommandCompletions(t *testing.T) {
 	// Set up test environment
 	setupAutoCompleteTestRegistry(t)
@@ -290,6 +363,68 @@ func TestAutoCompleteService_GetCommandCompletions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := service.getCommandCompletions(tt.prefix)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestAutoCompleteService_GetHelpCommandCompletions(t *testing.T) {
+	// Set up test environment
+	setupAutoCompleteTestRegistry(t)
+
+	service := NewAutoCompleteService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Register test commands via context
+	ctx := context.GetGlobalContext()
+	require.NotNil(t, ctx)
+
+	// Cast to concrete type to access RegisterCommandWithInfo
+	neuroCtx, ok := ctx.(*context.NeuroContext)
+	require.True(t, ok)
+
+	// Register test commands with context
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "send", description: "Send message"})
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "set", description: "Set variable"})
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "session", description: "Session management"})
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "help", description: "Show help"})
+
+	tests := []struct {
+		name     string
+		prefix   string
+		expected []string
+	}{
+		{
+			name:     "complete all commands",
+			prefix:   "",
+			expected: []string{"help", "send", "session", "set"},
+		},
+		{
+			name:     "complete se commands",
+			prefix:   "se",
+			expected: []string{"send", "session", "set"},
+		},
+		{
+			name:     "complete exact match",
+			prefix:   "send",
+			expected: []string{"send"},
+		},
+		{
+			name:     "complete help command",
+			prefix:   "h",
+			expected: []string{"help"},
+		},
+		{
+			name:     "no matches",
+			prefix:   "xyz",
+			expected: []string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := service.getHelpCommandCompletions(tt.prefix)
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -714,6 +849,134 @@ func TestAutoCompleteService_Integration_VariableCompletion(t *testing.T) {
 		expectedCompletion := "ser}"
 		assert.Equal(t, expectedCompletion, suggestion, "Expected completion to be 'ser}' to complete '${user}'")
 	})
+}
+
+// TestAutoCompleteService_HelpCommandCompletion_Integration tests the full end-to-end functionality
+// for command completion after \help.
+func TestAutoCompleteService_HelpCommandCompletion_Integration(t *testing.T) {
+	// Set up test environment
+	setupAutoCompleteTestRegistry(t)
+
+	service := NewAutoCompleteService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Register test commands via context
+	ctx := context.GetGlobalContext()
+	require.NotNil(t, ctx)
+
+	// Cast to concrete type to access RegisterCommandWithInfo
+	neuroCtx, ok := ctx.(*context.NeuroContext)
+	require.True(t, ok)
+
+	// Register test commands with context
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "send", description: "Send message"})
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "set", description: "Set variable"})
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "session", description: "Session management"})
+	neuroCtx.RegisterCommandWithInfo(&MockCommand{name: "help", description: "Show help"})
+
+	tests := []struct {
+		name                string
+		line                string
+		pos                 int
+		expectedCount       int
+		expectedContains    []string
+		expectedNotContains []string
+	}{
+		{
+			name:             "help space syntax - complete all commands",
+			line:             "\\help ",
+			pos:              6,
+			expectedCount:    4,
+			expectedContains: []string{"help", "send", "session", "set"}, // When there's no prefix, we should get full command names
+		},
+		{
+			name:             "help space syntax - complete 'se' commands",
+			line:             "\\help se",
+			pos:              8,
+			expectedCount:    3,
+			expectedContains: []string{"nd", "ssion", "t"}, // These are the suffixes to complete "se" -> "send", "session", "set"
+		},
+		{
+			name:                "help space syntax - complete 'send' exact",
+			line:                "\\help send",
+			pos:                 10,
+			expectedCount:       1,
+			expectedContains:    []string{""}, // Empty string suffix means complete match
+			expectedNotContains: []string{"nd", "ssion", "t"},
+		},
+		{
+			name:             "help bracket syntax - complete all commands",
+			line:             "\\help[",
+			pos:              6,
+			expectedCount:    4,
+			expectedContains: []string{"help", "send", "session", "set"}, // When there's no prefix, we should get full command names
+		},
+		{
+			name:             "help bracket syntax - complete 'h' commands",
+			line:             "\\help[h",
+			pos:              8,
+			expectedCount:    1,
+			expectedContains: []string{"elp"}, // Suffix to complete "h" -> "help"
+		},
+		{
+			name:          "help space syntax - no matches",
+			line:          "\\help xyz",
+			pos:           9,
+			expectedCount: 0,
+		},
+		{
+			name:          "not help command - should not trigger help completions",
+			line:          "\\send help",
+			pos:           10,
+			expectedCount: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			suggestions, offset := service.Do([]rune(tt.line), tt.pos)
+
+			assert.Equal(t, tt.expectedCount, len(suggestions), "Unexpected number of suggestions for line '%s' at pos %d: %v", tt.line, tt.pos, suggestions)
+
+			if tt.expectedCount > 0 {
+				// Only expect positive offset when there's a currentWord being completed
+				if !strings.HasSuffix(tt.line, " ") && !strings.HasSuffix(tt.line, "[") {
+					assert.Greater(t, offset, 0, "Expected positive offset for line '%s'", tt.line)
+				}
+
+				// Convert suggestions to strings for easier checking
+				suggestionStrings := make([]string, len(suggestions))
+				for i, s := range suggestions {
+					suggestionStrings[i] = string(s)
+				}
+
+				// Check expected contains
+				for _, expected := range tt.expectedContains {
+					found := false
+					for _, actual := range suggestionStrings {
+						if strings.Contains(actual, expected) {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found, "Expected suggestion containing '%s' not found in suggestions: %v", expected, suggestionStrings)
+				}
+
+				// Check expected not contains
+				for _, notExpected := range tt.expectedNotContains {
+					found := false
+					for _, actual := range suggestionStrings {
+						if strings.Contains(actual, notExpected) {
+							found = true
+							break
+						}
+					}
+					assert.False(t, found, "Unexpected suggestion containing '%s' found in suggestions: %v", notExpected, suggestionStrings)
+				}
+			}
+		})
+	}
 }
 
 // setupAutoCompleteTestRegistry creates a clean test environment
