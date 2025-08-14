@@ -20,6 +20,7 @@ type APIKeySource struct {
 // ConfigPaths represents configuration file paths and their loading status
 type ConfigPaths struct {
 	ConfigDir       string // Configuration directory path
+	ConfigDirExists bool   // Whether configuration directory exists
 	ConfigEnvPath   string // Config .env file path (if exists)
 	ConfigEnvLoaded bool   // Whether config .env was loaded
 	LocalEnvPath    string // Local .env file path (if exists)
@@ -306,6 +307,12 @@ func (c *ConfigurationService) GetConfigurationPaths() (*ConfigPaths, error) {
 		configDir = "" // Default to empty if cannot get
 	}
 
+	// Check if config directory exists
+	configDirExists := false
+	if configDir != "" {
+		configDirExists = ctx.FileExists(configDir)
+	}
+
 	// Check config .env file
 	configEnvPath := ""
 	configEnvLoaded := false
@@ -325,6 +332,7 @@ func (c *ConfigurationService) GetConfigurationPaths() (*ConfigPaths, error) {
 
 	return &ConfigPaths{
 		ConfigDir:       configDir,
+		ConfigDirExists: configDirExists,
 		ConfigEnvPath:   configEnvPath,
 		ConfigEnvLoaded: configEnvLoaded,
 		LocalEnvPath:    localEnvPath,

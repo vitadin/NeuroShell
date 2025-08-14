@@ -35,11 +35,11 @@ func TestConfigPathCommand_HelpInfo(t *testing.T) {
 	assert.Equal(t, "config-path", helpInfo.Command)
 	assert.Contains(t, helpInfo.Description, "configuration file paths")
 	assert.Equal(t, "\\config-path", helpInfo.Usage)
-	assert.Len(t, helpInfo.Examples, 2)
-	assert.Len(t, helpInfo.StoredVariables, 7) // 7 system variables
+	assert.Len(t, helpInfo.Examples, 1)
+	assert.Len(t, helpInfo.StoredVariables, 8) // 8 system variables
 
 	// Verify all expected system variables are documented
-	expectedVars := []string{"#config_dir", "#config_env_path", "#config_env_loaded", "#local_env_path", "#local_env_loaded", "#neurorc_path", "#neurorc_executed"}
+	expectedVars := []string{"#config_dir", "#config_dir_exists", "#config_env_path", "#config_env_loaded", "#local_env_path", "#local_env_loaded", "#neurorc_path", "#neurorc_executed"}
 	for _, expectedVar := range expectedVars {
 		found := false
 		for _, storedVar := range helpInfo.StoredVariables {
@@ -116,7 +116,7 @@ func TestConfigPathCommand_Execute_Success(t *testing.T) {
 	})
 
 	// Verify output contains expected paths
-	assert.Contains(t, output, "Config Directory: /tmp/neuroshell-test-config")
+	assert.Contains(t, output, "Config Directory: /tmp/neuroshell-test-config (exists)")
 	assert.Contains(t, output, "Config .env: /tmp/neuroshell-test-config/.env (loaded)")
 	assert.Contains(t, output, "Local .env: /tmp/neuroshell-test-workdir/.env (loaded)")
 	assert.Contains(t, output, ".neurorc: /home/test/.neurorc (executed)")
@@ -125,6 +125,10 @@ func TestConfigPathCommand_Execute_Success(t *testing.T) {
 	configDir, err := variableService.Get("#config_dir")
 	require.NoError(t, err)
 	assert.Equal(t, "/tmp/neuroshell-test-config", configDir)
+
+	configDirExists, err := variableService.Get("#config_dir_exists")
+	require.NoError(t, err)
+	assert.Equal(t, "true", configDirExists)
 
 	configEnvPath, err := variableService.Get("#config_env_path")
 	require.NoError(t, err)
@@ -180,8 +184,8 @@ func TestConfigPathCommand_Execute_NoConfigFiles(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	// Should still show config directory
-	assert.Contains(t, output, "Config Directory: /tmp/neuroshell-test-config")
+	// Should still show config directory (not found since we didn't create it)
+	assert.Contains(t, output, "Config Directory: /tmp/neuroshell-test-config (not found)")
 	// Should show .env files as not found
 	assert.Contains(t, output, "Config .env: /tmp/neuroshell-test-config/.env (not found)")
 	assert.Contains(t, output, "Local .env: /tmp/neuroshell-test-workdir/.env (not found)")
@@ -240,7 +244,7 @@ func TestConfigPathCommand_Execute_PartialConfigFiles(t *testing.T) {
 	})
 
 	// Verify mixed status
-	assert.Contains(t, output, "Config Directory: /tmp/neuroshell-test-config")
+	assert.Contains(t, output, "Config Directory: /tmp/neuroshell-test-config (exists)")
 	assert.Contains(t, output, "Config .env: /tmp/neuroshell-test-config/.env (loaded)")
 	assert.Contains(t, output, "Local .env: /tmp/neuroshell-test-workdir/.env (not found)")
 	assert.Contains(t, output, ".neurorc: /home/test/.neurorc (not executed)")
