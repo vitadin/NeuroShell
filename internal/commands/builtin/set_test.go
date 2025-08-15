@@ -51,7 +51,7 @@ func TestSetCommand_Execute_BracketSyntax(t *testing.T) {
 			args:           map[string]string{"testvar": "testvalue"},
 			input:          "",
 			expectedVars:   map[string]string{"testvar": "testvalue"},
-			expectedOutput: "Setting testvar = testvalue\n",
+			expectedOutput: "ℹ Setting testvar = testvalue\n",
 		},
 		{
 			name: "set multiple variables",
@@ -71,21 +71,21 @@ func TestSetCommand_Execute_BracketSyntax(t *testing.T) {
 			args:           map[string]string{"emptyvar": ""},
 			input:          "",
 			expectedVars:   map[string]string{"emptyvar": ""},
-			expectedOutput: "Setting emptyvar = \n",
+			expectedOutput: "ℹ Setting emptyvar = \n",
 		},
 		{
 			name:           "set variable with special characters",
 			args:           map[string]string{"special": "value with spaces & symbols!"},
 			input:          "",
 			expectedVars:   map[string]string{"special": "value with spaces & symbols!"},
-			expectedOutput: "Setting special = value with spaces & symbols!\n",
+			expectedOutput: "ℹ Setting special = value with spaces & symbols!\n",
 		},
 		{
 			name:           "set variable with quotes",
 			args:           map[string]string{"quoted": "\"quoted value\""},
 			input:          "",
 			expectedVars:   map[string]string{"quoted": "\"quoted value\""},
-			expectedOutput: "Setting quoted = \"quoted value\"\n",
+			expectedOutput: "ℹ Setting quoted = \"quoted value\"\n",
 		},
 	}
 
@@ -122,7 +122,7 @@ func TestSetCommand_Execute_BracketSyntax(t *testing.T) {
 				} else if len(tt.args) > 1 {
 					// For multiple variables, just check that all variables are mentioned
 					for varName := range tt.args {
-						assert.Contains(t, outputStr, fmt.Sprintf("Setting %s =", varName))
+						assert.Contains(t, outputStr, fmt.Sprintf("ℹ Setting %s =", varName))
 					}
 				}
 			}
@@ -149,7 +149,7 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 			input:          "testvar testvalue",
 			expectedVar:    "testvar",
 			expectedValue:  "testvalue",
-			expectedOutput: "Setting testvar = testvalue\n",
+			expectedOutput: "ℹ Setting testvar = testvalue\n",
 		},
 		{
 			name:           "set variable with multiple words in value",
@@ -157,7 +157,7 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 			input:          "testvar this is a multi word value",
 			expectedVar:    "testvar",
 			expectedValue:  "this is a multi word value",
-			expectedOutput: "Setting testvar = this is a multi word value\n",
+			expectedOutput: "ℹ Setting testvar = this is a multi word value\n",
 		},
 		{
 			name:           "set variable with single word (no value)",
@@ -165,7 +165,7 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 			input:          "testvar",
 			expectedVar:    "testvar",
 			expectedValue:  "",
-			expectedOutput: "Setting testvar = \n",
+			expectedOutput: "ℹ Setting testvar = \n",
 		},
 		{
 			name:           "set variable with spaces around",
@@ -173,7 +173,7 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 			input:          "  testvar   testvalue  ",
 			expectedVar:    "testvar",
 			expectedValue:  "testvalue  ",
-			expectedOutput: "Setting testvar = testvalue  \n",
+			expectedOutput: "ℹ Setting testvar = testvalue  \n",
 		},
 		{
 			name:           "set variable with quoted value",
@@ -181,7 +181,7 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 			input:          "testvar \"quoted value\"",
 			expectedVar:    "testvar",
 			expectedValue:  "\"quoted value\"",
-			expectedOutput: "Setting testvar = \"quoted value\"\n",
+			expectedOutput: "ℹ Setting testvar = \"quoted value\"\n",
 		},
 		{
 			name:           "set variable with special characters",
@@ -189,7 +189,7 @@ func TestSetCommand_Execute_SpaceSyntax(t *testing.T) {
 			input:          "special_var value!@#$%^&*()",
 			expectedVar:    "special_var",
 			expectedValue:  "value!@#$%^&*()",
-			expectedOutput: "Setting special_var = value!@#$%^&*()\n",
+			expectedOutput: "ℹ Setting special_var = value!@#$%^&*()\n",
 		},
 	}
 
@@ -254,7 +254,7 @@ func TestSetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 	assert.Equal(t, "", spaceValue) // Should return empty string for non-existent variables
 
 	// Output should only mention bracket variable
-	assert.Contains(t, outputStr, "Setting bracketvar = bracketvalue")
+	assert.Contains(t, outputStr, "ℹ Setting bracketvar = bracketvalue")
 	assert.NotContains(t, outputStr, "spacevar")
 }
 
@@ -328,7 +328,7 @@ func TestSetCommand_Execute_VariableOverwrite(t *testing.T) {
 	assert.Equal(t, "newvalue", actualValue)
 
 	// Check output
-	expectedOutput := "Setting existing = newvalue\n"
+	expectedOutput := "ℹ Setting existing = newvalue\n"
 	assert.Equal(t, expectedOutput, outputStr)
 }
 
@@ -368,7 +368,7 @@ func TestSetCommand_Execute_SpecialVariableNames(t *testing.T) {
 			assert.Equal(t, test.value, actualValue)
 
 			// Check output
-			expectedOutput := fmt.Sprintf("Setting %s = %s\n", test.name, test.value)
+			expectedOutput := fmt.Sprintf("ℹ Setting %s = %s\n", test.name, test.value)
 			assert.Equal(t, expectedOutput, outputStr)
 		})
 	}
@@ -568,21 +568,21 @@ func TestSetCommand_Execute_WhitelistedGlobalVariables(t *testing.T) {
 			args:           map[string]string{"_style": "dark"},
 			input:          "",
 			expectedVars:   map[string]string{"_style": "dark"},
-			expectedOutput: "Setting _style = dark\n",
+			expectedOutput: "ℹ Setting _style = dark\n",
 		},
 		{
 			name:           "set _style to empty string",
 			args:           map[string]string{"_style": ""},
 			input:          "",
 			expectedVars:   map[string]string{"_style": ""},
-			expectedOutput: "Setting _style = \n",
+			expectedOutput: "ℹ Setting _style = \n",
 		},
 		{
 			name:           "set _style with space syntax",
 			args:           map[string]string{},
 			input:          "_style light",
 			expectedVars:   map[string]string{"_style": "light"},
-			expectedOutput: "Setting _style = light\n",
+			expectedOutput: "ℹ Setting _style = light\n",
 		},
 		{
 			name:    "try to set non-whitelisted _secret variable",

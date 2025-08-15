@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -98,6 +99,13 @@ func (c *SetCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
+	// Create output printer with optional style injection
+	var styleProvider output.StyleProvider
+	if themeService, err := services.GetGlobalThemeService(); err == nil {
+		styleProvider = themeService
+	}
+	printer := output.NewPrinter(output.WithStyles(styleProvider))
+
 	// Handle bracket syntax: \set[var=value]
 	if len(args) > 0 {
 		// Sort keys to ensure deterministic output order
@@ -112,7 +120,7 @@ func (c *SetCommand) Execute(args map[string]string, input string) error {
 			if err := variableService.Set(key, value); err != nil {
 				return fmt.Errorf("failed to set variable %s: %w", key, err)
 			}
-			fmt.Printf("Setting %s = %s\n", key, value)
+			printer.Info(fmt.Sprintf("Setting %s = %s", key, value))
 		}
 		return nil
 	}
@@ -133,7 +141,7 @@ func (c *SetCommand) Execute(args map[string]string, input string) error {
 			if err := variableService.Set(key, value); err != nil {
 				return fmt.Errorf("failed to set variable %s: %w", key, err)
 			}
-			fmt.Printf("Setting %s = %s\n", key, value)
+			printer.Info(fmt.Sprintf("Setting %s = %s", key, value))
 		}
 	}
 
