@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -322,7 +323,8 @@ func (c *ActivateCommand) activateModel(model *neurotypes.ModelConfig, modelServ
 	}
 
 	// Print confirmation
-	fmt.Println(outputMsg)
+	printer := c.createPrinter()
+	printer.Success(outputMsg)
 
 	return nil
 }
@@ -373,7 +375,8 @@ func (c *ActivateCommand) handleNoParameters(modelService *services.ModelService
 			return fmt.Errorf("failed to store result: %w", err)
 		}
 
-		fmt.Println(outputMsg)
+		printer := c.createPrinter()
+		printer.Info(outputMsg)
 		return nil
 	}
 
@@ -391,7 +394,8 @@ func (c *ActivateCommand) handleNoParameters(modelService *services.ModelService
 			return fmt.Errorf("failed to store result: %w", err)
 		}
 
-		fmt.Println(outputMsg)
+		printer := c.createPrinter()
+		printer.Info(outputMsg)
 		return nil
 	}
 
@@ -499,6 +503,18 @@ func (c *ActivateCommand) generateClientNewCommand(catalogID string, model *neur
 		// This maintains backward compatibility while supporting the main providers
 		return ""
 	}
+}
+
+// createPrinter creates a printer with theme service as style provider
+func (c *ActivateCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
+	}
+
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {
