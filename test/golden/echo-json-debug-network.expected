@@ -42,9 +42,9 @@ Setting simple_debug = {"request": {"method": "GET"}
 === SIMPLE DEBUG DATA ===
 %%> "\\echo-json ${simple_debug}"
 Error: Invalid JSON - unexpected end of JSON input
-Original input: {"request": {"method": "GET"}
+Original input: {"request": {"method": "GET"}     
 %%> "\\echo === MALFORMED DEBUG DATA ==="
 === MALFORMED DEBUG DATA ===
 %%> "\\echo-json {\"request\": {\"method\": \"POST\", \"incomplete\": }"
 Error: Invalid JSON - invalid character '}' looking for beginning of value
-Original input: {"request": {"method": "POST", "incomplete": }
+Original input: {"request": {"method": "POST", "incomplete": }            

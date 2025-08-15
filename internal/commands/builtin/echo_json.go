@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -127,10 +128,17 @@ func (c *EchoJSONCommand) Execute(args map[string]string, input string) error {
 		// If parsing fails or negative, indent remains at default (2)
 	}
 
+	// Create output printer with optional style injection
+	var styleProvider output.StyleProvider
+	if themeService, err := services.GetGlobalThemeService(); err == nil {
+		styleProvider = themeService
+	}
+	printer := output.NewPrinter(output.WithStyles(styleProvider))
+
 	// Handle empty input
 	if strings.TrimSpace(input) == "" {
 		errorMsg := "Error: No JSON data provided"
-		fmt.Println(errorMsg)
+		printer.Error(errorMsg)
 		c.storeResult(targetVar, errorMsg)
 		return nil
 	}
@@ -140,13 +148,13 @@ func (c *EchoJSONCommand) Execute(args map[string]string, input string) error {
 	if err != nil {
 		// Handle invalid JSON gracefully
 		errorMsg := fmt.Sprintf("Error: Invalid JSON - %s\nOriginal input: %s", err.Error(), input)
-		fmt.Println(errorMsg)
+		printer.Error(errorMsg)
 		c.storeResult(targetVar, errorMsg)
 		return nil
 	}
 
 	// Display formatted JSON to console
-	fmt.Println(formattedJSON)
+	printer.Println(formattedJSON)
 
 	// Store formatted result in variable
 	c.storeResult(targetVar, formattedJSON)

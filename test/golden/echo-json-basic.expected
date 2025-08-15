@@ -49,6 +49,6 @@ _output = {
 }
 %%> "\\echo-json {invalid json}"
 Error: Invalid JSON - invalid character 'i' looking for beginning of object key string
-Original input: {invalid json}
+Original input: {invalid json}                                                        
 %%> "\\echo-json"
 Error: No JSON data provided
