@@ -5,24 +5,24 @@ Line 2: Second line with data
 Line 3: Third line for testing
 %%> "\\get[first_three]"
 first_three = Line 1: First line of content
-Line 2: Second line with data
-Line 3: Third line for testing
+Line 2: Second line with data              
+Line 3: Third line for testing             
 %%> "\\cat[path=test/fixtures/multiline.txt, start=4, lines=3, to=middle_three]"
 Line 4: Fourth line here
 Line 5: Fifth line content
 Line 6: Sixth line data
 %%> "\\get[middle_three]"
 middle_three = Line 4: Fourth line here
-Line 5: Fifth line content
-Line 6: Sixth line data
+Line 5: Fifth line content             
+Line 6: Sixth line data                
 %%> "\\cat[path=test/fixtures/multiline.txt, start=8, lines=3, to=last_three]"
 Line 8: Eighth line info
 Line 9: Ninth line content
 Line 10: Tenth and final line
 %%> "\\get[last_three]"
 last_three = Line 8: Eighth line info
-Line 9: Ninth line content
-Line 10: Tenth and final line
+Line 9: Ninth line content           
+Line 10: Tenth and final line        
 %%> "\\cat[path=test/fixtures/multiline.txt, start=5, lines=1, to=single_line]"
 Line 5: Fifth line content
 %%> "\\get[single_line]"
@@ -40,15 +40,15 @@ Line 9: Ninth line content
 Line 10: Tenth and final line
 %%> "\\get[exact_length]"
 exact_length = Line 1: First line of content
-Line 2: Second line with data
-Line 3: Third line for testing
-Line 4: Fourth line here
-Line 5: Fifth line content
-Line 6: Sixth line data
-Line 7: Seventh line text
-Line 8: Eighth line info
-Line 9: Ninth line content
-Line 10: Tenth and final line
+Line 2: Second line with data               
+Line 3: Third line for testing              
+Line 4: Fourth line here                    
+Line 5: Fifth line content                  
+Line 6: Sixth line data                     
+Line 7: Seventh line text                   
+Line 8: Eighth line info                    
+Line 9: Ninth line content                  
+Line 10: Tenth and final line               
 %%> "\\cat[path=test/fixtures/multiline.txt, start=1, lines=20, to=beyond_length]"
 Line 1: First line of content
 Line 2: Second line with data
@@ -62,15 +62,15 @@ Line 9: Ninth line content
 Line 10: Tenth and final line
 %%> "\\get[beyond_length]"
 beyond_length = Line 1: First line of content
-Line 2: Second line with data
-Line 3: Third line for testing
-Line 4: Fourth line here
-Line 5: Fifth line content
-Line 6: Sixth line data
-Line 7: Seventh line text
-Line 8: Eighth line info
-Line 9: Ninth line content
-Line 10: Tenth and final line
+Line 2: Second line with data                
+Line 3: Third line for testing               
+Line 4: Fourth line here                     
+Line 5: Fifth line content                   
+Line 6: Sixth line data                      
+Line 7: Seventh line text                    
+Line 8: Eighth line info                     
+Line 9: Ninth line content                   
+Line 10: Tenth and final line                
 %%> "\\cat[path=test/fixtures/multiline.txt, start=10, lines=5, to=from_last]"
 Line 10: Tenth and final line
 %%> "\\get[from_last]"
@@ -85,12 +85,12 @@ Line 3 contains some content.
 Final line of the file.
 %%> "\\get[zero_lines]"
 zero_lines = This is a simple text file.
-It has multiple lines for testing.
-Line 3 contains some content.
-Final line of the file.
+It has multiple lines for testing.      
+Line 3 contains some content.           
+Final line of the file.                 
 %%> "\\cat[path=test/fixtures/simple.txt, start=-1, lines=2, to=negative_start]"
 This is a simple text file.
 It has multiple lines for testing.
 %%> "\\get[negative_start]"
 negative_start = This is a simple text file.
-It has multiple lines for testing.
+It has multiple lines for testing.          

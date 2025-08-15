@@ -26,18 +26,18 @@ Messages: 0 total
 %%> "\\session-show nonexistent_session_name"
 %%> "\\get[_error]"
 _error = No sessions found matching name 'nonexistent_session_name'.
-
-Available sessions:
-  test_session_two (ID: 00000002)
-  another_session (ID: 00000003)
+                                                                    
+Available sessions:                                                 
+  test_session_two (ID: 00000002)                                   
+  another_session (ID: 00000003)                                    
 %%> "\\try \\session-show[id=true] xyz999999"
 %%> "\\session-show[id=true] xyz999999"
 %%> "\\get[_error]"
 _error = No sessions found matching ID prefix 'xyz999999'.
-
-Available sessions:
-  ID: 00000002 (name: test_session_two)
-  ID: 00000003 (name: another_session)
+                                                          
+Available sessions:                                       
+  ID: 00000002 (name: test_session_two)                   
+  ID: 00000003 (name: another_session)                    
 %%> "\\try \\session-show test_session"
 %%> "\\session-show test_session"
 Session: test_session_two (ID: 00000002)

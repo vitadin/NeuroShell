@@ -6,21 +6,21 @@ Line 3 contains some content.
 Final line of the file.
 %%> "\\get[custom_var]"
 custom_var = This is a simple text file.
-It has multiple lines for testing.
-Line 3 contains some content.
-Final line of the file.
+It has multiple lines for testing.      
+Line 3 contains some content.           
+Final line of the file.                 
 %%> "\\cat[path=test/fixtures/simple.txt, silent=true]"
 %%> "\\get[_output]"
 _output = This is a simple text file.
-It has multiple lines for testing.
-Line 3 contains some content.
-Final line of the file.
+It has multiple lines for testing.   
+Line 3 contains some content.        
+Final line of the file.              
 %%> "\\cat[path=test/fixtures/multiline.txt, lines=2]"
 Line 1: First line of content
 Line 2: Second line with data
 %%> "\\get[_output]"
 _output = Line 1: First line of content
-Line 2: Second line with data
+Line 2: Second line with data          
 %%> "\\cat[path=test/fixtures/multiline.txt, start=3]"
 Line 3: Third line for testing
 Line 4: Fourth line here
@@ -32,13 +32,13 @@ Line 9: Ninth line content
 Line 10: Tenth and final line
 %%> "\\get[_output]"
 _output = Line 3: Third line for testing
-Line 4: Fourth line here
-Line 5: Fifth line content
-Line 6: Sixth line data
-Line 7: Seventh line text
-Line 8: Eighth line info
-Line 9: Ninth line content
-Line 10: Tenth and final line
+Line 4: Fourth line here                
+Line 5: Fifth line content              
+Line 6: Sixth line data                 
+Line 7: Seventh line text               
+Line 8: Eighth line info                
+Line 9: Ninth line content              
+Line 10: Tenth and final line           
 %%> "\\cat[path=test/fixtures/simple.txt, lines=100]"
 This is a simple text file.
 It has multiple lines for testing.
@@ -46,9 +46,9 @@ Line 3 contains some content.
 Final line of the file.
 %%> "\\get[_output]"
 _output = This is a simple text file.
-It has multiple lines for testing.
-Line 3 contains some content.
-Final line of the file.
+It has multiple lines for testing.   
+Line 3 contains some content.        
+Final line of the file.              
 %%> "\\cat[path=test/fixtures/simple.txt, start=50]"
 %%> "\\get[_output]"
 _output = 
@@ -59,6 +59,6 @@ Line 3 contains some content.
 Final line of the file.
 %%> "\\get[_output]"
 _output = This is a simple text file.
-It has multiple lines for testing.
-Line 3 contains some content.
-Final line of the file.
+It has multiple lines for testing.   
+Line 3 contains some content.        
+Final line of the file.              

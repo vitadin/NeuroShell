@@ -50,7 +50,7 @@ Original input: {"model": "gpt-4"
 Stored API request:
 %%> "\\get[stored_request]"
 stored_request = Error: Invalid JSON - unexpected end of JSON input
-Original input: {"model": "gpt-4"
+Original input: {"model": "gpt-4"                                  
 %%> "\\set[with_undefined={\"defined\": \"${model_name}\", \"undefined\": \"${not_defined}\", \"empty\": \"\"}]"
 Setting "empty": ""} = 
 Setting "undefined": "" = 

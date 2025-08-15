@@ -140,7 +140,7 @@ func TestGetCommand_Execute_BracketSyntax(t *testing.T) {
 				}
 			} else {
 				assert.NoError(t, err)
-				expectedOutput := fmt.Sprintf("%s = %s\n", tt.expectedVar, tt.expectedValue)
+				expectedOutput := fmt.Sprintf("ℹ %s = %s\n", tt.expectedVar, tt.expectedValue)
 				assert.Equal(t, expectedOutput, outputStr)
 			}
 		})
@@ -234,7 +234,7 @@ func TestGetCommand_Execute_SpaceSyntax(t *testing.T) {
 				}
 			} else {
 				assert.NoError(t, err)
-				expectedOutput := fmt.Sprintf("%s = %s\n", tt.expectedVar, tt.expectedValue)
+				expectedOutput := fmt.Sprintf("ℹ %s = %s\n", tt.expectedVar, tt.expectedValue)
 				assert.Equal(t, expectedOutput, outputStr)
 			}
 		})
@@ -270,7 +270,7 @@ func TestGetCommand_Execute_PrioritizeBracketSyntax(t *testing.T) {
 
 	assert.NoError(t, err)
 	// Should use bracket syntax (bracketvar), not space syntax (spacevar)
-	expectedOutput := "bracketvar = bracketvalue\n"
+	expectedOutput := "ℹ bracketvar = bracketvalue\n"
 	assert.Equal(t, expectedOutput, outputStr)
 }
 
@@ -289,7 +289,7 @@ func TestGetCommand_Execute_NonExistentVariable(t *testing.T) {
 	})
 
 	// Should output empty value
-	expectedOutput := "nonexistent_var = \n"
+	expectedOutput := "ℹ nonexistent_var = \n"
 	assert.Equal(t, expectedOutput, output)
 }
 
@@ -363,7 +363,7 @@ func TestGetCommand_Execute_VariableWithSpecialCharacters(t *testing.T) {
 			outputStr := string(output)
 
 			assert.NoError(t, err)
-			expectedOutput := fmt.Sprintf("%s = %s\n", varName, expectedValue)
+			expectedOutput := fmt.Sprintf("ℹ %s = %s\n", varName, expectedValue)
 			assert.Equal(t, expectedOutput, outputStr)
 		})
 	}
@@ -394,7 +394,7 @@ func TestGetCommand_Execute_EmptyVariableValue(t *testing.T) {
 	outputStr := string(output)
 
 	assert.NoError(t, err)
-	expectedOutput := "empty_var = \n"
+	expectedOutput := "ℹ empty_var = \n"
 	assert.Equal(t, expectedOutput, outputStr)
 }
 

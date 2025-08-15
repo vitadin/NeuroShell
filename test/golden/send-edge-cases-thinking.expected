@@ -132,13 +132,13 @@ Messages: 14 total
 [13] user (00:00:27): Yes.
 [14] assistant (00:00:29): --- OpenAI reasoning trace: ---\n\n  Thi...ly (received 13 messages, last: Yes.) (279 chars)
 Message history check:
-1 = --- OpenAI reasoning trace: ---
-
+1 = --- OpenAI reasoning trace: ---                                                                                                                                 
+                                                                                                                                                                    
   Thinking about the user's message: "Yes.". This helps verify the message flow in tests. The user sent 13 messages total, and I need to provide a helpful response.
-
---- End thinking ---
-
-This is a mocking reply (received 13 messages, last: Yes.)
+                                                                                                                                                                    
+--- End thinking ---                                                                                                                                                
+                                                                                                                                                                    
+This is a mocking reply (received 13 messages, last: Yes.)                                                                                                          
 Latest response length:  chars
 2 = Yes.
 Latest user message was: Yes.

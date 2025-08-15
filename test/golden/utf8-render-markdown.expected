@@ -48,6 +48,8 @@ Setting rocket = 🚀
   Currency: € £ ¥\n- Math: π ≠ ∞\n- Quotes: "Hello" — world                   
 
 %%> "\\get[_output]"
-_output = 
+_output =                                                                     
   ### Complex Example\n**Bold café** with *italic 日本語* and code 🚀\n\n-    
   Currency: € £ ¥\n- Math: π ≠ ∞\n- Quotes: "Hello" — world                   
+                                                                              
+                                                                              

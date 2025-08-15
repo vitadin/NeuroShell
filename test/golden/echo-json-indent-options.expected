@@ -49,6 +49,6 @@ Complex structure in compact:
     "stored": "with 4 spaces"
 }
 %%> "\\get[custom_formatted]"
-custom_formatted = {
+custom_formatted = {         
     "stored": "with 4 spaces"
-}
+}                            

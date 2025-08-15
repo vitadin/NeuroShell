@@ -39,7 +39,7 @@ This is
 Styled    Content
 %%> "\\get[styled_content]"
 styled_content = This is
-Styled	Content
+Styled    Content       
 %%> "\\set[raw_mode=\"true\"]"
 Setting raw_mode = true
 %%> "\\set[silent_mode=\"false\"]"

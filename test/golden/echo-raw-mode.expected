@@ -13,7 +13,7 @@ Interpreted
     escapes
 %%> "\\get[interpreted]"
 interpreted = Interpreted
-	escapes
+    escapes              
 %%> "\\echo[raw=true] Multiple escapes: \\n\\t\\r\\\\\\\"\\'"
 Multiple escapes: \n\t\r\\\"\'
 %%> "\\echo[raw=false] Multiple escapes: \\n\\t\\r\\\\\\\"\\'"

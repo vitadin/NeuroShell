@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -104,7 +105,15 @@ func (c *GetCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to get variable %s: %w", variable, err)
 	}
 
-	fmt.Printf("%s = %s\n", variable, value)
+	// Create output printer with optional style injection
+	var styleProvider output.StyleProvider
+	if themeService, err := services.GetGlobalThemeService(); err == nil {
+		styleProvider = themeService
+	}
+	printer := output.NewPrinter(output.WithStyles(styleProvider))
+
+	// Display variable name and value with appropriate styling
+	printer.Info(fmt.Sprintf("%s = %s", variable, value))
 	return nil
 }
 
