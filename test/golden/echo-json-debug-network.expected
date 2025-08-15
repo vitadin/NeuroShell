@@ -33,7 +33,7 @@ Original input: {"http_request": {"method": "POST"
 Stored debug data length check:
 %%> "\\get[formatted_debug]"
 formatted_debug = Error: Invalid JSON - unexpected end of JSON input
-Original input: {"http_request": {"method": "POST"
+Original input: {"http_request": {"method": "POST"                  
 %%> "\\set[simple_debug={\"request\": {\"method\": \"GET\"}, \"response\": {\"status\": 200}, \"duration\": 500}]"
 Setting "duration": 500} = 
 Setting "response": {"status": 200} = 
@@ -42,9 +42,9 @@ Setting simple_debug = {"request": {"method": "GET"}
 === SIMPLE DEBUG DATA ===
 %%> "\\echo-json ${simple_debug}"
 Error: Invalid JSON - unexpected end of JSON input
-Original input: {"request": {"method": "GET"}
+Original input: {"request": {"method": "GET"}     
 %%> "\\echo === MALFORMED DEBUG DATA ==="
 === MALFORMED DEBUG DATA ===
 %%> "\\echo-json {\"request\": {\"method\": \"POST\", \"incomplete\": }"
 Error: Invalid JSON - invalid character '}' looking for beginning of value
-Original input: {"request": {"method": "POST", "incomplete": }
+Original input: {"request": {"method": "POST", "incomplete": }            

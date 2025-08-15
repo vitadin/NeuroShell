@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -130,38 +131,53 @@ func (c *LicenseCommand) Execute(_ map[string]string, _ string) error {
 	for varName, value := range systemVars {
 		if err := variableService.SetSystemVariable(varName, value); err != nil {
 			// Log error but continue - don't fail the command for storage issues
-			fmt.Printf("Warning: failed to set %s: %v\n", varName, err)
+			printer := c.createPrinter()
+			printer.Warning(fmt.Sprintf("Failed to set %s: %v", varName, err))
 		}
 	}
 
 	// Display license header
-	fmt.Println("NeuroShell - GNU Lesser General Public License v3.0")
-	fmt.Println("=" + fmt.Sprintf("%*s", 60, ""))
-	fmt.Println()
+	printer := c.createPrinter()
+	printer.Info("NeuroShell - GNU Lesser General Public License v3.0")
+	printer.Info("=" + fmt.Sprintf("%*s", 60, ""))
+	printer.Info("")
 
 	// Try to read and display the full license file
 	if licensePath != "" {
 		licenseContent, err := os.ReadFile(licensePath)
 		if err == nil {
-			fmt.Print(string(licenseContent))
+			printer.Info(string(licenseContent))
 			return nil
 		}
-		fmt.Printf("Warning: Could not read LICENSE file at %s: %v\n\n", licensePath, err)
+		printer.Warning(fmt.Sprintf("Could not read LICENSE file at %s: %v", licensePath, err))
+		printer.Info("")
 	}
 
 	// Fallback: display basic license information
-	fmt.Println("NeuroShell is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0)")
-	fmt.Println()
-	fmt.Println("This means:")
-	fmt.Println("• You can use NeuroShell in commercial applications")
-	fmt.Println("• You can modify NeuroShell, but modifications must be open source")
-	fmt.Println("• You can link to NeuroShell from proprietary code")
-	fmt.Println("• You must preserve copyright notices")
-	fmt.Println()
-	fmt.Printf("Full license text: %s\n", systemVars["#license_url"])
-	fmt.Printf("License file: %s\n", licensePath)
+	printer.Info("NeuroShell is licensed under the GNU Lesser General Public License v3.0 (LGPL-3.0)")
+	printer.Info("")
+	printer.Info("This means:")
+	printer.Info("• You can use NeuroShell in commercial applications")
+	printer.Info("• You can modify NeuroShell, but modifications must be open source")
+	printer.Info("• You can link to NeuroShell from proprietary code")
+	printer.Info("• You must preserve copyright notices")
+	printer.Info("")
+	printer.Pair("Full license text", systemVars["#license_url"])
+	printer.Pair("License file", licensePath)
 
 	return nil
+}
+
+// createPrinter creates a printer with theme service as style provider
+func (c *LicenseCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
+	}
+
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

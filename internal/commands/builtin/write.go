@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
+	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -169,14 +171,27 @@ func (c *WriteCommand) Execute(args map[string]string, input string) error {
 
 	// Provide feedback unless silent mode is enabled
 	if !silent {
+		printer := c.createPrinter()
 		if mode == "append" {
-			fmt.Printf("Appended %d bytes to '%s'\n", bytesWritten, filePath)
+			printer.Success(fmt.Sprintf("Appended %d bytes to '%s'", bytesWritten, filePath))
 		} else {
-			fmt.Printf("Wrote %d bytes to '%s'\n", bytesWritten, filePath)
+			printer.Success(fmt.Sprintf("Wrote %d bytes to '%s'", bytesWritten, filePath))
 		}
 	}
 
 	return nil
+}
+
+// createPrinter creates a printer with theme service as style provider
+func (c *WriteCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
+	}
+
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

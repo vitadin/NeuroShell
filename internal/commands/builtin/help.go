@@ -2,10 +2,10 @@ package builtin
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -81,9 +81,6 @@ func (c *HelpCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("help service not available: %w", err)
 	}
 
-	// Get theme object once
-	themeObj := c.getThemeObject()
-
 	// Check if a specific command was requested via bracket syntax: \help[command_name] or input: \help command_name
 	var requestedCommand string
 
@@ -107,15 +104,15 @@ func (c *HelpCommand) Execute(args map[string]string, input string) error {
 
 	// If specific command requested, show detailed help for that command
 	if requestedCommand != "" {
-		return c.showCommandHelpNew(requestedCommand, helpService, themeObj)
+		return c.showCommandHelpNew(requestedCommand, helpService)
 	}
 
 	// Otherwise, show all commands
-	return c.showAllCommandsNew(helpService, themeObj)
+	return c.showAllCommandsNew(helpService)
 }
 
 // showCommandHelpNew displays detailed help information for a specific command using HelpInfo
-func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *services.HelpService, themeObj *services.Theme) error {
+func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *services.HelpService) error {
 	// Get the command directly from the help service
 	_, err := helpService.GetCommand(commandName)
 	if err != nil {
@@ -132,23 +129,29 @@ func (c *HelpCommand) showCommandHelpNew(commandName string, helpService *servic
 	// Get structured help info
 	helpInfo := command.HelpInfo()
 
-	// Render help info using theme object
-	output := c.renderHelpInfo(helpInfo, themeObj)
-	fmt.Print(output)
+	// Create output printer with optional style injection
+	var styleProvider output.StyleProvider
+	if themeService, err := services.GetGlobalThemeService(); err == nil {
+		styleProvider = themeService
+	}
+	printer := output.NewPrinter(output.WithStyles(styleProvider))
+
+	// Render help info using printer with semantic types
+	c.renderHelpInfoWithPrinter(helpInfo, printer)
 
 	return nil
 }
 
-// showAllCommandsNew displays a list of all available commands using theme object
-func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService, themeObj *services.Theme) error {
+// showAllCommandsNew displays a list of all available commands using semantic output
+func (c *HelpCommand) showAllCommandsNew(helpService *services.HelpService) error {
 	// Get all commands from the help service
 	allCommands, err := helpService.GetAllCommands()
 	if err != nil {
 		return fmt.Errorf("failed to get command list: %w", err)
 	}
 
-	// Always use styled rendering - theme object handles whether to apply styling or not
-	return c.showAllCommandsStyled(allCommands, themeObj)
+	// Always use semantic rendering through output system
+	return c.showAllCommandsStyled(allCommands)
 }
 
 // CommandCategory represents a category of commands
@@ -228,7 +231,7 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 }
 
 // displaySessionCommandsGrouped displays session commands organized by functionality
-func (c *HelpCommand) displaySessionCommandsGrouped(sessionCommands []*neurotypes.HelpInfo, themeObj *services.Theme) {
+func (c *HelpCommand) displaySessionCommandsGrouped(sessionCommands []*neurotypes.HelpInfo, printer *output.Printer) {
 	// Group session commands by functionality
 	sessionGroups := map[string][]*neurotypes.HelpInfo{
 		"Basic Management": {},
@@ -255,23 +258,31 @@ func (c *HelpCommand) displaySessionCommandsGrouped(sessionCommands []*neurotype
 	for _, groupName := range groupOrder {
 		commands := sessionGroups[groupName]
 		if len(commands) > 0 {
-			fmt.Printf("    %s:\n", themeObj.Info.Render(groupName))
+			printer.Print("    ")
+			printer.Info(groupName + ":")
 			for _, cmdInfo := range commands {
-				fmt.Printf("      %s - %s\n",
-					themeObj.Command.Render(fmt.Sprintf("%-18s", "\\"+cmdInfo.Command)),
-					cmdInfo.Description)
+				printer.Print("      ")
+				printer.Code(fmt.Sprintf("\\%-18s", cmdInfo.Command))
+				printer.Print(" - ")
+				printer.Println(cmdInfo.Description)
 			}
-			fmt.Println()
+			printer.Println("")
 		}
 	}
 }
 
-// showAllCommandsStyled displays all commands using only theme object semantic styles
-func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.HelpInfo, themeObj *services.Theme) error {
+// showAllCommandsStyled displays all commands using semantic output types
+func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.HelpInfo) error {
+	// Create output printer with optional style injection
+	var styleProvider output.StyleProvider
+	if themeService, err := services.GetGlobalThemeService(); err == nil {
+		styleProvider = themeService
+	}
+	printer := output.NewPrinter(output.WithStyles(styleProvider))
 
 	// Title
-	fmt.Println(themeObj.Success.Render("Neuro Shell - Available Commands"))
-	fmt.Println()
+	printer.Success("Neuro Shell - Available Commands")
+	printer.Println("")
 
 	// Categorize commands
 	categories := c.categorizeCommands(allCommands)
@@ -279,137 +290,126 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.HelpInfo, 
 	// Display each category
 	for i, category := range categories {
 		if i > 0 {
-			fmt.Println()
+			printer.Println("")
 		}
 
-		fmt.Println(themeObj.Warning.Render(category.Name + ":"))
+		printer.Warning(category.Name + ":")
 
 		// Special handling for Session Management to show subcategories
 		if category.Name == "Session Management" {
-			c.displaySessionCommandsGrouped(category.Commands, themeObj)
+			c.displaySessionCommandsGrouped(category.Commands, printer)
 		} else {
 			for _, cmdInfo := range category.Commands {
-				fmt.Printf("  %s - %s\n",
-					themeObj.Command.Render(fmt.Sprintf("%-20s", "\\"+cmdInfo.Command)),
-					themeObj.Info.Render(cmdInfo.Description))
+				printer.Print("  ")
+				printer.Code(fmt.Sprintf("\\%-20s", cmdInfo.Command))
+				printer.Print(" - ")
+				printer.Println(cmdInfo.Description)
 			}
 		}
 	}
 
-	fmt.Println()
+	printer.Println("")
 
 	// Notes
-	fmt.Println(themeObj.Info.Render("Note: Text without \\ prefix is sent to LLM automatically"))
-	fmt.Println(themeObj.Info.Render("Use \\help[command] for detailed help on any command"))
+	printer.Info("Note: Text without \\ prefix is sent to LLM automatically")
+	printer.Info("Use \\help[command] for detailed help on any command")
 
 	return nil
 }
 
-// renderHelpInfo renders help information using only theme object semantic styles
-func (c *HelpCommand) renderHelpInfo(helpInfo neurotypes.HelpInfo, theme *services.Theme) string {
-	var result strings.Builder
-
-	// Title
-	title := fmt.Sprintf("Command: %s", helpInfo.Command)
-	result.WriteString(theme.Command.Render(title))
-	result.WriteString("\n\n")
+// renderHelpInfoWithPrinter renders help information using semantic output types
+func (c *HelpCommand) renderHelpInfoWithPrinter(helpInfo neurotypes.HelpInfo, printer *output.Printer) {
+	// Title - use command styling for the command name
+	printer.Print("Command: ")
+	printer.Code(helpInfo.Command)
+	printer.Println("")
+	printer.Println("")
 
 	// Description
-	result.WriteString(theme.Info.Render("Description: "))
-	result.WriteString(helpInfo.Description)
-	result.WriteString("\n\n")
+	printer.Print("Description: ")
+	printer.Println(helpInfo.Description)
+	printer.Println("")
 
-	// Usage with syntax highlighting
-	result.WriteString(theme.Success.Render("Usage: "))
-	styledUsage := c.highlightNeuroShellSyntax(helpInfo.Usage, theme)
-	result.WriteString(styledUsage)
-	result.WriteString("\n\n")
+	// Usage - highlight the usage syntax as code
+	printer.Print("Usage: ")
+	printer.CodeBlock(helpInfo.Usage)
+	printer.Println("")
 
 	// Parse Mode
-	result.WriteString(theme.Info.Render("Parse Mode: "))
-	result.WriteString(c.parseModeToString(helpInfo.ParseMode))
-	result.WriteString("\n")
+	printer.Print("Parse Mode: ")
+	printer.Info(c.parseModeToString(helpInfo.ParseMode))
 
 	// Options section
 	if len(helpInfo.Options) > 0 {
-		result.WriteString("\n")
-		result.WriteString(theme.Warning.Render("Options:"))
-		result.WriteString("\n")
+		printer.Println("")
+		printer.Warning("Options:")
 
 		for _, option := range helpInfo.Options {
-			result.WriteString("  ")
-			result.WriteString(theme.Variable.Render(option.Name))
-			result.WriteString(" - ")
-			result.WriteString(option.Description)
-
+			printer.Print("  ")
+			printer.Code(option.Name)
+			printer.Print(" - ")
+			printer.Print(option.Description)
 			if option.Default != "" {
-				result.WriteString(theme.Info.Render(fmt.Sprintf(" (default: %s)", option.Default)))
+				printer.Print(" ")
+				printer.Info(fmt.Sprintf("(default: %s)", option.Default))
 			}
 			if option.Required {
-				result.WriteString(theme.Error.Render(" (required)"))
+				printer.Print(" ")
+				printer.Error("(required)")
 			}
-			result.WriteString("\n")
+			printer.Println("")
 		}
 	}
 
 	// Examples section
 	if len(helpInfo.Examples) > 0 {
-		result.WriteString("\n")
-		result.WriteString(theme.Success.Render("Examples:"))
-		result.WriteString("\n")
+		printer.Println("")
+		printer.Success("Examples:")
 
 		for _, example := range helpInfo.Examples {
-			result.WriteString("  ")
-			styledExample := c.highlightNeuroShellSyntax(example.Command, theme)
-			result.WriteString(styledExample)
-			result.WriteString("\n")
+			printer.Print("  ")
+			printer.CodeBlock(example.Command)
 			if example.Description != "" {
-				result.WriteString("    ")
-				result.WriteString(theme.Info.Render("%% " + example.Description))
-				result.WriteString("\n")
+				printer.Comment("%% " + example.Description)
 			}
 		}
 	}
 
 	// Stored Variables section
 	if len(helpInfo.StoredVariables) > 0 {
-		result.WriteString("\n")
-		result.WriteString(theme.Warning.Render("Stored Variables:"))
-		result.WriteString("\n")
+		printer.Println("")
+		printer.Warning("Stored Variables:")
 
 		for _, storedVar := range helpInfo.StoredVariables {
-			result.WriteString("  ")
-			result.WriteString(theme.Variable.Render("${" + storedVar.Name + "}"))
-			result.WriteString(" - ")
-			result.WriteString(storedVar.Description)
+			printer.Print("  ")
+			printer.Code("${" + storedVar.Name + "}")
+			printer.Print(" - ")
+			printer.Print(storedVar.Description)
 
 			if storedVar.Type != "" {
-				result.WriteString(" ")
-				result.WriteString(theme.Info.Render("(" + storedVar.Type + ")"))
+				printer.Print(" ")
+				printer.Info(fmt.Sprintf("(%s)", storedVar.Type))
 			}
+			printer.Println("")
 
 			if storedVar.Example != "" {
-				result.WriteString("\n    ")
-				result.WriteString(theme.Info.Render("Example: " + storedVar.Example))
+				printer.Print("    Example: ")
+				printer.Code(storedVar.Example)
+				printer.Println("")
 			}
-			result.WriteString("\n")
 		}
 	}
 
 	// Notes section
 	if len(helpInfo.Notes) > 0 {
-		result.WriteString("\n")
-		result.WriteString(theme.Warning.Render("Notes:"))
-		result.WriteString("\n")
+		printer.Println("")
+		printer.Warning("Notes:")
 
 		for _, note := range helpInfo.Notes {
-			result.WriteString("  ")
-			result.WriteString(theme.Info.Render(note))
-			result.WriteString("\n")
+			printer.Print("  ")
+			printer.Info(note)
 		}
 	}
-
-	return result.String()
 }
 
 // parseModeToString converts parse mode enum to readable string
@@ -424,50 +424,6 @@ func (c *HelpCommand) parseModeToString(mode neurotypes.ParseMode) string {
 	default:
 		return "Unknown"
 	}
-}
-
-// highlightNeuroShellSyntax applies syntax highlighting for NeuroShell-specific patterns
-// This method handles command-specific syntax highlighting using semantic theme styles.
-func (c *HelpCommand) highlightNeuroShellSyntax(text string, theme *services.Theme) string {
-	result := text
-
-	// Highlight variables: ${variable_name}
-	variablePattern := regexp.MustCompile(`\$\{[^}]+\}`)
-	result = variablePattern.ReplaceAllStringFunc(result, func(match string) string {
-		return theme.Variable.Render(match)
-	})
-
-	// Highlight commands: \command (but only if not already styled)
-	commandPattern := regexp.MustCompile(`\\[a-zA-Z_][a-zA-Z0-9_-]*`)
-	result = commandPattern.ReplaceAllStringFunc(result, func(match string) string {
-		// Check if this text is already styled (contains ANSI sequences)
-		if strings.Contains(match, "\x1b[") {
-			return match // Already styled, don't re-style
-		}
-		return theme.Command.Render(match)
-	})
-
-	return result
-}
-
-// getThemeObject retrieves the theme object based on the _style variable
-func (c *HelpCommand) getThemeObject() *services.Theme {
-	// Get _style variable for theme selection
-	styleValue := ""
-	if variableService, err := services.GetGlobalVariableService(); err == nil {
-		if value, err := variableService.Get("_style"); err == nil {
-			styleValue = value
-		}
-	}
-
-	// Get theme service and theme object (always returns valid theme)
-	themeService, err := services.GetGlobalThemeService()
-	if err != nil {
-		// This should rarely happen, but we need to return something
-		panic(fmt.Sprintf("theme service not available: %v", err))
-	}
-
-	return themeService.GetThemeByName(styleValue)
 }
 
 // getHelpService retrieves the help service from the global registry

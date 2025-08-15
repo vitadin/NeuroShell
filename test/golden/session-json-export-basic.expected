@@ -34,27 +34,27 @@ Exported session 'export_test_session' (ID: 00000001) to /tmp/neuro_test_export_
   "is_active": true
 }
 %%> "\\get[_output]"
-_output = {
-  "id": "00000001-0000-4000-8000-000000000001",
-  "name": "export_test_session",
-  "system_prompt": "You are a helpful test assistant for export testing",
-  "messages": [
-    {
-      "id": "00000002-0000-4000-8000-000000000002",
-      "role": "user",
-      "content": "Hello, can you help me test the export functionality?",
-      "timestamp": "2025-01-01T00:00:02Z"
-    },
-    {
-      "id": "00000003-0000-4000-8000-000000000003",
-      "role": "assistant",
+_output = {                                                                                    
+  "id": "00000001-0000-4000-8000-000000000001",                                                
+  "name": "export_test_session",                                                               
+  "system_prompt": "You are a helpful test assistant for export testing",                      
+  "messages": [                                                                                
+    {                                                                                          
+      "id": "00000002-0000-4000-8000-000000000002",                                            
+      "role": "user",                                                                          
+      "content": "Hello, can you help me test the export functionality?",                      
+      "timestamp": "2025-01-01T00:00:02Z"                                                      
+    },                                                                                         
+    {                                                                                          
+      "id": "00000003-0000-4000-8000-000000000003",                                            
+      "role": "assistant",                                                                     
       "content": "Hello! Yes, I'd be happy to help you test the session export functionality.",
-      "timestamp": "2025-01-01T00:00:04Z"
-    }
-  ],
-  "created_at": "2025-01-01T00:00:01Z",
-  "updated_at": "2025-01-01T00:00:05Z",
-  "is_active": true
-}
+      "timestamp": "2025-01-01T00:00:04Z"                                                      
+    }                                                                                          
+  ],                                                                                           
+  "created_at": "2025-01-01T00:00:01Z",                                                        
+  "updated_at": "2025-01-01T00:00:05Z",                                                        
+  "is_active": true                                                                            
+}                                                                                              
 %%> "\\try \\bash rm /tmp/neuro_test_export_basic.json"
 %%> "\\bash rm /tmp/neuro_test_export_basic.json"

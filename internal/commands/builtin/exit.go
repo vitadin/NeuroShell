@@ -6,6 +6,8 @@ import (
 	"strconv"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
+	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -106,7 +108,19 @@ func (c *ExitCommand) Execute(args map[string]string, _ string) error {
 
 	// Parse message parameter and display if provided
 	if message := args["message"]; message != "" {
-		fmt.Println(message)
+		// Create output printer with optional style injection
+		var styleProvider output.StyleProvider
+		if themeService, err := services.GetGlobalThemeService(); err == nil {
+			styleProvider = themeService
+		}
+		printer := output.NewPrinter(output.WithStyles(styleProvider))
+
+		// Use error styling for non-zero exit codes, info styling for success
+		if exitCode != 0 {
+			printer.Error(message)
+		} else {
+			printer.Info(message)
+		}
 	}
 
 	// Exit with the specified code

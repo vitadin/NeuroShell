@@ -65,7 +65,7 @@ Setting literal_pattern = \
 literal_pattern = \
 %%> "\\if[condition=true] \\echo \"Pattern not re-expanded: ${literal_pattern}\""
 %%> "\\echo \"Pattern not re-expanded: \\\""
-"Pattern not re-expanded: "
+"Pattern not re-expanded: \"
 %%> "\\set[test_result=\"working\"]"
 Setting test_result = working
 %%> "\\if[condition=${test_result}] \\set[interpolation_success=\"true\"]"

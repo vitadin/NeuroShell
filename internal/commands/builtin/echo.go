@@ -3,9 +3,9 @@ package builtin
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -171,11 +171,25 @@ func (c *EchoCommand) Execute(args map[string]string, input string) error {
 
 	// Output to console unless silent mode is enabled
 	if !silent {
-		fmt.Print(displayMessage)
-		// Only add newline if the message doesn't already end with one
-		if len(displayMessage) > 0 && displayMessage[len(displayMessage)-1] != '\n' {
-			fmt.Println()
+		// Create output printer with optional style injection
+		var styleProvider output.StyleProvider
+		if themeService, err := services.GetGlobalThemeService(); err == nil {
+			styleProvider = themeService // ThemeService implements StyleProvider
 		}
+
+		printer := output.NewPrinter(output.WithStyles(styleProvider))
+
+		// Use Print method which handles newlines appropriately
+		if displayMessage != "" {
+			if len(displayMessage) > 0 && displayMessage[len(displayMessage)-1] == '\n' {
+				// Message already has newline, use Print to avoid double newline
+				printer.Print(displayMessage)
+			} else {
+				// No newline, use Println to add one
+				printer.Println(displayMessage)
+			}
+		}
+		// For empty strings, print nothing (maintain original behavior)
 	}
 
 	// Echo command never returns errors - it always succeeds
@@ -183,14 +197,18 @@ func (c *EchoCommand) Execute(args map[string]string, input string) error {
 }
 
 // interpretEscapeSequences converts escape sequences in a string to their actual characters
+// using Go's built-in strconv.Unquote for robust handling.
 func interpretEscapeSequences(s string) string {
-	// Replace common escape sequences
-	s = strings.ReplaceAll(s, "\\n", "\n")
-	s = strings.ReplaceAll(s, "\\t", "\t")
-	s = strings.ReplaceAll(s, "\\r", "\r")
-	s = strings.ReplaceAll(s, "\\\\", "\\")
-	s = strings.ReplaceAll(s, "\\\"", "\"")
-	s = strings.ReplaceAll(s, "\\'", "'")
+	// Use Go's built-in strconv.Unquote which properly handles all escape sequences
+	// We need to wrap the string in quotes for strconv.Unquote to work
+	quoted := `"` + s + `"`
+
+	// strconv.Unquote handles all standard Go escape sequences correctly
+	if unquoted, err := strconv.Unquote(quoted); err == nil {
+		return unquoted
+	}
+
+	// If unquoting fails (e.g., malformed escape sequences), return original string
 	return s
 }
 

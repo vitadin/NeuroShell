@@ -87,13 +87,13 @@ Messages: 10 total
 [9] user (00:00:19): Based on our discussion about Python var...e best practice for naming variables? (104 chars)
 [10] assistant (00:00:21): --- OpenAI reasoning trace: ---\n\n  Thi... best practice for naming variables?) (477 chars)
 Checking conversation context:
-1 = --- OpenAI reasoning trace: ---
-
+1 = --- OpenAI reasoning trace: ---                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                       
   Thinking about the user's message: "Based on our discussion about Python variables and scope, what's the best practice for naming variables?". This helps verify the message flow in tests. The user sent 9 messages total, and I need to provide a helpful response.
-
---- End thinking ---
-
-This is a mocking reply (received 9 messages, last: Based on our discussion about Python variables and scope, what's the best practice for naming variables?)
+                                                                                                                                                                                                                                                                       
+--- End thinking ---                                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                                       
+This is a mocking reply (received 9 messages, last: Based on our discussion about Python variables and scope, what's the best practice for naming variables?)                                                                                                          
 Latest assistant response length:  characters
 2 = Based on our discussion about Python variables and scope, what's the best practice for naming variables?
 Latest user message: Based on our discussion about Python variables and scope, what's the best practice for naming variables?

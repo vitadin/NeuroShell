@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -130,6 +131,13 @@ func (c *ConfigPathCommand) Execute(_ map[string]string, _ string) error {
 		return fmt.Errorf("failed to get configuration paths: %w", err)
 	}
 
+	// Create output printer with optional style injection
+	var styleProvider output.StyleProvider
+	if themeService, err := services.GetGlobalThemeService(); err == nil {
+		styleProvider = themeService
+	}
+	printer := output.NewPrinter(output.WithStyles(styleProvider))
+
 	// Get .neurorc information from system variables (set by main.go)
 	neuroRCPath, _ := variableService.Get("#neurorc_path")
 	neuroRCExecutedStr, _ := variableService.Get("#neurorc_executed")
@@ -138,29 +146,29 @@ func (c *ConfigPathCommand) Execute(_ map[string]string, _ string) error {
 	// Store all path information in system variables for scripting access
 	if paths.ConfigDir != "" {
 		if err := variableService.SetSystemVariable("#config_dir", paths.ConfigDir); err != nil {
-			fmt.Printf("Warning: failed to set #config_dir: %v\n", err)
+			printer.Warning(fmt.Sprintf("Warning: failed to set #config_dir: %v", err))
 		}
 	}
 	if err := variableService.SetSystemVariable("#config_dir_exists", fmt.Sprintf("%v", paths.ConfigDirExists)); err != nil {
-		fmt.Printf("Warning: failed to set #config_dir_exists: %v\n", err)
+		printer.Warning(fmt.Sprintf("Warning: failed to set #config_dir_exists: %v", err))
 	}
 
 	if paths.ConfigEnvPath != "" {
 		if err := variableService.SetSystemVariable("#config_env_path", paths.ConfigEnvPath); err != nil {
-			fmt.Printf("Warning: failed to set #config_env_path: %v\n", err)
+			printer.Warning(fmt.Sprintf("Warning: failed to set #config_env_path: %v", err))
 		}
 	}
 	if err := variableService.SetSystemVariable("#config_env_loaded", fmt.Sprintf("%v", paths.ConfigEnvLoaded)); err != nil {
-		fmt.Printf("Warning: failed to set #config_env_loaded: %v\n", err)
+		printer.Warning(fmt.Sprintf("Warning: failed to set #config_env_loaded: %v", err))
 	}
 
 	if paths.LocalEnvPath != "" {
 		if err := variableService.SetSystemVariable("#local_env_path", paths.LocalEnvPath); err != nil {
-			fmt.Printf("Warning: failed to set #local_env_path: %v\n", err)
+			printer.Warning(fmt.Sprintf("Warning: failed to set #local_env_path: %v", err))
 		}
 	}
 	if err := variableService.SetSystemVariable("#local_env_loaded", fmt.Sprintf("%v", paths.LocalEnvLoaded)); err != nil {
-		fmt.Printf("Warning: failed to set #local_env_loaded: %v\n", err)
+		printer.Warning(fmt.Sprintf("Warning: failed to set #local_env_loaded: %v", err))
 	}
 
 	// Display configuration directory
@@ -169,7 +177,7 @@ func (c *ConfigPathCommand) Execute(_ map[string]string, _ string) error {
 		if paths.ConfigDirExists {
 			status = "exists"
 		}
-		fmt.Printf("Config Directory: %s (%s)\n", paths.ConfigDir, status)
+		printer.Info(fmt.Sprintf("Config Directory: %s (%s)", paths.ConfigDir, status))
 	}
 
 	// Display config .env status
@@ -178,7 +186,7 @@ func (c *ConfigPathCommand) Execute(_ map[string]string, _ string) error {
 		if paths.ConfigEnvLoaded {
 			status = "loaded"
 		}
-		fmt.Printf("Config .env: %s (%s)\n", paths.ConfigEnvPath, status)
+		printer.Info(fmt.Sprintf("Config .env: %s (%s)", paths.ConfigEnvPath, status))
 	}
 
 	// Display local .env status
@@ -187,7 +195,7 @@ func (c *ConfigPathCommand) Execute(_ map[string]string, _ string) error {
 		if paths.LocalEnvLoaded {
 			status = "loaded"
 		}
-		fmt.Printf("Local .env: %s (%s)\n", paths.LocalEnvPath, status)
+		printer.Info(fmt.Sprintf("Local .env: %s (%s)", paths.LocalEnvPath, status))
 	}
 
 	// Display .neurorc status (from system variables)
@@ -196,7 +204,7 @@ func (c *ConfigPathCommand) Execute(_ map[string]string, _ string) error {
 		if neuroRCExecuted {
 			status = "executed"
 		}
-		fmt.Printf(".neurorc: %s (%s)\n", neuroRCPath, status)
+		printer.Info(fmt.Sprintf(".neurorc: %s (%s)", neuroRCPath, status))
 	}
 
 	return nil

@@ -13,17 +13,17 @@ Currency: € £ ¥ ₽ ₹
 Mixed line: café with 🚀 and — dash
 Complex: "Hello" said the café owner in 日本語
 %%> "\\get[_output]"
-_output = UTF-8 Test Content
-==================
-
-Basic accented: café, naïve, résumé, piñata
-Non-Latin: 日本語, Ελληνικά, Русский
-Symbols: — – "" … 
-Emojis: 🚀 ✨ 🌟 💫 ⭐
-Math: π ∑ ∞ ≠ ≤ ≥
-Currency: € £ ¥ ₽ ₹
-
-Mixed line: café with 🚀 and — dash
+_output = UTF-8 Test Content                  
+==================                            
+                                              
+Basic accented: café, naïve, résumé, piñata   
+Non-Latin: 日本語, Ελληνικά, Русский          
+Symbols: — – "" …                             
+Emojis: 🚀 ✨ 🌟 💫 ⭐                        
+Math: π ∑ ∞ ≠ ≤ ≥                             
+Currency: € £ ¥ ₽ ₹                           
+                                              
+Mixed line: café with 🚀 and — dash           
 Complex: "Hello" said the café owner in 日本語
 %%> "\\cat[path=test/fixtures/utf8-content.txt]"
 UTF-8 Test Content
@@ -39,30 +39,30 @@ Currency: € £ ¥ ₽ ₹
 Mixed line: café with 🚀 and — dash
 Complex: "Hello" said the café owner in 日本語
 %%> "\\get[_output]"
-_output = UTF-8 Test Content
-==================
-
-Basic accented: café, naïve, résumé, piñata
-Non-Latin: 日本語, Ελληνικά, Русский
-Symbols: — – "" … 
-Emojis: 🚀 ✨ 🌟 💫 ⭐
-Math: π ∑ ∞ ≠ ≤ ≥
-Currency: € £ ¥ ₽ ₹
-
-Mixed line: café with 🚀 and — dash
+_output = UTF-8 Test Content                  
+==================                            
+                                              
+Basic accented: café, naïve, résumé, piñata   
+Non-Latin: 日本語, Ελληνικά, Русский          
+Symbols: — – "" …                             
+Emojis: 🚀 ✨ 🌟 💫 ⭐                        
+Math: π ∑ ∞ ≠ ≤ ≥                             
+Currency: € £ ¥ ₽ ₹                           
+                                              
+Mixed line: café with 🚀 and — dash           
 Complex: "Hello" said the café owner in 日本語
 %%> "\\cat test/fixtures/special-chars.txt"
 Special characters: !@#$%^&*()_+-=
 Unicode: 🚀 ✨ 🌟 💫 ⭐
 Quotes: "double" and 'single'
 Backslashes: \n \t \r \\
-Tab separated	values	here
+Tab separated    values    here
 %%> "\\get[_output]"
 _output = Special characters: !@#$%^&*()_+-=
-Unicode: 🚀 ✨ 🌟 💫 ⭐
-Quotes: "double" and 'single'
-Backslashes: \n \t \r \\
-Tab separated	values	here
+Unicode: 🚀 ✨ 🌟 💫 ⭐                     
+Quotes: "double" and 'single'               
+Backslashes: \n \t \r \\                    
+Tab separated    values    here             
 %%> "\\set[fixture_dir=\"test/fixtures\"]"
 Setting fixture_dir = test/fixtures
 %%> "\\set[utf8_file=\"utf8-content.txt\"]"
@@ -81,17 +81,17 @@ Currency: € £ ¥ ₽ ₹
 Mixed line: café with 🚀 and — dash
 Complex: "Hello" said the café owner in 日本語
 %%> "\\get[_output]"
-_output = UTF-8 Test Content
-==================
-
-Basic accented: café, naïve, résumé, piñata
-Non-Latin: 日本語, Ελληνικά, Русский
-Symbols: — – "" … 
-Emojis: 🚀 ✨ 🌟 💫 ⭐
-Math: π ∑ ∞ ≠ ≤ ≥
-Currency: € £ ¥ ₽ ₹
-
-Mixed line: café with 🚀 and — dash
+_output = UTF-8 Test Content                  
+==================                            
+                                              
+Basic accented: café, naïve, résumé, piñata   
+Non-Latin: 日本語, Ελληνικά, Русский          
+Symbols: — – "" …                             
+Emojis: 🚀 ✨ 🌟 💫 ⭐                        
+Math: π ∑ ∞ ≠ ≤ ≥                             
+Currency: € £ ¥ ₽ ₹                           
+                                              
+Mixed line: café with 🚀 and — dash           
 Complex: "Hello" said the café owner in 日本語
 %%> "\\cat test/fixtures/utf8-content.txt"
 UTF-8 Test Content
@@ -133,17 +133,17 @@ Currency: € £ ¥ ₽ ₹
 Mixed line: café with 🚀 and — dash
 Complex: "Hello" said the café owner in 日本語
 %%> "\\get[utf8_content_var]"
-utf8_content_var = UTF-8 Test Content
-==================
-
-Basic accented: café, naïve, résumé, piñata
-Non-Latin: 日本語, Ελληνικά, Русский
-Symbols: — – "" … 
-Emojis: 🚀 ✨ 🌟 💫 ⭐
-Math: π ∑ ∞ ≠ ≤ ≥
-Currency: € £ ¥ ₽ ₹
-
-Mixed line: café with 🚀 and — dash
+utf8_content_var = UTF-8 Test Content         
+==================                            
+                                              
+Basic accented: café, naïve, résumé, piñata   
+Non-Latin: 日本語, Ελληνικά, Русский          
+Symbols: — – "" …                             
+Emojis: 🚀 ✨ 🌟 💫 ⭐                        
+Math: π ∑ ∞ ≠ ≤ ≥                             
+Currency: € £ ¥ ₽ ₹                           
+                                              
+Mixed line: café with 🚀 and — dash           
 Complex: "Hello" said the café owner in 日本語
 %%> "\\cat test/fixtures/utf8-content.txt"
 UTF-8 Test Content
@@ -172,15 +172,15 @@ Currency: € £ ¥ ₽ ₹
 Mixed line: café with 🚀 and — dash
 Complex: "Hello" said the café owner in 日本語
 %%> "\\get[_output]"
-_output = Processing: UTF-8 Test Content
-==================
-
-Basic accented: café, naïve, résumé, piñata
-Non-Latin: 日本語, Ελληνικά, Русский
-Symbols: — – "" … 
-Emojis: 🚀 ✨ 🌟 💫 ⭐
-Math: π ∑ ∞ ≠ ≤ ≥
-Currency: € £ ¥ ₽ ₹
-
-Mixed line: café with 🚀 and — dash
+_output = Processing: UTF-8 Test Content      
+==================                            
+                                              
+Basic accented: café, naïve, résumé, piñata   
+Non-Latin: 日本語, Ελληνικά, Русский          
+Symbols: — – "" …                             
+Emojis: 🚀 ✨ 🌟 💫 ⭐                        
+Math: π ∑ ∞ ≠ ≤ ≥                             
+Currency: € £ ¥ ₽ ₹                           
+                                              
+Mixed line: café with 🚀 and — dash           
 Complex: "Hello" said the café owner in 日本語

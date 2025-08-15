@@ -31,24 +31,24 @@ Setting _echo_command = true
   "success": true
 }
 %%> "\\get[formatted_json]"
-formatted_json = {
+formatted_json = {        
   "stored": "in variable",
-  "success": true
-}
+  "success": true         
+}                         
 %%> "\\echo-json {\"default\": \"behavior\"}"
 {
   "default": "behavior"
 }
 %%> "\\get[_output]"
-_output = {
+_output = {            
   "default": "behavior"
-}
+}                      
 %%> "\\echo-json   {\"whitespace\": \"trimmed\"}"
 {
   "whitespace": "trimmed"
 }
 %%> "\\echo-json {invalid json}"
 Error: Invalid JSON - invalid character 'i' looking for beginning of object key string
-Original input: {invalid json}
+Original input: {invalid json}                                                        
 %%> "\\echo-json"
 Error: No JSON data provided

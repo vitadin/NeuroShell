@@ -60,6 +60,6 @@ Backticks: `echo "I'm in a subshell"` won't work
 %%> "\\echo Mixed: \"It's `complex` but 'doable'\""
 Mixed: "It's `complex` but 'doable'"
 %%> "\\echo \"John said 'I can't believe Mary's computer won't run the command `echo \\\"It's working\\\"` properly'\""
-"John said 'I can't believe Mary's computer won't run the command `echo "It's working"` properly'"
+"John said 'I can't believe Mary's computer won't run the command `echo \"It's working\"` properly'"
 %%> "\\echo 'The error message was \"Cannot parse: I\\'m confused by John\\'s syntax\" which wasn\\'t helpful'"
-'The error message was "Cannot parse: I'm confused by John's syntax" which wasn't helpful'
+'The error message was "Cannot parse: I\'m confused by John\'s syntax" which wasn\'t helpful'

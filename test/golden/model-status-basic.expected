@@ -46,28 +46,30 @@ Model Configurations (3 models):
 %%> "\\get[#model_filtered_count]"
 #model_filtered_count = 3
 %%> "\\get[_output]"
-_output = Model Configurations (3 models):
-  claude-model (00000001)
-    Provider: openai
-    Base Model: o4-mini
-    Catalog ID: O4MC
-    Parameters: 1 (temperature=1)
-    Created: 2025-01-01 00:00:01
-    Description: OpenAI O4-mini Chat model
-
-  custom-claude (00000003)
-    Provider: openai
-    Base Model: o4-mini
-    Catalog ID: O4MC
-    Parameters: 1 (temperature=1)
-    Created: 2025-01-01 00:00:03
-    Description: Custom Claude model
-    Active: true
-
-  openai-model (00000002)
-    Provider: openai
-    Base Model: o3
-    Catalog ID: O3R
+_output = Model Configurations (3 models):                         
+  claude-model (00000001)                                          
+    Provider: openai                                               
+    Base Model: o4-mini                                            
+    Catalog ID: O4MC                                               
+    Parameters: 1 (temperature=1)                                  
+    Created: 2025-01-01 00:00:01                                   
+    Description: OpenAI O4-mini Chat model                         
+                                                                   
+  custom-claude (00000003)                                         
+    Provider: openai                                               
+    Base Model: o4-mini                                            
+    Catalog ID: O4MC                                               
+    Parameters: 1 (temperature=1)                                  
+    Created: 2025-01-01 00:00:03                                   
+    Description: Custom Claude model                               
+    Active: true                                                   
+                                                                   
+  openai-model (00000002)                                          
+    Provider: openai                                               
+    Base Model: o3                                                 
+    Catalog ID: O3R                                                
     Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
-    Created: 2025-01-01 00:00:02
-    Description: OpenAI O3 Reasoning model
+    Created: 2025-01-01 00:00:02                                   
+    Description: OpenAI O3 Reasoning model                         
+                                                                   
+                                                                   

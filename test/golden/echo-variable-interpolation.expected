@@ -16,7 +16,7 @@ Line2
 Hello\nWorld\tGreeting
 %%> "\\echo[raw=false] ${greeting}\\n${name}\\tGreeting"
 Hello
-World	Greeting
+World    Greeting
 %%> "\\echo[raw=true,to=raw_result] Result: ${greeting}\\n${name}"
 Result: Hello\nWorld
 %%> "\\get[raw_result]"
@@ -26,7 +26,7 @@ Result: Hello
 World
 %%> "\\get[interpreted_result]"
 interpreted_result = Result: Hello
-World
+World                             
 %%> "\\echo System info: User=, TestMode=${#test_mode}"
 System info: User=, TestMode=true
 %%> "\\echo[raw=true] Undefined: ${undefined_var}\\nDefined: ${name}"

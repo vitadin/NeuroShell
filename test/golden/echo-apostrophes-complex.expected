@@ -6,12 +6,12 @@ She replied 'You can't go there now'
 %%> "\\echo \"John's response was 'I won't listen'\""
 "John's response was 'I won't listen'"
 %%> "\\echo 'The sign read \"Don\\'t enter\" but we didn\\'t care'"
-'The sign read "Don't enter" but we didn't care'
+'The sign read "Don\'t enter" but we didn\'t care'
 %%> "\\echo[raw=true] I'm here\\nYou're there\\tIt's working\\\\Perfect"
 I'm here\nYou're there\tIt's working\\Perfect
 %%> "\\echo[raw=false] I'm here\\nYou're there\\tIt's working\\\\Perfect"
 I'm here
-You're there	It's working\Perfect
+You're there    It's working\Perfect
 %%> "\\echo \"I'm inside double quotes\""
 "I'm inside double quotes"
 %%> "\\echo 'You're inside single quotes'"

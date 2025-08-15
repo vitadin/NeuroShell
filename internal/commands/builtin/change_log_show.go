@@ -6,6 +6,7 @@ import (
 	"unicode"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -145,8 +146,9 @@ func (c *ChangeLogShowCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("failed to store result: %w", err)
 	}
 
-	// Print the change log
-	fmt.Print(output)
+	// Print the change log using semantic output
+	printer := c.createPrinter()
+	printer.Print(output)
 
 	return nil
 }
@@ -285,6 +287,18 @@ func (c *ChangeLogShowCommand) getThemeObject() *services.Theme {
 	}
 
 	return themeService.GetThemeByName(styleValue)
+}
+
+// createPrinter creates a printer with theme service as style provider
+func (c *ChangeLogShowCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
+	}
+
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

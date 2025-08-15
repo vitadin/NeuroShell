@@ -6,6 +6,7 @@ import (
 
 	"neuroshell/internal/data/embedded"
 	"neuroshell/internal/logger"
+	"neuroshell/internal/output"
 	"neuroshell/pkg/neurotypes"
 
 	"github.com/charmbracelet/lipgloss"
@@ -36,6 +37,21 @@ type Theme struct {
 	Underline  lipgloss.Style
 	Background lipgloss.Style
 	List       lipgloss.Style
+}
+
+// LipglossTextStyle wraps lipgloss.Style to implement the output.TextStyle interface.
+type LipglossTextStyle struct {
+	style lipgloss.Style
+}
+
+// NewLipglossTextStyle creates a new LipglossTextStyle wrapper.
+func NewLipglossTextStyle(style lipgloss.Style) *LipglossTextStyle {
+	return &LipglossTextStyle{style: style}
+}
+
+// Render implements output.TextStyle.Render by delegating to lipgloss.Style.
+func (l *LipglossTextStyle) Render(text string) string {
+	return l.style.Render(text)
 }
 
 // NewThemeService creates a new ThemeService instance with themes loaded from YAML.
@@ -273,6 +289,75 @@ func (t *ThemeService) GetDefaultTheme() *Theme {
 		}
 	}
 	return t.themes["plain"]
+}
+
+// StyleProvider interface implementation
+
+// GetStyle implements output.StyleProvider.GetStyle.
+// It returns a TextStyle for the given semantic type using the default theme.
+func (t *ThemeService) GetStyle(semantic string) output.TextStyle {
+	return t.GetStyleForTheme("default", semantic)
+}
+
+// GetStyleForTheme returns a TextStyle for the given semantic type and theme.
+// This allows more control over which theme is used for styling.
+func (t *ThemeService) GetStyleForTheme(themeName, semantic string) output.TextStyle {
+	theme := t.GetThemeByName(themeName)
+	if theme == nil {
+		theme = t.GetDefaultTheme()
+	}
+
+	var style lipgloss.Style
+
+	switch semantic {
+	case "plain":
+		style = lipgloss.NewStyle() // No styling for plain text
+	case "info":
+		style = theme.Info
+	case "success":
+		style = theme.Success
+	case "warning":
+		style = theme.Warning
+	case "error":
+		style = theme.Error
+	case "command":
+		style = theme.Command
+	case "variable":
+		style = theme.Variable
+	case "keyword":
+		style = theme.Keyword
+	case "highlight":
+		style = theme.Highlight
+	case "bold":
+		style = theme.Bold
+	case "italic":
+		style = theme.Italic
+	case "underline":
+		style = theme.Underline
+	default:
+		// For unknown semantic types, return plain styling
+		style = lipgloss.NewStyle()
+	}
+
+	return NewLipglossTextStyle(style)
+}
+
+// IsAvailable implements output.StyleProvider.IsAvailable.
+func (t *ThemeService) IsAvailable() bool {
+	return t.initialized && len(t.themes) > 0
+}
+
+// GetThemeType implements output.StyleProvider.GetThemeType.
+// Returns the theme type for code rendering based on the current theme context.
+func (t *ThemeService) GetThemeType() string {
+	if !t.initialized {
+		return "auto"
+	}
+
+	// For theme service, we can determine if we're in a dark/light context
+	// Default to "auto" to let glamour auto-detect the terminal's preferences
+	// This could be enhanced in the future to track the active theme
+	return "auto"
 }
 
 // CreateList creates a new list with theme styling applied

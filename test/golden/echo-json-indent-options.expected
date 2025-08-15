@@ -5,22 +5,22 @@ Setting test_json = {"users": [{"name": "Alice", "active": true}, {"name": "Bob"
 %%> "\\echo Default 2-space indentation:"
 Default 2-space indentation:
 %%> "\\echo-json ${test_json}"
-Error: Invalid JSON - unexpected end of JSON input
+Error: Invalid JSON - unexpected end of JSON input                                             
 Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
 %%> "\\echo 4-space indentation:"
 4-space indentation:
 %%> "\\echo-json[indent=4] ${test_json}"
-Error: Invalid JSON - unexpected end of JSON input
+Error: Invalid JSON - unexpected end of JSON input                                             
 Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
 %%> "\\echo 1-space indentation:"
 1-space indentation:
 %%> "\\echo-json[indent=1] ${test_json}"
-Error: Invalid JSON - unexpected end of JSON input
+Error: Invalid JSON - unexpected end of JSON input                                             
 Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
 %%> "\\echo Compact format:"
 Compact format:
 %%> "\\echo-json[indent=0] ${test_json}"
-Error: Invalid JSON - unexpected end of JSON input
+Error: Invalid JSON - unexpected end of JSON input                                             
 Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
 %%> "\\echo 8-space indentation:"
 8-space indentation:
@@ -49,6 +49,6 @@ Complex structure in compact:
     "stored": "with 4 spaces"
 }
 %%> "\\get[custom_formatted]"
-custom_formatted = {
+custom_formatted = {         
     "stored": "with 4 spaces"
-}
+}                            

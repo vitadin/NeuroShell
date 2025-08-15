@@ -3,22 +3,22 @@ Setting _echo_command = true
 %%> "\\session-edit-system You are a test assistant"
 %%> "\\get[_error]"
 _error = no session specified and no active session found: no active session. Usage: \session-edit-system[session=session_id] new_system_prompt
-\session-edit-system new_system_prompt
-
-Examples:
-  \session-edit-system You are a helpful programming assistant                     %% Edit active session system prompt
-  \session-edit-system[session=work] You are a code review assistant              %% Edit specific session
-  \session-edit-system ""                                                         %% Clear system prompt (empty)
-  \session-edit-system[session=main] ${custom_prompt}                             %% Using variable
-
-Options:
-  session - Session name or ID (optional, defaults to active session)
-
-Input: New system prompt content (can be empty to clear the system prompt)
-
-Note: System prompts provide context and instructions to LLM agents.
-      Empty system prompts remove all system-level instructions.
-      Changes are saved immediately and affect future LLM interactions.
+\session-edit-system new_system_prompt                                                                                                         
+                                                                                                                                               
+Examples:                                                                                                                                      
+  \session-edit-system You are a helpful programming assistant                     %% Edit active session system prompt                        
+  \session-edit-system[session=work] You are a code review assistant              %% Edit specific session                                     
+  \session-edit-system ""                                                         %% Clear system prompt (empty)                               
+  \session-edit-system[session=main] ${custom_prompt}                             %% Using variable                                            
+                                                                                                                                               
+Options:                                                                                                                                       
+  session - Session name or ID (optional, defaults to active session)                                                                          
+                                                                                                                                               
+Input: New system prompt content (can be empty to clear the system prompt)                                                                     
+                                                                                                                                               
+Note: System prompts provide context and instructions to LLM agents.                                                                           
+      Empty system prompts remove all system-level instructions.                                                                               
+      Changes are saved immediately and affect future LLM interactions.                                                                        
 %%> "\\session-new test_session"
 Created session 'test_session' (ID: 00000001)
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/internal/version"
 	"neuroshell/pkg/neurotypes"
@@ -151,17 +152,24 @@ func (c *VersionCommand) Execute(_ map[string]string, _ string) error {
 	commitCount := version.GetCommitCount()
 	systemVars["#version_commit_count"] = fmt.Sprintf("%d", commitCount)
 
+	// Create output printer with optional style injection
+	var styleProvider output.StyleProvider
+	if themeService, err := services.GetGlobalThemeService(); err == nil {
+		styleProvider = themeService
+	}
+	printer := output.NewPrinter(output.WithStyles(styleProvider))
+
 	// Set all system variables
 	for varName, value := range systemVars {
 		if err := variableService.SetSystemVariable(varName, value); err != nil {
 			// Log error but continue - don't fail the command for storage issues
-			fmt.Printf("Warning: failed to set %s: %v\n", varName, err)
+			printer.Warning(fmt.Sprintf("Warning: failed to set %s: %v", varName, err))
 		}
 	}
 
 	// Display formatted version information
 	formattedVersion := version.GetFormattedVersion()
-	fmt.Println(formattedVersion)
+	printer.Info(formattedVersion)
 
 	return nil
 }
