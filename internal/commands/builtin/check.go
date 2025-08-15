@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -287,13 +288,20 @@ func (c *CheckCommand) generateOutput(results []ServiceCheckResult) string {
 
 // displayResults displays the check results to the console.
 func (c *CheckCommand) displayResults(results []ServiceCheckResult) {
+	// Create output printer with optional style injection
+	var styleProvider output.StyleProvider
+	if themeService, err := services.GetGlobalThemeService(); err == nil {
+		styleProvider = themeService
+	}
+	printer := output.NewPrinter(output.WithStyles(styleProvider))
+
 	if len(results) == 0 {
-		fmt.Println("No services found to check.")
+		printer.Warning("No services found to check.")
 		return
 	}
 
-	fmt.Println("Service Status Check:")
-	fmt.Println("====================")
+	printer.Info("Service Status Check:")
+	printer.Info("====================")
 
 	successCount := 0
 	for _, result := range results {
@@ -311,18 +319,24 @@ func (c *CheckCommand) displayResults(results []ServiceCheckResult) {
 			successCount++
 		}
 
-		fmt.Printf("  %s %-20s - %s", status, result.Name, statusDesc)
+		statusLine := fmt.Sprintf("  %s %-20s - %s", status, result.Name, statusDesc)
 		if result.Error != "" {
-			fmt.Printf(" (%s)", result.Error)
+			statusLine += fmt.Sprintf(" (%s)", result.Error)
 		}
-		fmt.Println()
+
+		// Use different styling based on status
+		if !result.Available || !result.Initialized {
+			printer.Error(statusLine)
+		} else {
+			printer.Info(statusLine)
+		}
 	}
 
-	fmt.Println()
-	fmt.Printf("Summary: %d/%d services healthy\n", successCount, len(results))
+	printer.Println("")
+	printer.Info(fmt.Sprintf("Summary: %d/%d services healthy", successCount, len(results)))
 
 	if successCount < len(results) {
-		fmt.Println("Some services are not available or not initialized.")
+		printer.Warning("Some services are not available or not initialized.")
 	}
 }
 
