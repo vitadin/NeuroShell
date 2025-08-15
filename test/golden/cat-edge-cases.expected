@@ -22,7 +22,7 @@ Special characters: !@#$%^&*()_+-=
 Unicode: 🚀 ✨ 🌟 💫 ⭐
 Quotes: "double" and 'single'
 Backslashes: \n \t \r \\
-Tab separated	values	here
+Tab separated    values    here
 %%> "\\get[_output]"
 _output = Special characters: !@#$%^&*()_+-=
 Unicode: 🚀 ✨ 🌟 💫 ⭐                     

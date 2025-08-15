@@ -11,6 +11,7 @@ import (
 	"unicode/utf8"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -148,6 +149,13 @@ func (c *CatCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("file path is required")
 	}
 
+	// Create output printer with optional style injection
+	var styleProvider output.StyleProvider
+	if themeService, err := services.GetGlobalThemeService(); err == nil {
+		styleProvider = themeService
+	}
+	printer := output.NewPrinter(output.WithStyles(styleProvider))
+
 	// Parse options with tolerant defaults
 	targetVar := args["to"]
 	if targetVar == "" {
@@ -232,18 +240,26 @@ func (c *CatCommand) Execute(args map[string]string, input string) error {
 	}
 
 	// Output to console unless silent mode is enabled
-	if !silent {
+	if !silent && displayContent != "" {
 		// Check if this is a .neuro file and render accordingly
 		if strings.ToLower(filepath.Ext(filePath)) == ".neuro" {
 			themeObj := c.getThemeObject()
 			styledContent := c.renderNeuroScript(displayContent, themeObj)
-			fmt.Print(styledContent)
+			if strings.HasSuffix(styledContent, "\n") {
+				// Content already has newline, use Print to avoid double newline
+				printer.Print(styledContent)
+			} else {
+				// No newline, use Println to add one
+				printer.Println(styledContent)
+			}
 		} else {
-			fmt.Print(displayContent)
-		}
-		// Ensure output ends with newline if it doesn't already
-		if len(displayContent) > 0 && displayContent[len(displayContent)-1] != '\n' {
-			fmt.Println()
+			if strings.HasSuffix(displayContent, "\n") {
+				// Content already has newline, use Print to avoid double newline
+				printer.Print(displayContent)
+			} else {
+				// No newline, use Println to add one
+				printer.Println(displayContent)
+			}
 		}
 	}
 
