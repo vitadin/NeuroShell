@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -80,7 +81,8 @@ func (c *ClipCommand) HelpInfo() neurotypes.HelpInfo {
 func (c *ClipCommand) Execute(_ map[string]string, input string) error {
 	// Handle empty input - non-destructive approach
 	if strings.TrimSpace(input) == "" {
-		fmt.Println("Warning: No content specified. Clipboard unchanged.")
+		printer := c.createPrinter()
+		printer.Warning("No content specified. Clipboard unchanged.")
 		return nil
 	}
 
@@ -103,7 +105,8 @@ func (c *ClipCommand) Execute(_ map[string]string, input string) error {
 	}
 
 	// Provide success feedback with character count
-	fmt.Printf("Copied %d characters to clipboard\n", len(input))
+	printer := c.createPrinter()
+	printer.Success(fmt.Sprintf("Copied %d characters to clipboard", len(input)))
 	return nil
 }
 
@@ -121,9 +124,22 @@ func (c *ClipCommand) fallbackToVariable(content, reason string) error {
 	}
 
 	// Inform user about fallback
-	fmt.Printf("Failed to copy to clipboard: %s\n", reason)
-	fmt.Printf("Stored %d characters in _clipboard variable\n", len(content))
+	printer := c.createPrinter()
+	printer.Warning(fmt.Sprintf("Failed to copy to clipboard: %s", reason))
+	printer.Info(fmt.Sprintf("Stored %d characters in _clipboard variable", len(content)))
 	return nil
+}
+
+// createPrinter creates a printer with theme service as style provider
+func (c *ClipCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
+	}
+
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

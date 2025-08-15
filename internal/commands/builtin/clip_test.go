@@ -97,10 +97,10 @@ func TestClipCommand_Execute_EmptyInput(t *testing.T) {
 	output, _ := io.ReadAll(r)
 	outputStr := string(output)
 
-	// Should contain warning message for both test cases
-	assert.Contains(t, outputStr, "Warning: No content specified. Clipboard unchanged.")
+	// Should contain warning message for both test cases (now with semantic styling)
+	assert.Contains(t, outputStr, "No content specified. Clipboard unchanged.")
 	// Warning should appear twice (once for each test case)
-	assert.Equal(t, 2, strings.Count(outputStr, "Warning: No content specified. Clipboard unchanged."))
+	assert.Equal(t, 2, strings.Count(outputStr, "No content specified. Clipboard unchanged."))
 }
 
 func TestClipCommand_Execute_BasicText(t *testing.T) {
