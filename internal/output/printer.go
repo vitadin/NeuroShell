@@ -119,6 +119,56 @@ func (p *Printer) Comment(text string) {
 	p.output(SemanticComment, text, true)
 }
 
+// Pair outputs a key-value pair with semantic styling for both key and value.
+// This is useful for displaying variable assignments, configuration settings, etc.
+func (p *Printer) Pair(key, value string) {
+	p.PairWithStyles(key, value, SemanticVariable, SemanticPlain)
+}
+
+// PairWithStyles outputs a key-value pair with custom semantic styling for key and value.
+// This allows fine-grained control over how keys and values are styled.
+func (p *Printer) PairWithStyles(key, value string, keySemantic, valueSemantic SemanticType) {
+	if p.silent {
+		return
+	}
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	// Render key and value separately with their respective styles
+	var styledKey, styledValue string
+
+	switch p.mode {
+	case ModeJSON:
+		// For JSON mode, output as structured data
+		finalText := p.renderJSON("pair", fmt.Sprintf("%s = %s", key, value))
+		if p.prefix != "" {
+			finalText = p.prefix + finalText
+		}
+		_, _ = fmt.Fprint(p.writer, finalText)
+		return
+
+	case ModePlain, ModeAuto:
+		styledKey = p.renderTextWithoutNewline(keySemantic, key)
+		styledValue = p.renderTextWithoutNewline(valueSemantic, value)
+
+	case ModeStyled:
+		styledKey = p.renderStyledWithoutNewline(keySemantic, key)
+		styledValue = p.renderStyledWithoutNewline(valueSemantic, value)
+	}
+
+	// Combine with equals sign and output
+	finalText := fmt.Sprintf("%s = %s\n", styledKey, styledValue)
+
+	// Apply prefix if configured
+	if p.prefix != "" {
+		finalText = p.prefix + finalText
+	}
+
+	// Write to output
+	_, _ = fmt.Fprint(p.writer, finalText)
+}
+
 // output is the core output method that handles all rendering logic.
 func (p *Printer) output(semantic SemanticType, text string, addNewline bool) {
 	if p.silent {
@@ -184,6 +234,16 @@ func (p *Printer) renderStyled(semantic SemanticType, text string, addNewline bo
 
 	// Fall back to plain if no styling available
 	return p.renderText(semantic, text, addNewline)
+}
+
+// renderTextWithoutNewline renders text in plain or auto mode without adding newlines.
+func (p *Printer) renderTextWithoutNewline(semantic SemanticType, text string) string {
+	return p.renderText(semantic, text, false)
+}
+
+// renderStyledWithoutNewline renders text with forced styling without adding newlines.
+func (p *Printer) renderStyledWithoutNewline(semantic SemanticType, text string) string {
+	return p.renderStyled(semantic, text, false)
 }
 
 // renderJSON renders output as structured JSON.

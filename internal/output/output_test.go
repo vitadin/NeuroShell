@@ -175,6 +175,33 @@ func TestPrinterWithPrefix(t *testing.T) {
 	}
 }
 
+func TestPrinterPair(t *testing.T) {
+	buffer := NewCaptureBuffer()
+	printer := NewPrinter(WithWriter(buffer), TestMode())
+
+	// Test pair output
+	printer.Pair("variable_name", "variable_value")
+	printer.Pair("  indented_var", "another_value")
+
+	lines := buffer.Lines()
+
+	// Should have two lines with proper key=value format (keys styled as variables with $ prefix)
+	expectedLines := []string{
+		"$variable_name = variable_value",
+		"$  indented_var = another_value",
+	}
+
+	if len(lines) != len(expectedLines) {
+		t.Fatalf("Expected %d lines, got %d: %v", len(expectedLines), len(lines), lines)
+	}
+
+	for i, expected := range expectedLines {
+		if lines[i] != expected {
+			t.Errorf("Line %d: expected '%s', got '%s'", i, expected, lines[i])
+		}
+	}
+}
+
 func TestCaptureOutput(t *testing.T) {
 	// Test the convenience function
 	output := CaptureOutput(func(p *Printer) {

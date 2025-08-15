@@ -12,9 +12,12 @@ PATH_TEST = /test/path/bin
 NONEXISTENT_VAR = 
 #os.NONEXISTENT_VAR = 
 ═══ All Variables (showing #os.* pattern) ═══
+Variables
+
 System Variables:
-  #os.MY_TEST_VAR      = hello_world
-  #os.NONEXISTENT_VAR  = 
-  #os.PATH_TEST        = /test/path/bin
+  Metadata (#):
+    #os.MY_TEST_VAR      = hello_world
+    #os.NONEXISTENT_VAR  = 
+    #os.PATH_TEST        = /test/path/bin
 
 Total: 3 variables

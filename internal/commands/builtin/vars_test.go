@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/context"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
@@ -336,14 +337,9 @@ func TestVarsCommand_DisplayVariables_SmartTruncation(t *testing.T) {
 				"test_var": tt.value,
 			}
 
-			// Create a plain theme for testing
-			plainTheme := &services.Theme{
-				Name: "plain",
-			}
-
-			// Capture stdout
-			output := stringprocessing.CaptureOutput(func() {
-				cmd.displayVariables(vars, plainTheme)
+			// Capture stdout using output.CaptureOutput
+			output := output.CaptureOutput(func(printer *output.Printer) {
+				cmd.displayVariables(vars, printer)
 			})
 
 			// Check that expected strings appear
