@@ -347,6 +347,19 @@ func (t *ThemeService) IsAvailable() bool {
 	return t.initialized && len(t.themes) > 0
 }
 
+// GetThemeType implements output.StyleProvider.GetThemeType.
+// Returns the theme type for code rendering based on the current theme context.
+func (t *ThemeService) GetThemeType() string {
+	if !t.initialized {
+		return "auto"
+	}
+
+	// For theme service, we can determine if we're in a dark/light context
+	// Default to "auto" to let glamour auto-detect the terminal's preferences
+	// This could be enhanced in the future to track the active theme
+	return "auto"
+}
+
 // CreateList creates a new list with theme styling applied
 func (t *Theme) CreateList() *list.List {
 	return list.New().EnumeratorStyle(t.List)

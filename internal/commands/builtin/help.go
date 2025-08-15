@@ -258,9 +258,13 @@ func (c *HelpCommand) displaySessionCommandsGrouped(sessionCommands []*neurotype
 	for _, groupName := range groupOrder {
 		commands := sessionGroups[groupName]
 		if len(commands) > 0 {
-			printer.Printf("    %s:\n", groupName)
+			printer.Print("    ")
+			printer.Info(groupName + ":")
 			for _, cmdInfo := range commands {
-				printer.Printf("      \\%-18s - %s\n", cmdInfo.Command, cmdInfo.Description)
+				printer.Print("      ")
+				printer.Code(fmt.Sprintf("\\%-18s", cmdInfo.Command))
+				printer.Print(" - ")
+				printer.Println(cmdInfo.Description)
 			}
 			printer.Println("")
 		}
@@ -296,7 +300,10 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.HelpInfo) 
 			c.displaySessionCommandsGrouped(category.Commands, printer)
 		} else {
 			for _, cmdInfo := range category.Commands {
-				printer.Printf("  \\%-20s - %s\n", cmdInfo.Command, cmdInfo.Description)
+				printer.Print("  ")
+				printer.Code(fmt.Sprintf("\\%-20s", cmdInfo.Command))
+				printer.Print(" - ")
+				printer.Println(cmdInfo.Description)
 			}
 		}
 	}
@@ -312,17 +319,25 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.HelpInfo) 
 
 // renderHelpInfoWithPrinter renders help information using semantic output types
 func (c *HelpCommand) renderHelpInfoWithPrinter(helpInfo neurotypes.HelpInfo, printer *output.Printer) {
-	// Title
-	printer.Printf("Command: %s\n\n", helpInfo.Command)
+	// Title - use command styling for the command name
+	printer.Print("Command: ")
+	printer.Code(helpInfo.Command)
+	printer.Println("")
+	printer.Println("")
 
 	// Description
-	printer.Printf("Description: %s\n\n", helpInfo.Description)
+	printer.Print("Description: ")
+	printer.Println(helpInfo.Description)
+	printer.Println("")
 
-	// Usage
-	printer.Printf("Usage: %s\n\n", helpInfo.Usage)
+	// Usage - highlight the usage syntax as code
+	printer.Print("Usage: ")
+	printer.CodeBlock(helpInfo.Usage)
+	printer.Println("")
 
 	// Parse Mode
-	printer.Printf("Parse Mode: %s\n", c.parseModeToString(helpInfo.ParseMode))
+	printer.Print("Parse Mode: ")
+	printer.Info(c.parseModeToString(helpInfo.ParseMode))
 
 	// Options section
 	if len(helpInfo.Options) > 0 {
@@ -330,14 +345,19 @@ func (c *HelpCommand) renderHelpInfoWithPrinter(helpInfo neurotypes.HelpInfo, pr
 		printer.Warning("Options:")
 
 		for _, option := range helpInfo.Options {
-			line := fmt.Sprintf("  %s - %s", option.Name, option.Description)
+			printer.Print("  ")
+			printer.Code(option.Name)
+			printer.Print(" - ")
+			printer.Print(option.Description)
 			if option.Default != "" {
-				line += fmt.Sprintf(" (default: %s)", option.Default)
+				printer.Print(" ")
+				printer.Info(fmt.Sprintf("(default: %s)", option.Default))
 			}
 			if option.Required {
-				line += " (required)"
+				printer.Print(" ")
+				printer.Error("(required)")
 			}
-			printer.Println(line)
+			printer.Println("")
 		}
 	}
 
@@ -347,9 +367,10 @@ func (c *HelpCommand) renderHelpInfoWithPrinter(helpInfo neurotypes.HelpInfo, pr
 		printer.Success("Examples:")
 
 		for _, example := range helpInfo.Examples {
-			printer.Printf("  %s\n", example.Command)
+			printer.Print("  ")
+			printer.CodeBlock(example.Command)
 			if example.Description != "" {
-				printer.Printf("    %%%% %s\n", example.Description)
+				printer.Comment("%% " + example.Description)
 			}
 		}
 	}
@@ -360,14 +381,21 @@ func (c *HelpCommand) renderHelpInfoWithPrinter(helpInfo neurotypes.HelpInfo, pr
 		printer.Warning("Stored Variables:")
 
 		for _, storedVar := range helpInfo.StoredVariables {
-			line := fmt.Sprintf("  ${%s} - %s", storedVar.Name, storedVar.Description)
+			printer.Print("  ")
+			printer.Code("${" + storedVar.Name + "}")
+			printer.Print(" - ")
+			printer.Print(storedVar.Description)
+
 			if storedVar.Type != "" {
-				line += fmt.Sprintf(" (%s)", storedVar.Type)
+				printer.Print(" ")
+				printer.Info(fmt.Sprintf("(%s)", storedVar.Type))
 			}
-			printer.Println(line)
+			printer.Println("")
 
 			if storedVar.Example != "" {
-				printer.Printf("    Example: %s\n", storedVar.Example)
+				printer.Print("    Example: ")
+				printer.Code(storedVar.Example)
+				printer.Println("")
 			}
 		}
 	}
@@ -378,7 +406,8 @@ func (c *HelpCommand) renderHelpInfoWithPrinter(helpInfo neurotypes.HelpInfo, pr
 		printer.Warning("Notes:")
 
 		for _, note := range helpInfo.Notes {
-			printer.Printf("  %s\n", note)
+			printer.Print("  ")
+			printer.Info(note)
 		}
 	}
 }

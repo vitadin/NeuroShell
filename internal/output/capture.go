@@ -104,6 +104,11 @@ func (m *MockStyleProvider) IsAvailable() bool {
 	return m.available
 }
 
+// GetThemeType implements StyleProvider.GetThemeType.
+func (m *MockStyleProvider) GetThemeType() string {
+	return "auto" // Mock provider returns auto for testing
+}
+
 // MockTextStyle is a simple mock implementation of TextStyle for testing.
 type MockTextStyle struct {
 	semantic string

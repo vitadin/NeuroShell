@@ -104,6 +104,21 @@ func (p *Printer) Bold(text string) {
 	p.output(SemanticBold, text, false)
 }
 
+// Code outputs inline code text.
+func (p *Printer) Code(text string) {
+	p.output(SemanticCode, text, false)
+}
+
+// CodeBlock outputs a multi-line code block.
+func (p *Printer) CodeBlock(text string) {
+	p.output(SemanticCodeBlock, text, true)
+}
+
+// Comment outputs comment text (typically prefixed with %%).
+func (p *Printer) Comment(text string) {
+	p.output(SemanticComment, text, true)
+}
+
 // output is the core output method that handles all rendering logic.
 func (p *Printer) output(semantic SemanticType, text string, addNewline bool) {
 	if p.silent {

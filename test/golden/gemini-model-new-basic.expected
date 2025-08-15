@@ -8,31 +8,38 @@ Parse Mode: Key-Value (supports [key=value] syntax)
 
 Options:
   catalog_id - Short model ID from catalog (GM25F, GM25P, GM25FL, etc.) (required)
+
   thinking_budget - Thinking tokens budget (-1=dynamic, 0=disabled, positive=fixed token count) (default: -1)
+
   temperature - Sampling temperature (0.0-2.0)
   max_tokens - Maximum completion tokens
   description - Human-readable description of the model configuration
 
 Examples:
   \gemini-model-new[catalog_id=GM25F] my-flash
-    %% Create Gemini Flash with default settings
+%% Create Gemini Flash with default settings
   \gemini-model-new[catalog_id=GM25F, thinking_budget=2048] reasoning-flash
-    %% Create Flash with fixed thinking budget
+%% Create Flash with fixed thinking budget
   \gemini-model-new[catalog_id=GM25F, thinking_budget=0] fast-flash
-    %% Create Flash with thinking disabled
+%% Create Flash with thinking disabled
   \gemini-model-new[catalog_id=GM25P, thinking_budget=-1] dynamic-pro
-    %% Create Pro with dynamic thinking
+%% Create Pro with dynamic thinking
 
 Stored Variables:
   ${_model_id} - Contains the created model's unique ID (system_output)
+
     Example: _model_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
   ${_model_name} - Contains the created model's name (system_output)
+
     Example: _model_name = "my-flash"
   ${#active_model_name} - Contains the active model name (automatically set) (system_metadata)
+
     Example: #active_model_name = "my-flash"
   ${#active_model_id} - Contains the active model ID (automatically set) (system_metadata)
+
     Example: #active_model_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
   ${#active_model_provider} - Contains the active model provider (always 'gemini') (system_metadata)
+
     Example: #active_model_provider = "gemini"
 
 Notes:

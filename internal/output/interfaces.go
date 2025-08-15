@@ -13,6 +13,10 @@ type StyleProvider interface {
 	// IsAvailable returns true if the style provider is ready to provide styles.
 	// This allows the output system to gracefully fall back to plain text.
 	IsAvailable() bool
+
+	// GetThemeType returns the theme type for code rendering (e.g., "dark", "light", "auto").
+	// This allows code renderers to select appropriate styling.
+	GetThemeType() string
 }
 
 // TextStyle represents the capability to render text with styling.
@@ -69,4 +73,11 @@ const (
 	SemanticItalic SemanticType = "italic"
 	// SemanticUnderline represents underlined text styling.
 	SemanticUnderline SemanticType = "underline"
+
+	// SemanticCode represents inline code text.
+	SemanticCode SemanticType = "code"
+	// SemanticCodeBlock represents multi-line code block text.
+	SemanticCodeBlock SemanticType = "code_block"
+	// SemanticComment represents comment text.
+	SemanticComment SemanticType = "comment"
 )
