@@ -10,14 +10,14 @@ Here's what happened: Tom's server couldn't connect to Jane's API because it's c
 %%> "\\echo \"John said 'I can't access Mary's files because they're in Sarah's directory and won't open'\""
 "John said 'I can't access Mary's files because they're in Sarah's directory and won't open'"
 %%> "\\echo 'The error message was \"Cannot find user\\'s home directory at /Users/john\\'s folder\" which wasn\\'t helpful'"
-'The error message was "Cannot find user's home directory at /Users/john's folder" which wasn't helpful'
+'The error message was "Cannot find user\'s home directory at /Users/john\'s folder" which wasn\'t helpful'
 %%> "\\echo \"The command 'grep \\\"can\\'t find\\\" /var/log/system.log' didn\\'t return any results\""
-"The command 'grep "can't find" /var/log/system.log' didn't return any results"
+"The command 'grep \"can\'t find\" /var/log/system.log' didn\'t return any results"
 %%> "\\echo[raw=true] Raw mode: I'm here\\nYou're there\\tIt's working with John's data\\\\Won't interpret escapes"
 Raw mode: I'm here\nYou're there\tIt's working with John's data\\Won't interpret escapes
 %%> "\\echo[raw=false] Normal mode: I'm here\\nYou're there\\tIt's working with Mary's data\\\\Will interpret escapes"
 Normal mode: I'm here
-You're there	It's working with Mary's data\Will interpret escapes
+You're there    It's working with Mary's data\Will interpret escapes
 %%> "\\echo[silent=true] Silent: This won't show but Sarah's data is stored"
 %%> "\\echo[to=stress_var] Custom var: Tom's computer isn't responding to Jane's requests"
 Custom var: Tom's computer isn't responding to Jane's requests
@@ -62,4 +62,4 @@ Pattern: /I'm|you're|it's|won't|can't/ matches contractions in John's text
 %%> "\\echo Replacement: s/can't/cannot/g won't work on Mary's system that's configured differently"
 Replacement: s/can't/cannot/g won't work on Mary's system that's configured differently
 %%> "\\echo \"The administrator said 'I can\\'t believe the system won\\'t handle users\\' apostrophes correctly' but we\\'re fixing it\" - that's the status update from Tom's team"
-"The administrator said 'I can't believe the system won't handle users' apostrophes correctly' but we're fixing it" - that's the status update from Tom's team
+"The administrator said 'I can\'t believe the system won\'t handle users\' apostrophes correctly' but we\'re fixing it" - that's the status update from Tom's team

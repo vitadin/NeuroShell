@@ -19,7 +19,7 @@ Verbose\nraw\tmode
 test3 = Verbose\nraw\tmode
 %%> "\\echo[raw=false,to=test4] Verbose\\ninterpreted\\tmode"
 Verbose
-interpreted	mode
+interpreted    mode
 %%> "\\get[test4]"
 test4 = Verbose
 interpreted	mode
@@ -39,7 +39,7 @@ Setting complex = Multi\nLine\tContent
 final_test = Complex: Multi\nLine\tContent\nWith more\tescapes
 %%> "\\echo[raw=false,silent=false,to=explicit] Explicit\\noptions\\ttest"
 Explicit
-options	test
+options    test
 %%> "\\get[explicit]"
 explicit = Explicit
 options	test

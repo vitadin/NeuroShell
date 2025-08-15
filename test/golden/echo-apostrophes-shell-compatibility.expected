@@ -39,10 +39,9 @@ Setting _echo_command = true
 'She replied "Good morning" cheerfully'
 %%> "\\echo 'Raw single quotes with \\n and \\t'"
 'Raw single quotes with 
- and 	'
+ and     '
 %%> "\\echo \"Raw double quotes with \\n and \\t\""
-"Raw double quotes with 
- and 	"
+"Raw double quotes with \n and \t"
 %%> "\\echo 'PATH=/usr/bin:$PATH'"
 'PATH=/usr/bin:$PATH'
 %%> "\\echo \"HOME=${HOME}/documents\""

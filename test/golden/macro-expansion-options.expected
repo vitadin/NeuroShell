@@ -36,7 +36,7 @@ Setting target_variable = styled_content
 Setting styled_echo = \echo[style=blue,raw=false,to=styled_content]
 %%> "${styled_echo} This is\\nStyled\\tContent"
 This is
-Styled	Content
+Styled    Content
 %%> "\\get[styled_content]"
 styled_content = This is
 Styled	Content

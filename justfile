@@ -196,6 +196,7 @@ test-shell-coverage:
 test-all-units:
     @echo "Running all unit, command, parser, context, execution, and shell tests..."
     EDITOR=echo go test -v \
+        ./internal/output/... \
         ./internal/services/... \
         ./internal/testutils/... \
         ./internal/parser/... \
@@ -217,6 +218,7 @@ test-all-units:
 test-all-units-coverage:
     @echo "Running all unit, command, parser, context, execution, and shell tests with coverage..."
     EDITOR=echo go test -v -coverprofile=all-units-coverage.out \
+        ./internal/output/... \
         ./internal/services/... \
         ./internal/testutils/... \
         ./internal/parser/... \

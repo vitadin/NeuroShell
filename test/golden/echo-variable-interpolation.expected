@@ -16,7 +16,7 @@ Line2
 Hello\nWorld\tGreeting
 %%> "\\echo[raw=false] ${greeting}\\n${name}\\tGreeting"
 Hello
-World	Greeting
+World    Greeting
 %%> "\\echo[raw=true,to=raw_result] Result: ${greeting}\\n${name}"
 Result: Hello\nWorld
 %%> "\\get[raw_result]"
