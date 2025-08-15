@@ -196,7 +196,7 @@ func TestVersionCommand_Execute_WithDifferentVersions(t *testing.T) {
 			commit:              "unknown",
 			buildDate:           "unknown",
 			expectedBase:        "1.0.0",
-			expectedCodename:    "Sapiens",
+			expectedCodename:    "Saprix",
 			expectedCommitCount: "0",
 			expectedMetadata:    "",
 		},

@@ -24,20 +24,20 @@ var (
 	BuildDate = "unknown"
 )
 
-// versionCodenames maps version strings to their animal codenames
-// Progression based on neural system complexity
+// versionCodenames maps version strings to their neural evolution codenames
+// Progression based on neural system complexity from simple to transcendent
 var versionCodenames = map[string]string{
 	"0.1.0": "Hydra",    // Simple nerve net, basic neural processing
 	"0.2.0": "Planaria", // Simple brain, basic learning ability
-	"0.3.0": "Aplysia",  // Sea slug, famous in neuroscience research
-	"0.4.0": "Octopus",  // Highly intelligent invertebrate
-	"0.5.0": "Corvus",   // Crow - exceptional bird intelligence
-	"0.6.0": "Rattus",   // Rat - standard neuroscience model
-	"0.7.0": "Macaca",   // Macaque - advanced primate cognition
-	"0.8.0": "Pan",      // Chimpanzee - tool use, social intelligence
-	"0.9.0": "Tursiops", // Dolphin - self-awareness, complex communication
-	"1.0.0": "Sapiens",  // Human-level intelligence milestone
-	"2.0.0": "Synthia",  // Synthetic/artificial intelligence beyond biological
+	"0.3.0": "Dendro",   // Branching neural connections emerge
+	"0.4.0": "Tentara",  // Distributed multi-core intelligence
+	"0.5.0": "Corvex",   // Advanced spatial reasoning and cognition
+	"0.6.0": "Labris",   // Complex learning and memory formation
+	"0.7.0": "Primax",   // Advanced social and collaborative intelligence
+	"0.8.0": "Cognita",  // Abstract thinking and tool creation
+	"0.9.0": "Resonix",  // Self-awareness and complex communication
+	"1.0.0": "Saprix",   // Human-level intelligence milestone
+	"2.0.0": "Omnix",    // Transcendent synthetic intelligence beyond biological
 }
 
 // Info represents comprehensive version information

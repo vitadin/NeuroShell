@@ -34,12 +34,12 @@ func TestGetCodenameForVersion(t *testing.T) {
 		{
 			name:             "exact match for 1.0.0",
 			version:          "1.0.0",
-			expectedCodename: "Sapiens",
+			expectedCodename: "Saprix",
 		},
 		{
 			name:             "patch version 1.0.1 should use 1.0.0 codename",
 			version:          "1.0.1",
-			expectedCodename: "Sapiens",
+			expectedCodename: "Saprix",
 		},
 		{
 			name:             "version without codename",
@@ -123,15 +123,15 @@ func TestVersionCodenames(t *testing.T) {
 	expectedCodenames := map[string]string{
 		"0.1.0": "Hydra",
 		"0.2.0": "Planaria",
-		"0.3.0": "Aplysia",
-		"0.4.0": "Octopus",
-		"0.5.0": "Corvus",
-		"0.6.0": "Rattus",
-		"0.7.0": "Macaca",
-		"0.8.0": "Pan",
-		"0.9.0": "Tursiops",
-		"1.0.0": "Sapiens",
-		"2.0.0": "Synthia",
+		"0.3.0": "Dendro",
+		"0.4.0": "Tentara",
+		"0.5.0": "Corvex",
+		"0.6.0": "Labris",
+		"0.7.0": "Primax",
+		"0.8.0": "Cognita",
+		"0.9.0": "Resonix",
+		"1.0.0": "Saprix",
+		"2.0.0": "Omnix",
 	}
 
 	for version, expectedCodename := range expectedCodenames {
