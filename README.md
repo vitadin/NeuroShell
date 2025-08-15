@@ -2,6 +2,10 @@
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/circleci/RjkGUoMoHBKh13iJmkaXTF/Pfh8uXKBx5881azXtzYpio/tree/main.svg?style=svg&circle-token=CCIPRJ_UA4CCuNuLUnf978JvYtAzb_299edc3497615f5f30d9653830038654df0c471b)](https://dl.circleci.com/status-badge/redirect/circleci/RjkGUoMoHBKh13iJmkaXTF/Pfh8uXKBx5881azXtzYpio/tree/main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vitadin/NeuroShell)](https://goreportcard.com/report/github.com/vitadin/NeuroShell)
+[![Release](https://github.com/vitadin/NeuroShell/actions/workflows/release.yml/badge.svg)](https://github.com/vitadin/NeuroShell/actions/workflows/release.yml)
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/vitadin/NeuroShell)](https://github.com/vitadin/NeuroShell)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/vitadin/NeuroShell)](https://github.com/vitadin/NeuroShell/releases/latest)
 
 > [!IMPORTANT]
 > **⚠️ Early Development Warning**
