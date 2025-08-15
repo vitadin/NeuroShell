@@ -3,6 +3,17 @@
 [![CircleCI](https://dl.circleci.com/status-badge/img/circleci/RjkGUoMoHBKh13iJmkaXTF/Pfh8uXKBx5881azXtzYpio/tree/main.svg?style=svg&circle-token=CCIPRJ_UA4CCuNuLUnf978JvYtAzb_299edc3497615f5f30d9653830038654df0c471b)](https://dl.circleci.com/status-badge/redirect/circleci/RjkGUoMoHBKh13iJmkaXTF/Pfh8uXKBx5881azXtzYpio/tree/main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vitadin/NeuroShell)](https://goreportcard.com/report/github.com/vitadin/NeuroShell)
 
+> **⚠️ Early Development Warning**
+>
+> NeuroShell is currently in early development (version < 1.0). While we strive to minimize disruption, **breaking changes may occur between releases**. We recommend:
+>
+> - 📌 **Pin to specific versions** for production use
+> - 📖 **Check release notes** before updating
+> - 💾 **Backup your `.neuro` scripts** and session data
+> - 🐛 **Report issues** on [GitHub Issues](https://github.com/vitadin/NeuroShell/issues)
+>
+> Follow our [releases](https://github.com/vitadin/NeuroShell/releases) for updates and migration guides.
+
 ![Neuro Logo](./assets/neurologo.svg)
 
 A specialized shell environment for seamless interaction with LLM agents. NeuroShell bridges traditional command-line interfaces and modern AI assistants, enabling professionals to create reproducible, automated workflows.
