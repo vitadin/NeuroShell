@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -140,8 +141,15 @@ func (c *TimerCommand) waitForTimerCompletion(temporalService *services.Temporal
 
 	// Verify the timer is no longer active (should have auto-stopped)
 	if !temporalService.IsActive(timerID) {
+		// Create output printer with optional style injection
+		var styleProvider output.StyleProvider
+		if themeService, err := services.GetGlobalThemeService(); err == nil {
+			styleProvider = themeService
+		}
+		printer := output.NewPrinter(output.WithStyles(styleProvider))
+
 		// Show completion message
-		fmt.Printf("Timer completed! (%.1f seconds)\n", originalSeconds)
+		printer.Info(fmt.Sprintf("Timer completed! (%.1f seconds)", originalSeconds))
 
 		// Store completion message in _output variable
 		if variableService, err := services.GetGlobalVariableService(); err == nil {
