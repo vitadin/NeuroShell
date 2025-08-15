@@ -8,7 +8,7 @@
 >
 > NeuroShell is currently in early development (version < 1.0). While we strive to minimize disruption, **breaking changes may occur between releases**. We recommend:
 >
-> - 📌 **Pin to specific versions** for production use
+> - 🚫 **Not recommended for production use** - use for development/experimentation only
 > - 📖 **Check release notes** before updating
 > - 💾 **Backup your `.neuro` scripts** and session data
 > - 🐛 **Report issues** on [GitHub Issues](https://github.com/vitadin/NeuroShell/issues)
