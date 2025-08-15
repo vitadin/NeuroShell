@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -112,21 +113,31 @@ func (c *BashCommand) Execute(_ map[string]string, input string) error {
 		return fmt.Errorf("failed to execute command: %w", err)
 	}
 
+	// Create output printer with optional style injection
+	var styleProvider output.StyleProvider
+	if themeService, err := services.GetGlobalThemeService(); err == nil {
+		styleProvider = themeService
+	}
+	printer := output.NewPrinter(output.WithStyles(styleProvider))
+
 	// Display output to user
 	if stdout != "" {
-		fmt.Print(stdout)
-		if !strings.HasSuffix(stdout, "\n") {
-			fmt.Println() // Add newline if output doesn't end with one
+		if strings.HasSuffix(stdout, "\n") {
+			// Output already has newline, use Print to avoid double newline
+			printer.Print(stdout)
+		} else {
+			// No newline, use Println to add one
+			printer.Println(stdout)
 		}
 	}
 
 	if stderr != "" {
-		fmt.Printf("Error: %s\n", stderr)
+		printer.Error(fmt.Sprintf("Error: %s", stderr))
 	}
 
 	// Display exit status if non-zero
 	if exitCode != 0 {
-		fmt.Printf("Exit status: %d\n", exitCode)
+		printer.Warning(fmt.Sprintf("Exit status: %d", exitCode))
 	}
 
 	// Return error if exit code is non-zero (for try block error handling)
