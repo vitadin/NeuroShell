@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/output"
+	"neuroshell/internal/commands/printing"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -131,13 +131,13 @@ func (c *LicenseCommand) Execute(_ map[string]string, _ string) error {
 	for varName, value := range systemVars {
 		if err := variableService.SetSystemVariable(varName, value); err != nil {
 			// Log error but continue - don't fail the command for storage issues
-			printer := c.createPrinter()
+			printer := printing.NewDefaultPrinter()
 			printer.Warning(fmt.Sprintf("Failed to set %s: %v", varName, err))
 		}
 	}
 
 	// Display license header
-	printer := c.createPrinter()
+	printer := printing.NewDefaultPrinter()
 	printer.Info("NeuroShell - GNU Lesser General Public License v3.0")
 	printer.Info("=" + fmt.Sprintf("%*s", 60, ""))
 	printer.Info("")
@@ -166,18 +166,6 @@ func (c *LicenseCommand) Execute(_ map[string]string, _ string) error {
 	printer.Pair("License file", licensePath)
 
 	return nil
-}
-
-// createPrinter creates a printer with theme service as style provider
-func (c *LicenseCommand) createPrinter() *output.Printer {
-	// Try to get theme service as style provider
-	themeService, err := services.GetGlobalThemeService()
-	if err != nil {
-		// Fall back to plain style provider
-		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
-	}
-
-	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

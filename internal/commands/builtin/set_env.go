@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/output"
+	"neuroshell/internal/commands/printing"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -108,7 +108,7 @@ func (c *SetEnvCommand) Execute(args map[string]string, input string) error {
 			if err != nil {
 				return fmt.Errorf("failed to set environment variable %s: %w", key, err)
 			}
-			printer := c.createPrinter()
+			printer := printing.NewDefaultPrinter()
 			printer.Success(fmt.Sprintf("Setting %s = %s", key, value))
 		}
 		return nil
@@ -131,25 +131,13 @@ func (c *SetEnvCommand) Execute(args map[string]string, input string) error {
 			if err != nil {
 				return fmt.Errorf("failed to set environment variable %s: %w", varName, err)
 			}
-			printer := c.createPrinter()
+			printer := printing.NewDefaultPrinter()
 			printer.Success(fmt.Sprintf("Setting %s = %s", varName, value))
 		}
 		return nil
 	}
 
 	return nil
-}
-
-// createPrinter creates a printer with theme service as style provider
-func (c *SetEnvCommand) createPrinter() *output.Printer {
-	// Try to get theme service as style provider
-	themeService, err := services.GetGlobalThemeService()
-	if err != nil {
-		// Fall back to plain style provider
-		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
-	}
-
-	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {
