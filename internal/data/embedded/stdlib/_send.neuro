@@ -1,5 +1,7 @@
 %% Description: Seamless send implementation leveraging variable service and auto-client creation
-%% Usage: \send Hello, how are you?
+%% Usage: \send[include_thinking=false] Hello, how are you?
+%% Options:
+%%   include_thinking - Include thinking blocks in session message (default: false)
 %% Assumes user has activated a model first (seamless "Model → Chat" workflow)
 %% 
 %% Workflow:
@@ -32,8 +34,12 @@
 \llm-call[client_id=${#active_client_id}, session_id=${_session_id}]
 
 %% Step 6: Add assistant response to session and display content
-%% Add only the clean text content to session if we have content (no thinking blocks)
-\if[condition="${#llm_text_content}"] \silent \session-add-assistantmsg[session=${_session_id}] ${#llm_text_content}
+%% Determine what content to add to session based on include_thinking option
+\if[condition="${include_thinking}"] \silent \set[session_content="${#llm_thinking_blocks_rendered}${#llm_text_content}"]
+\if-not[condition="${include_thinking}"] \silent \set[session_content="${#llm_text_content}"]
+
+%% Add content to session if we have any content
+\if[condition="${session_content}"] \silent \session-add-assistantmsg[session=${_session_id}] ${session_content}
 
 %% Display thinking blocks first if present (using render command for proper styling)
 \if[condition="${#llm_thinking_blocks_rendered}"] \render ${#llm_thinking_blocks_rendered}

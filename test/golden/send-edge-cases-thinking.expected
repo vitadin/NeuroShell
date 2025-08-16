@@ -75,7 +75,7 @@ Messages: 14 total
 [1] user (00:00:02): This is a very long message that contain...block rendering or conversation flow. (508 chars)
 [2] assistant (00:00:05): This is a mocking reply (received 1 mess...lock rendering or conversation flow.) (561 chars)
 [3] user (00:00:07): Hello! Can you help me understand these ...émojis like café, résumé, naïve? (121 chars)
-[4] assistant (00:00:09): This is a mocking reply (received 3 mess...�mojis like café, résumé, naïve?) (174 chars)
+[4] assistant (00:00:09): This is a mocking reply (received 3 mess...hese symbols: @#$%^&*()_+-=[]{}|;':\\ (123 chars)
 [5] user (00:00:11): Here's a Python function: def hello_worl...True. Can you explain how this works? (112 chars)
 ... (4 more messages) ...
 [10] assistant (00:00:21): This is a mocking reply (received 9 mess...\nHow do you process this structure?) (185 chars)

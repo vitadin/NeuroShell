@@ -19,7 +19,7 @@ func TestSendCommand_Name(t *testing.T) {
 
 func TestSendCommand_ParseMode(t *testing.T) {
 	cmd := &SendCommand{}
-	assert.Equal(t, neurotypes.ParseModeRaw, cmd.ParseMode())
+	assert.Equal(t, neurotypes.ParseModeKeyValue, cmd.ParseMode())
 }
 
 func TestSendCommand_Description(t *testing.T) {
@@ -35,7 +35,7 @@ func TestSendCommand_Usage(t *testing.T) {
 	usage := cmd.Usage()
 	assert.NotEmpty(t, usage)
 	assert.Contains(t, usage, "\\send")
-	assert.Contains(t, usage, "message")
+	assert.Contains(t, usage, "include_thinking")
 }
 
 func TestSendCommand_HelpInfo(t *testing.T) {
@@ -45,8 +45,8 @@ func TestSendCommand_HelpInfo(t *testing.T) {
 	assert.Equal(t, "send", helpInfo.Command)
 	assert.NotEmpty(t, helpInfo.Description)
 	assert.NotEmpty(t, helpInfo.Usage)
-	assert.Equal(t, neurotypes.ParseModeRaw, helpInfo.ParseMode)
-	assert.Empty(t, helpInfo.Options) // Send command has no options
+	assert.Equal(t, neurotypes.ParseModeKeyValue, helpInfo.ParseMode)
+	assert.NotEmpty(t, helpInfo.Options) // Send command now has include_thinking option
 	assert.NotEmpty(t, helpInfo.Examples)
 	assert.NotEmpty(t, helpInfo.Notes)
 
@@ -228,6 +228,107 @@ func setupSendTestRegistry(t *testing.T, ctx neurotypes.Context) {
 		services.SetGlobalRegistry(oldRegistry)
 		context.ResetGlobalContext()
 	})
+}
+
+func TestSendCommand_Execute_WithIncludeThinkingOption(t *testing.T) {
+	cmd := &SendCommand{}
+	ctx := context.New()
+
+	// Setup test registry with required services
+	setupSendTestRegistry(t, ctx)
+
+	tests := []struct {
+		name     string
+		options  map[string]string
+		input    string
+		expected string
+	}{
+		{
+			name:     "include_thinking=true",
+			options:  map[string]string{"include_thinking": "true"},
+			input:    "Test message",
+			expected: "\\_send[include_thinking=true] Test message",
+		},
+		{
+			name:     "include_thinking=false",
+			options:  map[string]string{"include_thinking": "false"},
+			input:    "Test message",
+			expected: "\\_send[include_thinking=false] Test message",
+		},
+		{
+			name:     "no options",
+			options:  map[string]string{},
+			input:    "Test message",
+			expected: "\\_send Test message",
+		},
+		{
+			name:     "multiple options",
+			options:  map[string]string{"include_thinking": "true", "other": "value"},
+			input:    "Test message",
+			expected: "\\_send[include_thinking=true,other=value] Test message",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Reset context for each test
+			ctx = context.New()
+			setupSendTestRegistry(t, ctx)
+
+			err := cmd.Execute(tt.options, tt.input)
+			assert.NoError(t, err)
+
+			// Verify command was pushed to stack with correct options
+			stackService, err := services.GetGlobalStackService()
+			require.NoError(t, err)
+			assert.Equal(t, 1, stackService.GetStackSize())
+
+			command, hasCommand := stackService.PopCommand()
+			require.True(t, hasCommand)
+
+			// Check that the command contains the expected elements
+			// Note: Options order might vary, so we check for key components
+			assert.Contains(t, command, "\\_send")
+			assert.Contains(t, command, tt.input)
+
+			if len(tt.options) > 0 {
+				assert.Contains(t, command, "[")
+				assert.Contains(t, command, "]")
+				for key, value := range tt.options {
+					assert.Contains(t, command, key+"="+value)
+				}
+			}
+		})
+	}
+}
+
+func TestSendCommand_HelpInfo_IncludeThinkingOption(t *testing.T) {
+	cmd := &SendCommand{}
+	helpInfo := cmd.HelpInfo()
+
+	// Check that include_thinking option is documented
+	found := false
+	for _, option := range helpInfo.Options {
+		if option.Name == "include_thinking" {
+			found = true
+			assert.Equal(t, "Include thinking blocks in session message", option.Description)
+			assert.Equal(t, "boolean", option.Type)
+			assert.Equal(t, "false", option.Default)
+			assert.False(t, option.Required)
+			break
+		}
+	}
+	assert.True(t, found, "include_thinking option should be documented in help")
+
+	// Check that examples include the new option
+	foundExample := false
+	for _, example := range helpInfo.Examples {
+		if strings.Contains(example.Command, "include_thinking=true") {
+			foundExample = true
+			break
+		}
+	}
+	assert.True(t, foundExample, "Examples should include include_thinking option")
 }
 
 // Interface compliance check

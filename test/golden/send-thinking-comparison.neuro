@@ -1,0 +1,25 @@
+%% Test comparing session content with and without include_thinking
+%% This test verifies that thinking blocks are only included in session when include_thinking=true
+
+\set _style dark1
+
+\echo === Send Thinking Comparison Test ===
+\echo Testing difference between include_thinking=false and include_thinking=true
+
+%% Test message without thinking in session
+\echo Testing message WITHOUT thinking in session...
+\send[include_thinking=false] First test message.
+
+%% Check session content immediately 
+\echo Session after first message (should NOT contain thinking):
+\session-show
+
+\echo 
+
+%% Test message with thinking in session  
+\echo Testing message WITH thinking in session...
+\send[include_thinking=true] Second test message.
+
+%% Check session content again
+\echo Session after second message (should contain thinking for message 4):
+\session-show

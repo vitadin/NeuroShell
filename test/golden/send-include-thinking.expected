@@ -1,0 +1,50 @@
+Setting _style = dark1
+=== Send Include Thinking Test ===
+Testing \send command with include_thinking option
+Testing normal send (thinking blocks NOT included in session)...
+<thinking id="2-1">
+Thinking about the user's message: "Hello, this is a normal message without thinking in session.". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 1 messages, last: Hello, this is a normal 
+  message without thinking in session.)                                       
+
+Testing send with include_thinking=false...
+<thinking id="4-1">
+Thinking about the user's message: "This message also excludes thinking blocks from session.". This helps verify the message flow in tests. The user sent 3 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 3 messages, last: This message also       
+  excludes thinking blocks from session.)                                     
+
+Testing send with include_thinking=true...
+<thinking id="6-1">
+Thinking about the user's message: "This message INCLUDES thinking blocks in the session.". This helps verify the message flow in tests. The user sent 5 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 5 messages, last: This message INCLUDES   
+  thinking blocks in the session.)                                            
+
+Testing another message with thinking included...
+<thinking id="8-1">
+Thinking about the user's message: "Another message that should have thinking blocks in session.". This helps verify the message flow in tests. The user sent 7 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 7 messages, last: Another message that    
+  should have thinking blocks in session.)                                    
+
+=== Session Content Verification ===
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant.
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:18
+Messages: 8 total
+
+[1] user (00:00:02): Hello, this is a normal message without thinking in session.
+[2] assistant (00:00:05): This is a mocking reply (received 1 mess...message without thinking in session.) (113 chars)
+[3] user (00:00:07): This message also excludes thinking blocks from session.
+[4] assistant (00:00:09): This is a mocking reply (received 3 mess...cludes thinking blocks from session.) (109 chars)
+[5] user (00:00:11): This message INCLUDES thinking blocks in the session.
+[6] assistant (00:00:13): <thinking id=\"6-1\">\nThinking about th...UDES thinking blocks in the session.) (350 chars)
+[7] user (00:00:15): Another message that should have thinking blocks in session.
+[8] assistant (00:00:17): <thinking id=\"8-1\">\nThinking about th...uld have thinking blocks in session.) (364 chars)

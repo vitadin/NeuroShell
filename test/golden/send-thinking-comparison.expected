@@ -1,0 +1,37 @@
+Setting _style = dark1
+=== Send Thinking Comparison Test ===
+Testing difference between include_thinking=false and include_thinking=true
+Testing message WITHOUT thinking in session...
+<thinking id="2-1">
+Thinking about the user's message: "First test message.". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 1 messages, last: First test message.)    
+
+Session after first message (should NOT contain thinking):
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant.
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:06
+Messages: 2 total
+
+[1] user (00:00:02): First test message.
+[2] assistant (00:00:05): This is a mocking reply (received 1 messages, last: First test message.)
+Testing message WITH thinking in session...
+<thinking id="4-1">
+Thinking about the user's message: "Second test message.". This helps verify the message flow in tests. The user sent 3 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 3 messages, last: Second test message.)   
+
+Session after second message (should contain thinking for message 4):
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant.
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:10
+Messages: 4 total
+
+[1] user (00:00:02): First test message.
+[2] assistant (00:00:05): This is a mocking reply (received 1 messages, last: First test message.)
+[3] user (00:00:07): Second test message.
+[4] assistant (00:00:09): <thinking id=\"4-1\">\nThinking about th...messages, last: Second test message.) (284 chars)

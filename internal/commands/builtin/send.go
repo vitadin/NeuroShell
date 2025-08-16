@@ -17,9 +17,9 @@ func (c *SendCommand) Name() string {
 	return "send"
 }
 
-// ParseMode returns ParseModeRaw to preserve the entire input message for the neuro script.
+// ParseMode returns ParseModeKeyValue to support options like include_thinking.
 func (c *SendCommand) ParseMode() neurotypes.ParseMode {
-	return neurotypes.ParseModeRaw
+	return neurotypes.ParseModeKeyValue
 }
 
 // Description returns a brief description of what the send command does.
@@ -29,7 +29,7 @@ func (c *SendCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the send command.
 func (c *SendCommand) Usage() string {
-	return "\\send message"
+	return "\\send[include_thinking=false] message"
 }
 
 // HelpInfo returns comprehensive help information for the send command.
@@ -39,11 +39,23 @@ func (c *SendCommand) HelpInfo() neurotypes.HelpInfo {
 		Description: c.Description(),
 		Usage:       c.Usage(),
 		ParseMode:   c.ParseMode(),
-		Options:     []neurotypes.HelpOption{}, // No options for send command - configured via variables
+		Options: []neurotypes.HelpOption{
+			{
+				Name:        "include_thinking",
+				Description: "Include thinking blocks in session message",
+				Required:    false,
+				Type:        "boolean",
+				Default:     "false",
+			},
+		},
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\send Hello, how are you?",
 				Description: "Send a simple message to the LLM agent",
+			},
+			{
+				Command:     "\\send[include_thinking=true] Explain quantum computing",
+				Description: "Send message and include thinking blocks in session history",
 			},
 			{
 				Command:     "\\send Analyze this data: ${data_variable}",
@@ -100,8 +112,8 @@ func (c *SendCommand) HelpInfo() neurotypes.HelpInfo {
 	}
 }
 
-// Execute delegates to the _send neuro script via stack service.
-func (c *SendCommand) Execute(_ map[string]string, input string) error {
+// Execute delegates to the _send neuro script via stack service with options.
+func (c *SendCommand) Execute(options map[string]string, input string) error {
 	// Input validation
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
@@ -113,8 +125,28 @@ func (c *SendCommand) Execute(_ map[string]string, input string) error {
 		return fmt.Errorf("stack service not available: %w", err)
 	}
 
+	// Build command with options for _send neuro script
+	command := "\\_send"
+
+	// Add options if provided
+	if len(options) > 0 {
+		command += "["
+		first := true
+		for key, value := range options {
+			if !first {
+				command += ","
+			}
+			command += key + "=" + value
+			first = false
+		}
+		command += "]"
+	}
+
+	// Add the message input
+	command += " " + input
+
 	// Delegate to _send neuro script
-	stackService.PushCommand("\\_send " + input)
+	stackService.PushCommand(command)
 
 	return nil
 }
