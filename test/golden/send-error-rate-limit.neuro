@@ -1,0 +1,24 @@
+%% Send command error test - Rate limit with partial content
+%% Tests that \send command shows thinking blocks and partial content even with errors
+%% This verifies the improved error display where content is shown first, error last
+
+\set _style dark1
+
+\echo === Send Rate Limit Error Test ===
+\echo Testing \send command with rate limit error that includes partial content
+
+%% Test normal message first
+\echo Testing normal message first...
+\send Hello, let me start a conversation.
+
+%% Test message that triggers rate limit with partial content
+\echo Testing rate limit error with partial content...
+\send Please trigger rate limit to test partial response handling.
+
+%% Test follow-up message
+\echo Testing follow-up after rate limit...
+\send Can you continue our conversation now?
+
+%% Show session to verify content was properly stored
+\echo Session content verification:
+\session-show

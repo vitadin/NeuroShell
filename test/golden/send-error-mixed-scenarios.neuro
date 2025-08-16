@@ -1,0 +1,45 @@
+%% Send command comprehensive error test
+%% Tests multiple error scenarios in sequence to verify robust error handling
+%% This demonstrates that the updated _send.neuro handles various error types correctly
+
+\set _style dark1
+
+\echo === Send Mixed Error Scenarios Test ===
+\echo Testing \send command with multiple error types and recovery
+
+%% Start with successful message
+\echo Step 1: Successful message
+\send Hello, starting our conversation!
+
+%% Test API error
+\echo Step 2: API error scenario
+\send Let's trigger api error to see how it's handled.
+
+%% Test successful recovery
+\echo Step 3: Recovery after API error
+\send This message should work after the API error.
+
+%% Test rate limit error with partial content
+\echo Step 4: Rate limit with partial content
+\send Now trigger rate limit to test partial content display.
+
+%% Test client configuration error
+\echo Step 5: Client configuration error
+\send Finally, trigger client error to complete our testing.
+
+%% Final successful message
+\echo Step 6: Final recovery
+\send All error scenarios tested successfully!
+
+%% Comprehensive session review
+\echo === Final Session Analysis ===
+\session-show
+
+%% Check error state variables
+\echo === Error State Check ===
+\get[#llm_error_code]
+\echo Final error code: ${#llm_error_code}
+\get[#llm_error_message]
+\echo Final error message: ${#llm_error_message}
+\get[#llm_call_success]
+\echo Last call success: ${#llm_call_success}

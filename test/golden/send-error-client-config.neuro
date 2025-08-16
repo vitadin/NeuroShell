@@ -1,0 +1,31 @@
+%% Send command error test - Client configuration error
+%% Tests that \send command handles client configuration errors properly
+%% This verifies that errors are displayed at the end after any available content
+
+\set _style dark1
+
+\echo === Send Client Configuration Error Test ===
+\echo Testing \send command with client configuration error
+
+%% Test successful message first
+\echo Testing successful message...
+\send This message should work fine.
+
+%% Test message that triggers client configuration error
+\echo Testing client configuration error...
+\send Please trigger client error to test error handling.
+
+%% Test recovery
+\echo Testing recovery after client error...
+\send This should work normally after the error.
+
+%% Show final state
+\echo Checking final session state:
+\session-show
+
+%% Verify error handling variables
+\echo Error handling verification:
+\get[#llm_error_code]
+\echo Last error code: ${#llm_error_code}
+\get[#llm_error_message] 
+\echo Last error message: ${#llm_error_message}

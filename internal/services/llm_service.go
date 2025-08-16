@@ -285,6 +285,58 @@ func (m *MockLLMService) SendStructuredCompletion(_ neurotypes.LLMClient, sessio
 		lastMessage = session.Messages[messageCount-1].Content
 	}
 
+	// Check for error trigger phrases in the last message for testing error scenarios
+	lastMessageLower := strings.ToLower(lastMessage)
+
+	// Trigger API error
+	if strings.Contains(lastMessageLower, "trigger api error") {
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "api_request_failed",
+				Message: "Mock API request failed for testing purposes",
+				Type:    "api_error",
+			},
+			Metadata: map[string]interface{}{"service": "mock_llm", "error_triggered": true},
+		}
+	}
+
+	// Trigger rate limit error with partial content
+	if strings.Contains(lastMessageLower, "trigger rate limit") {
+		thinkingContent := "I was thinking about this request, but then encountered a rate limit..."
+		return &neurotypes.StructuredLLMResponse{
+			TextContent: "This is a partial response before hitting rate limit",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{
+				{
+					Content:  thinkingContent,
+					Provider: "mock",
+					Type:     "thinking",
+				},
+			},
+			Error: &neurotypes.LLMError{
+				Code:    "rate_limit_exceeded",
+				Message: "Mock rate limit exceeded - please try again later",
+				Type:    "api_error",
+			},
+			Metadata: map[string]interface{}{"service": "mock_llm", "error_triggered": true},
+		}
+	}
+
+	// Trigger client error
+	if strings.Contains(lastMessageLower, "trigger client error") {
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "client_configuration_error",
+				Message: "Mock client configuration error for testing",
+				Type:    "client_error",
+			},
+			Metadata: map[string]interface{}{"service": "mock_llm", "error_triggered": true},
+		}
+	}
+
 	textContent := fmt.Sprintf("This is a mocking reply (received %d messages, last: %s)", messageCount, lastMessage)
 
 	// Determine provider from model configuration for provider-specific testing

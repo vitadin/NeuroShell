@@ -31,15 +31,15 @@
 %% Step 5: Make LLM call using all components (not silent to show thinking display)
 \llm-call[client_id=${#active_client_id}, session_id=${_session_id}]
 
-%% Step 6: Add assistant response to session and display
-%% Check for LLM errors first
-\if[condition="${#llm_error_code}"] \echo "Error (${#llm_error_code}): ${#llm_error_message}"
-
+%% Step 6: Add assistant response to session and display content
 %% Add only the clean text content to session if we have content (no thinking blocks)
 \if[condition="${#llm_text_content}"] \silent \session-add-assistantmsg[session=${_session_id}] ${#llm_text_content}
 
-%% Display thinking blocks first if present
-\if[condition="${#llm_thinking_blocks_rendered}"] \echo ${#llm_thinking_blocks_rendered}
+%% Display thinking blocks first if present (using render command for proper styling)
+\if[condition="${#llm_thinking_blocks_rendered}"] \render ${#llm_thinking_blocks_rendered}
 
 %% Render the clean text content with markdown if we have content
 \if[condition="${#llm_text_content}"] \render-markdown ${#llm_text_content}
+
+%% Display errors at the end if present (ensures errors are visible after content)
+\if[condition="${#llm_error_code}"] \render[style=error] Error (${#llm_error_code}): ${#llm_error_message}
