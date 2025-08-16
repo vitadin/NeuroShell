@@ -56,8 +56,8 @@ func TestSendCommand_HelpInfo(t *testing.T) {
 		"\\send Analyze this data: ${data_variable}",
 		"\\send ${_output}",
 		"\\send Please review this code:\\n${code_content}",
-		"\\set[_reply_way=stream] && \\send Tell me a story",
-		"\\set[_reply_way=sync] && \\send What is 2+2?",
+		"\\set[_reply_way=stream]\n\\send Tell me a story",
+		"\\set[_reply_way=sync]\n\\send What is 2+2?",
 	}
 
 	for _, expectedCmd := range expectedCommands {
