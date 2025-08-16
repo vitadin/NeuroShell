@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -138,8 +139,9 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 		_ = variableService.SetSystemVariable("_assert_actual", actual)
 
 		// Output success message
-		fmt.Printf("✓ Assertion passed: values are equal\n")
-		fmt.Printf("  Value: %s\n", expected)
+		printer := c.createPrinter()
+		printer.Success("✓ Assertion passed: values are equal")
+		printer.Info(fmt.Sprintf("  Value: %s", expected))
 	} else {
 		// Assertion failed
 		_ = variableService.SetSystemVariable("_status", "1")
@@ -148,12 +150,25 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 		_ = variableService.SetSystemVariable("_assert_actual", actual)
 
 		// Output failure message with diff-style information
-		fmt.Printf("✗ Assertion failed: values are not equal\n")
-		fmt.Printf("  Expected: %s\n", expected)
-		fmt.Printf("  Actual:   %s\n", actual)
+		printer := c.createPrinter()
+		printer.Warning("✗ Assertion failed: values are not equal")
+		printer.Info(fmt.Sprintf("  Expected: %s", expected))
+		printer.Info(fmt.Sprintf("  Actual:   %s", actual))
 	}
 
 	return nil
+}
+
+// createPrinter creates a printer with theme service as style provider
+func (c *EqualCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
+	}
+
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

@@ -73,9 +73,7 @@ Messages: 12 total
 [3] user (00:00:13): \"Message 3: Second user message\"
 [4] assistant (00:00:15): \"Message 4: Second assistant response\"
 [5] user (00:00:17): \"Message 5: Third user message\"
-
 ... (2 more messages) ...
-
 [8] assistant (00:00:23): \"Message 8: Fourth assistant response\"
 [9] user (00:00:25): \"Message 9: Fifth user message\"
 [10] assistant (00:00:27): \"Message 10: Fifth assistant response\"

@@ -123,9 +123,7 @@ Messages: 14 total
 [3] user (00:00:07): Hello! Can you help me understand these ...émojis like café, résumé, naïve? (121 chars)
 [4] assistant (00:00:09): --- OpenAI reasoning trace: ---\n\n  Thi...�mojis like café, résumé, naïve?) (511 chars)
 [5] user (00:00:11): Here's a Python function: def hello_worl...True. Can you explain how this works? (112 chars)
-
 ... (4 more messages) ...
-
 [10] assistant (00:00:21): --- OpenAI reasoning trace: ---\n\n  Thi...\nHow do you process this structure?) (533 chars)
 [11] user (00:00:23): Hello 世界! Bonjour le monde! ¿Hóla ...an you respond in multiple languages? (106 chars)
 [12] assistant (00:00:25): --- OpenAI reasoning trace: ---\n\n  Thi...n you respond in multiple languages?) (483 chars)

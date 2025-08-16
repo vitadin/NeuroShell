@@ -14,6 +14,7 @@ System: You are a helpful assistant.
 Created: 2025-01-01 00:00:03
 Updated: 2025-01-01 00:00:03
 Messages: 0 total
+
 %%> "\\silent \\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\session-show alpha"
 Session: work_project_alpha (ID: 00000001)
@@ -21,6 +22,7 @@ System: You are a helpful assistant.
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:01
 Messages: 0 total
+
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-show[id=true] 00000001"
 Session: work_project_alpha (ID: 00000001)
@@ -28,6 +30,7 @@ System: You are a helpful assistant.
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:01
 Messages: 0 total
+
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-show[id=true] 00000003"
 Session: debug_session (ID: 00000003)
@@ -35,6 +38,7 @@ System: You are a helpful assistant.
 Created: 2025-01-01 00:00:03
 Updated: 2025-01-01 00:00:03
 Messages: 0 total
+
 %%> "\\silent \\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\try \\session-show work_project"
 %%> "\\session-show work_project"

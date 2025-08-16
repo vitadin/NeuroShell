@@ -12,6 +12,7 @@ System: You are a helpful assistant
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:01
 Messages: 0 total
+
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-new[system=\"You are a very comprehensive and detailed assistant that provides thorough explanations and helps users understand complex topics by breaking them down into manageable components\"] long_prompt_session"
 Created session 'long_prompt_session' (ID: 00000002)
@@ -22,6 +23,7 @@ System: You are a helpful assistant
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:01
 Messages: 0 total
+
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-show basic"
 Session: basic_session (ID: 00000001)
@@ -29,6 +31,7 @@ System: You are a helpful assistant
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:01
 Messages: 0 total
+
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-show[id=true] 00000001"
 Session: basic_session (ID: 00000001)
@@ -36,6 +39,7 @@ System: You are a helpful assistant
 Created: 2025-01-01 00:00:01
 Updated: 2025-01-01 00:00:01
 Messages: 0 total
+
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-delete basic_session"
 Deleted session 'basic_session' (ID: 00000001)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -233,7 +234,8 @@ func (c *CopyCommand) Execute(args map[string]string, _ string) error {
 	}
 
 	// Print confirmation
-	fmt.Println(outputMsg)
+	printer := c.createPrinter()
+	printer.Success(outputMsg)
 
 	return nil
 }
@@ -264,6 +266,18 @@ func (c *CopyCommand) updateSessionVariables(copiedSession *neurotypes.ChatSessi
 	}
 
 	return nil
+}
+
+// createPrinter creates a printer with theme service as style provider
+func (c *CopyCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
+	}
+
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

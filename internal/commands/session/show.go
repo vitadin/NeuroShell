@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -150,15 +151,17 @@ func (c *ShowCommand) handleNoParameter(chatSessionService *services.ChatSession
 
 	if len(sessions) == 0 {
 		// Case 2: No sessions exist
-		fmt.Println("No sessions found. Use \\session-new to create a session.")
+		printer := c.createPrinter()
+		printer.Info("No sessions found. Use \\session-new to create a session.")
 		return nil
 	}
 
 	// Case 3: Sessions exist but no active - show guidance
-	fmt.Printf("No active session found. Use \\session-activate to activate a session.\n\nAvailable sessions (%d):\n", len(sessions))
+	printer := c.createPrinter()
+	printer.Info(fmt.Sprintf("No active session found. Use \\session-activate to activate a session.\n\nAvailable sessions (%d):", len(sessions)))
 	for _, session := range sessions {
 		messageCount := len(session.Messages)
-		fmt.Printf("  %s (ID: %s, Messages: %d)\n", session.Name, session.ID[:8], messageCount)
+		printer.Info(fmt.Sprintf("  %s (ID: %s, Messages: %d)", session.Name, session.ID[:8], messageCount))
 	}
 
 	return nil
@@ -269,29 +272,29 @@ func (c *ShowCommand) handleMultipleMatches(matches []*neurotypes.ChatSession, s
 
 // renderSessionInfo displays comprehensive session information with smart formatting.
 func (c *ShowCommand) renderSessionInfo(session *neurotypes.ChatSession, variableService *services.VariableService) error {
-	// Get theme object for styling
-	themeObj := c.getThemeObject()
+	// Get printer for output
+	printer := c.createPrinter()
 
-	// Display session header with styling
+	// Display session header
 	sessionHeader := fmt.Sprintf("Session: %s (ID: %s)", session.Name, session.ID[:8])
-	fmt.Println(themeObj.Success.Render(sessionHeader))
+	printer.Success(sessionHeader)
 
-	// Display system prompt with truncation and styling
-	systemPrompt := c.truncateContentWithTheme(session.SystemPrompt, MaxSystemPromptDisplay, themeObj)
-	fmt.Printf("%s %s\n", themeObj.Info.Render("System:"), themeObj.Variable.Render(systemPrompt))
+	// Display system prompt with truncation
+	systemPrompt := c.truncateContent(session.SystemPrompt, MaxSystemPromptDisplay)
+	printer.Info(fmt.Sprintf("System: %s", systemPrompt))
 
-	// Display timestamps with styling
-	fmt.Printf("%s %s\n", themeObj.Info.Render("Created:"), themeObj.Info.Render(session.CreatedAt.Format("2006-01-02 15:04:05")))
-	fmt.Printf("%s %s\n", themeObj.Info.Render("Updated:"), themeObj.Info.Render(session.UpdatedAt.Format("2006-01-02 15:04:05")))
+	// Display timestamps
+	printer.Info(fmt.Sprintf("Created: %s", session.CreatedAt.Format("2006-01-02 15:04:05")))
+	printer.Info(fmt.Sprintf("Updated: %s", session.UpdatedAt.Format("2006-01-02 15:04:05")))
 
-	// Display message count with styling
+	// Display message count
 	messageCount := len(session.Messages)
-	fmt.Printf("%s %s\n", themeObj.Info.Render("Messages:"), themeObj.Highlight.Render(fmt.Sprintf("%d total", messageCount)))
+	printer.Info(fmt.Sprintf("Messages: %d total", messageCount))
+	printer.Println("") // Add blank line after message count
 
 	// Display messages with smart truncation
 	if messageCount > 0 {
-		fmt.Println()
-		c.renderMessages(session.Messages, themeObj)
+		c.renderMessages(session.Messages, printer)
 	}
 
 	// Auto-push session activation command to stack service to handle active session state
@@ -313,59 +316,44 @@ func (c *ShowCommand) renderSessionInfo(session *neurotypes.ChatSession, variabl
 }
 
 // renderMessages displays session messages with smart truncation and role information.
-func (c *ShowCommand) renderMessages(messages []neurotypes.Message, themeObj *services.Theme) {
+func (c *ShowCommand) renderMessages(messages []neurotypes.Message, printer *output.Printer) {
 	messageCount := len(messages)
 
 	if messageCount <= MaxMessagesShown {
 		// Show all messages
 		for i, msg := range messages {
-			c.renderSingleMessage(i+1, msg, themeObj)
+			c.renderSingleMessage(i+1, msg, printer)
 		}
 	} else {
 		// Show first 5 messages
 		for i := 0; i < 5; i++ {
-			c.renderSingleMessage(i+1, messages[i], themeObj)
+			c.renderSingleMessage(i+1, messages[i], printer)
 		}
 
-		// Show separator with count (styled)
+		// Show separator with count
 		hiddenCount := messageCount - 10
 		separator := fmt.Sprintf("... (%d more messages) ...", hiddenCount)
-		fmt.Printf("\n%s\n\n", themeObj.Warning.Render(separator))
+		printer.Warning(separator)
+		printer.Print("")
 
 		// Show last 5 messages
 		for i := messageCount - 5; i < messageCount; i++ {
-			c.renderSingleMessage(i+1, messages[i], themeObj)
+			c.renderSingleMessage(i+1, messages[i], printer)
 		}
 	}
 }
 
 // renderSingleMessage displays a single message with role and truncated content.
-func (c *ShowCommand) renderSingleMessage(index int, msg neurotypes.Message, themeObj *services.Theme) {
-	// Truncate message content with theme styling
-	content := c.truncateContentWithTheme(msg.Content, MaxMessageDisplay, themeObj)
+func (c *ShowCommand) renderSingleMessage(index int, msg neurotypes.Message, printer *output.Printer) {
+	// Truncate message content
+	content := c.truncateContent(msg.Content, MaxMessageDisplay)
 
 	// Format timestamp
 	timestamp := msg.Timestamp.Format("15:04:05")
 
-	// Style different message roles differently
-	var roleStyled string
-	switch msg.Role {
-	case "user":
-		roleStyled = themeObj.Command.Render(msg.Role)
-	case "assistant":
-		roleStyled = themeObj.Success.Render(msg.Role)
-	case "system":
-		roleStyled = themeObj.Warning.Render(msg.Role)
-	default:
-		roleStyled = themeObj.Info.Render(msg.Role)
-	}
-
-	// Display message with styled components
-	indexStyled := themeObj.Highlight.Render(fmt.Sprintf("[%d]", index))
-	timestampStyled := themeObj.Info.Render(fmt.Sprintf("(%s)", timestamp))
-	contentStyled := themeObj.Variable.Render(content)
-
-	fmt.Printf("%s %s %s: %s\n", indexStyled, roleStyled, timestampStyled, contentStyled)
+	// Display message with index, role, timestamp, and content in original format
+	messageOutput := fmt.Sprintf("[%d] %s (%s): %s", index, msg.Role, timestamp, content)
+	printer.Println(messageOutput)
 }
 
 // truncateContent truncates text content with ellipsis and character count if needed.
@@ -407,65 +395,16 @@ func (c *ShowCommand) truncateContent(content string, maxLength int) string {
 	return fmt.Sprintf("%s%s%s (%d chars)", prefix, TruncationIndicator, suffix, len(content))
 }
 
-// truncateContentWithTheme truncates text content with styled character count.
-// Multi-line content is compressed to single line using Go's %q formatting.
-func (c *ShowCommand) truncateContentWithTheme(content string, maxLength int, themeObj *services.Theme) string {
-	// Use %q to escape newlines and special characters for single-line display
-	quoted := fmt.Sprintf("%q", content)
-	// Remove the surrounding quotes added by %q
-	if len(quoted) >= 2 && quoted[0] == '"' && quoted[len(quoted)-1] == '"' {
-		quoted = quoted[1 : len(quoted)-1]
-	}
-
-	if len(quoted) <= maxLength {
-		return quoted
-	}
-
-	// Calculate split points for showing beginning and end
-	prefixLength := maxLength / 2
-	suffixLength := maxLength - prefixLength - len(TruncationIndicator)
-
-	// Handle very short maxLength
-	if maxLength <= len(TruncationIndicator) {
-		return TruncationIndicator
-	}
-
-	// Handle edge case where suffix would be negative
-	if suffixLength < 1 {
-		// Just truncate to maxLength - ellipsis length
-		truncateAt := maxLength - len(TruncationIndicator)
-		if truncateAt < 0 {
-			return TruncationIndicator
-		}
-		return quoted[:truncateAt] + TruncationIndicator
-	}
-
-	prefix := quoted[:prefixLength]
-	suffix := quoted[len(quoted)-suffixLength:]
-
-	// Style the character count with Info theme (subdued color)
-	charCount := themeObj.Info.Render(fmt.Sprintf("(%d chars)", len(content)))
-	return fmt.Sprintf("%s%s%s %s", prefix, TruncationIndicator, suffix, charCount)
-}
-
-// getThemeObject retrieves the theme object based on the _style variable
-func (c *ShowCommand) getThemeObject() *services.Theme {
-	// Get _style variable for theme selection
-	styleValue := ""
-	if variableService, err := services.GetGlobalVariableService(); err == nil {
-		if value, err := variableService.Get("_style"); err == nil {
-			styleValue = value
-		}
-	}
-
-	// Get theme service and theme object (always returns valid theme)
+// createPrinter creates a printer with theme service as style provider
+func (c *ShowCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
 	themeService, err := services.GetGlobalThemeService()
 	if err != nil {
-		// This should rarely happen, but we need to return something
-		panic(fmt.Sprintf("theme service not available: %v", err))
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
 	}
 
-	return themeService.GetThemeByName(styleValue)
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {
