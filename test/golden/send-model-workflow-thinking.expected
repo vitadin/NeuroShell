@@ -8,14 +8,9 @@ Created model 'claude-model' (ID: 00000001, Provider: anthropic, Base: claude-so
 Activated model 'claude-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
 Active model: claude-model
 
-  --- Internal processing: ---                                                
-                                                                              
   Thinking about the user's message: "Can you analyze this logic problem for  
   me?". This helps verify the message flow in tests. The user sent 1 messages 
   total, and I need to provide a helpful response.                            
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 1 messages, last: Can you analyze this    
   logic problem for me?)                                                      
 
@@ -26,14 +21,9 @@ Created model 'gemini-model' (ID: 00000005, Provider: gemini, Base: gemini-2.5-f
 Activated model 'gemini-model' (ID: 00000005, Provider: gemini, Base: gemini-2.5-flash)
 Active model: gemini-model
 
-  --- Gemini's thought process: ---                                           
-                                                                              
   Thinking about the user's message: "What's the difference between recursive 
   and iterative algorithms?". This helps verify the message flow in tests. The
   user sent 3 messages total, and I need to provide a helpful response.       
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 3 messages, last: What's the difference   
   between recursive and iterative algorithms?)                                
 
@@ -44,15 +34,10 @@ Created model 'reasoning-model' (ID: 00000008, Provider: openai, Base: o1-2024-1
 Activated model 'reasoning-model' (ID: 00000008, Provider: openai, Base: o1-2024-12-17)
 Active model: reasoning-model
 
-  --- OpenAI reasoning trace: ---                                             
-                                                                              
   Thinking about the user's message: "Solve this step by step: If I have 3    
   apples and give away 1, then buy 2 more, how many do I have?". This helps   
   verify the message flow in tests. The user sent 5 messages total, and I need
   to provide a helpful response.                                              
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 5 messages, last: Solve this step by step:
   If I have 3 apples and give away 1, then buy 2 more, how many do I have?)   
 
@@ -64,11 +49,11 @@ Updated: 2025-01-01 00:00:16
 Messages: 6 total
 
 [1] user (00:00:03): Can you analyze this logic problem for me?
-[2] assistant (00:00:05): --- Internal processing: ---\n\n  Thinki...u analyze this logic problem for me?) (350 chars)
+[2] assistant (00:00:05): <thinking id=\"2-1\">\nThinking about th...u analyze this logic problem for me?) (328 chars)
 [3] user (00:00:08): What's the difference between recursive and iterative algorithms?
-[4] assistant (00:00:10): --- Gemini's thought process: ---\n\n  T... recursive and iterative algorithms?) (401 chars)
+[4] assistant (00:00:10): <thinking id=\"4-1\">\nThinking about th... recursive and iterative algorithms?) (374 chars)
 [5] user (00:00:13): Solve this step by step: If I have 3 app... then buy 2 more, how many do I have? (97 chars)
-[6] assistant (00:00:15): --- OpenAI reasoning trace: ---\n\n  Thi...then buy 2 more, how many do I have?) (463 chars)
+[6] assistant (00:00:15): <thinking id=\"6-1\">\nThinking about th...then buy 2 more, how many do I have?) (438 chars)
 Model information:
 #active_model_name = reasoning-model
 Final active model: reasoning-model

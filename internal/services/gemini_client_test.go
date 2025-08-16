@@ -479,7 +479,7 @@ func TestGeminiClient_ProcessGeminiResponse(t *testing.T) {
 					},
 				},
 			},
-			expectedContent:  "\n🤔 **Thinking:**\nThis is thinking content\n\nThis is regular text",
+			expectedContent:  "This is regular text",
 			expectedThinking: 1,
 			expectedText:     1,
 		},
@@ -513,7 +513,7 @@ func TestGeminiClient_ProcessGeminiResponse(t *testing.T) {
 					},
 				},
 			},
-			expectedContent:  "\n🤔 **Thinking:**\nOnly thinking content\n\n",
+			expectedContent:  "",
 			expectedThinking: 1,
 			expectedText:     0,
 		},
@@ -878,16 +878,23 @@ func TestGeminiClient_ThinkingMode_RealAPI(t *testing.T) {
 		},
 	}
 
+	// Test regular completion (should return clean text without thinking blocks)
 	response, err := client.SendChatCompletion(session, modelConfig)
-
 	require.NoError(t, err)
-	assert.NotEmpty(t, response)
+	// Response might be empty if the model only generates thinking content
+	t.Logf("Regular Completion Response: %s", response)
 
-	// Check if thinking blocks are present (they should be formatted with 🤔)
-	containsThinking := assert.Contains(t, response, "🤔 **Thinking:**") ||
-		assert.NotContains(t, response, "🤔 **Thinking:**") // Either is fine, depends on model response
+	// Test structured completion (should extract thinking blocks separately)
+	structuredResponse, err := client.SendStructuredCompletion(session, modelConfig)
+	require.NoError(t, err)
+	assert.NotNil(t, structuredResponse)
 
-	t.Logf("Thinking Mode Response (Contains thinking: %v): %s", containsThinking, response)
+	// Check that we get either text content or thinking blocks (or both)
+	hasContent := structuredResponse.TextContent != "" || len(structuredResponse.ThinkingBlocks) > 0
+	assert.True(t, hasContent, "Should have either text content or thinking blocks")
+
+	t.Logf("Structured Response - Text: %s, Thinking Blocks: %d",
+		structuredResponse.TextContent, len(structuredResponse.ThinkingBlocks))
 }
 
 func TestGeminiClient_DynamicThinking_RealAPI(t *testing.T) {

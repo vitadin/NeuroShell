@@ -193,6 +193,8 @@ func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSessi
 	structuredResponse := &neurotypes.StructuredLLMResponse{
 		TextContent:    textContent,
 		ThinkingBlocks: thinkingBlocks,
+		Error:          nil, // No error in successful case
+		Metadata:       map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
 	}
 
 	logger.Debug("Anthropic structured response received", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))

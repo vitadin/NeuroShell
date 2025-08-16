@@ -89,20 +89,38 @@ func (t *ThinkingRendererService) GetSupportedProviders() []string {
 	return []string{"anthropic", "gemini", "openai", "generic"}
 }
 
-// RenderThinkingBlocksLegacy provides backward compatibility for the old interface.
-// This method uses default configuration settings for rendering.
-// Deprecated: Use RenderThinkingBlocks(blocks, config) instead.
-func (t *ThinkingRendererService) RenderThinkingBlocksLegacy(blocks []neurotypes.ThinkingBlock) string {
-	// Create a default configuration
-	defaultConfig := &DefaultRenderConfig{
-		showThinking:  true,
-		thinkingStyle: "full",
-		compactMode:   false,
-		maxWidth:      80,
-		theme:         "default",
+// RenderThinkingBlocksWithMessageIndex renders thinking blocks with proper XML formatting and unique IDs.
+func (t *ThinkingRendererService) RenderThinkingBlocksWithMessageIndex(blocks []neurotypes.ThinkingBlock, config neurotypes.RenderConfig, messageIndex int) string {
+	if !t.initialized {
+		logger.Error("ThinkingRendererService not initialized")
+		return ""
 	}
 
-	return t.RenderThinkingBlocks(blocks, defaultConfig)
+	if len(blocks) == 0 {
+		return ""
+	}
+
+	// Check if thinking should be shown at all
+	if !config.ShowThinking() {
+		return ""
+	}
+
+	var result strings.Builder
+
+	for blockIndex, block := range blocks {
+		// Create XML format with unique ID based on message and block index
+		xmlID := fmt.Sprintf("%d-%d", messageIndex, blockIndex+1)
+		result.WriteString(fmt.Sprintf("<thinking id=\"%s\">\n", xmlID))
+		result.WriteString(block.Content)
+		if !strings.HasSuffix(block.Content, "\n") {
+			result.WriteString("\n")
+		}
+		result.WriteString("</thinking>\n\n")
+
+		logger.Debug("Thinking block rendered with XML format", "provider", block.Provider, "type", block.Type, "xml_id", xmlID)
+	}
+
+	return result.String()
 }
 
 // IsInitialized returns true if the service has been initialized.
@@ -246,11 +264,11 @@ func (t *ThinkingRendererService) wrapContent(content string, maxWidth int) stri
 
 // DefaultRenderConfig provides a basic implementation of RenderConfig for backward compatibility.
 type DefaultRenderConfig struct {
-	showThinking  bool
-	thinkingStyle string
-	compactMode   bool
-	maxWidth      int
-	theme         string
+	ShowThinkingEnabled bool
+	ThinkingStyleValue  string
+	CompactModeEnabled  bool
+	MaxWidthValue       int
+	ThemeValue          string
 }
 
 // GetStyle returns a basic lipgloss style for the given element.
@@ -281,25 +299,25 @@ func (c *DefaultRenderConfig) GetStyle(element string) lipgloss.Style {
 
 // GetTheme returns the theme name.
 func (c *DefaultRenderConfig) GetTheme() string {
-	return c.theme
+	return c.ThemeValue
 }
 
 // IsCompactMode returns whether compact mode is enabled.
 func (c *DefaultRenderConfig) IsCompactMode() bool {
-	return c.compactMode
+	return c.CompactModeEnabled
 }
 
 // GetMaxWidth returns the maximum width for content.
 func (c *DefaultRenderConfig) GetMaxWidth() int {
-	return c.maxWidth
+	return c.MaxWidthValue
 }
 
 // ShowThinking returns whether thinking blocks should be displayed.
 func (c *DefaultRenderConfig) ShowThinking() bool {
-	return c.showThinking
+	return c.ShowThinkingEnabled
 }
 
 // GetThinkingStyle returns the thinking display style.
 func (c *DefaultRenderConfig) GetThinkingStyle() string {
-	return c.thinkingStyle
+	return c.ThinkingStyleValue
 }

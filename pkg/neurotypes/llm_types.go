@@ -14,16 +14,26 @@ type StreamChunk struct {
 // StructuredLLMResponse represents a structured response from an LLM provider.
 // It separates clean text content from thinking/reasoning blocks for proper rendering control.
 type StructuredLLMResponse struct {
-	TextContent    string          // Clean main response content (user-facing)
-	ThinkingBlocks []ThinkingBlock // Extracted thinking/reasoning content
+	TextContent    string                 // Clean main response content (user-facing)
+	ThinkingBlocks []ThinkingBlock        // Extracted thinking/reasoning content
+	Error          *LLMError              // Captured error if any
+	Metadata       map[string]interface{} // Additional metadata from provider
+}
+
+// LLMError represents an error that occurred during LLM processing.
+// This captures provider-specific error information for proper handling.
+type LLMError struct {
+	Code    string `json:"code"`    // Error code from provider
+	Message string `json:"message"` // Human-readable error message
+	Type    string `json:"type"`    // Error type (rate_limit, invalid_request, server_error, etc.)
 }
 
 // ThinkingBlock represents a block of thinking/reasoning content from an LLM.
 // This unified structure handles thinking content from all providers (Anthropic, Gemini, OpenAI).
 type ThinkingBlock struct {
-	Content  string // The actual thinking/reasoning text content
-	Provider string // Source provider: "anthropic", "gemini", "openai"
-	Type     string // Block type: "thinking", "redacted_thinking", "reasoning"
+	Content  string `json:"content"`  // The actual thinking/reasoning text content
+	Provider string `json:"provider"` // Source provider: "anthropic", "gemini", "openai"
+	Type     string `json:"type"`     // Block type: "thinking", "redacted_thinking", "reasoning"
 }
 
 // LLMClient defines the interface for LLM provider implementations.

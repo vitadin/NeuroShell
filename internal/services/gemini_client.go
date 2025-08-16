@@ -93,9 +93,9 @@ func (c *GeminiClient) SendChatCompletion(session *neurotypes.ChatSession, model
 
 	// Process response with formatted thinking (traditional processing)
 	content, thinkingInfo := c.processGeminiResponse(result)
+	// Content can be empty if response contains only thinking blocks (which are now skipped)
 	if content == "" {
-		logger.Error("No content in Gemini response")
-		return "", fmt.Errorf("no content in response")
+		logger.Debug("Gemini response contains no text content (may have thinking blocks only)")
 	}
 
 	logger.Debug("Gemini response received", "content_length", len(content), "thinking_blocks", thinkingInfo.ThinkingBlocks, "text_blocks", thinkingInfo.TextBlocks)
@@ -155,6 +155,8 @@ func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession,
 	structuredResponse := &neurotypes.StructuredLLMResponse{
 		TextContent:    textContent,
 		ThinkingBlocks: thinkingBlocks,
+		Error:          nil, // No error in successful case
+		Metadata:       map[string]interface{}{"provider": "gemini", "model": modelConfig.BaseModel},
 	}
 
 	logger.Debug("Gemini structured response received", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))
@@ -358,14 +360,11 @@ func (c *GeminiClient) processGeminiResponse(result *genai.GenerateContentRespon
 			}
 
 			if part.Thought {
-				// This is a thinking block - display it with special formatting
+				// This is a thinking block - skip in regular response (will be handled by structured response)
 				info.ThinkingBlocks++
-				contentBuilder.WriteString("\n🤔 **Thinking:**\n")
-				contentBuilder.WriteString(part.Text)
-				contentBuilder.WriteString("\n\n")
-				logger.Debug("Gemini thinking block processed", "thinking_length", len(part.Text))
+				logger.Debug("Gemini thinking block skipped in regular response", "thinking_length", len(part.Text))
 			} else {
-				// This is regular text content
+				// This is regular text content - no formatting
 				info.TextBlocks++
 				contentBuilder.WriteString(part.Text)
 				logger.Debug("Gemini text block processed", "text_length", len(part.Text))
