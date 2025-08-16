@@ -137,13 +137,38 @@ func (c *OpenAIClient) SendStructuredCompletion(session *neurotypes.ChatSession,
 	// Use regular completion since OpenAI chat models don't have native thinking content
 	textContent, err := c.SendChatCompletion(session, modelConfig)
 	if err != nil {
-		return nil, fmt.Errorf("openai structured completion failed: %w", err)
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "api_request_failed",
+				Message: err.Error(),
+				Type:    "api_error",
+			},
+			Metadata: map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
+		}, nil
+	}
+
+	// Check for empty response
+	if textContent == "" {
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "empty_response",
+				Message: "no content returned",
+				Type:    "response_error",
+			},
+			Metadata: map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
+		}, nil
 	}
 
 	// Create structured response with no thinking blocks (regular models don't provide thinking blocks)
 	structuredResponse := &neurotypes.StructuredLLMResponse{
 		TextContent:    textContent,
 		ThinkingBlocks: []neurotypes.ThinkingBlock{}, // Empty - regular models don't provide thinking blocks
+		Error:          nil,                          // No error in successful case
+		Metadata:       map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
 	}
 
 	logger.Debug("OpenAI structured response created", "content_length", len(textContent), "thinking_blocks", 0)

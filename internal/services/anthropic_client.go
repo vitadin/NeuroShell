@@ -166,27 +166,64 @@ func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSessi
 
 	// Initialize client if needed
 	if err := c.initializeClientIfNeeded(); err != nil {
-		return nil, fmt.Errorf("failed to initialize Anthropic client: %w", err)
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "client_initialization_failed",
+				Message: err.Error(),
+				Type:    "initialization_error",
+			},
+			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
+		}, nil
 	}
 
 	// Reuse the core logic from SendChatCompletion but return raw response blocks for structured processing
 	message, err := c.sendChatCompletionRequest(session, modelConfig)
 	if err != nil {
-		return nil, err
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "api_request_failed",
+				Message: err.Error(),
+				Type:    "api_error",
+			},
+			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
+		}, nil
 	}
 
 	// Extract response content and thinking blocks separately (structured processing)
 	if len(message.Content) == 0 {
 		logger.Error("No response content returned")
-		return nil, fmt.Errorf("no response content returned")
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "empty_response",
+				Message: "no response content returned",
+				Type:    "response_error",
+			},
+			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
+		}, nil
 	}
 
 	// Process all content blocks and extract thinking blocks separately
 	textContent, thinkingBlocks := c.processResponseBlocksStructured(message.Content)
 
-	if textContent == "" {
-		logger.Error("Empty response content")
-		return nil, fmt.Errorf("empty response content")
+	// Check for truly empty response (no text content AND no thinking blocks)
+	if textContent == "" && len(thinkingBlocks) == 0 {
+		logger.Error("Empty response content and no thinking blocks")
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    textContent,
+			ThinkingBlocks: thinkingBlocks,
+			Error: &neurotypes.LLMError{
+				Code:    "empty_response",
+				Message: "no content or thinking blocks returned",
+				Type:    "response_error",
+			},
+			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
+		}, nil
 	}
 
 	// Create structured response

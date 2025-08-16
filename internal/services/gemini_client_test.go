@@ -688,9 +688,16 @@ func TestGeminiClient_SendStructuredCompletion_NotConfigured(t *testing.T) {
 
 	response, err := client.SendStructuredCompletion(session, modelConfig)
 
-	assert.Error(t, err)
-	assert.Nil(t, response)
-	assert.Contains(t, err.Error(), "google API key not configured")
+	assert.NoError(t, err)           // No Go error should be returned
+	assert.NotNil(t, response)       // Response should be returned
+	assert.NotNil(t, response.Error) // But Error field should be populated
+	assert.Equal(t, "api_request_failed", response.Error.Code)
+	assert.Contains(t, response.Error.Message, "google API key not configured")
+	assert.Equal(t, "api_error", response.Error.Type)
+	assert.Equal(t, "", response.TextContent)                // No text content on error
+	assert.Empty(t, response.ThinkingBlocks)                 // No thinking blocks on error
+	assert.Equal(t, "gemini", response.Metadata["provider"]) // Metadata should still be set
+	assert.Equal(t, "gemini-2.5-flash", response.Metadata["model"])
 }
 
 func TestGeminiClient_ProcessGeminiResponseStructured(t *testing.T) {
@@ -737,10 +744,13 @@ func TestGeminiClient_StructuredResponseInterface(t *testing.T) {
 	}
 
 	// This will fail due to missing API key, but verifies the method signature
-	_, err := llmClient.SendStructuredCompletion(session, modelConfig)
+	response, err := llmClient.SendStructuredCompletion(session, modelConfig)
 
-	assert.Error(t, err) // Expected to fail due to no API key
-	assert.Contains(t, err.Error(), "google API key not configured")
+	assert.NoError(t, err)           // No Go error should be returned
+	assert.NotNil(t, response)       // Response should be returned
+	assert.NotNil(t, response.Error) // But Error field should be populated
+	assert.Equal(t, "api_request_failed", response.Error.Code)
+	assert.Contains(t, response.Error.Message, "google API key not configured")
 }
 
 // Real API Integration Tests (Require Valid API Key)

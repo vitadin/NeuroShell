@@ -141,14 +141,32 @@ func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession,
 	// Use shared request logic to get raw response
 	result, err := c.sendChatCompletionRequest(session, modelConfig)
 	if err != nil {
-		return nil, err
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "api_request_failed",
+				Message: err.Error(),
+				Type:    "api_error",
+			},
+			Metadata: map[string]interface{}{"provider": "gemini", "model": modelConfig.BaseModel},
+		}, nil
 	}
 
 	// Process response with structured thinking block extraction
 	textContent, thinkingBlocks := c.processGeminiResponseStructured(result)
 	if textContent == "" && len(thinkingBlocks) == 0 {
 		logger.Error("No content in Gemini structured response")
-		return nil, fmt.Errorf("no content in response")
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "empty_response",
+				Message: "no content in response",
+				Type:    "response_error",
+			},
+			Metadata: map[string]interface{}{"provider": "gemini", "model": modelConfig.BaseModel},
+		}, nil
 	}
 
 	// Create structured response

@@ -116,7 +116,30 @@ func (c *OpenAIReasoningClient) SendStructuredCompletion(session *neurotypes.Cha
 	// For regular models, use SendChatCompletion and wrap in structured format
 	textContent, err := c.SendChatCompletion(session, modelConfig)
 	if err != nil {
-		return nil, fmt.Errorf("openai structured chat completion failed: %w", err)
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "api_request_failed",
+				Message: err.Error(),
+				Type:    "api_error",
+			},
+			Metadata: map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
+		}, nil
+	}
+
+	// Check for empty response
+	if textContent == "" {
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "empty_response",
+				Message: "no content returned",
+				Type:    "response_error",
+			},
+			Metadata: map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
+		}, nil
 	}
 
 	// Create structured response with no thinking blocks (regular models don't provide reasoning)
@@ -303,7 +326,16 @@ func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neuro
 	// Use shared request logic to get raw response
 	response, err := c.sendReasoningCompletionRequest(session, modelConfig)
 	if err != nil {
-		return nil, err
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "api_request_failed",
+				Message: err.Error(),
+				Type:    "api_error",
+			},
+			Metadata: map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
+		}, nil
 	}
 
 	// Process output items: separate reasoning summaries and message content
@@ -344,9 +376,19 @@ func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neuro
 		}
 	}
 
+	// Check for truly empty response (no text content AND no thinking blocks)
 	if textContent == "" && len(thinkingBlocks) == 0 {
 		logger.Error("Empty response content from structured reasoning completion")
-		return nil, fmt.Errorf("empty response content")
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "empty_response",
+				Message: "no content or reasoning returned",
+				Type:    "response_error",
+			},
+			Metadata: map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
+		}, nil
 	}
 
 	// Create structured response with separated reasoning and text content
