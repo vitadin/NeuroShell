@@ -135,7 +135,8 @@ func (c *GeminiClient) sendChatCompletionRequest(session *neurotypes.ChatSession
 
 // SendStructuredCompletion sends a chat completion request to Google Gemini and returns structured response.
 // This method reuses SendChatCompletion logic and post-processes the response to separate thinking blocks.
-func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+// All errors are encoded in the StructuredLLMResponse.Error field - no Go errors are returned.
+func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) *neurotypes.StructuredLLMResponse {
 	logger.Debug("Gemini SendStructuredCompletion starting", "model", modelConfig.BaseModel)
 
 	// Use shared request logic to get raw response
@@ -150,7 +151,7 @@ func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession,
 				Type:    "api_error",
 			},
 			Metadata: map[string]interface{}{"provider": "gemini", "model": modelConfig.BaseModel},
-		}, nil
+		}
 	}
 
 	// Process response with structured thinking block extraction
@@ -166,7 +167,7 @@ func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession,
 				Type:    "response_error",
 			},
 			Metadata: map[string]interface{}{"provider": "gemini", "model": modelConfig.BaseModel},
-		}, nil
+		}
 	}
 
 	// Create structured response
@@ -178,7 +179,7 @@ func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession,
 	}
 
 	logger.Debug("Gemini structured response received", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))
-	return structuredResponse, nil
+	return structuredResponse
 }
 
 // SetDebugTransport sets the HTTP transport for network debugging.

@@ -60,7 +60,7 @@ func (m *MockLLMClient) IsConfigured() bool {
 	return m.configured
 }
 
-func (m *MockLLMClient) SendStructuredCompletion(_ *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+func (m *MockLLMClient) SendStructuredCompletion(_ *neurotypes.ChatSession, _ *neurotypes.ModelConfig) *neurotypes.StructuredLLMResponse {
 	// Mock thinking blocks for testing
 	thinkingBlocks := []neurotypes.ThinkingBlock{
 		{
@@ -73,9 +73,11 @@ func (m *MockLLMClient) SendStructuredCompletion(_ *neurotypes.ChatSession, _ *n
 	response := &neurotypes.StructuredLLMResponse{
 		TextContent:    m.response,
 		ThinkingBlocks: thinkingBlocks,
+		Error:          nil, // No error in successful case
+		Metadata:       map[string]interface{}{"provider": "mock", "model": "test"},
 	}
 
-	return response, nil
+	return response
 }
 
 // Test LLMService with mock client
@@ -282,10 +284,10 @@ func TestLLMService_SendStructuredCompletion(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	response, err := service.SendStructuredCompletion(client, session, modelConfig)
+	response := service.SendStructuredCompletion(client, session, modelConfig)
 
-	require.NoError(t, err)
 	assert.NotNil(t, response)
+	assert.Nil(t, response.Error) // No error should be present
 	assert.Equal(t, "This is a mock LLM response.", response.TextContent)
 	assert.Len(t, response.ThinkingBlocks, 1)
 	assert.Equal(t, "This is mock thinking content for testing.", response.ThinkingBlocks[0].Content)
@@ -308,9 +310,11 @@ func TestLLMService_SendStructuredCompletion_NotInitialized(t *testing.T) {
 		Provider:  "openai",
 	}
 
-	response, err := service.SendStructuredCompletion(client, session, modelConfig)
+	response := service.SendStructuredCompletion(client, session, modelConfig)
 
-	assert.Error(t, err)
-	assert.Nil(t, response)
-	assert.Contains(t, err.Error(), "llm service not initialized")
+	assert.NotNil(t, response)
+	assert.NotNil(t, response.Error) // Error should be present
+	assert.Equal(t, "service_not_initialized", response.Error.Code)
+	assert.Contains(t, response.Error.Message, "llm service not initialized")
+	assert.Equal(t, "service_error", response.Error.Type)
 }

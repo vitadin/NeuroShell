@@ -108,36 +108,60 @@ func (s *LLMService) StreamCompletion(client neurotypes.LLMClient, session *neur
 
 // SendStructuredCompletion sends a chat completion request using the provided client and returns structured response.
 // This separates thinking/reasoning content from regular text for proper rendering control.
-func (s *LLMService) SendStructuredCompletion(client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+// All errors are encoded in the StructuredLLMResponse.Error field - no Go errors are returned.
+func (s *LLMService) SendStructuredCompletion(client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig) *neurotypes.StructuredLLMResponse {
 	logger.ServiceOperation("llm", "send_structured_completion", "starting")
 
 	if !s.initialized {
 		logger.Error("LLM service not initialized")
-		return nil, fmt.Errorf("llm service not initialized")
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "service_not_initialized",
+				Message: "llm service not initialized",
+				Type:    "service_error",
+			},
+			Metadata: map[string]interface{}{"service": "llm"},
+		}
 	}
 
 	if client == nil {
 		logger.Error("LLM client is nil")
-		return nil, fmt.Errorf("llm client cannot be nil")
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "client_nil",
+				Message: "llm client cannot be nil",
+				Type:    "client_error",
+			},
+			Metadata: map[string]interface{}{"service": "llm"},
+		}
 	}
 
 	if !client.IsConfigured() {
 		logger.Error("LLM client is not configured")
-		return nil, fmt.Errorf("llm client is not configured")
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "client_not_configured",
+				Message: "llm client is not configured",
+				Type:    "client_error",
+			},
+			Metadata: map[string]interface{}{"service": "llm", "provider": client.GetProviderName()},
+		}
 	}
 
 	logger.Debug("Sending structured completion request", "provider", client.GetProviderName(), "model", model.BaseModel, "messages", len(session.Messages))
 
 	// Send the structured completion request using the client with session as-is
-	response, err := client.SendStructuredCompletion(session, model)
-	if err != nil {
-		logger.Error("Structured completion request failed", "error", err)
-		return nil, fmt.Errorf("structured completion request failed: %w", err)
-	}
+	response := client.SendStructuredCompletion(session, model)
 
 	logger.Debug("Structured completion request completed", "text_length", len(response.TextContent), "thinking_blocks", len(response.ThinkingBlocks))
 	logger.ServiceOperation("llm", "send_structured_completion", "completed")
-	return response, nil
+	return response
 }
 
 // MockLLMService provides a mock implementation of LLMService for testing
@@ -239,9 +263,19 @@ func (m *MockLLMService) StreamCompletion(_ neurotypes.LLMClient, session *neuro
 }
 
 // SendStructuredCompletion mocks sending a structured completion request
-func (m *MockLLMService) SendStructuredCompletion(_ neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+// All errors are encoded in the StructuredLLMResponse.Error field - no Go errors are returned.
+func (m *MockLLMService) SendStructuredCompletion(_ neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig) *neurotypes.StructuredLLMResponse {
 	if !m.initialized {
-		return nil, fmt.Errorf("mock llm service not initialized")
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "service_not_initialized",
+				Message: "mock llm service not initialized",
+				Type:    "service_error",
+			},
+			Metadata: map[string]interface{}{"service": "mock_llm"},
+		}
 	}
 
 	// Create a mock response with message count and last message info for debugging
@@ -285,9 +319,11 @@ func (m *MockLLMService) SendStructuredCompletion(_ neurotypes.LLMClient, sessio
 	structuredResponse := &neurotypes.StructuredLLMResponse{
 		TextContent:    textContent,
 		ThinkingBlocks: thinkingBlocks,
+		Error:          nil, // No error in successful case
+		Metadata:       map[string]interface{}{"service": "mock_llm", "provider": provider, "model": model.BaseModel},
 	}
 
-	return structuredResponse, nil
+	return structuredResponse
 }
 
 // SetMockResponse sets a mock response for a specific model

@@ -427,9 +427,8 @@ func TestOpenAIReasoningClient_SendStructuredCompletion_NotConfigured(t *testing
 		Provider:  "openai",
 	}
 
-	response, err := client.SendStructuredCompletion(session, modelConfig)
+	response := client.SendStructuredCompletion(session, modelConfig)
 
-	assert.NoError(t, err)           // No Go error should be returned
 	assert.NotNil(t, response)       // Response should be returned
 	assert.NotNil(t, response.Error) // But Error field should be populated
 	assert.Equal(t, "api_request_failed", response.Error.Code)
@@ -509,9 +508,8 @@ func TestOpenAIReasoningClient_StructuredResponseInterface(t *testing.T) {
 	}
 
 	// This will fail due to missing API key, but verifies the method signature
-	response, err := llmClient.SendStructuredCompletion(session, modelConfig)
+	response := llmClient.SendStructuredCompletion(session, modelConfig)
 
-	assert.NoError(t, err)           // No Go error should be returned
 	assert.NotNil(t, response)       // Response should be returned
 	assert.NotNil(t, response.Error) // But Error field should be populated
 	assert.Equal(t, "api_request_failed", response.Error.Code)

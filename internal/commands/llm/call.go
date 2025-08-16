@@ -320,13 +320,27 @@ func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client ne
 	client.SetDebugTransport(debugTransport)
 
 	// Make structured LLM call (debug capture happens automatically via transport)
-	structuredResponse, err := llmService.SendStructuredCompletion(client, session, model)
-	if err != nil {
-		return fmt.Errorf("LLM call failed: %w", err)
-	}
+	structuredResponse := llmService.SendStructuredCompletion(client, session, model)
 
 	// Get captured debug data from the debug transport service
 	debugData := debugTransportService.GetCapturedData()
+
+	// Check for critical errors that should cause immediate failure
+	if structuredResponse.Error != nil {
+		// Still store the error information for scripts to handle
+		_ = variableService.SetSystemVariable("#llm_error_code", structuredResponse.Error.Code)
+		_ = variableService.SetSystemVariable("#llm_error_message", structuredResponse.Error.Message)
+		_ = variableService.SetSystemVariable("#llm_error_type", structuredResponse.Error.Type)
+		_ = variableService.SetSystemVariable("#llm_call_success", "false")
+		_ = variableService.SetSystemVariable("_debug_network", debugData)
+		debugTransportService.ClearCapturedData()
+
+		// Return early for critical errors, but let scripts handle the response via variables
+		if structuredResponse.Error.Type == "service_error" || structuredResponse.Error.Type == "client_error" {
+			return fmt.Errorf("LLM call failed: %s", structuredResponse.Error.Message)
+		}
+		// For API errors, continue processing to allow scripts to handle partial responses
+	}
 
 	// Render thinking blocks if present and store them separately
 	var renderedThinking string

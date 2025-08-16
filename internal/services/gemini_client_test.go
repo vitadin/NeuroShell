@@ -686,9 +686,8 @@ func TestGeminiClient_SendStructuredCompletion_NotConfigured(t *testing.T) {
 		Provider:  "gemini",
 	}
 
-	response, err := client.SendStructuredCompletion(session, modelConfig)
+	response := client.SendStructuredCompletion(session, modelConfig)
 
-	assert.NoError(t, err)           // No Go error should be returned
 	assert.NotNil(t, response)       // Response should be returned
 	assert.NotNil(t, response.Error) // But Error field should be populated
 	assert.Equal(t, "api_request_failed", response.Error.Code)
@@ -744,9 +743,8 @@ func TestGeminiClient_StructuredResponseInterface(t *testing.T) {
 	}
 
 	// This will fail due to missing API key, but verifies the method signature
-	response, err := llmClient.SendStructuredCompletion(session, modelConfig)
+	response := llmClient.SendStructuredCompletion(session, modelConfig)
 
-	assert.NoError(t, err)           // No Go error should be returned
 	assert.NotNil(t, response)       // Response should be returned
 	assert.NotNil(t, response.Error) // But Error field should be populated
 	assert.Equal(t, "api_request_failed", response.Error.Code)
@@ -895,8 +893,7 @@ func TestGeminiClient_ThinkingMode_RealAPI(t *testing.T) {
 	t.Logf("Regular Completion Response: %s", response)
 
 	// Test structured completion (should extract thinking blocks separately)
-	structuredResponse, err := client.SendStructuredCompletion(session, modelConfig)
-	require.NoError(t, err)
+	structuredResponse := client.SendStructuredCompletion(session, modelConfig)
 	assert.NotNil(t, structuredResponse)
 
 	// Check that we get either text content or thinking blocks (or both)

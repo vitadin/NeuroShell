@@ -101,7 +101,8 @@ func (c *OpenAIReasoningClient) SendChatCompletion(session *neurotypes.ChatSessi
 
 // SendStructuredCompletion sends a chat completion request to OpenAI and returns structured response.
 // This method reuses SendChatCompletion logic and post-processes the response to separate reasoning blocks.
-func (c *OpenAIReasoningClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+// All errors are encoded in the StructuredLLMResponse.Error field - no Go errors are returned.
+func (c *OpenAIReasoningClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) *neurotypes.StructuredLLMResponse {
 	logger.Debug("OpenAI SendStructuredCompletion starting", "model", modelConfig.BaseModel)
 
 	// Use the same routing logic as SendChatCompletion to get response
@@ -125,7 +126,7 @@ func (c *OpenAIReasoningClient) SendStructuredCompletion(session *neurotypes.Cha
 				Type:    "api_error",
 			},
 			Metadata: map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
-		}, nil
+		}
 	}
 
 	// Check for empty response
@@ -139,7 +140,7 @@ func (c *OpenAIReasoningClient) SendStructuredCompletion(session *neurotypes.Cha
 				Type:    "response_error",
 			},
 			Metadata: map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
-		}, nil
+		}
 	}
 
 	// Create structured response with no thinking blocks (regular models don't provide reasoning)
@@ -151,7 +152,7 @@ func (c *OpenAIReasoningClient) SendStructuredCompletion(session *neurotypes.Cha
 	}
 
 	logger.Debug("OpenAI structured chat completion response created", "content_length", len(textContent), "thinking_blocks", 0)
-	return structuredResponse, nil
+	return structuredResponse
 }
 
 // StreamChatCompletion sends a streaming chat completion request to OpenAI.
@@ -322,7 +323,8 @@ func (c *OpenAIReasoningClient) sendReasoningCompletionRequest(session *neurotyp
 
 // sendStructuredReasoningCompletion handles structured reasoning completions via /responses endpoint.
 // This reuses the core request logic and separates reasoning summaries from response content.
-func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+// All errors are encoded in the StructuredLLMResponse.Error field - no Go errors are returned.
+func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) *neurotypes.StructuredLLMResponse {
 	// Use shared request logic to get raw response
 	response, err := c.sendReasoningCompletionRequest(session, modelConfig)
 	if err != nil {
@@ -335,7 +337,7 @@ func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neuro
 				Type:    "api_error",
 			},
 			Metadata: map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
-		}, nil
+		}
 	}
 
 	// Process output items: separate reasoning summaries and message content
@@ -388,7 +390,7 @@ func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neuro
 				Type:    "response_error",
 			},
 			Metadata: map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
-		}, nil
+		}
 	}
 
 	// Create structured response with separated reasoning and text content
@@ -400,7 +402,7 @@ func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neuro
 	}
 
 	logger.Debug("OpenAI structured reasoning completion response created", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))
-	return structuredResponse, nil
+	return structuredResponse
 }
 
 // streamChatCompletion handles streaming chat completions via /chat/completions endpoint.

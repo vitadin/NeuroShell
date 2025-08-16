@@ -161,7 +161,8 @@ func (c *AnthropicClient) sendChatCompletionRequest(session *neurotypes.ChatSess
 
 // SendStructuredCompletion sends a chat completion request to Anthropic and returns structured response.
 // This method reuses SendChatCompletion logic and post-processes the response to separate thinking blocks.
-func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+// All errors are encoded in the StructuredLLMResponse.Error field - no Go errors are returned.
+func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) *neurotypes.StructuredLLMResponse {
 	logger.Debug("Anthropic SendStructuredCompletion starting", "model", modelConfig.BaseModel)
 
 	// Initialize client if needed
@@ -175,7 +176,7 @@ func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSessi
 				Type:    "initialization_error",
 			},
 			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
-		}, nil
+		}
 	}
 
 	// Reuse the core logic from SendChatCompletion but return raw response blocks for structured processing
@@ -190,7 +191,7 @@ func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSessi
 				Type:    "api_error",
 			},
 			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
-		}, nil
+		}
 	}
 
 	// Extract response content and thinking blocks separately (structured processing)
@@ -205,7 +206,7 @@ func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSessi
 				Type:    "response_error",
 			},
 			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
-		}, nil
+		}
 	}
 
 	// Process all content blocks and extract thinking blocks separately
@@ -223,7 +224,7 @@ func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSessi
 				Type:    "response_error",
 			},
 			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
-		}, nil
+		}
 	}
 
 	// Create structured response
@@ -235,7 +236,7 @@ func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSessi
 	}
 
 	logger.Debug("Anthropic structured response received", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))
-	return structuredResponse, nil
+	return structuredResponse
 }
 
 // SetDebugTransport sets the HTTP transport for network debugging.

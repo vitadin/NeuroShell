@@ -53,7 +53,8 @@ type LLMClient interface {
 	// SendStructuredCompletion sends a chat completion request and returns structured response.
 	// This separates thinking/reasoning content from regular text for proper rendering control.
 	// Internally uses SendChatCompletion and processes the response to extract thinking blocks.
-	SendStructuredCompletion(session *ChatSession, model *ModelConfig) (*StructuredLLMResponse, error)
+	// All errors are encoded in the StructuredLLMResponse.Error field - no Go errors are returned.
+	SendStructuredCompletion(session *ChatSession, model *ModelConfig) *StructuredLLMResponse
 
 	// GetProviderName returns the name of the LLM provider (e.g., "openai", "anthropic").
 	GetProviderName() string
@@ -95,5 +96,6 @@ type LLMService interface {
 	// SendStructuredCompletion sends a chat completion request using the provided client and returns structured response.
 	// This separates thinking/reasoning content from regular text for proper rendering control.
 	// Debug transport capture happens transparently via the client's debug transport.
-	SendStructuredCompletion(client LLMClient, session *ChatSession, model *ModelConfig) (*StructuredLLMResponse, error)
+	// All errors are encoded in the StructuredLLMResponse.Error field - no Go errors are returned.
+	SendStructuredCompletion(client LLMClient, session *ChatSession, model *ModelConfig) *StructuredLLMResponse
 }
