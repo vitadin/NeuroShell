@@ -7,10 +7,10 @@ _client_id = ANC:da1c321d
 Created model 'claude-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
 Activated model 'claude-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
 Active model: claude-model
+<thinking id="2-1">
+Thinking about the user's message: "Can you analyze this logic problem for me?". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
 
-  Thinking about the user's message: "Can you analyze this logic problem for  
-  me?". This helps verify the message flow in tests. The user sent 1 messages 
-  total, and I need to provide a helpful response.                            
   This is a mocking reply (received 1 messages, last: Can you analyze this    
   logic problem for me?)                                                      
 
@@ -20,10 +20,10 @@ _client_id = GMC:cad4bc2c
 Created model 'gemini-model' (ID: 00000005, Provider: gemini, Base: gemini-2.5-flash)
 Activated model 'gemini-model' (ID: 00000005, Provider: gemini, Base: gemini-2.5-flash)
 Active model: gemini-model
+<thinking id="4-1">
+Thinking about the user's message: "What's the difference between recursive and iterative algorithms?". This helps verify the message flow in tests. The user sent 3 messages total, and I need to provide a helpful response.
+</thinking>
 
-  Thinking about the user's message: "What's the difference between recursive 
-  and iterative algorithms?". This helps verify the message flow in tests. The
-  user sent 3 messages total, and I need to provide a helpful response.       
   This is a mocking reply (received 3 messages, last: What's the difference   
   between recursive and iterative algorithms?)                                
 
@@ -33,11 +33,10 @@ _client_id = OAR:b10394de
 Created model 'reasoning-model' (ID: 00000008, Provider: openai, Base: o1-2024-12-17)
 Activated model 'reasoning-model' (ID: 00000008, Provider: openai, Base: o1-2024-12-17)
 Active model: reasoning-model
+<thinking id="6-1">
+Thinking about the user's message: "Solve this step by step: If I have 3 apples and give away 1, then buy 2 more, how many do I have?". This helps verify the message flow in tests. The user sent 5 messages total, and I need to provide a helpful response.
+</thinking>
 
-  Thinking about the user's message: "Solve this step by step: If I have 3    
-  apples and give away 1, then buy 2 more, how many do I have?". This helps   
-  verify the message flow in tests. The user sent 5 messages total, and I need
-  to provide a helpful response.                                              
   This is a mocking reply (received 5 messages, last: Solve this step by step:
   If I have 3 apples and give away 1, then buy 2 more, how many do I have?)   
 
@@ -49,11 +48,11 @@ Updated: 2025-01-01 00:00:16
 Messages: 6 total
 
 [1] user (00:00:03): Can you analyze this logic problem for me?
-[2] assistant (00:00:05): <thinking id=\"2-1\">\nThinking about th...u analyze this logic problem for me?) (328 chars)
+[2] assistant (00:00:05): This is a mocking reply (received 1 mess...u analyze this logic problem for me?) (95 chars)
 [3] user (00:00:08): What's the difference between recursive and iterative algorithms?
-[4] assistant (00:00:10): <thinking id=\"4-1\">\nThinking about th... recursive and iterative algorithms?) (374 chars)
+[4] assistant (00:00:10): This is a mocking reply (received 3 mess... recursive and iterative algorithms?) (118 chars)
 [5] user (00:00:13): Solve this step by step: If I have 3 app... then buy 2 more, how many do I have? (97 chars)
-[6] assistant (00:00:15): <thinking id=\"6-1\">\nThinking about th...then buy 2 more, how many do I have?) (438 chars)
+[6] assistant (00:00:15): This is a mocking reply (received 5 mess...then buy 2 more, how many do I have?) (150 chars)
 Model information:
 #active_model_name = reasoning-model
 Final active model: reasoning-model

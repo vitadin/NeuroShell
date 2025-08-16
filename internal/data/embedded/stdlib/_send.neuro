@@ -32,5 +32,11 @@
 \llm-call[client_id=${#active_client_id}, session_id=${_session_id}]
 
 %% Step 6: Add assistant response to session and display
-\silent \session-add-assistantmsg[session=${_session_id}] ${#llm_response}
-\render-markdown ${#llm_response}
+%% Add only the clean text content to session (no thinking blocks)
+\silent \session-add-assistantmsg[session=${_session_id}] ${#llm_text_content}
+
+%% Display thinking blocks first if present
+\if[condition="${#llm_thinking_blocks_rendered}"] \echo ${#llm_thinking_blocks_rendered}
+
+%% Render the clean text content with markdown
+\render-markdown ${#llm_text_content}
