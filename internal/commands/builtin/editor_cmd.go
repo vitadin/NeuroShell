@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/commands/printing"
 	"neuroshell/internal/logger"
-	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -134,7 +134,7 @@ func (e *EditorCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to store editor content: %w", err)
 	}
 
-	printer := e.createPrinter()
+	printer := printing.NewDefaultPrinter()
 	if content == "" {
 		printer.Info("Editor returned empty content - stored empty string in ${_output}")
 	} else {
@@ -143,18 +143,6 @@ func (e *EditorCommand) Execute(args map[string]string, input string) error {
 	}
 
 	return nil
-}
-
-// createPrinter creates a printer with theme service as style provider
-func (e *EditorCommand) createPrinter() *output.Printer {
-	// Try to get theme service as style provider
-	themeService, err := services.GetGlobalThemeService()
-	if err != nil {
-		// Fall back to plain style provider
-		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
-	}
-
-	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

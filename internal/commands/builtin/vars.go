@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/commands/printing"
 	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -118,7 +119,7 @@ func (c *VarsCommand) Execute(args map[string]string, _ string) error {
 	}
 
 	// Create printer with theme service as style provider
-	printer := c.createPrinter()
+	printer := printing.NewDefaultPrinter()
 
 	// Display results
 	c.displayVariables(filteredVars, printer)
@@ -171,18 +172,6 @@ func (c *VarsCommand) matchesTypeFilter(name, varType string) bool {
 	default:
 		return true // Default to showing all if unknown type
 	}
-}
-
-// createPrinter creates a printer with theme service as style provider
-func (c *VarsCommand) createPrinter() *output.Printer {
-	// Try to get theme service as style provider
-	themeService, err := services.GetGlobalThemeService()
-	if err != nil {
-		// Fall back to plain style provider
-		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
-	}
-
-	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 // displayVariables formats and displays the filtered variables using internal/output

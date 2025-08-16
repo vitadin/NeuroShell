@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/commands/printing"
 	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
@@ -151,13 +152,13 @@ func (c *ShowCommand) handleNoParameter(chatSessionService *services.ChatSession
 
 	if len(sessions) == 0 {
 		// Case 2: No sessions exist
-		printer := c.createPrinter()
+		printer := printing.NewDefaultPrinter()
 		printer.Info("No sessions found. Use \\session-new to create a session.")
 		return nil
 	}
 
 	// Case 3: Sessions exist but no active - show guidance
-	printer := c.createPrinter()
+	printer := printing.NewDefaultPrinter()
 	printer.Info(fmt.Sprintf("No active session found. Use \\session-activate to activate a session.\n\nAvailable sessions (%d):", len(sessions)))
 	for _, session := range sessions {
 		messageCount := len(session.Messages)
@@ -273,7 +274,7 @@ func (c *ShowCommand) handleMultipleMatches(matches []*neurotypes.ChatSession, s
 // renderSessionInfo displays comprehensive session information with smart formatting.
 func (c *ShowCommand) renderSessionInfo(session *neurotypes.ChatSession, variableService *services.VariableService) error {
 	// Get printer for output
-	printer := c.createPrinter()
+	printer := printing.NewDefaultPrinter()
 
 	// Display session header
 	sessionHeader := fmt.Sprintf("Session: %s (ID: %s)", session.Name, session.ID[:8])
@@ -393,18 +394,6 @@ func (c *ShowCommand) truncateContent(content string, maxLength int) string {
 	suffix := quoted[len(quoted)-suffixLength:]
 
 	return fmt.Sprintf("%s%s%s (%d chars)", prefix, TruncationIndicator, suffix, len(content))
-}
-
-// createPrinter creates a printer with theme service as style provider
-func (c *ShowCommand) createPrinter() *output.Printer {
-	// Try to get theme service as style provider
-	themeService, err := services.GetGlobalThemeService()
-	if err != nil {
-		// Fall back to plain style provider
-		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
-	}
-
-	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

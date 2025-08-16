@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/output"
+	"neuroshell/internal/commands/printing"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -318,7 +318,7 @@ func (c *OpenAIModelNewCommand) Execute(args map[string]string, input string) er
 
 	// Output success message
 	outputMsg := fmt.Sprintf("Created model '%s' (ID: %s, Provider: %s, Base: %s)", createdModel.Name, createdModel.ID[:8], createdModel.Provider, createdModel.BaseModel)
-	printer := c.createPrinter()
+	printer := printing.NewDefaultPrinter()
 	printer.Success(outputMsg)
 
 	return nil
@@ -334,18 +334,6 @@ func (c *OpenAIModelNewCommand) generateClientNewCommand(clientType string) stri
 	default:
 		return ""
 	}
-}
-
-// createPrinter creates a printer with theme service as style provider
-func (c *OpenAIModelNewCommand) createPrinter() *output.Printer {
-	// Try to get theme service as style provider
-	themeService, err := services.GetGlobalThemeService()
-	if err != nil {
-		// Fall back to plain style provider
-		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
-	}
-
-	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

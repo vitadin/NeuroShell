@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
-	"neuroshell/internal/output"
+	"neuroshell/internal/commands/printing"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -173,7 +173,7 @@ func (c *StatusCommand) Execute(args map[string]string, _ string) error {
 	}
 
 	// Print output
-	printer := c.createPrinter()
+	printer := printing.NewDefaultPrinter()
 	printer.Print(output)
 
 	return nil
@@ -368,18 +368,6 @@ func (c *StatusCommand) updateStatusVariables(allModels map[string]*neurotypes.M
 	}
 
 	return nil
-}
-
-// createPrinter creates a printer with theme service as style provider
-func (c *StatusCommand) createPrinter() *output.Printer {
-	// Try to get theme service as style provider
-	themeService, err := services.GetGlobalThemeService()
-	if err != nil {
-		// Fall back to plain style provider
-		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
-	}
-
-	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {
