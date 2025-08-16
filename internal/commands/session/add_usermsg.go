@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -122,9 +123,22 @@ func (c *AddUserMessageCommand) Execute(args map[string]string, input string) er
 	}
 
 	// Output confirmation
-	fmt.Printf("Added user message to session '%s'\n", sessionID)
+	printer := c.createPrinter()
+	printer.Success(fmt.Sprintf("Added user message to session '%s'", sessionID))
 
 	return nil
+}
+
+// createPrinter creates a printer with theme service as style provider
+func (c *AddUserMessageCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
+	}
+
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

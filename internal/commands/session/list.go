@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -162,7 +163,8 @@ func (c *ListCommand) Execute(args map[string]string, _ string) error {
 	}
 
 	// Print the list
-	fmt.Print(output)
+	printer := c.createPrinter()
+	printer.Print(output)
 
 	return nil
 }
@@ -260,6 +262,18 @@ func (c *ListCommand) formatSessionList(sessions []*neurotypes.ChatSession) stri
 	}
 
 	return result.String()
+}
+
+// createPrinter creates a printer with theme service as style provider
+func (c *ListCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
+	}
+
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

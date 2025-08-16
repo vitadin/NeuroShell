@@ -21,6 +21,7 @@ System: You are a helpful assistant.
 Created: 2025-01-01 00:00:03
 Updated: 2025-01-01 00:00:03
 Messages: 0 total
+
 %%> "\\silent \\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\try \\session-show nonexistent_session_name"
 %%> "\\session-show nonexistent_session_name"
@@ -45,6 +46,7 @@ System: You are a helpful assistant.
 Created: 2025-01-01 00:00:02
 Updated: 2025-01-01 00:00:02
 Messages: 0 total
+
 %%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\get[_error]"
 _error = 
@@ -54,6 +56,7 @@ System: You are a helpful assistant.
 Created: 2025-01-01 00:00:02
 Updated: 2025-01-01 00:00:02
 Messages: 0 total
+
 %%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\session-delete test_session_two"
 Deleted session 'test_session_two' (ID: 00000002)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -182,9 +183,22 @@ func (c *DeleteCommand) Execute(args map[string]string, input string) error {
 	}
 
 	// Print confirmation
-	fmt.Println(outputMsg)
+	printer := c.createPrinter()
+	printer.Success(outputMsg)
 
 	return nil
+}
+
+// createPrinter creates a printer with theme service as style provider
+func (c *DeleteCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
+	}
+
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {

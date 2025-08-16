@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"neuroshell/internal/context"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
@@ -173,13 +174,9 @@ func TestShowCommand_RenderMessages_ManyMessages(t *testing.T) {
 		}
 	}
 
-	// Get theme service for test
-	themeService, err := services.GetGlobalThemeService()
-	require.NoError(t, err)
-	theme := themeService.GetThemeByName("")
-
-	outputStr := stringprocessing.CaptureOutput(func() {
-		cmd.renderMessages(messages, theme)
+	// Create printer for test and capture output
+	outputStr := output.CaptureOutput(func(printer *output.Printer) {
+		cmd.renderMessages(messages, printer)
 	})
 
 	// Should show first 5, separator, and last 5
@@ -202,13 +199,9 @@ func TestShowCommand_RenderSingleMessage_LongContent(t *testing.T) {
 		Timestamp: time.Now(),
 	}
 
-	// Get theme service for test
-	themeService, err := services.GetGlobalThemeService()
-	require.NoError(t, err)
-	theme := themeService.GetThemeByName("")
-
-	outputStr := stringprocessing.CaptureOutput(func() {
-		cmd.renderSingleMessage(1, msg, theme)
+	// Create printer for test and capture output
+	outputStr := output.CaptureOutput(func(printer *output.Printer) {
+		cmd.renderSingleMessage(1, msg, printer)
 	})
 
 	assert.Contains(t, outputStr, "[1] user")

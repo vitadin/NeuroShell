@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"neuroshell/internal/commands"
+	"neuroshell/internal/output"
 	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
@@ -160,7 +161,8 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	// Auto-generate session name if not provided (improved UX)
 	if sessionName == "" {
 		sessionName = chatService.GenerateDefaultSessionName()
-		fmt.Printf("Auto-generated session name: '%s'\n", sessionName)
+		printer := c.createPrinter()
+		printer.Info(fmt.Sprintf("Auto-generated session name: '%s'", sessionName))
 	}
 
 	// Note: Variable interpolation for session name and system prompt is handled by state machine
@@ -192,7 +194,8 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	}
 
 	// Print confirmation
-	fmt.Println(outputMsg)
+	printer := c.createPrinter()
+	printer.Success(outputMsg)
 
 	return nil
 }
@@ -215,6 +218,18 @@ func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, var
 	}
 
 	return nil
+}
+
+// createPrinter creates a printer with theme service as style provider
+func (c *NewCommand) createPrinter() *output.Printer {
+	// Try to get theme service as style provider
+	themeService, err := services.GetGlobalThemeService()
+	if err != nil {
+		// Fall back to plain style provider
+		return output.NewPrinter(output.WithStyles(output.NewPlainStyleProvider()))
+	}
+
+	return output.NewPrinter(output.WithStyles(themeService))
 }
 
 func init() {
