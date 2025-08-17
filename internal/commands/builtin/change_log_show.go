@@ -32,22 +32,24 @@ func (c *ChangeLogShowCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the change-log-show command.
 func (c *ChangeLogShowCommand) Usage() string {
-	return `\change-log-show[search=query]
+	return `\change-log-show[search=query,order=asc|desc]
 
 Examples:
-  \change-log-show                         %% Show all change log entries (sorted by date)
+  \change-log-show                         %% Show all change log entries (newest at bottom)
+  \change-log-show[order=desc]             %% Show entries with newest at top
   \change-log-show[search=bug]             %% Search for entries containing "bug"
   \change-log-show[search=streaming]       %% Search for streaming-related changes
   \change-log-show[search=feature]         %% Search for feature-type entries
   \change-log-show[search=CL003]           %% Search by change log ID
-  \change-log-show[search=temporal]        %% Search for temporal display changes
+  \change-log-show[search=temporal,order=desc]  %% Search with newest first
 
 Options:
   search - Search query to filter entries by ID, version, type, title, description, or impact
+  order  - Sort order: 'asc' (oldest first, newest at bottom) or 'desc' (newest first). Default: asc
 
 Note: Search is case-insensitive and matches across all entry fields.
       Change log is stored in ${_output} variable.
-      Entries are sorted by date (newest first) within search results.`
+      Default order shows newest entries at bottom for better visibility.`
 }
 
 // HelpInfo returns structured help information for the change-log-show command.
@@ -55,7 +57,7 @@ func (c *ChangeLogShowCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\change-log-show[search=query]",
+		Usage:       "\\change-log-show[search=query,order=asc|desc]",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
@@ -64,11 +66,22 @@ func (c *ChangeLogShowCommand) HelpInfo() neurotypes.HelpInfo {
 				Required:    false,
 				Type:        "string",
 			},
+			{
+				Name:        "order",
+				Description: "Sort order: 'asc' (oldest first, newest at bottom) or 'desc' (newest first). Default: asc",
+				Required:    false,
+				Type:        "string",
+				Default:     "asc",
+			},
 		},
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     "\\change-log-show",
-				Description: "Show all change log entries sorted by date",
+				Description: "Show all change log entries (newest at bottom)",
+			},
+			{
+				Command:     "\\change-log-show[order=desc]",
+				Description: "Show entries with newest at top",
 			},
 			{
 				Command:     "\\change-log-show[search=bug]",
@@ -83,8 +96,8 @@ func (c *ChangeLogShowCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Search by change log ID",
 			},
 			{
-				Command:     "\\change-log-show[search=feature]",
-				Description: "Search for feature-type entries",
+				Command:     "\\change-log-show[search=feature,order=desc]",
+				Description: "Search for feature-type entries with newest first",
 			},
 		},
 		StoredVariables: []neurotypes.HelpStoredVariable{
@@ -97,7 +110,8 @@ func (c *ChangeLogShowCommand) HelpInfo() neurotypes.HelpInfo {
 		},
 		Notes: []string{
 			"Search is case-insensitive and matches across all entry fields",
-			"Entries are sorted by date (newest first) within search results",
+			"Default order is ascending (oldest first, newest at bottom) for better visibility",
+			"Use order=desc to show newest entries at the top (traditional reverse chronological)",
 			"Change log entries include ID, version, date, type, title, description, and impact",
 			"Entry types include: bugfix, feature, enhancement, testing, refactor, docs, chore",
 			"Files changed information shows which source files were modified",
@@ -105,9 +119,10 @@ func (c *ChangeLogShowCommand) HelpInfo() neurotypes.HelpInfo {
 	}
 }
 
-// Execute displays change log entries with optional search filtering.
+// Execute displays change log entries with optional search filtering and sort order.
 // Options:
 //   - search: query string for filtering (optional)
+//   - order: sort order "asc" (default) or "desc" (optional)
 func (c *ChangeLogShowCommand) Execute(args map[string]string, _ string) error {
 	// Get change log service
 	changeLogService, err := services.GetGlobalChangeLogService()
@@ -126,20 +141,29 @@ func (c *ChangeLogShowCommand) Execute(args map[string]string, _ string) error {
 
 	// Parse arguments
 	searchQuery := args["search"]
+	sortOrder := args["order"]
+	if sortOrder == "" {
+		sortOrder = "asc" // Default to ascending (oldest first, newest at bottom)
+	}
+
+	// Validate sort order
+	if sortOrder != "asc" && sortOrder != "desc" {
+		return fmt.Errorf("invalid sort order '%s': must be 'asc' or 'desc'", sortOrder)
+	}
 
 	// Get change log entries based on search
 	var entries []neurotypes.ChangeLogEntry
 	if searchQuery != "" {
-		entries, err = changeLogService.SearchChangeLog(searchQuery)
+		entries, err = changeLogService.SearchChangeLogWithOrder(searchQuery, sortOrder)
 	} else {
-		entries, err = changeLogService.GetChangeLog()
+		entries, err = changeLogService.GetChangeLogWithOrder(sortOrder)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to get change log: %w", err)
 	}
 
 	// Format output with theme styling
-	output := c.formatChangeLog(entries, searchQuery, themeObj)
+	output := c.formatChangeLog(entries, searchQuery, sortOrder, themeObj)
 
 	// Store result in _output variable
 	if err := variableService.SetSystemVariable("_output", output); err != nil {
@@ -154,7 +178,7 @@ func (c *ChangeLogShowCommand) Execute(args map[string]string, _ string) error {
 }
 
 // formatChangeLog formats the change log entries for display with theme styling.
-func (c *ChangeLogShowCommand) formatChangeLog(entries []neurotypes.ChangeLogEntry, searchQuery string, themeObj *services.Theme) string {
+func (c *ChangeLogShowCommand) formatChangeLog(entries []neurotypes.ChangeLogEntry, searchQuery string, sortOrder string, themeObj *services.Theme) string {
 	if len(entries) == 0 {
 		searchText := ""
 		if searchQuery != "" {
@@ -172,6 +196,17 @@ func (c *ChangeLogShowCommand) formatChangeLog(entries []neurotypes.ChangeLogEnt
 		searchPart := fmt.Sprintf("- Search: %s", themeObj.Variable.Render("'"+searchQuery+"'"))
 		headerParts = append(headerParts, searchPart)
 	}
+
+	// Add sort order information
+	var orderText string
+	if sortOrder == "asc" {
+		orderText = "oldest→newest"
+	} else {
+		orderText = "newest→oldest"
+	}
+	orderPart := fmt.Sprintf("- Order: %s", themeObj.Keyword.Render(orderText))
+	headerParts = append(headerParts, orderPart)
+
 	countPart := fmt.Sprintf("(%s)", themeObj.Info.Render(fmt.Sprintf("%d entries", len(entries))))
 	headerParts = append(headerParts, countPart)
 
