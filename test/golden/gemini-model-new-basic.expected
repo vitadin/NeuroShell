@@ -56,4 +56,4 @@ Created model 'my-gemini-flash' (ID: 00000001, Provider: gemini, Base: gemini-2.
 #model_provider = gemini
 #model_base = gemini-2.5-flash
 #model_param_count = 1
-_output = Gemini client ready: GMC:cad4bc2c
+_output = Activated model 'my-gemini-flash' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
