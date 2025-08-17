@@ -378,6 +378,16 @@ func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neuro
 		}
 	}
 
+	// Create metadata with complete raw output for future-proofing and fail-safe preservation
+	metadata := map[string]interface{}{
+		"provider":    "openai",
+		"model":       modelConfig.BaseModel,
+		"raw_output":  response.Output, // Preserve ALL output items regardless of type
+		"response_id": response.ID,     // Also preserve response metadata
+		"created_at":  response.CreatedAt,
+		"status":      response.Status,
+	}
+
 	// Check for truly empty response (no text content AND no thinking blocks)
 	if textContent == "" && len(thinkingBlocks) == 0 {
 		logger.Error("Empty response content from structured reasoning completion")
@@ -389,7 +399,7 @@ func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neuro
 				Message: "no content or reasoning returned",
 				Type:    "response_error",
 			},
-			Metadata: map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
+			Metadata: metadata, // Include complete output even in error case
 		}
 	}
 
@@ -397,8 +407,8 @@ func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neuro
 	structuredResponse := &neurotypes.StructuredLLMResponse{
 		TextContent:    textContent,
 		ThinkingBlocks: thinkingBlocks,
-		Error:          nil, // No error in successful case
-		Metadata:       map[string]interface{}{"provider": "openai", "model": modelConfig.BaseModel},
+		Error:          nil,      // No error in successful case
+		Metadata:       metadata, // Include complete raw output for fail-safe preservation
 	}
 
 	logger.Debug("OpenAI structured reasoning completion response created", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))

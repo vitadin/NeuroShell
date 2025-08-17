@@ -1,0 +1,78 @@
+%% OpenAI O4-mini Reasoning Full Parameter Test
+%% Purpose: Test O4MR model with all available parameters from o4-mini-reasoning.yaml
+%% This validates that all YAML parameter definitions are correctly implemented
+
+\set _stream true
+\set _style dark1
+
+\echo === OpenAI O4-mini Reasoning Full Parameter Validation Test ===
+\echo Testing O4MR with all parameters: reasoning_effort, reasoning_summary, max_output_tokens
+\echo
+
+%% ============================================================================
+%% API SETUP
+%% ============================================================================
+\echo Phase 1: Activating OpenAI API key from environment...
+
+%% Load and activate the OpenAI API key from local environment
+\llm-api-load[provider=openai]
+\llm-api-activate[provider=openai, key=local.OPENAI_API_KEY]
+
+%% Verify API key is activated
+\llm-api-load[provider=openai]
+\echo
+
+%% ============================================================================
+%% O4MR FULL PARAMETER TEST
+%% ============================================================================
+\echo Phase 2: Testing O4MR (O4-mini Reasoning) with full parameter set...
+\openai-model-new[catalog_id="O4MR", reasoning_effort="high", reasoning_summary="auto", max_output_tokens="50000"] o4mini-reasoning-full-params-model
+
+%% Check that the O4MR model was created successfully
+\echo Step 2.1: Check O4MR model creation with full parameters...
+\model-status
+
+%% Activate the O4MR model for use
+\echo Step 2.2: Activate O4MR model for use...
+\model-activate o4mini-reasoning-full-params-model
+
+%% Verify the O4MR model is active
+\echo Step 2.3: Verify O4MR model is active...
+\echo Active model: ${#active_model_name}
+\echo Provider: ${#active_model_provider}
+
+%% O4MR Progressive Session Context Test
+\echo Step 2.4: Testing O4MR session context with progressive conversation...
+\echo This tests whether O4-mini Reasoning receives and uses the full session context.
+\echo
+
+%% Message 1: Setup the scenario
+\echo O4MR Message 1: Setting up a math problem...
+\send I'm thinking of two numbers. Let's call them A and B. A is 12 and B is 8.
+
+\echo-json ${_debug_network}
+
+%% Message 2: Add constraint (requires context)
+\echo O4MR Message 2: Building on the numbers from Message 1...
+\send What is A + B?
+
+%% Message 3: Build on previous answer (requires context from both messages)
+\echo O4MR Message 3: Using the sum we just calculated...
+\send Now multiply that result by 2. What do you get?
+
+%% Message 4: Memory test (tests session memory)
+\echo O4MR Message 4: Testing memory of original values...
+\send What were the original values of A and B that I mentioned at the start?
+
+%% O4MR test complete
+\echo Step 2.5: O4MR session context test complete. Checking session...
+\session-list
+\session-show
+
+%% O4MR cleanup
+\echo Step 2.6: Cleanup - deleting the O4MR test model...
+\model-delete o4mini-reasoning-full-params-model
+\model-status
+
+\echo === O4-mini Reasoning Full Parameter Test Complete ===
+\echo All parameters successfully validated: reasoning_effort, reasoning_summary, max_output_tokens
