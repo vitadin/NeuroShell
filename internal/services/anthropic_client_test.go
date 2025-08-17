@@ -182,24 +182,6 @@ func TestAnthropicClient_SendChatCompletion_NotConfigured(t *testing.T) {
 	assert.Contains(t, err.Error(), "anthropic API key not configured")
 }
 
-func TestAnthropicClient_StreamChatCompletion_NotConfigured(t *testing.T) {
-	client := NewAnthropicClient("")
-
-	session := &neurotypes.ChatSession{
-		Messages: []neurotypes.Message{
-			{Role: "user", Content: "Test message"},
-		},
-	}
-
-	modelConfig := &neurotypes.ModelConfig{
-		BaseModel: "claude-3-sonnet-20240229",
-	}
-
-	_, err := client.StreamChatCompletion(session, modelConfig)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "anthropic API key not configured")
-}
-
 func TestAnthropicClient_ConvertMessagesToAnthropic(t *testing.T) {
 	client := NewAnthropicClient("test-api-key")
 

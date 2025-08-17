@@ -246,39 +246,6 @@ func (c *AnthropicClient) SetDebugTransport(transport http.RoundTripper) {
 	c.client = nil
 }
 
-// StreamChatCompletion sends a streaming chat completion request to Anthropic.
-func (c *AnthropicClient) StreamChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
-	logger.Debug("Anthropic StreamChatCompletion starting", "model", modelConfig.BaseModel)
-
-	// For now, use regular completion and return as single chunk
-	content, err := c.SendChatCompletion(session, modelConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create response channel and send the complete response
-	responseChan := make(chan neurotypes.StreamChunk, 2)
-	go func() {
-		defer close(responseChan)
-
-		// Send content as single chunk
-		responseChan <- neurotypes.StreamChunk{
-			Content: content,
-			Done:    false,
-			Error:   nil,
-		}
-
-		// Send completion signal
-		responseChan <- neurotypes.StreamChunk{
-			Content: "",
-			Done:    true,
-			Error:   nil,
-		}
-	}()
-
-	return responseChan, nil
-}
-
 // convertMessagesToAnthropic converts NeuroShell messages to Anthropic format.
 // Returns the conversation messages and any additional system instructions found in the conversation.
 func (c *AnthropicClient) convertMessagesToAnthropic(session *neurotypes.ChatSession) ([]anthropic.BetaMessageParam, string) {
