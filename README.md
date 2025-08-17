@@ -36,6 +36,19 @@ A specialized shell environment for seamless interaction with LLM agents. NeuroS
 
 ### Installation
 
+#### Homebrew (macOS/Linux) - Recommended
+
+```bash
+# Add the tap and install
+brew tap vitadin/neuroshell
+brew install neuroshell
+
+# Run NeuroShell
+neuroshell
+```
+
+#### From Source
+
 ```bash
 # Clone and build
 git clone https://github.com/vitadin/NeuroShell.git
