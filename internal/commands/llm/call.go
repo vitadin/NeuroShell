@@ -320,47 +320,82 @@ func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client ne
 	client.SetDebugTransport(debugTransport)
 
 	// Make structured LLM call (debug capture happens automatically via transport)
-	structuredResponse, err := llmService.SendStructuredCompletion(client, session, model)
-	if err != nil {
-		return fmt.Errorf("LLM call failed: %w", err)
-	}
+	structuredResponse := llmService.SendStructuredCompletion(client, session, model)
 
 	// Get captured debug data from the debug transport service
 	debugData := debugTransportService.GetCapturedData()
 
-	// Render thinking blocks if present
-	var fullResponse string
+	// Check for critical errors that should cause immediate failure
+	if structuredResponse.Error != nil {
+		// Still store the error information for scripts to handle
+		_ = variableService.SetSystemVariable("#llm_error_code", structuredResponse.Error.Code)
+		_ = variableService.SetSystemVariable("#llm_error_message", structuredResponse.Error.Message)
+		_ = variableService.SetSystemVariable("#llm_error_type", structuredResponse.Error.Type)
+		_ = variableService.SetSystemVariable("#llm_call_success", "false")
+		_ = variableService.SetSystemVariable("_debug_network", debugData)
+		debugTransportService.ClearCapturedData()
+
+		// Return early for critical errors, but let scripts handle the response via variables
+		if structuredResponse.Error.Type == "service_error" || structuredResponse.Error.Type == "client_error" {
+			return fmt.Errorf("LLM call failed: %s", structuredResponse.Error.Message)
+		}
+		// For API errors, continue processing to allow scripts to handle partial responses
+	}
+
+	// Render thinking blocks if present and store them separately
+	var renderedThinking string
 	if len(structuredResponse.ThinkingBlocks) > 0 {
 		// Get thinking renderer service
 		thinkingRenderer, err := services.GetGlobalThinkingRendererService()
 		if err != nil {
-			// Fallback: just use text content if thinking renderer isn't available
-			fullResponse = structuredResponse.TextContent
+			// No thinking renderer available - store empty string
+			renderedThinking = ""
 		} else {
 			// Create render configuration with theme integration
 			renderConfig, err := c.createRenderConfig(variableService)
 			if err != nil {
-				// Fallback to legacy rendering if config creation fails
-				fullResponse = thinkingRenderer.RenderThinkingBlocksLegacy(structuredResponse.ThinkingBlocks) + structuredResponse.TextContent
-			} else {
-				// Render thinking blocks with sophisticated theming
-				renderedThinking := thinkingRenderer.RenderThinkingBlocks(structuredResponse.ThinkingBlocks, renderConfig)
-				fullResponse = renderedThinking + structuredResponse.TextContent
+				// Create a default render configuration if theme service fails
+				renderConfig = c.createDefaultRenderConfig()
 			}
+			// Calculate the message index for the assistant's response (next message in session)
+			messageIndex := len(session.Messages) + 1
+			// Render thinking blocks with XML format and proper message indexing
+			renderedThinking = thinkingRenderer.RenderThinkingBlocksWithMessageIndex(structuredResponse.ThinkingBlocks, renderConfig, messageIndex)
 		}
 	} else {
-		// No thinking blocks, just use text content
+		// No thinking blocks
+		renderedThinking = ""
+	}
+
+	// For backward compatibility, create full response (text + thinking)
+	// but also store components separately for scripts to use
+	var fullResponse string
+	if renderedThinking != "" {
+		fullResponse = renderedThinking + structuredResponse.TextContent
+	} else {
 		fullResponse = structuredResponse.TextContent
 	}
 
 	// Store response and debug data in variables
-	_ = variableService.SetSystemVariable("_output", fullResponse)
-	_ = variableService.SetSystemVariable("#llm_response", fullResponse)
-	_ = variableService.SetSystemVariable("#llm_text_content", structuredResponse.TextContent)
+	_ = variableService.SetSystemVariable("_output", fullResponse)                             // Backward compatibility
+	_ = variableService.SetSystemVariable("#llm_response", fullResponse)                       // Backward compatibility
+	_ = variableService.SetSystemVariable("#llm_text_content", structuredResponse.TextContent) // Clean text only
+	_ = variableService.SetSystemVariable("#llm_thinking_blocks_rendered", renderedThinking)   // Rendered thinking blocks
 	_ = variableService.SetSystemVariable("#llm_thinking_blocks_count", fmt.Sprintf("%d", len(structuredResponse.ThinkingBlocks)))
 	_ = variableService.SetSystemVariable("#llm_call_success", "true")
 	_ = variableService.SetSystemVariable("#llm_call_mode", "sync")
 	_ = variableService.SetSystemVariable("_debug_network", debugData)
+
+	// Store error information if present
+	if structuredResponse.Error != nil {
+		_ = variableService.SetSystemVariable("#llm_error_code", structuredResponse.Error.Code)
+		_ = variableService.SetSystemVariable("#llm_error_message", structuredResponse.Error.Message)
+		_ = variableService.SetSystemVariable("#llm_error_type", structuredResponse.Error.Type)
+	} else {
+		_ = variableService.SetSystemVariable("#llm_error_code", "")
+		_ = variableService.SetSystemVariable("#llm_error_message", "")
+		_ = variableService.SetSystemVariable("#llm_error_type", "")
+	}
 
 	// Clear debug data for next call
 	debugTransportService.ClearCapturedData()
@@ -594,6 +629,17 @@ func (c *CallCommand) createRenderConfig(variableService *services.VariableServi
 	}
 
 	return config, nil
+}
+
+// createDefaultRenderConfig creates a basic render configuration when theme service is not available.
+func (c *CallCommand) createDefaultRenderConfig() neurotypes.RenderConfig {
+	return &services.DefaultRenderConfig{
+		ShowThinkingEnabled: true,
+		ThinkingStyleValue:  "full",
+		CompactModeEnabled:  false,
+		MaxWidthValue:       120,
+		ThemeValue:          "default",
+	}
 }
 
 // CommandRenderConfig implements neurotypes.RenderConfig using the theme service.

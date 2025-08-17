@@ -427,11 +427,17 @@ func TestOpenAIReasoningClient_SendStructuredCompletion_NotConfigured(t *testing
 		Provider:  "openai",
 	}
 
-	response, err := client.SendStructuredCompletion(session, modelConfig)
+	response := client.SendStructuredCompletion(session, modelConfig)
 
-	assert.Error(t, err)
-	assert.Nil(t, response)
-	assert.Contains(t, err.Error(), "failed to initialize OpenAI client")
+	assert.NotNil(t, response)       // Response should be returned
+	assert.NotNil(t, response.Error) // But Error field should be populated
+	assert.Equal(t, "api_request_failed", response.Error.Code)
+	assert.Contains(t, response.Error.Message, "failed to initialize OpenAI client")
+	assert.Equal(t, "api_error", response.Error.Type)
+	assert.Equal(t, "", response.TextContent)                // No text content on error
+	assert.Empty(t, response.ThinkingBlocks)                 // No thinking blocks on error
+	assert.Equal(t, "openai", response.Metadata["provider"]) // Metadata should still be set
+	assert.Equal(t, "o1-preview", response.Metadata["model"])
 }
 
 func TestOpenAIReasoningClient_IsReasoningModel(t *testing.T) {
@@ -502,8 +508,10 @@ func TestOpenAIReasoningClient_StructuredResponseInterface(t *testing.T) {
 	}
 
 	// This will fail due to missing API key, but verifies the method signature
-	_, err := llmClient.SendStructuredCompletion(session, modelConfig)
+	response := llmClient.SendStructuredCompletion(session, modelConfig)
 
-	assert.Error(t, err) // Expected to fail due to no API key
-	assert.Contains(t, err.Error(), "failed to initialize OpenAI client")
+	assert.NotNil(t, response)       // Response should be returned
+	assert.NotNil(t, response.Error) // But Error field should be populated
+	assert.Equal(t, "api_request_failed", response.Error.Code)
+	assert.Contains(t, response.Error.Message, "failed to initialize OpenAI client")
 }

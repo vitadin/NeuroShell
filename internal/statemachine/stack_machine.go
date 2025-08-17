@@ -100,20 +100,37 @@ func (sm *StackMachine) ExecuteInternal(input string) error {
 // processStack is the main stack processing loop.
 // It pops commands from the stack and processes them until the stack is empty.
 func (sm *StackMachine) processStack() error {
+	iterationCount := 0
 	for !sm.stackService.IsEmpty() {
+		iterationCount++
+
+		// Debug: Check for potential infinite loops
+		if iterationCount > 10000 {
+			sm.logger.Error("POTENTIAL INFINITE LOOP: Too many iterations in processStack", "iterations", iterationCount)
+			stackContents := sm.stackService.PeekStack()
+			sm.logger.Error("Current stack contents", "stack", stackContents, "stackSize", len(stackContents))
+			return fmt.Errorf("infinite loop detected in stack processing")
+		}
+
 		rawCommand, hasCommand := sm.stackService.PopCommand()
 		if !hasCommand {
 			break // Stack is empty
 		}
 
+		sm.logger.Debug("Processing stack command", "iteration", iterationCount, "command", rawCommand, "stackSize", sm.stackService.GetStackSize())
+
 		// Process individual command through state pipeline
 		err := sm.processCommand(rawCommand)
 		if err != nil {
+			sm.logger.Debug("Command error occurred", "command", rawCommand, "error", err, "inTryBlock", sm.tryHandler.IsInTryBlock())
 			// Check if we're in a try block
 			if sm.tryHandler.IsInTryBlock() {
 				// Try block error capture using TryHandler
+				sm.logger.Debug("Handling try block error", "command", rawCommand)
 				sm.tryHandler.HandleTryError(err)
+				sm.logger.Debug("Skipping to try block end", "command", rawCommand)
 				sm.tryHandler.SkipToTryBlockEnd()
+				sm.logger.Debug("Continuing after try block", "stackSize", sm.stackService.GetStackSize())
 				continue // Continue processing after try block
 			}
 			// Normal error propagation

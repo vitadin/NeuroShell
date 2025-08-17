@@ -479,7 +479,7 @@ func TestGeminiClient_ProcessGeminiResponse(t *testing.T) {
 					},
 				},
 			},
-			expectedContent:  "\n🤔 **Thinking:**\nThis is thinking content\n\nThis is regular text",
+			expectedContent:  "This is regular text",
 			expectedThinking: 1,
 			expectedText:     1,
 		},
@@ -513,7 +513,7 @@ func TestGeminiClient_ProcessGeminiResponse(t *testing.T) {
 					},
 				},
 			},
-			expectedContent:  "\n🤔 **Thinking:**\nOnly thinking content\n\n",
+			expectedContent:  "",
 			expectedThinking: 1,
 			expectedText:     0,
 		},
@@ -686,11 +686,17 @@ func TestGeminiClient_SendStructuredCompletion_NotConfigured(t *testing.T) {
 		Provider:  "gemini",
 	}
 
-	response, err := client.SendStructuredCompletion(session, modelConfig)
+	response := client.SendStructuredCompletion(session, modelConfig)
 
-	assert.Error(t, err)
-	assert.Nil(t, response)
-	assert.Contains(t, err.Error(), "google API key not configured")
+	assert.NotNil(t, response)       // Response should be returned
+	assert.NotNil(t, response.Error) // But Error field should be populated
+	assert.Equal(t, "api_request_failed", response.Error.Code)
+	assert.Contains(t, response.Error.Message, "google API key not configured")
+	assert.Equal(t, "api_error", response.Error.Type)
+	assert.Equal(t, "", response.TextContent)                // No text content on error
+	assert.Empty(t, response.ThinkingBlocks)                 // No thinking blocks on error
+	assert.Equal(t, "gemini", response.Metadata["provider"]) // Metadata should still be set
+	assert.Equal(t, "gemini-2.5-flash", response.Metadata["model"])
 }
 
 func TestGeminiClient_ProcessGeminiResponseStructured(t *testing.T) {
@@ -737,10 +743,12 @@ func TestGeminiClient_StructuredResponseInterface(t *testing.T) {
 	}
 
 	// This will fail due to missing API key, but verifies the method signature
-	_, err := llmClient.SendStructuredCompletion(session, modelConfig)
+	response := llmClient.SendStructuredCompletion(session, modelConfig)
 
-	assert.Error(t, err) // Expected to fail due to no API key
-	assert.Contains(t, err.Error(), "google API key not configured")
+	assert.NotNil(t, response)       // Response should be returned
+	assert.NotNil(t, response.Error) // But Error field should be populated
+	assert.Equal(t, "api_request_failed", response.Error.Code)
+	assert.Contains(t, response.Error.Message, "google API key not configured")
 }
 
 // Real API Integration Tests (Require Valid API Key)
@@ -878,16 +886,22 @@ func TestGeminiClient_ThinkingMode_RealAPI(t *testing.T) {
 		},
 	}
 
+	// Test regular completion (should return clean text without thinking blocks)
 	response, err := client.SendChatCompletion(session, modelConfig)
-
 	require.NoError(t, err)
-	assert.NotEmpty(t, response)
+	// Response might be empty if the model only generates thinking content
+	t.Logf("Regular Completion Response: %s", response)
 
-	// Check if thinking blocks are present (they should be formatted with 🤔)
-	containsThinking := assert.Contains(t, response, "🤔 **Thinking:**") ||
-		assert.NotContains(t, response, "🤔 **Thinking:**") // Either is fine, depends on model response
+	// Test structured completion (should extract thinking blocks separately)
+	structuredResponse := client.SendStructuredCompletion(session, modelConfig)
+	assert.NotNil(t, structuredResponse)
 
-	t.Logf("Thinking Mode Response (Contains thinking: %v): %s", containsThinking, response)
+	// Check that we get either text content or thinking blocks (or both)
+	hasContent := structuredResponse.TextContent != "" || len(structuredResponse.ThinkingBlocks) > 0
+	assert.True(t, hasContent, "Should have either text content or thinking blocks")
+
+	t.Logf("Structured Response - Text: %s, Thinking Blocks: %d",
+		structuredResponse.TextContent, len(structuredResponse.ThinkingBlocks))
 }
 
 func TestGeminiClient_DynamicThinking_RealAPI(t *testing.T) {

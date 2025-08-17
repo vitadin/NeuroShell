@@ -1,0 +1,35 @@
+%% Test show-stack detailed mode features
+%% This demonstrates all the detailed information available
+
+\set[_echo_command="true"]
+
+\echo === Show-Stack Detailed Mode Demo ===
+
+\echo Step 1: Basic mode vs detailed mode comparison
+\echo "Basic mode:"
+\show-stack
+
+\echo
+\echo "Detailed mode:"
+\show-stack[detailed=true]
+
+\echo
+\echo Step 2: Detailed mode with commands in stack
+%% Create some stack content using if commands
+\if[condition="true"] \echo "Command 1"
+\if[condition="true"] \echo "Command 2"  
+\if[condition="true"] \echo "Command 3"
+
+\echo "Basic view of populated stack:"
+\show-stack
+
+\echo
+\echo "Detailed view of populated stack:"
+\show-stack[detailed=true]
+
+\echo
+\echo Step 3: Detailed mode showing context blocks
+\try \if[condition="true"] \show-stack[detailed=true]
+
+\echo
+\echo === Detailed Mode Demo Complete ===

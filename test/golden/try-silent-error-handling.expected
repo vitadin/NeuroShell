@@ -1,0 +1,48 @@
+Setting _echo_command = true
+%%> "\\echo === Try-Silent Error Handling Test ==="
+=== Try-Silent Error Handling Test ===
+%%> "\\echo Testing try-silent with failing command..."
+Testing try-silent with failing command...
+%%> "\\try \\silent \\unknown-command-that-fails"
+%%> "\\silent \\unknown-command-that-fails"
+%%> "\\echo After try-silent error (should display)"
+After try-silent error (should display)
+%%> "\\echo Error status: ${_status}"
+Error status: 1
+%%> "\\echo Error message: ${_error}"
+Error message: unknown command: unknown-command-that-fails
+%%> "\\echo Testing try-silent with successful command..."
+Testing try-silent with successful command...
+%%> "\\try \\silent \\set[test_var=success]"
+%%> "\\silent \\set[test_var=success]"
+%%> "\\echo After try-silent success (should display)"
+After try-silent success (should display)
+%%> "\\echo Success status: ${_status}"
+Success status: 0
+%%> "\\echo Test variable: ${test_var}"
+Test variable: success
+%%> "\\echo Testing nested try blocks..."
+Testing nested try blocks...
+%%> "\\try \\echo Starting outer try"
+%%> "\\echo Starting outer try"
+Starting outer try
+%%> "\\try \\silent \\echo Inner try-silent (should be silent)"
+%%> "\\silent \\echo Inner try-silent (should be silent)"
+%%> "\\echo After nested try blocks"
+After nested try blocks
+%%> "\\echo Testing multiple try-silent commands..."
+Testing multiple try-silent commands...
+%%> "\\try \\silent \\unknown-cmd1"
+%%> "\\silent \\unknown-cmd1"
+%%> "\\echo After first try-silent"
+After first try-silent
+%%> "\\try \\silent \\unknown-cmd2"
+%%> "\\silent \\unknown-cmd2"
+%%> "\\echo After second try-silent"
+After second try-silent
+%%> "\\try \\silent \\set[final=done]"
+%%> "\\silent \\set[final=done]"
+%%> "\\echo After third try-silent: ${final}"
+After third try-silent: done
+%%> "\\echo === Test completed successfully ==="
+=== Test completed successfully ===

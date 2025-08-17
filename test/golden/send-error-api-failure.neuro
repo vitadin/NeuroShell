@@ -1,0 +1,24 @@
+%% Send command error test - API failure
+%% Tests that \send command displays error messages at the end of output
+%% This verifies that errors don't interrupt the content display
+
+\set _style dark1
+
+\echo === Send API Error Test ===
+\echo Testing \send command with API failure error
+
+%% Test normal message first
+\echo Testing normal message first...
+\send Hello, this is a normal message.
+
+%% Test message that triggers API error
+\echo Testing message that triggers API error...
+\send Please trigger api error for testing purposes.
+
+%% Test another normal message to show recovery
+\echo Testing recovery with normal message...
+\send This should work normally again.
+
+%% Show session state
+\echo Final session state:
+\session-show

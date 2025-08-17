@@ -17,4 +17,4 @@ Created model 'creative-gemini' (ID: 00000001, Provider: gemini, Base: gemini-2.
 %%> "\\get[#model_description]"
 #model_description = Advanced Gemini Flash model for creative tasks
 %%> "\\get[_output]"
-_output = Gemini client ready: GMC:cad4bc2c
+_output = Activated model 'creative-gemini' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)

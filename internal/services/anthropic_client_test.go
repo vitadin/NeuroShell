@@ -660,11 +660,17 @@ func TestAnthropicClient_SendStructuredCompletion_NotConfigured(t *testing.T) {
 		Provider:  "anthropic",
 	}
 
-	response, err := client.SendStructuredCompletion(session, modelConfig)
+	response := client.SendStructuredCompletion(session, modelConfig)
 
-	assert.Error(t, err)
-	assert.Nil(t, response)
-	assert.Contains(t, err.Error(), "anthropic API key not configured")
+	assert.NotNil(t, response)       // Response should be returned
+	assert.NotNil(t, response.Error) // But Error field should be populated
+	assert.Equal(t, "client_initialization_failed", response.Error.Code)
+	assert.Contains(t, response.Error.Message, "anthropic API key not configured")
+	assert.Equal(t, "initialization_error", response.Error.Type)
+	assert.Equal(t, "", response.TextContent)                   // No text content on error
+	assert.Empty(t, response.ThinkingBlocks)                    // No thinking blocks on error
+	assert.Equal(t, "anthropic", response.Metadata["provider"]) // Metadata should still be set
+	assert.Equal(t, "claude-3-5-sonnet-20241022", response.Metadata["model"])
 }
 
 func TestAnthropicClient_ProcessResponseBlocksStructured(t *testing.T) {
@@ -708,8 +714,10 @@ func TestAnthropicClient_StructuredResponseInterface(t *testing.T) {
 	}
 
 	// This will fail due to missing API key, but verifies the method signature
-	_, err := llmClient.SendStructuredCompletion(session, modelConfig)
+	response := llmClient.SendStructuredCompletion(session, modelConfig)
 
-	assert.Error(t, err) // Expected to fail due to no API key
-	assert.Contains(t, err.Error(), "anthropic API key not configured")
+	assert.NotNil(t, response)       // Response should be returned
+	assert.NotNil(t, response.Error) // But Error field should be populated
+	assert.Equal(t, "client_initialization_failed", response.Error.Code)
+	assert.Contains(t, response.Error.Message, "anthropic API key not configured")
 }

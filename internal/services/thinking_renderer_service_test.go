@@ -209,25 +209,8 @@ func TestThinkingRendererService_GetSupportedProviders(t *testing.T) {
 	}
 }
 
-// TestThinkingRendererService_RenderThinkingBlocksLegacy tests backward compatibility.
-func TestThinkingRendererService_RenderThinkingBlocksLegacy(t *testing.T) {
-	service := NewThinkingRendererService()
-	_ = service.Initialize()
-
-	blocks := []neurotypes.ThinkingBlock{
-		{Provider: "anthropic", Type: "thinking", Content: "Legacy test content"},
-	}
-
-	result := service.RenderThinkingBlocksLegacy(blocks)
-
-	// Should contain the content and provider label
-	if !strings.Contains(result, "Claude's internal reasoning:") {
-		t.Error("Legacy rendering should contain Anthropic provider label")
-	}
-	if !strings.Contains(result, "Legacy test content") {
-		t.Error("Legacy rendering should contain the thinking content")
-	}
-}
+// Note: RenderThinkingBlocksLegacy test has been removed.
+// Use TestThinkingRendererService_RenderThinkingBlocks_MultipleBlocks for testing.
 
 // TestThinkingRendererService_RenderSingleBlock_CompactMode tests compact mode rendering.
 func TestThinkingRendererService_RenderSingleBlock_CompactMode(t *testing.T) {
@@ -461,11 +444,11 @@ func TestThinkingRendererService_RenderThinkingBlocks_MultipleBlocks(t *testing.
 // TestThinkingRendererService_DefaultRenderConfig tests the default render config.
 func TestThinkingRendererService_DefaultRenderConfig(t *testing.T) {
 	config := &DefaultRenderConfig{
-		showThinking:  true,
-		thinkingStyle: "full",
-		compactMode:   false,
-		maxWidth:      80,
-		theme:         "default",
+		ShowThinkingEnabled: true,
+		ThinkingStyleValue:  "full",
+		CompactModeEnabled:  false,
+		MaxWidthValue:       80,
+		ThemeValue:          "default",
 	}
 
 	// Test interface methods

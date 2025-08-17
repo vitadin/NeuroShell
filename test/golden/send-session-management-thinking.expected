@@ -5,27 +5,17 @@ Creating math session...
 Created session 'math-session' (ID: 00000001)
 Activated session 'math-session' (ID: 00000001, Messages: 0)
 Active session: math-session
+<thinking id="2-1">
+Thinking about the user's message: "What's the area of a circle with radius 5?". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- OpenAI reasoning trace: ---                                             
-                                                                              
-  Thinking about the user's message: "What's the area of a circle with radius 
-  5?". This helps verify the message flow in tests. The user sent 1 messages  
-  total, and I need to provide a helpful response.                            
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 1 messages, last: What's the area of a    
   circle with radius 5?)                                                      
 
+<thinking id="4-1">
+Thinking about the user's message: "Now, what's the circumference of the same circle?". This helps verify the message flow in tests. The user sent 3 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- OpenAI reasoning trace: ---                                             
-                                                                              
-  Thinking about the user's message: "Now, what's the circumference of the    
-  same circle?". This helps verify the message flow in tests. The user sent 3 
-  messages total, and I need to provide a helpful response.                   
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 3 messages, last: Now, what's the         
   circumference of the same circle?)                                          
 
@@ -33,43 +23,27 @@ Creating programming session...
 Created session 'code-session' (ID: 00000007)
 Activated session 'code-session' (ID: 00000007, Messages: 0)
 Active session: code-session
+<thinking id="2-1">
+Thinking about the user's message: "How do I iterate through a list in Python?". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- OpenAI reasoning trace: ---                                             
-                                                                              
-  Thinking about the user's message: "How do I iterate through a list in      
-  Python?". This helps verify the message flow in tests. The user sent 1      
-  messages total, and I need to provide a helpful response.                   
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 1 messages, last: How do I iterate through
   a list in Python?)                                                          
 
+<thinking id="4-1">
+Thinking about the user's message: "What's the difference between append() and extend() methods?". This helps verify the message flow in tests. The user sent 3 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- OpenAI reasoning trace: ---                                             
-                                                                              
-  Thinking about the user's message: "What's the difference between append()  
-  and extend() methods?". This helps verify the message flow in tests. The    
-  user sent 3 messages total, and I need to provide a helpful response.       
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 3 messages, last: What's the difference   
   between append() and extend() methods?)                                     
 
 Switching back to math session...
 Activated session 'math-session' (ID: 00000001, Messages: 4)
 Active session: math-session
+<thinking id="6-1">
+Thinking about the user's message: "Earlier we calculated a circle with radius 5. What would be the area if the radius was 10?". This helps verify the message flow in tests. The user sent 5 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- OpenAI reasoning trace: ---                                             
-                                                                              
-  Thinking about the user's message: "Earlier we calculated a circle with     
-  radius 5. What would be the area if the radius was 10?". This helps verify  
-  the message flow in tests. The user sent 5 messages total, and I need to    
-  provide a helpful response.                                                 
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 5 messages, last: Earlier we calculated a 
   circle with radius 5. What would be the area if the radius was 10?)         
 
@@ -81,11 +55,11 @@ Updated: 2025-01-01 00:00:23
 Messages: 6 total
 
 [1] user (00:00:02): What's the area of a circle with radius 5?
-[2] assistant (00:00:05): --- OpenAI reasoning trace: ---\n\n  Thi... the area of a circle with radius 5?) (353 chars)
+[2] assistant (00:00:05): This is a mocking reply (received 1 mess... the area of a circle with radius 5?) (95 chars)
 [3] user (00:00:07): Now, what's the circumference of the same circle?
-[4] assistant (00:00:09): --- OpenAI reasoning trace: ---\n\n  Thi...he circumference of the same circle?) (367 chars)
+[4] assistant (00:00:09): This is a mocking reply (received 3 mess...he circumference of the same circle?) (102 chars)
 [5] user (00:00:20): Earlier we calculated a circle with radi...uld be the area if the radius was 10? (90 chars)
-[6] assistant (00:00:22): --- OpenAI reasoning trace: ---\n\n  Thi...ld be the area if the radius was 10?) (449 chars)
+[6] assistant (00:00:22): This is a mocking reply (received 5 mess...ld be the area if the radius was 10?) (143 chars)
 Programming session summary:
 Session: math-session (ID: 00000001)
 System: You are a math tutor who explains problems step by step.
@@ -94,11 +68,11 @@ Updated: 2025-01-01 00:00:23
 Messages: 6 total
 
 [1] user (00:00:02): What's the area of a circle with radius 5?
-[2] assistant (00:00:05): --- OpenAI reasoning trace: ---\n\n  Thi... the area of a circle with radius 5?) (353 chars)
+[2] assistant (00:00:05): This is a mocking reply (received 1 mess... the area of a circle with radius 5?) (95 chars)
 [3] user (00:00:07): Now, what's the circumference of the same circle?
-[4] assistant (00:00:09): --- OpenAI reasoning trace: ---\n\n  Thi...he circumference of the same circle?) (367 chars)
+[4] assistant (00:00:09): This is a mocking reply (received 3 mess...he circumference of the same circle?) (102 chars)
 [5] user (00:00:20): Earlier we calculated a circle with radi...uld be the area if the radius was 10? (90 chars)
-[6] assistant (00:00:22): --- OpenAI reasoning trace: ---\n\n  Thi...ld be the area if the radius was 10?) (449 chars)
+[6] assistant (00:00:22): This is a mocking reply (received 5 mess...ld be the area if the radius was 10?) (143 chars)
 Current active session:
 #active_session_name = math-session
 Active: math-session

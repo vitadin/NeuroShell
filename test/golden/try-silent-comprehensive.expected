@@ -1,0 +1,55 @@
+Setting _echo_command = true
+%%> "\\echo === Try-Silent Comprehensive Test ==="
+=== Try-Silent Comprehensive Test ===
+%%> "\\echo Testing deep nesting..."
+Testing deep nesting...
+%%> "\\try \\silent \\try \\silent \\echo Deep nested (should be silent)"
+%%> "\\silent \\try \\silent \\echo Deep nested (should be silent)"
+%%> "\\echo After deep nesting"
+After deep nesting
+%%> "\\echo Testing alternating patterns..."
+Testing alternating patterns...
+%%> "\\try \\echo Try visible"
+%%> "\\echo Try visible"
+Try visible
+%%> "\\silent \\echo Silent hidden"
+%%> "\\try \\silent \\echo Try-silent hidden"
+%%> "\\silent \\echo Try-silent hidden"
+%%> "\\echo After alternating patterns"
+After alternating patterns
+%%> "\\echo Testing with variables..."
+Testing with variables...
+%%> "\\set[test_value=original]"
+Setting test_value = original
+%%> "\\try \\silent \\set[test_value=modified]"
+%%> "\\silent \\set[test_value=modified]"
+%%> "\\echo Variable after try-silent: ${test_value}"
+Variable after try-silent: modified
+%%> "\\echo Testing state changes..."
+Testing state changes...
+%%> "\\try \\silent \\set[counter=1]"
+%%> "\\silent \\set[counter=1]"
+%%> "\\try \\silent \\set[counter=2]"
+%%> "\\silent \\set[counter=2]"
+%%> "\\echo Counter value: ${counter}"
+Counter value: 2
+%%> "\\echo Testing error recovery..."
+Testing error recovery...
+%%> "\\try \\silent \\unknown-error1"
+%%> "\\silent \\unknown-error1"
+%%> "\\echo After first error (status: ${_status})"
+After first error (status: 1)
+%%> "\\try \\silent \\set[recovery=success]"
+%%> "\\silent \\set[recovery=success]"
+%%> "\\echo After recovery (status: ${_status}, value: ${recovery})"
+After recovery (status: 0, value: success)
+%%> "\\echo Testing mixed with other commands..."
+Testing mixed with other commands...
+%%> "\\bash echo \"System command before\""
+System command before
+%%> "\\try \\silent \\set[mixed=value]"
+%%> "\\silent \\set[mixed=value]"
+%%> "\\bash echo \"System command after: ${mixed}\""
+System command after: value
+%%> "\\echo === Comprehensive test completed ==="
+=== Comprehensive test completed ===

@@ -29,6 +29,7 @@ Core Commands:
   \send                 - Send message to LLM agent
   \set                  - Set a variable
   \set-env              - Set an environment variable
+  \show-stack           - Display the execution stack for development and debugging
   \silent               - Execute commands with stdout output suppressed
   \timer                - Start a visual countdown timer for the specified number of seconds
   \try                  - Execute commands with error capture and handling

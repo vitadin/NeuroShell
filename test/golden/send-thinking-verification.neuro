@@ -1,0 +1,42 @@
+%% Test to verify thinking blocks are properly included in session content
+%% This test examines the actual content stored in session messages
+
+\set _style dark1
+
+\echo === Send Thinking Content Verification ===
+
+%% Test 1: Send without thinking inclusion
+\echo Test 1: Send WITHOUT thinking inclusion
+\send[include_thinking=false] Short message for test.
+
+%% Get the latest assistant message (${1} = most recent)
+\get 1
+\echo First assistant message (should NOT have thinking): "${1}"
+
+\echo 
+
+%% Test 2: Send with thinking inclusion
+\echo Test 2: Send WITH thinking inclusion  
+\send[include_thinking=true] Another short test message.
+
+%% Get the latest assistant message (${1} = most recent after second send)
+\get 1
+\echo Second assistant message (should have thinking): "${1}"
+
+%% Get the previous assistant message (${3} = 3rd most recent, which is the first assistant msg)
+\get 3
+\echo Comparison - First assistant message again: "${3}"
+
+\echo 
+\echo === Content Length Comparison ===
+\echo First message length (no thinking): ${#3} characters
+\echo Second message length (with thinking): ${#1} characters
+
+%% Check if second message is longer (indicating thinking blocks were included)
+\if[condition="${#1}"] \echo Second message has content
+\if[condition="${#3}"] \echo First message has content
+
+%% Show raw session dump for verification
+\echo 
+\echo === Raw Session Messages ===
+\session-show

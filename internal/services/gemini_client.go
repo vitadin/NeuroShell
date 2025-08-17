@@ -93,9 +93,9 @@ func (c *GeminiClient) SendChatCompletion(session *neurotypes.ChatSession, model
 
 	// Process response with formatted thinking (traditional processing)
 	content, thinkingInfo := c.processGeminiResponse(result)
+	// Content can be empty if response contains only thinking blocks (which are now skipped)
 	if content == "" {
-		logger.Error("No content in Gemini response")
-		return "", fmt.Errorf("no content in response")
+		logger.Debug("Gemini response contains no text content (may have thinking blocks only)")
 	}
 
 	logger.Debug("Gemini response received", "content_length", len(content), "thinking_blocks", thinkingInfo.ThinkingBlocks, "text_blocks", thinkingInfo.TextBlocks)
@@ -135,30 +135,51 @@ func (c *GeminiClient) sendChatCompletionRequest(session *neurotypes.ChatSession
 
 // SendStructuredCompletion sends a chat completion request to Google Gemini and returns structured response.
 // This method reuses SendChatCompletion logic and post-processes the response to separate thinking blocks.
-func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+// All errors are encoded in the StructuredLLMResponse.Error field - no Go errors are returned.
+func (c *GeminiClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) *neurotypes.StructuredLLMResponse {
 	logger.Debug("Gemini SendStructuredCompletion starting", "model", modelConfig.BaseModel)
 
 	// Use shared request logic to get raw response
 	result, err := c.sendChatCompletionRequest(session, modelConfig)
 	if err != nil {
-		return nil, err
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "api_request_failed",
+				Message: err.Error(),
+				Type:    "api_error",
+			},
+			Metadata: map[string]interface{}{"provider": "gemini", "model": modelConfig.BaseModel},
+		}
 	}
 
 	// Process response with structured thinking block extraction
 	textContent, thinkingBlocks := c.processGeminiResponseStructured(result)
 	if textContent == "" && len(thinkingBlocks) == 0 {
 		logger.Error("No content in Gemini structured response")
-		return nil, fmt.Errorf("no content in response")
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "empty_response",
+				Message: "no content in response",
+				Type:    "response_error",
+			},
+			Metadata: map[string]interface{}{"provider": "gemini", "model": modelConfig.BaseModel},
+		}
 	}
 
 	// Create structured response
 	structuredResponse := &neurotypes.StructuredLLMResponse{
 		TextContent:    textContent,
 		ThinkingBlocks: thinkingBlocks,
+		Error:          nil, // No error in successful case
+		Metadata:       map[string]interface{}{"provider": "gemini", "model": modelConfig.BaseModel},
 	}
 
 	logger.Debug("Gemini structured response received", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))
-	return structuredResponse, nil
+	return structuredResponse
 }
 
 // SetDebugTransport sets the HTTP transport for network debugging.
@@ -358,14 +379,11 @@ func (c *GeminiClient) processGeminiResponse(result *genai.GenerateContentRespon
 			}
 
 			if part.Thought {
-				// This is a thinking block - display it with special formatting
+				// This is a thinking block - skip in regular response (will be handled by structured response)
 				info.ThinkingBlocks++
-				contentBuilder.WriteString("\n🤔 **Thinking:**\n")
-				contentBuilder.WriteString(part.Text)
-				contentBuilder.WriteString("\n\n")
-				logger.Debug("Gemini thinking block processed", "thinking_length", len(part.Text))
+				logger.Debug("Gemini thinking block skipped in regular response", "thinking_length", len(part.Text))
 			} else {
-				// This is regular text content
+				// This is regular text content - no formatting
 				info.TextBlocks++
 				contentBuilder.WriteString(part.Text)
 				logger.Debug("Gemini text block processed", "text_length", len(part.Text))

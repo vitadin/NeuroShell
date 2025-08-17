@@ -283,26 +283,33 @@ func (c *ActivateCommand) activateModel(model *neurotypes.ModelConfig, modelServ
 	}
 
 	// Auto-push client creation and activation commands to stack service for seamless UX
+	// Skip auto-pushing if we're already in a try/silent block to prevent nested boundary marker issues
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		providerCatalogIDs := c.getProviderCatalogIDs(model)
+		// Check if we're in a try or silent block to avoid nested boundary markers
+		isInTryBlock := stackService.IsInTryBlock()
+		isInSilentBlock := stackService.IsInSilentBlock()
 
-		// Determine which client type should be activated based on model parameters
-		preferredClientType := c.determinePreferredClientType(model, providerCatalogIDs)
+		if !isInTryBlock && !isInSilentBlock {
+			providerCatalogIDs := c.getProviderCatalogIDs(model)
 
-		// Create the preferred client specifically
-		if preferredClientType != "" {
-			createCommand := c.generateClientNewCommand(preferredClientType, model)
-			if createCommand != "" {
-				stackService.PushCommand(createCommand)
-				activateCommand := fmt.Sprintf("\\try \\silent \\llm-client-activate %s", preferredClientType)
-				stackService.PushCommand(activateCommand)
-			}
-		} else {
-			// Fallback: create all clients (backward compatibility)
-			for _, catalogID := range providerCatalogIDs {
-				createCommand := c.generateClientNewCommand(catalogID, model)
+			// Determine which client type should be activated based on model parameters
+			preferredClientType := c.determinePreferredClientType(model, providerCatalogIDs)
+
+			// Create the preferred client specifically
+			if preferredClientType != "" {
+				createCommand := c.generateClientNewCommand(preferredClientType, model)
 				if createCommand != "" {
 					stackService.PushCommand(createCommand)
+					activateCommand := fmt.Sprintf("\\try \\silent \\llm-client-activate %s", preferredClientType)
+					stackService.PushCommand(activateCommand)
+				}
+			} else {
+				// Fallback: create all clients (backward compatibility)
+				for _, catalogID := range providerCatalogIDs {
+					createCommand := c.generateClientNewCommand(catalogID, model)
+					if createCommand != "" {
+						stackService.PushCommand(createCommand)
+					}
 				}
 			}
 		}

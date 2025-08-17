@@ -1,0 +1,10 @@
+%% Test to verify send command help information is displayed correctly
+%% This test checks that all help documentation including the new include_thinking option is shown
+
+\set _style dark1
+
+\echo === Send Command Help Information Test ===
+\echo Testing \help send command to verify complete documentation
+
+%% Display the help information for the send command
+\help send

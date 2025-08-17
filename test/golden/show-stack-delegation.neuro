@@ -1,0 +1,25 @@
+%% Test show-stack with actual command delegation patterns
+%% This demonstrates stack usage during real NeuroShell command delegation
+
+\set[_echo_command="true"]
+
+\echo === Show-Stack with Command Delegation ===
+
+\echo Step 1: Empty stack initially
+\show-stack
+
+\echo
+\echo Step 2: Using if command (which delegates via stack)
+\set[condition="true"]
+%% The \if command will push the target command to stack
+\if[condition="${condition}"] \echo "Condition was true"
+
+\echo
+\echo Step 3: Using silent command (which uses stack delegation)
+%% The \silent command pushes boundary markers and target command
+\silent \echo "This message is silenced"
+
+\echo
+\echo Step 4: Nested delegation with show-stack visibility
+%% Let's create a complex delegation pattern
+\try \silent \echo "Nested try-silent execution"

@@ -2,69 +2,42 @@ Setting _style = dark1
 === Send Conversation Flow with Thinking Blocks Test ===
 Testing multi-turn conversation with context-aware thinking blocks
 Starting conversation about programming...
+<thinking id="2-1">
+Thinking about the user's message: "I'm learning Python programming. Can you help me understand variables?". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- OpenAI reasoning trace: ---                                             
-                                                                              
-  Thinking about the user's message: "I'm learning Python programming. Can you
-  help me understand variables?". This helps verify the message flow in tests.
-  The user sent 1 messages total, and I need to provide a helpful response.   
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 1 messages, last: I'm learning Python     
   programming. Can you help me understand variables?)                         
 
 Asking follow-up question...
+<thinking id="4-1">
+Thinking about the user's message: "What's the difference between local and global variables in Python?". This helps verify the message flow in tests. The user sent 3 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- OpenAI reasoning trace: ---                                             
-                                                                              
-  Thinking about the user's message: "What's the difference between local and 
-  global variables in Python?". This helps verify the message flow in tests.  
-  The user sent 3 messages total, and I need to provide a helpful response.   
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 3 messages, last: What's the difference   
   between local and global variables in Python?)                              
 
 Getting more specific...
+<thinking id="6-1">
+Thinking about the user's message: "Can you show me an example of variable scope issues?". This helps verify the message flow in tests. The user sent 5 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- OpenAI reasoning trace: ---                                             
-                                                                              
-  Thinking about the user's message: "Can you show me an example of variable  
-  scope issues?". This helps verify the message flow in tests. The user sent 5
-  messages total, and I need to provide a helpful response.                   
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 5 messages, last: Can you show me an      
   example of variable scope issues?)                                          
 
 Adding complexity to the conversation...
+<thinking id="8-1">
+Thinking about the user's message: "How do I avoid common variable scope mistakes in my Python functions?". This helps verify the message flow in tests. The user sent 7 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- OpenAI reasoning trace: ---                                             
-                                                                              
-  Thinking about the user's message: "How do I avoid common variable scope    
-  mistakes in my Python functions?". This helps verify the message flow in    
-  tests. The user sent 7 messages total, and I need to provide a helpful      
-  response.                                                                   
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 7 messages, last: How do I avoid common   
   variable scope mistakes in my Python functions?)                            
 
 Final question to test conversation memory...
+<thinking id="10-1">
+Thinking about the user's message: "Based on our discussion about Python variables and scope, what's the best practice for naming variables?". This helps verify the message flow in tests. The user sent 9 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- OpenAI reasoning trace: ---                                             
-                                                                              
-  Thinking about the user's message: "Based on our discussion about Python    
-  variables and scope, what's the best practice for naming variables?". This  
-  helps verify the message flow in tests. The user sent 9 messages total, and 
-  I need to provide a helpful response.                                       
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 9 messages, last: Based on our discussion 
   about Python variables and scope, what's the best practice for naming       
   variables?)                                                                 
@@ -77,23 +50,17 @@ Updated: 2025-01-01 00:00:22
 Messages: 10 total
 
 [1] user (00:00:02): I'm learning Python programming. Can you help me understand variables?
-[2] assistant (00:00:05): --- OpenAI reasoning trace: ---\n\n  Thi...an you help me understand variables?) (409 chars)
+[2] assistant (00:00:05): This is a mocking reply (received 1 mess...an you help me understand variables?) (123 chars)
 [3] user (00:00:07): What's the difference between local and global variables in Python?
-[4] assistant (00:00:09): --- OpenAI reasoning trace: ---\n\n  Thi...ocal and global variables in Python?) (403 chars)
+[4] assistant (00:00:09): This is a mocking reply (received 3 mess...ocal and global variables in Python?) (120 chars)
 [5] user (00:00:11): Can you show me an example of variable scope issues?
-[6] assistant (00:00:13): --- OpenAI reasoning trace: ---\n\n  Thi...an example of variable scope issues?) (373 chars)
+[6] assistant (00:00:13): This is a mocking reply (received 5 mess...an example of variable scope issues?) (105 chars)
 [7] user (00:00:15): How do I avoid common variable scope mistakes in my Python functions?
-[8] assistant (00:00:17): --- OpenAI reasoning trace: ---\n\n  Thi...ope mistakes in my Python functions?) (407 chars)
+[8] assistant (00:00:17): This is a mocking reply (received 7 mess...ope mistakes in my Python functions?) (122 chars)
 [9] user (00:00:19): Based on our discussion about Python var...e best practice for naming variables? (104 chars)
-[10] assistant (00:00:21): --- OpenAI reasoning trace: ---\n\n  Thi... best practice for naming variables?) (477 chars)
+[10] assistant (00:00:21): This is a mocking reply (received 9 mess... best practice for naming variables?) (157 chars)
 Checking conversation context:
-1 = --- OpenAI reasoning trace: ---                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                       
-  Thinking about the user's message: "Based on our discussion about Python variables and scope, what's the best practice for naming variables?". This helps verify the message flow in tests. The user sent 9 messages total, and I need to provide a helpful response.
-                                                                                                                                                                                                                                                                       
---- End thinking ---                                                                                                                                                                                                                                                   
-                                                                                                                                                                                                                                                                       
-This is a mocking reply (received 9 messages, last: Based on our discussion about Python variables and scope, what's the best practice for naming variables?)                                                                                                          
+1 = This is a mocking reply (received 9 messages, last: Based on our discussion about Python variables and scope, what's the best practice for naming variables?)
 Latest assistant response length:  characters
 2 = Based on our discussion about Python variables and scope, what's the best practice for naming variables?
 Latest user message: Based on our discussion about Python variables and scope, what's the best practice for naming variables?

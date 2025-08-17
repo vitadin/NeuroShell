@@ -161,42 +161,82 @@ func (c *AnthropicClient) sendChatCompletionRequest(session *neurotypes.ChatSess
 
 // SendStructuredCompletion sends a chat completion request to Anthropic and returns structured response.
 // This method reuses SendChatCompletion logic and post-processes the response to separate thinking blocks.
-func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (*neurotypes.StructuredLLMResponse, error) {
+// All errors are encoded in the StructuredLLMResponse.Error field - no Go errors are returned.
+func (c *AnthropicClient) SendStructuredCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) *neurotypes.StructuredLLMResponse {
 	logger.Debug("Anthropic SendStructuredCompletion starting", "model", modelConfig.BaseModel)
 
 	// Initialize client if needed
 	if err := c.initializeClientIfNeeded(); err != nil {
-		return nil, fmt.Errorf("failed to initialize Anthropic client: %w", err)
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "client_initialization_failed",
+				Message: err.Error(),
+				Type:    "initialization_error",
+			},
+			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
+		}
 	}
 
 	// Reuse the core logic from SendChatCompletion but return raw response blocks for structured processing
 	message, err := c.sendChatCompletionRequest(session, modelConfig)
 	if err != nil {
-		return nil, err
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "api_request_failed",
+				Message: err.Error(),
+				Type:    "api_error",
+			},
+			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
+		}
 	}
 
 	// Extract response content and thinking blocks separately (structured processing)
 	if len(message.Content) == 0 {
 		logger.Error("No response content returned")
-		return nil, fmt.Errorf("no response content returned")
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    "",
+			ThinkingBlocks: []neurotypes.ThinkingBlock{},
+			Error: &neurotypes.LLMError{
+				Code:    "empty_response",
+				Message: "no response content returned",
+				Type:    "response_error",
+			},
+			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
+		}
 	}
 
 	// Process all content blocks and extract thinking blocks separately
 	textContent, thinkingBlocks := c.processResponseBlocksStructured(message.Content)
 
-	if textContent == "" {
-		logger.Error("Empty response content")
-		return nil, fmt.Errorf("empty response content")
+	// Check for truly empty response (no text content AND no thinking blocks)
+	if textContent == "" && len(thinkingBlocks) == 0 {
+		logger.Error("Empty response content and no thinking blocks")
+		return &neurotypes.StructuredLLMResponse{
+			TextContent:    textContent,
+			ThinkingBlocks: thinkingBlocks,
+			Error: &neurotypes.LLMError{
+				Code:    "empty_response",
+				Message: "no content or thinking blocks returned",
+				Type:    "response_error",
+			},
+			Metadata: map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
+		}
 	}
 
 	// Create structured response
 	structuredResponse := &neurotypes.StructuredLLMResponse{
 		TextContent:    textContent,
 		ThinkingBlocks: thinkingBlocks,
+		Error:          nil, // No error in successful case
+		Metadata:       map[string]interface{}{"provider": "anthropic", "model": modelConfig.BaseModel},
 	}
 
 	logger.Debug("Anthropic structured response received", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))
-	return structuredResponse, nil
+	return structuredResponse
 }
 
 // SetDebugTransport sets the HTTP transport for network debugging.

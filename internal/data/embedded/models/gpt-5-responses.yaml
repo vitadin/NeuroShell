@@ -1,5 +1,5 @@
 name: gpt-5
-id: GPT5R
+id: G5R
 display_name: GPT-5 Responses
 provider: openai
 provider_catalog_id: OAR

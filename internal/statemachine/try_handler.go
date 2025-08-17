@@ -112,19 +112,49 @@ func (th *TryHandler) SkipToTryBlockEnd() {
 
 	th.logger.Debug("Skipping to try block end", "tryID", currentTryID)
 
+	// DEBUG: Show current stack state
+	stackContents := th.stackService.PeekStack()
+	th.logger.Debug("Current stack contents before skipping", "stack", stackContents, "stackSize", len(stackContents))
+
+	skipCount := 0
 	// Pop commands until we find the matching ERROR_BOUNDARY_END
 	for !th.stackService.IsEmpty() {
 		command, hasCommand := th.stackService.PopCommand()
 		if !hasCommand {
+			th.logger.Debug("No more commands to pop, breaking")
 			break
 		}
 
-		if command == "ERROR_BOUNDARY_END:"+currentTryID {
+		skipCount++
+		th.logger.Debug("Skipping command", "command", command, "skipCount", skipCount, "lookingFor", "ERROR_BOUNDARY_END:"+currentTryID)
+
+		// CRITICAL FIX: Check for silent boundary markers and process them properly
+		// When skipping through commands, we must handle silent boundary markers to avoid state corruption
+		switch {
+		case strings.HasPrefix(command, "SILENT_BOUNDARY_START:"):
+			silentID := strings.TrimPrefix(command, "SILENT_BOUNDARY_START:")
+			th.logger.Debug("Processing silent boundary start while skipping", "silentID", silentID)
+			th.stackService.PushSilentBoundary(silentID)
+		case strings.HasPrefix(command, "SILENT_BOUNDARY_END:"):
+			silentID := strings.TrimPrefix(command, "SILENT_BOUNDARY_END:")
+			th.logger.Debug("Processing silent boundary end while skipping", "silentID", silentID)
+			th.stackService.PopSilentBoundary()
+		case command == "ERROR_BOUNDARY_END:"+currentTryID:
+			th.logger.Debug("Found matching try block end", "tryID", currentTryID, "totalSkipped", skipCount)
 			th.ExitTryBlock(currentTryID)
 			return
 		}
+
+		// Check if we're skipping too many commands (potential infinite loop detection)
+		if skipCount > 1000 {
+			th.logger.Error("POTENTIAL INFINITE LOOP: Skipped too many commands looking for try block end", "tryID", currentTryID, "skipCount", skipCount)
+			break
+		}
+
 		// Skip any other commands in the try block
 	}
+
+	th.logger.Error("Never found matching try block end", "tryID", currentTryID, "totalSkipped", skipCount)
 }
 
 // EnterTryBlock enters a try block with the given ID.

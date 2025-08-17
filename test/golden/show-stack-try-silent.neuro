@@ -1,0 +1,28 @@
+%% Test show-stack detailed mode showing try/silent block context
+%% This demonstrates debugging complex try/silent interactions
+
+\set[_echo_command="true"]
+
+\echo === Show-Stack in Try/Silent Context ===
+
+\echo Step 1: Basic stack state
+\show-stack
+
+\echo
+\echo Step 2: Inside try block context
+\try \show-stack[detailed=true]
+
+\echo
+\echo Step 3: Inside silent block context  
+\silent \show-stack[detailed=true]
+
+\echo
+\echo Step 4: Nested try-silent with detailed context
+\try \silent \show-stack[detailed=true]
+
+\echo
+\echo Step 5: Complex nesting showing block depths
+\try \try \silent \show-stack[detailed=true]
+
+\echo
+\echo === Context Demo Complete ===

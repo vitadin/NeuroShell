@@ -1,0 +1,13 @@
+Setting _style = dark1
+=== Send Client Configuration Error Test ===
+Testing \send command with client configuration error
+Testing successful message...
+<thinking id="2-1">
+Thinking about the user's message: "This message should work fine.". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 1 messages, last: This message should work
+  fine.)                                                                      
+
+Testing client configuration error...
+FATA Script execution failed error="command execution failed: LLM call failed: Mock client configuration error for testing"

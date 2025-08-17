@@ -21,4 +21,4 @@ Created model 'test-model' (ID: 00000001, Provider: openai, Base: o4-mini)
 %%> "\\get[#model_param_count]"
 #model_param_count = 1
 %%> "\\get[_output]"
-_output = OpenAI client ready: OAC:b10394de (type: OAC)
+_output = Activated model 'test-model' (ID: 00000001, Provider: openai, Base: o4-mini)

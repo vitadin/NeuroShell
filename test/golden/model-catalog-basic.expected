@@ -151,7 +151,7 @@ Openai Models:
     Version: 2024-11-20
     Description: GPT-4o ("o" for "omni") is our versatile, high-intelligence flagship model. It accepts both text and image inputs, and produces text outputs (including Structured Outputs). It is the best model for most tasks, and is our most capable model outside of our o-series models.
 
-  [GPT5C] GPT-5 Chat (gpt-5)
+  [G5C] GPT-5 Chat (gpt-5)
     Provider: openai (OAC)
     Context: 400,000 tokens (max output: 128,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks
@@ -164,7 +164,7 @@ Openai Models:
     Snapshots: gpt-5, gpt-5-2025-08-07
     Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via chat completions endpoint.
 
-  [GPT5MC] GPT-5 Mini Chat (gpt-5-mini-2025-08-07)
+  [G5MC] GPT-5 Mini Chat (gpt-5-mini-2025-08-07)
     Provider: openai (OAC)
     Context: 400,000 tokens (max output: 128,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, well-defined-tasks
@@ -177,7 +177,7 @@ Openai Models:
     Snapshots: gpt-5-mini-2025-08-07
     Description: A faster, more cost-efficient version of GPT-5 for well-defined tasks. Great for well-defined tasks and precise prompts via chat completions endpoint.
 
-  [GPT5MR] GPT-5 Mini Responses (gpt-5-mini-2025-08-07)
+  [G5MR] GPT-5 Mini Responses (gpt-5-mini-2025-08-07)
     Provider: openai (OAR)
     Context: 400,000 tokens (max output: 128,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, well-defined-tasks
@@ -190,7 +190,7 @@ Openai Models:
     Snapshots: gpt-5-mini-2025-08-07
     Description: A faster, more cost-efficient version of GPT-5 for well-defined tasks. Great for well-defined tasks and precise prompts via responses endpoint.
 
-  [GPT5NC] GPT-5 Nano Chat (gpt-5-nano-2025-08-07)
+  [G5NC] GPT-5 Nano Chat (gpt-5-nano-2025-08-07)
     Provider: openai (OAC)
     Context: 400,000 tokens (max output: 128,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, summarization, classification, fastest
@@ -203,7 +203,7 @@ Openai Models:
     Snapshots: gpt-5-nano-2025-08-07
     Description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via chat completions endpoint.
 
-  [GPT5NR] GPT-5 Nano Responses (gpt-5-nano-2025-08-07)
+  [G5NR] GPT-5 Nano Responses (gpt-5-nano-2025-08-07)
     Provider: openai (OAR)
     Context: 400,000 tokens (max output: 128,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, cost-efficient, summarization, classification, fastest
@@ -216,7 +216,7 @@ Openai Models:
     Snapshots: gpt-5-nano-2025-08-07
     Description: Fastest, most cost-efficient version of GPT-5 for summarization and classification tasks via responses endpoint.
 
-  [GPT5R] GPT-5 Responses (gpt-5)
+  [G5R] GPT-5 Responses (gpt-5)
     Provider: openai (OAR)
     Context: 400,000 tokens (max output: 128,000 tokens)
     Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks

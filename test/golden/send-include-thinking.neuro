@@ -1,0 +1,27 @@
+%% Test send command with include_thinking option
+%% Tests that thinking blocks are included in session messages when include_thinking=true
+
+\set _style dark1
+
+\echo === Send Include Thinking Test ===
+\echo Testing \send command with include_thinking option
+
+%% Test 1: Send without include_thinking (default behavior)
+\echo Testing normal send (thinking blocks NOT included in session)...
+\send Hello, this is a normal message without thinking in session.
+
+%% Test 2: Send with include_thinking=false (explicit)
+\echo Testing send with include_thinking=false...
+\send[include_thinking=false] This message also excludes thinking blocks from session.
+
+%% Test 3: Send with include_thinking=true (thinking blocks included)
+\echo Testing send with include_thinking=true...
+\send[include_thinking=true] This message INCLUDES thinking blocks in the session.
+
+%% Test 4: Another message with thinking included
+\echo Testing another message with thinking included...
+\send[include_thinking=true] Another message that should have thinking blocks in session.
+
+%% Verify session content shows thinking blocks for include_thinking=true messages
+\echo === Session Content Verification ===
+\session-show

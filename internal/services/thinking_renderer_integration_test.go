@@ -105,14 +105,22 @@ func TestThinkingRendererService_BackwardCompatibility(t *testing.T) {
 		{Provider: "anthropic", Type: "thinking", Content: "Legacy test content"},
 	}
 
-	result := service.RenderThinkingBlocksLegacy(blocks)
+	// Use the new method with default config
+	defaultConfig := &DefaultRenderConfig{
+		ShowThinkingEnabled: true,
+		ThinkingStyleValue:  "full",
+		CompactModeEnabled:  false,
+		MaxWidthValue:       80,
+		ThemeValue:          "default",
+	}
+	result := service.RenderThinkingBlocksWithMessageIndex(blocks, defaultConfig, 1)
 
-	// Should contain the content and provider label
-	if !strings.Contains(result, "Claude's internal reasoning:") {
-		t.Error("Legacy rendering should contain Anthropic provider label")
+	// Should contain the content in XML format
+	if !strings.Contains(result, "<thinking id=\"1-1\">") {
+		t.Error("XML rendering should contain thinking tag with ID")
 	}
 	if !strings.Contains(result, "Legacy test content") {
-		t.Error("Legacy rendering should contain the thinking content")
+		t.Error("XML rendering should contain the thinking content")
 	}
 }
 

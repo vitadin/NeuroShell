@@ -7,40 +7,25 @@ Created model 'thinking-test-model' (ID: 00000001, Provider: anthropic, Base: cl
 Activated model 'thinking-test-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
 Active model: thinking-test-model
 Testing thinking block message 1...
+<thinking id="2-1">
+Thinking about the user's message: "Hello, can you help me solve a simple math problem?". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- Internal processing: ---                                                
-                                                                              
-  Thinking about the user's message: "Hello, can you help me solve a simple   
-  math problem?". This helps verify the message flow in tests. The user sent 1
-  messages total, and I need to provide a helpful response.                   
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 1 messages, last: Hello, can you help me  
   solve a simple math problem?)                                               
 
 Testing thinking block message 2...
+<thinking id="4-1">
+Thinking about the user's message: "What is 2 + 2?". This helps verify the message flow in tests. The user sent 3 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- Internal processing: ---                                                
-                                                                              
-  Thinking about the user's message: "What is 2 + 2?". This helps verify the  
-  message flow in tests. The user sent 3 messages total, and I need to provide
-  a helpful response.                                                         
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 3 messages, last: What is 2 + 2?)         
 
 Testing thinking block message 3...
+<thinking id="6-1">
+Thinking about the user's message: "Can you explain the process of photosynthesis in plants?". This helps verify the message flow in tests. The user sent 5 messages total, and I need to provide a helpful response.
+</thinking>
 
-  --- Internal processing: ---                                                
-                                                                              
-  Thinking about the user's message: "Can you explain the process of          
-  photosynthesis in plants?". This helps verify the message flow in tests. The
-  user sent 5 messages total, and I need to provide a helpful response.       
-                                                                              
-  --- End thinking ---                                                        
-                                                                              
   This is a mocking reply (received 5 messages, last: Can you explain the     
   process of photosynthesis in plants?)                                       
 
@@ -52,8 +37,8 @@ Updated: 2025-01-01 00:00:14
 Messages: 6 total
 
 [1] user (00:00:03): Hello, can you help me solve a simple math problem?
-[2] assistant (00:00:05): --- Internal processing: ---\n\n  Thinki...help me solve a simple math problem?) (368 chars)
+[2] assistant (00:00:05): This is a mocking reply (received 1 mess...help me solve a simple math problem?) (104 chars)
 [3] user (00:00:07): What is 2 + 2?
-[4] assistant (00:00:09): --- Internal processing: ---\n\n  Thinki...ved 3 messages, last: What is 2 + 2?) (294 chars)
+[4] assistant (00:00:09): This is a mocking reply (received 3 messages, last: What is 2 + 2?)
 [5] user (00:00:11): Can you explain the process of photosynthesis in plants?
-[6] assistant (00:00:13): --- Internal processing: ---\n\n  Thinki...process of photosynthesis in plants?) (378 chars)
+[6] assistant (00:00:13): This is a mocking reply (received 5 mess...process of photosynthesis in plants?) (109 chars)
