@@ -1,0 +1,47 @@
+%% Comprehensive try-silent interaction test
+%% This test covers edge cases and complex scenarios
+
+\set[_echo_command="true"]
+
+%% Show initial state
+\echo === Try-Silent Comprehensive Test ===
+
+%% Test 1: Multiple levels of nesting
+\echo Testing deep nesting...
+\try \silent \try \silent \echo Deep nested (should be silent)
+\echo After deep nesting
+
+%% Test 2: Alternating try-silent patterns
+\echo Testing alternating patterns...
+\try \echo Try visible
+\silent \echo Silent hidden
+\try \silent \echo Try-silent hidden
+\echo After alternating patterns
+
+%% Test 3: Try-silent with variables and interpolation
+\echo Testing with variables...
+\set[test_value=original]
+\try \silent \set[test_value=modified]
+\echo Variable after try-silent: ${test_value}
+
+%% Test 4: Try-silent with command that changes state
+\echo Testing state changes...
+\try \silent \set[counter=1]
+\try \silent \set[counter=2] 
+\echo Counter value: ${counter}
+
+%% Test 5: Error recovery in sequence
+\echo Testing error recovery...
+\try \silent \unknown-error1
+\echo After first error (status: ${_status})
+\try \silent \set[recovery=success]
+\echo After recovery (status: ${_status}, value: ${recovery})
+
+%% Test 6: Mixed with other commands
+\echo Testing mixed with other commands...
+\bash echo "System command before"
+\try \silent \set[mixed=value]
+\bash echo "System command after: ${mixed}"
+
+%% Final verification
+\echo === Comprehensive test completed ===

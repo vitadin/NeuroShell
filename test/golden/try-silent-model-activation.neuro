@@ -1,0 +1,35 @@
+%% Testing try-silent with model activation (original bug scenario)
+%% This test verifies the specific scenario that was causing shell hangs
+
+\set[_style=dark1]
+\set[_echo_command="true"]
+
+%% Show initial state
+\echo === Try-Silent Model Activation Test ===
+
+%% Test 1: Create a model and manually test activation with try-silent
+\echo Creating test model...
+\model-new[catalog_id="CS4"] try-silent-test-model
+
+%% Test 2: Test try-silent model-activate with ID (the original failing scenario)
+\echo Testing try-silent model-activate with ID...
+\try \silent \model-activate[id=true] ${#model_id}
+\echo After try-silent model-activate (should display)
+
+%% Test 3: Verify model activation worked by checking variables
+\echo Active model: ${#active_model_name}
+\echo Active model ID: ${#active_model_id}
+
+%% Test 4: Test try-silent with non-existent model (error case)
+\echo Testing try-silent with non-existent model...
+\try \silent \model-activate[id=true] nonexistent123
+\echo After try-silent with non-existent model (should display)
+\echo Error status: ${_status}
+
+%% Test 5: Test try-silent with model name activation
+\echo Testing try-silent with model name...
+\try \silent \model-activate try-silent-test-model
+\echo After try-silent name activation
+
+%% Final verification
+\echo === Model activation test completed ===

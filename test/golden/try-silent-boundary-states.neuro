@@ -1,0 +1,34 @@
+%% Testing try-silent boundary state management
+%% This test verifies that boundary markers are properly processed
+%% and that silent/try states don't interfere with each other
+
+\set[_style=dark1]
+\set[_echo_command="true"]
+
+%% Show initial state  
+\echo === Try-Silent Boundary States Test ===
+
+%% Test 1: silent-try (reverse order)
+\echo Testing silent-try combination...
+\silent \try \echo This should be silent
+\echo After silent-try (should display)
+
+%% Test 2: try-silent-try (nested)
+\echo Testing nested try-silent-try...
+\try \silent \try \echo Nested silent in try
+\echo After nested combination
+
+%% Test 3: Error in nested silent-try
+\echo Testing error in nested silent-try...
+\silent \try \unknown-nested-error
+\echo After nested error (should display)
+
+%% Test 4: Complex nesting with variables
+\echo Testing complex nesting with variables...
+\set[before=initial]
+\try \silent \set[during=modified]
+\set[after=final]
+\echo Before: ${before}, During: ${during}, After: ${after}
+
+%% Final verification
+\echo === Boundary states test completed ===
