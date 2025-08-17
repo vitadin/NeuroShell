@@ -117,15 +117,16 @@ release:
     {{- if eq .Version "0.1.0" }}NeuroShell {{ .Version }} 'Hydra'
     {{- else if eq .Version "0.2.0" }}NeuroShell {{ .Version }} 'Planaria'  
     {{- else if eq .Version "0.2.3" }}NeuroShell {{ .Version }} 'Planaria'
-    {{- else if eq .Version "0.3.0" }}NeuroShell {{ .Version }} 'Aplysia'
-    {{- else if eq .Version "0.4.0" }}NeuroShell {{ .Version }} 'Octopus'
-    {{- else if eq .Version "0.5.0" }}NeuroShell {{ .Version }} 'Corvus'
-    {{- else if eq .Version "0.6.0" }}NeuroShell {{ .Version }} 'Rattus'
-    {{- else if eq .Version "0.7.0" }}NeuroShell {{ .Version }} 'Macaca'
-    {{- else if eq .Version "0.8.0" }}NeuroShell {{ .Version }} 'Pan'
-    {{- else if eq .Version "0.9.0" }}NeuroShell {{ .Version }} 'Tursiops'
-    {{- else if eq .Version "1.0.0" }}NeuroShell {{ .Version }} 'Sapiens'
-    {{- else if eq .Version "2.0.0" }}NeuroShell {{ .Version }} 'Synthia'
+    {{- else if eq .Version "0.2.4" }}NeuroShell {{ .Version }} 'Planaria'
+    {{- else if eq .Version "0.3.0" }}NeuroShell {{ .Version }} 'Dendro'
+    {{- else if eq .Version "0.4.0" }}NeuroShell {{ .Version }} 'Tentara'
+    {{- else if eq .Version "0.5.0" }}NeuroShell {{ .Version }} 'Corvex'
+    {{- else if eq .Version "0.6.0" }}NeuroShell {{ .Version }} 'Labris'
+    {{- else if eq .Version "0.7.0" }}NeuroShell {{ .Version }} 'Primax'
+    {{- else if eq .Version "0.8.0" }}NeuroShell {{ .Version }} 'Cognita'
+    {{- else if eq .Version "0.9.0" }}NeuroShell {{ .Version }} 'Resonix'
+    {{- else if eq .Version "1.0.0" }}NeuroShell {{ .Version }} 'Saprix'
+    {{- else if eq .Version "2.0.0" }}NeuroShell {{ .Version }} 'Omnix'
     {{- else }}NeuroShell {{ .Version }}
     {{- end }}
 
@@ -138,7 +139,7 @@ release:
     Advanced AI shell environment for seamless LLM interaction and automation.
   
   footer: |
-    **Full Changelog**: https://github.com/vitadin/NeuroShell/blob/main/docs/CHANGELOG.md
+    **Full Changelog**: Use `\change-log-show` command to view the complete changelog
     
     ---
     

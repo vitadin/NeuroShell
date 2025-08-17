@@ -1,4 +1,12 @@
-NeuroShell Change Log (3 entries):
+NeuroShell Change Log (4 entries):
+
+[CL4] Output System Overhaul, Advanced Debugging Tools, and Enhanced Testing Infrastructure
+  Version: 0.2.4
+  Date: 2025-08-17
+  Type: Feature
+  Description: Implemented comprehensive output system refactoring with new theming, styling, and rendering capabilities across all commands. Added show-stack command for execution stack debugging with detailed mode support. Enhanced error handling in send command with comprehensive error scenarios and thinking block integration. Introduced config-path command for configuration management. Significantly expanded testing infrastructure with 87% coverage in shell package and extensive end-to-end test scenarios. Streamlined model catalog by removing unused OpenRouter and Moonshot provider models.
+  Impact: Users now benefit from consistent, themed output across all commands with improved readability and styling. The new show-stack command provides powerful debugging capabilities for script execution and error tracking. Enhanced send command provides better error visibility and thinking block integration for reasoning models. Configuration management is simplified with the new config-path command. The expanded testing framework ensures higher reliability and better error handling. The cleanup of unused models reduces complexity while maintaining core functionality.
+  Files: internal/output/*, internal/commands/builtin/show_stack.go, internal/commands/builtin/config_path.go, internal/commands/builtin/send.go, internal/commands/printing/printer.go, internal/services/theme_service.go, internal/services/thinking_renderer_service.go, internal/services/anthropic_client.go, internal/services/gemini_client.go, internal/services/autocomplete_service.go, internal/shell/handler_test.go, internal/statemachine/stack_machine.go, internal/statemachine/try_handler.go, internal/data/embedded/stdlib/_send.neuro, test/golden/show-stack-*, test/golden/send-error-*, test/golden/try-silent-*, examples/experiments/openai/G5R_full_param.neuro
 
 [CL3] Automated Release Pipeline, Enhanced User Experience, and Advanced Debugging Tools
   Version: 0.2.3
