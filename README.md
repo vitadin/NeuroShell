@@ -38,7 +38,7 @@ A specialized shell environment for seamless interaction with LLM agents. NeuroS
 
 ```bash
 # Clone and build
-git clone https://github.com/your-org/NeuroShell.git
+git clone https://github.com/vitadin/NeuroShell.git
 cd NeuroShell
 just build
 
@@ -46,24 +46,63 @@ just build
 ./bin/neuro
 ```
 
+### Getting Version
+
+```
+\version
+```
+
+### Getting Help
+
+```
+\help                    
+\help session-new        
+\model-catalog           
+\provider-catalog        
+```
+
+Commands explained:
+- `\help` - List all commands
+- `\help session-new` - Command-specific help  
+- `\model-catalog` - Available LLM models
+- `\provider-catalog` - Supported providers
+
+### Getting LLM Models
+
+```
+\model-catalog
+```
+
 ### Basic Usage
 
-```bash
-# Start with simple LLM interaction
+Start with simple LLM interaction:
+```
+\model-new[catalog_id="O4MC"] gpt-model
 \send Hello, can you help me with Python programming?
+```
 
-# Create a specialized session
+Create a specialized session:
+```
+\model-new[catalog_id="O4MC"] gpt-model
 \session-new[system="You are a code reviewer"] review-session
+```
 
-# Use variables
+Use variables for context:
+```
+\model-new[catalog_id="O4MC"] gpt-model
 \set[project="MyApp"]
 \send I'm working on ${project}. Can you help me optimize this code?
+```
 
-# Execute system commands
+Execute system commands and use their output:
+```
+\model-new[catalog_id="O4MC"] gpt-model
 \bash git status
 \send Based on this git status: ${_output}, what should I do next?
+```
 
-# Save your work
+Save your work:
+```
 \session-export analysis_results.json
 ```
 
@@ -82,26 +121,20 @@ just build
 
 ### Anthropic Claude
 ```bash
-\anthropic-client-new my-claude
 \model-new[catalog_id="CS4", thinking_budget=1000] claude-sonnet
-\model-activate claude-sonnet
-\send Hello from Claude!
+\send Hello, Claude!
 ```
 
 ### OpenAI GPT
 ```bash
-\openai-client-new my-gpt
 \model-new[catalog_id="O4MC"] gpt-model
-\model-activate gpt-model
-\send Hello from GPT!
+\send Hello, GPT!
 ```
 
 ### Google Gemini
 ```bash
-\gemini-client-new my-gemini
 \model-new[catalog_id="GM25F", thinking_budget=2048] gemini-model
-\model-activate gemini-model
-\send Hello from Gemini!
+\send Hello, Gemini!
 ```
 
 ## Variable Types
@@ -112,12 +145,23 @@ just build
 - **System Info**: `${@user}`, `${@date}`, `${@pwd}`
 - **Session Metadata**: `${#session_name}`, `${#active_model_name}`
 
+## Comments
+
+Use `%%` to comment entire lines in NeuroShell scripts:
+
+```
+%% This is a comment line
+\send Hello world
+%% Another comment
+\set[name="value"]
+```
+
 ## Script Files (.neuro)
 
-Create reproducible workflows:
+Create reproducible workflows in `.neuro` files:
 
-```bash
-%% analysis.neuro
+Example `analysis.neuro`:
+```
 \session-new[system="You are a data analyst"] data-session
 \set[data_file="sales.csv"]
 \bash python preprocess.py ${data_file}
@@ -133,7 +177,7 @@ Run with:
 ## Example Workflows
 
 ### Data Analysis
-```bash
+```
 \session-new[system="You are a data analyst"] analysis
 \bash head -5 data.csv
 \send What insights can you find in this data: ${_output}
@@ -142,52 +186,13 @@ Run with:
 ```
 
 ### Code Review
-```bash
+```
 \session-new[system="You are a senior software engineer"] review
 \bash git diff HEAD~1
 \send Please review these changes: ${_output}
 \send What improvements would you suggest?
 ```
 
-### Multi-Model Comparison
-```bash
-# Ask Claude
-\anthropic-client-new claude
-\model-new[catalog_id="CS4"] claude-model
-\model-activate claude-model
-\send Explain quantum computing
-
-# Ask GPT
-\openai-client-new gpt
-\model-new[catalog_id="O4MC"] gpt-model
-\model-activate gpt-model
-\send Explain quantum computing
-
-# Compare responses
-\echo Claude: ${1}
-\echo GPT: ${3}
-```
-
-## Getting Help
-
-```bash
-\help                    # List all commands
-\help session-new        # Command-specific help
-\model-catalog           # Available LLM models
-\provider-catalog        # Supported providers
-```
-
-## Development
-
-```bash
-# Build and test
-just build
-just test
-
-# Run specific tests
-just test-e2e           # End-to-end tests
-just test-unit          # Unit tests
-```
 
 ## License
 

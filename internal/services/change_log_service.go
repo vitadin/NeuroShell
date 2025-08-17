@@ -81,6 +81,33 @@ func (s *ChangeLogService) GetChangeLog() ([]neurotypes.ChangeLogEntry, error) {
 	return entries, nil
 }
 
+// GetChangeLogWithOrder returns all change log entries sorted by the specified order.
+// order can be "asc" (oldest first) or "desc" (newest first).
+func (s *ChangeLogService) GetChangeLogWithOrder(order string) ([]neurotypes.ChangeLogEntry, error) {
+	if !s.initialized {
+		return nil, fmt.Errorf("change log service not initialized")
+	}
+
+	// Create a copy to avoid modifying the original data
+	entries := make([]neurotypes.ChangeLogEntry, len(s.entries))
+	copy(entries, s.entries)
+
+	// Sort by date based on order
+	if order == "desc" {
+		// Sort by date (newest first)
+		sort.Slice(entries, func(i, j int) bool {
+			return entries[i].Date > entries[j].Date
+		})
+	} else {
+		// Sort by date (oldest first) - default behavior
+		sort.Slice(entries, func(i, j int) bool {
+			return entries[i].Date < entries[j].Date
+		})
+	}
+
+	return entries, nil
+}
+
 // SearchChangeLog returns change log entries that match the search query.
 // The search is case-insensitive and matches across ID, version, type, title, description, and impact fields.
 func (s *ChangeLogService) SearchChangeLog(query string) ([]neurotypes.ChangeLogEntry, error) {
@@ -111,6 +138,48 @@ func (s *ChangeLogService) SearchChangeLog(query string) ([]neurotypes.ChangeLog
 	sort.Slice(matches, func(i, j int) bool {
 		return matches[i].Date > matches[j].Date
 	})
+
+	return matches, nil
+}
+
+// SearchChangeLogWithOrder returns change log entries that match the search query, sorted by the specified order.
+// order can be "asc" (oldest first) or "desc" (newest first).
+func (s *ChangeLogService) SearchChangeLogWithOrder(query string, order string) ([]neurotypes.ChangeLogEntry, error) {
+	if !s.initialized {
+		return nil, fmt.Errorf("change log service not initialized")
+	}
+
+	if query == "" {
+		return s.GetChangeLogWithOrder(order)
+	}
+
+	var matches []neurotypes.ChangeLogEntry
+	queryLower := strings.ToLower(query)
+
+	for _, entry := range s.entries {
+		// Search across all relevant fields
+		if strings.Contains(strings.ToLower(entry.ID), queryLower) ||
+			strings.Contains(strings.ToLower(entry.Version), queryLower) ||
+			strings.Contains(strings.ToLower(entry.Type), queryLower) ||
+			strings.Contains(strings.ToLower(entry.Title), queryLower) ||
+			strings.Contains(strings.ToLower(entry.Description), queryLower) ||
+			strings.Contains(strings.ToLower(entry.Impact), queryLower) {
+			matches = append(matches, entry)
+		}
+	}
+
+	// Sort matches by date based on order
+	if order == "desc" {
+		// Sort by date (newest first)
+		sort.Slice(matches, func(i, j int) bool {
+			return matches[i].Date > matches[j].Date
+		})
+	} else {
+		// Sort by date (oldest first) - default behavior
+		sort.Slice(matches, func(i, j int) bool {
+			return matches[i].Date < matches[j].Date
+		})
+	}
 
 	return matches, nil
 }
