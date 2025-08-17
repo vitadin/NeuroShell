@@ -107,24 +107,6 @@ func TestOpenAIClient_SendChatCompletion_NotConfigured(t *testing.T) {
 	assert.Contains(t, err.Error(), "OpenAI API key not configured")
 }
 
-func TestOpenAIClient_StreamChatCompletion_NotConfigured(t *testing.T) {
-	client := NewOpenAIClient("")
-
-	session := &neurotypes.ChatSession{
-		Messages: []neurotypes.Message{
-			{Role: "user", Content: "Test message"},
-		},
-	}
-
-	modelConfig := &neurotypes.ModelConfig{
-		BaseModel: "gpt-4",
-	}
-
-	_, err := client.StreamChatCompletion(session, modelConfig)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "OpenAI API key not configured")
-}
-
 func TestOpenAIClient_ConvertMessagesToOpenAI(t *testing.T) {
 	client := NewOpenAIClient("test-api-key")
 

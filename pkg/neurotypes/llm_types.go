@@ -4,13 +4,6 @@ package neurotypes
 
 import "net/http"
 
-// StreamChunk represents a single chunk of streaming response.
-type StreamChunk struct {
-	Content string // The text content of this chunk
-	Done    bool   // Whether this is the final chunk
-	Error   error  // Any error that occurred during streaming
-}
-
 // StructuredLLMResponse represents a structured response from an LLM provider.
 // It separates clean text content from thinking/reasoning blocks for proper rendering control.
 type StructuredLLMResponse struct {
@@ -44,11 +37,6 @@ type LLMClient interface {
 	// This is the core method that handles the actual LLM API communication.
 	// Response includes both thinking content and regular text formatted together.
 	SendChatCompletion(session *ChatSession, model *ModelConfig) (string, error)
-
-	// StreamChatCompletion sends a streaming chat completion request.
-	// It returns a channel that receives response chunks as they arrive.
-	// This is the core streaming method for real-time response delivery.
-	StreamChatCompletion(session *ChatSession, model *ModelConfig) (<-chan StreamChunk, error)
 
 	// SendStructuredCompletion sends a chat completion request and returns structured response.
 	// This separates thinking/reasoning content from regular text for proper rendering control.
@@ -88,10 +76,6 @@ type LLMService interface {
 	// The session is sent as-is - message manipulation is the caller's responsibility.
 	// Debug transport capture happens transparently via the client's debug transport.
 	SendCompletion(client LLMClient, session *ChatSession, model *ModelConfig) (string, error)
-
-	// StreamCompletion sends a streaming chat completion request using the provided client.
-	// The session is sent as-is - message manipulation is the caller's responsibility.
-	StreamCompletion(client LLMClient, session *ChatSession, model *ModelConfig) (<-chan StreamChunk, error)
 
 	// SendStructuredCompletion sends a chat completion request using the provided client and returns structured response.
 	// This separates thinking/reasoning content from regular text for proper rendering control.

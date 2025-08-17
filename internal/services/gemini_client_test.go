@@ -135,24 +135,6 @@ func TestGeminiClient_SendChatCompletion_NotConfigured(t *testing.T) {
 	assert.Contains(t, err.Error(), "google API key not configured")
 }
 
-func TestGeminiClient_StreamChatCompletion_NotConfigured(t *testing.T) {
-	client := NewGeminiClient("")
-
-	session := &neurotypes.ChatSession{
-		Messages: []neurotypes.Message{
-			{Role: "user", Content: "Test message"},
-		},
-	}
-
-	modelConfig := &neurotypes.ModelConfig{
-		BaseModel: "gemini-2.5-flash",
-	}
-
-	_, err := client.StreamChatCompletion(session, modelConfig)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "google API key not configured")
-}
-
 // Message Conversion Tests
 
 func TestGeminiClient_ConvertMessagesToGemini(t *testing.T) {
@@ -794,73 +776,6 @@ func TestGeminiClient_SendChatCompletion_RealAPI(t *testing.T) {
 	assert.Greater(t, len(response), 0)
 
 	t.Logf("Non-streaming API Response: %s", response)
-}
-
-func TestGeminiClient_StreamChatCompletion_RealAPI(t *testing.T) {
-	apiKey, hasKey := setupTestEnvironment(t)
-	if !hasKey {
-		return
-	}
-
-	client := NewGeminiClient(apiKey)
-
-	session := &neurotypes.ChatSession{
-		Messages: []neurotypes.Message{
-			{Role: "user", Content: "List three colors. Answer briefly."},
-		},
-	}
-
-	modelConfig := &neurotypes.ModelConfig{
-		BaseModel: "gemini-2.5-flash",
-		Parameters: map[string]interface{}{
-			"temperature": 0.3, // More conservative temperature
-			"max_tokens":  150, // Increased token limit
-		},
-	}
-
-	responseChan, err := client.StreamChatCompletion(session, modelConfig)
-	if err != nil {
-		t.Logf("Streaming API failed to start: %v", err)
-		// Don't fail the test - this might be expected behavior
-		return
-	}
-
-	var fullResponse string
-	chunkCount := 0
-	hasError := false
-
-	for chunk := range responseChan {
-		if chunk.Error != nil {
-			t.Logf("Stream error: %v", chunk.Error)
-			hasError = true
-			break
-		}
-
-		if chunk.Content != "" {
-			fullResponse += chunk.Content
-			chunkCount++
-		}
-
-		if chunk.Done {
-			break
-		}
-	}
-
-	// Handle potential errors or empty responses gracefully
-	if hasError {
-		t.Logf("Streaming API encountered errors during processing")
-		return
-	}
-
-	if fullResponse == "" {
-		t.Logf("Streaming API returned empty response (possibly filtered)")
-		return
-	}
-
-	assert.NotEmpty(t, fullResponse)
-	assert.Greater(t, chunkCount, 0)
-
-	t.Logf("Streaming API Response (%d chunks): %s", chunkCount, fullResponse)
 }
 
 func TestGeminiClient_ThinkingMode_RealAPI(t *testing.T) {

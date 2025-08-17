@@ -45,13 +45,6 @@ func (m *MockLLMClient) SetDebugTransport(_ http.RoundTripper) {
 	// Dummy implementation for mock client
 }
 
-func (m *MockLLMClient) StreamChatCompletion(_ *neurotypes.ChatSession, _ *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
-	ch := make(chan neurotypes.StreamChunk, 1)
-	ch <- neurotypes.StreamChunk{Content: m.response, Done: true}
-	close(ch)
-	return ch, nil
-}
-
 func (m *MockLLMClient) GetProviderName() string {
 	return "mock"
 }

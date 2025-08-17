@@ -155,26 +155,6 @@ func (c *OpenAIReasoningClient) SendStructuredCompletion(session *neurotypes.Cha
 	return structuredResponse
 }
 
-// StreamChatCompletion sends a streaming chat completion request to OpenAI.
-// Automatically routes to appropriate endpoint based on model type.
-func (c *OpenAIReasoningClient) StreamChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
-	logger.Debug("OpenAI StreamChatCompletion starting", "model", modelConfig.BaseModel)
-
-	// Initialize client if needed
-	if err := c.initializeClientIfNeeded(); err != nil {
-		return nil, fmt.Errorf("failed to initialize OpenAI client: %w", err)
-	}
-
-	// Check if this is a reasoning model
-	isReasoningModel := c.isReasoningModel(modelConfig)
-	logger.Debug("Model type detected for streaming", "is_reasoning", isReasoningModel, "model", modelConfig.BaseModel)
-
-	if isReasoningModel {
-		return c.streamReasoningCompletion(session, modelConfig)
-	}
-	return c.streamChatCompletion(session, modelConfig)
-}
-
 // isReasoningModel determines if a model should use reasoning mode based on explicit parameters.
 // Only uses reasoning mode when reasoning_effort parameter is explicitly provided.
 // This allows O-series models to use both chat and reasoning modes based on user intent.
@@ -413,107 +393,6 @@ func (c *OpenAIReasoningClient) sendStructuredReasoningCompletion(session *neuro
 
 	logger.Debug("OpenAI structured reasoning completion response created", "content_length", len(textContent), "thinking_blocks", len(thinkingBlocks))
 	return structuredResponse
-}
-
-// streamChatCompletion handles streaming chat completions via /chat/completions endpoint.
-func (c *OpenAIReasoningClient) streamChatCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
-	// Convert session messages to OpenAI format
-	messages := c.convertMessagesToOpenAI(session)
-
-	// Add system prompt if present
-	if session.SystemPrompt != "" {
-		systemMsg := openai.SystemMessage(session.SystemPrompt)
-		messages = append([]openai.ChatCompletionMessageParamUnion{systemMsg}, messages...)
-	}
-
-	// Build completion parameters with streaming enabled
-	params := openai.ChatCompletionNewParams{
-		Model:    openai.ChatModel(modelConfig.BaseModel),
-		Messages: messages,
-	}
-
-	// Apply model parameters if available
-	c.applyChatParameters(&params, modelConfig)
-
-	// Create streaming request
-	stream := c.client.Chat.Completions.NewStreaming(context.Background(), params)
-
-	// Create response channel
-	responseChan := make(chan neurotypes.StreamChunk, 10)
-
-	// Start goroutine to handle streaming response
-	go func() {
-		defer close(responseChan)
-		defer func() { _ = stream.Close() }()
-
-		for stream.Next() {
-			chunk := stream.Current()
-			if len(chunk.Choices) > 0 && chunk.Choices[0].Delta.Content != "" {
-				responseChan <- neurotypes.StreamChunk{
-					Content: chunk.Choices[0].Delta.Content,
-					Done:    false,
-				}
-			}
-		}
-
-		if err := stream.Err(); err != nil {
-			responseChan <- neurotypes.StreamChunk{
-				Content: "",
-				Done:    true,
-				Error:   err,
-			}
-		} else {
-			responseChan <- neurotypes.StreamChunk{
-				Content: "",
-				Done:    true,
-				Error:   nil,
-			}
-		}
-	}()
-
-	return responseChan, nil
-}
-
-// streamReasoningCompletion handles streaming reasoning completions via /responses endpoint.
-func (c *OpenAIReasoningClient) streamReasoningCompletion(session *neurotypes.ChatSession, modelConfig *neurotypes.ModelConfig) (<-chan neurotypes.StreamChunk, error) {
-	// Note: OpenAI responses API may not support streaming in the same way
-	// For now, we'll fall back to non-streaming and simulate streaming
-	logger.Debug("Reasoning streaming not fully supported, using simulated streaming")
-
-	// Create response channel
-	responseChan := make(chan neurotypes.StreamChunk, 10)
-
-	// Start goroutine to handle "streaming" response
-	go func() {
-		defer close(responseChan)
-
-		// Get full response first
-		response, err := c.sendReasoningCompletion(session, modelConfig)
-		if err != nil {
-			responseChan <- neurotypes.StreamChunk{
-				Content: "",
-				Done:    true,
-				Error:   err,
-			}
-			return
-		}
-
-		// Send response as single chunk
-		responseChan <- neurotypes.StreamChunk{
-			Content: response,
-			Done:    false,
-			Error:   nil,
-		}
-
-		// Send completion marker
-		responseChan <- neurotypes.StreamChunk{
-			Content: "",
-			Done:    true,
-			Error:   nil,
-		}
-	}()
-
-	return responseChan, nil
 }
 
 // convertMessagesToOpenAI converts NeuroShell messages to OpenAI chat completion format.

@@ -35,12 +35,12 @@ func (c *CallCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the llm-call command.
 func (c *CallCommand) Usage() string {
-	return `\llm-call[client_id=client_id, model_id=model_id, session_id=session_id, stream=false, dry_run=false]
+	return `\llm-call[client_id=client_id, model_id=model_id, session_id=session_id, dry_run=false]
 
 Examples:
   \llm-call                                                %% Use defaults (active model, active session, cached client)
   \llm-call[client_id=${_client_id}, model_id=my-gpt4]     %% Explicit client and model
-  \llm-call[session_id=work-session, stream=true]          %% Use specific session with streaming
+  \llm-call[session_id=work-session]                       %% Use specific session
   \llm-call[dry_run=true]                                  %% Show what would be sent without API call
   \llm-call[client_id=OAR:a1b2c3d4, model_id=creative-gpt4, session_id=creative-work]
 
@@ -48,7 +48,6 @@ Options:
   client_id     - LLM client ID (defaults to ${_client_id})
   model_id      - Model configuration ID (defaults to active model)
   session_id    - Session ID (defaults to active session)
-  stream        - Enable streaming mode (default: false)
   dry_run       - Show API payload without making call (default: false)
 
 Notes:
@@ -56,7 +55,8 @@ Notes:
   - Use \session-add-usermsg to add messages to sessions
   - Response stored in ${_output} and ${#llm_response} variables
   - Network debug data always available in ${_debug_network}
-  - Use \session-add-assistantmsg to add response to session`
+  - Use \session-add-assistantmsg to add response to session
+  - Only HTTP/HTTPS communication is supported (streaming has been removed)`
 }
 
 // HelpInfo returns structured help information for the llm-call command.
@@ -64,7 +64,7 @@ func (c *CallCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       `\llm-call[client_id=client_id, model_id=model_id, session_id=session_id, stream=false, dry_run=false]`,
+		Usage:       `\llm-call[client_id=client_id, model_id=model_id, session_id=session_id, dry_run=false]`,
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
@@ -89,13 +89,6 @@ func (c *CallCommand) HelpInfo() neurotypes.HelpInfo {
 				Default:     "active session",
 			},
 			{
-				Name:        "stream",
-				Description: "Enable streaming response mode",
-				Required:    false,
-				Type:        "boolean",
-				Default:     "false",
-			},
-			{
 				Name:        "dry_run",
 				Description: "Show API payload without making actual call",
 				Required:    false,
@@ -109,8 +102,8 @@ func (c *CallCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Use all defaults (cached client, active model, active session)",
 			},
 			{
-				Command:     `\llm-call[model_id=my-gpt4, stream=true]`,
-				Description: "Use specific model with streaming enabled",
+				Command:     `\llm-call[model_id=my-gpt4]`,
+				Description: "Use specific model with HTTP communication",
 			},
 			{
 				Command:     `\llm-call[dry_run=true]`,
@@ -125,6 +118,7 @@ func (c *CallCommand) HelpInfo() neurotypes.HelpInfo {
 			"Response stored in ${_output} for use with \\session-add-assistantmsg",
 			"Network debug data always available in ${_debug_network}",
 			"All parameters support variable interpolation",
+			"Only HTTP/HTTPS communication is supported (streaming removed)",
 		},
 	}
 }
@@ -233,18 +227,7 @@ func (c *CallCommand) Execute(args map[string]string, input string) error {
 	}
 
 	// Make LLM call (pure service orchestration)
-	// Check streaming mode from both args and _stream variable
-	stream := args["stream"] == "true"
-	if !stream {
-		// Check if _stream variable is set to true (case-insensitive)
-		if streamVar, err := variableService.Get("_stream"); err == nil {
-			stream = strings.ToLower(strings.TrimSpace(streamVar)) == "true"
-		}
-	}
-
-	if stream {
-		return c.handleStreamingCall(llmService, client, session, model, variableService)
-	}
+	// Note: _stream variable is ignored - only HTTP mode is supported
 	return c.handleSyncCall(llmService, client, session, model, variableService)
 }
 
@@ -383,7 +366,7 @@ func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client ne
 	_ = variableService.SetSystemVariable("#llm_thinking_blocks_rendered", renderedThinking)   // Rendered thinking blocks
 	_ = variableService.SetSystemVariable("#llm_thinking_blocks_count", fmt.Sprintf("%d", len(structuredResponse.ThinkingBlocks)))
 	_ = variableService.SetSystemVariable("#llm_call_success", "true")
-	_ = variableService.SetSystemVariable("#llm_call_mode", "sync")
+	_ = variableService.SetSystemVariable("#llm_call_mode", "http")
 	_ = variableService.SetSystemVariable("_debug_network", debugData)
 
 	// Store error information if present
@@ -401,83 +384,6 @@ func (c *CallCommand) handleSyncCall(llmService neurotypes.LLMService, client ne
 	debugTransportService.ClearCapturedData()
 
 	// Don't output response here - let calling script handle formatting
-	return nil
-}
-
-// handleStreamingCall performs a streaming LLM API call.
-func (c *CallCommand) handleStreamingCall(llmService neurotypes.LLMService, client neurotypes.LLMClient, session *neurotypes.ChatSession, model *neurotypes.ModelConfig, variableService *services.VariableService) error {
-	// Start temporal display for connection indicator
-	displayID := "llm-call-stream"
-	displayStarted := c.startLLMThinkingDisplay(displayID, "Connecting...")
-
-	// Ensure display is stopped if we exit early due to error
-	if displayStarted {
-		defer func() {
-			// Only stop if still active (in case we stopped it manually below)
-			if temporalService := c.getTemporalDisplayService(); temporalService != nil {
-				if temporalService.IsActive(displayID) {
-					c.stopLLMDisplay(displayID)
-				}
-			}
-		}()
-	}
-
-	// Get debug transport service and inject debug transport into client
-	debugTransportService, err := services.GetGlobalDebugTransportService()
-	if err != nil {
-		return fmt.Errorf("debug transport service not available: %w", err)
-	}
-
-	// Create and inject debug transport into the client
-	debugTransport := debugTransportService.CreateTransport()
-	client.SetDebugTransport(debugTransport)
-
-	// Pure service orchestration for streaming (debug capture happens automatically via transport)
-	stream, err := llmService.StreamCompletion(client, session, model)
-	if err != nil {
-		return fmt.Errorf("streaming LLM call failed: %w", err)
-	}
-
-	// Switch to streaming content display and accumulate response
-	var fullResponse strings.Builder
-	var streamingContent strings.Builder
-
-	// Start streaming content display
-	streamingStarted := false
-	for chunk := range stream {
-		if chunk.Error != nil {
-			return fmt.Errorf("streaming error: %w", chunk.Error)
-		}
-
-		// Switch from "Connecting..." to streaming content display on first chunk
-		if !streamingStarted {
-			if displayStarted {
-				c.stopLLMDisplay(displayID)
-			}
-			displayStarted = c.startStreamingContentDisplay(displayID, &streamingContent)
-			streamingStarted = true
-		}
-
-		// Accumulate response and update streaming display content
-		fullResponse.WriteString(chunk.Content)
-		streamingContent.WriteString(chunk.Content)
-	}
-
-	// Get captured debug data from the debug transport service
-	debugData := debugTransportService.GetCapturedData()
-
-	// Store complete response and debug data
-	response := fullResponse.String()
-	_ = variableService.SetSystemVariable("_output", response)
-	_ = variableService.SetSystemVariable("#llm_response", response)
-	_ = variableService.SetSystemVariable("#llm_call_success", "true")
-	_ = variableService.SetSystemVariable("#llm_call_mode", "stream")
-	_ = variableService.SetSystemVariable("_debug_network", debugData)
-
-	// Clear debug data for next call
-	debugTransportService.ClearCapturedData()
-
-	// Don't output response here - let _send.neuro handle final markdown rendering
 	return nil
 }
 
@@ -510,58 +416,6 @@ func (c *CallCommand) startLLMThinkingDisplay(id string, message string) bool {
 		seconds := int(elapsed.Seconds())
 		style := lipgloss.NewStyle().Foreground(lipgloss.Color("2")) // Green
 		return style.Render(fmt.Sprintf("%s %ds", message, seconds))
-	}
-
-	// Create a condition that never stops automatically (we'll stop manually)
-	condition := func(_ time.Duration) bool {
-		return false // Never auto-stop, we'll stop manually
-	}
-
-	err := temporalService.StartCustomDisplay(id, condition, renderer)
-	return err == nil
-}
-
-// startStreamingContentDisplay starts a temporal display showing actual streaming content.
-// Returns true if display was started successfully, false otherwise.
-func (c *CallCommand) startStreamingContentDisplay(id string, content *strings.Builder) bool {
-	temporalService := c.getTemporalDisplayService()
-	if temporalService == nil {
-		return false // Graceful degradation
-	}
-
-	// Create a custom renderer for streaming content display
-	renderer := func(elapsed time.Duration) string {
-		seconds := int(elapsed.Seconds())
-		currentContent := content.String()
-
-		// Use single-line display for reliability (no multi-line stacking issues)
-		// Show the last meaningful chunk of content
-		displayContent := currentContent
-
-		// Get last 200 characters for preview
-		if len(displayContent) > 80 {
-			displayContent = "..." + displayContent[len(displayContent)-77:]
-		}
-
-		// Replace newlines and tabs with spaces for single-line display
-		displayContent = strings.ReplaceAll(displayContent, "\n", " ")
-		displayContent = strings.ReplaceAll(displayContent, "\t", " ")
-
-		// Collapse multiple spaces
-		for strings.Contains(displayContent, "  ") {
-			displayContent = strings.ReplaceAll(displayContent, "  ", " ")
-		}
-
-		// Trim and ensure reasonable length
-		displayContent = strings.TrimSpace(displayContent)
-		if len(displayContent) > 80 {
-			displayContent = displayContent[:77] + "..."
-		}
-
-		// Show character count and preview
-		charCount := len(currentContent)
-		style := lipgloss.NewStyle().Foreground(lipgloss.Color("3")) // Yellow for streaming
-		return style.Render(fmt.Sprintf("Streaming (%ds): %d chars | %s", seconds, charCount, displayContent))
 	}
 
 	// Create a condition that never stops automatically (we'll stop manually)

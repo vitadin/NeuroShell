@@ -55,7 +55,7 @@ func TestCallCommand_HelpInfo(t *testing.T) {
 	assert.True(t, optionNames["client_id"])
 	assert.True(t, optionNames["model_id"])
 	assert.True(t, optionNames["session_id"])
-	assert.True(t, optionNames["stream"])
+	// Note: stream option removed as streaming is no longer supported
 	assert.True(t, optionNames["dry_run"])
 }
 
@@ -243,10 +243,10 @@ func TestCallCommand_Execute_SyncCall(t *testing.T) {
 
 	callMode, err := variableService.Get("#llm_call_mode")
 	require.NoError(t, err)
-	assert.Equal(t, "sync", callMode)
+	assert.Equal(t, "http", callMode)
 }
 
-func TestCallCommand_Execute_StreamingCall(t *testing.T) {
+func TestCallCommand_Execute_StreamingIgnored(t *testing.T) {
 	// Create test context and services
 	ctx := context.New()
 	ctx.SetTestMode(true)
@@ -311,7 +311,7 @@ func TestCallCommand_Execute_StreamingCall(t *testing.T) {
 
 	callMode, err := variableService.Get("#llm_call_mode")
 	require.NoError(t, err)
-	assert.Equal(t, "stream", callMode)
+	assert.Equal(t, "http", callMode) // Streaming is ignored, should use HTTP
 }
 
 func TestCallCommand_Execute_DefaultResolution(t *testing.T) {
@@ -715,58 +715,5 @@ func TestCallCommand_handleSyncCall(t *testing.T) {
 
 	callMode, err := variableService.Get("#llm_call_mode")
 	require.NoError(t, err)
-	assert.Equal(t, "sync", callMode)
-}
-
-func TestCallCommand_handleStreamingCall(t *testing.T) {
-	cmd := &CallCommand{}
-
-	// Create mock services with registry setup
-	registry := services.NewRegistry()
-	_ = registry.RegisterService(services.NewMockLLMService())
-	_ = registry.RegisterService(services.NewClientFactoryService())
-	_ = registry.RegisterService(services.NewVariableService())
-	_ = registry.RegisterService(services.NewDebugTransportService())
-	_ = registry.InitializeAll()
-
-	// Set up global registry for the test
-	oldRegistry := services.GetGlobalRegistry()
-	services.SetGlobalRegistry(registry)
-	defer services.SetGlobalRegistry(oldRegistry)
-
-	// Get services from registry
-	llmService, _ := services.GetGlobalLLMService()
-	clientFactory, _ := services.GetGlobalClientFactoryService()
-	variableService, _ := services.GetGlobalVariableService()
-
-	client, clientID, _ := clientFactory.GetClientWithID("OAR", "test-key")
-	_ = clientID // Use clientID to avoid unused variable error
-
-	model := &neurotypes.ModelConfig{
-		ID:        "test-model-id",
-		Name:      "test-model",
-		Provider:  "openai",
-		BaseModel: "gpt-4",
-	}
-
-	session := &neurotypes.ChatSession{
-		ID:   "test-session-id",
-		Name: "test-session",
-		Messages: []neurotypes.Message{
-			{Role: "user", Content: "Write a story"},
-		},
-	}
-
-	// Test streaming call
-	err := cmd.handleStreamingCall(llmService, client, session, model, variableService)
-	require.NoError(t, err)
-
-	// Verify variables were set
-	output, err := variableService.Get("_output")
-	require.NoError(t, err)
-	assert.Contains(t, output, "mocking reply")
-
-	callMode, err := variableService.Get("#llm_call_mode")
-	require.NoError(t, err)
-	assert.Equal(t, "stream", callMode)
+	assert.Equal(t, "http", callMode)
 }
