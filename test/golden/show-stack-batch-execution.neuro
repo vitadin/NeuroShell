@@ -1,0 +1,30 @@
+%% Test show-stack during batch script execution
+%% This shows stack state during multi-command script processing
+
+\set[_echo_command="true"]
+
+\echo === Show-Stack During Batch Execution ===
+
+\echo Step 1: Script start - checking initial stack
+\show-stack
+
+\echo
+\echo Step 2: Setting up variables and commands
+\set[task1="Initialize database"]
+\set[task2="Process records"] 
+\set[task3="Generate report"]
+
+\echo
+\echo Step 3: Simulating multi-step workflow
+%% Create a workflow that might queue commands
+\if[condition="true"] \echo "Task 1: ${task1}"
+\if[condition="true"] \echo "Task 2: ${task2}"
+\if[condition="true"] \echo "Task 3: ${task3}"
+
+\echo
+\echo Step 4: Stack state during workflow execution
+\show-stack[detailed=true]
+
+\echo
+\echo Step 5: Workflow complete
+\echo "All tasks processed"

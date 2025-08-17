@@ -149,7 +149,7 @@ func (c *SetCommand) Execute(args map[string]string, input string) error {
 }
 
 func init() {
-	if err := commands.GlobalRegistry.Register(&SetCommand{}); err != nil {
+	if err := commands.GetGlobalRegistry().Register(&SetCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register set command: %v", err))
 	}
 }
