@@ -1,0 +1,8 @@
+%% Test basic _editor variable functionality
+%% Verify that _editor variable can be set and retrieved (without invoking editor)
+
+\set[_editor="nano"]
+\get[_editor]
+
+%% Test that _editor is properly listed in variables
+\vars

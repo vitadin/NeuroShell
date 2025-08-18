@@ -1,0 +1,211 @@
+Setting _editor = nano
+_editor = nano
+Variables
+
+System Variables:
+  Environment (@):
+    @date                = 2024-01-01
+    @home                = /test/home
+    @os                  = test-os
+    @pwd                 = /test/pwd
+    @time                = 12:00:00
+    @user                = testuser
+  Metadata (#):
+    #cmd_anthropic-client-new_desc = Create new Anthropic client wi...ded thinking support (length: 87 chars)
+    #cmd_anthropic-client-new_parsemode = KeyValue
+    #cmd_anthropic-client-new_usage = \anthropic-client-new[key=api_key] or \anthropic-client-new (uses active key)
+    #cmd_assert-equal_desc = Compare two values for equality
+    #cmd_assert-equal_parsemode = KeyValue
+    #cmd_assert-equal_usage = \assert-equal[expect=expected_value, actual=actual_value]
+    #cmd_bash_desc       = Execute system commands via bash
+    #cmd_bash_parsemode  = Raw
+    #cmd_bash_usage      = \bash command_to_execute
+    #cmd_cat_desc        = Display file contents with optional line limiting and variable storage
+    #cmd_cat_parsemode   = KeyValue
+    #cmd_cat_usage       = \cat[path=file_path, to=var_na...5] or \cat file_path (length: 83 chars)
+    #cmd_change-log-show_desc = Show NeuroShell development change log with search capabilities
+    #cmd_change-log-show_parsemode = KeyValue
+    #cmd_change-log-show_usage = \change-log-show[search=query,order=asc|desc]
+    #cmd_check_desc      = Check service initialization status and availability
+    #cmd_check_parsemode = KeyValue
+    #cmd_check_usage     = \check[service=name, all=true, quiet=true]
+    #cmd_clip_desc       = Copy text to system clipboard
+    #cmd_clip_parsemode  = Raw
+    #cmd_clip_usage      = \clip text to copy
+    #cmd_config-path_desc = Display configuration file paths and their loading status
+    #cmd_config-path_parsemode = KeyValue
+    #cmd_config-path_usage = \config-path
+    #cmd_count           = 61
+    #cmd_echo-json_desc  = Pretty-print JSON data in readable format
+    #cmd_echo-json_parsemode = KeyValue
+    #cmd_echo-json_usage = \echo-json[to=var_name, indent=2] json_string
+    #cmd_echo_desc       = Output text with optional raw mode and variable storage
+    #cmd_echo_parsemode  = KeyValue
+    #cmd_echo_usage      = \echo[to=var_name, silent=true, raw=true] message
+    #cmd_editor_desc     = Open external editor for composing input
+    #cmd_editor_parsemode = KeyValue
+    #cmd_editor_usage    = \editor [initial_text]
+    #cmd_exit_desc       = Exit the shell with optional exit code and message
+    #cmd_exit_parsemode  = KeyValue
+    #cmd_exit_usage      = \exit[code=N, message=text]
+    #cmd_gemini-client-new_desc = Create new Gemini client with automatic key resolution
+    #cmd_gemini-client-new_parsemode = KeyValue
+    #cmd_gemini-client-new_usage = \gemini-client-new[key=api_key] or \gemini-client-new (uses active key)
+    #cmd_gemini-model-new_desc = Create Gemini model configurations with thinking support
+    #cmd_gemini-model-new_parsemode = KeyValue
+    #cmd_gemini-model-new_usage = \gemini-model-new[catalog_id=<ID>, thinking_budget=<budget>, ...] model_name
+    #cmd_get-env_desc    = Get an environment variable and create #os.VAR neuro variable
+    #cmd_get-env_parsemode = KeyValue
+    #cmd_get-env_usage   = \get-env[VAR] or \get-env VAR
+    #cmd_get_desc        = Get a variable
+    #cmd_get_parsemode   = KeyValue
+    #cmd_get_usage       = \get[var] or \get var
+    #cmd_help_desc       = Show command help
+    #cmd_help_parsemode  = KeyValue
+    #cmd_help_usage      = \help[command_name] or \help command_name
+    #cmd_if-not_desc     = Conditionally execute commands when boolean conditions are false
+    #cmd_if-not_parsemode = KeyValue
+    #cmd_if-not_usage    = \if-not[condition=boolean_expression] command_to_execute
+    #cmd_if_desc         = Conditionally execute commands based on boolean conditions
+    #cmd_if_parsemode    = KeyValue
+    #cmd_if_usage        = \if[condition=boolean_expression] command_to_execute
+    #cmd_license_desc    = Display NeuroShell license inf... in system variables (length: 84 chars)
+    #cmd_license_parsemode = KeyValue
+    #cmd_license_usage   = \license
+    #cmd_list            = anthropic-client-new,assert-eq...y,vars,version,write (length: 720 chars)
+    #cmd_llm-api-activate_desc = Activate an API key for a specific provider
+    #cmd_llm-api-activate_parsemode = KeyValue
+    #cmd_llm-api-activate_usage = \llm-api-activate[provider=<name>, key=<source.KEY_NAME>]
+    #cmd_llm-api-load_desc = Load and display API-related v...iltering and masking (length: 99 chars)
+    #cmd_llm-api-load_parsemode = KeyValue
+    #cmd_llm-api-load_usage = \llm-api-load[provider=openai|anthropic|gemini|all]
+    #cmd_llm-call_desc   = Orchestrate LLM API call using client, model, and session services
+    #cmd_llm-call_parsemode = KeyValue
+    #cmd_llm-call_usage  = \llm-call[client_id=client_id,...n_id, dry_run=false] (length: 87 chars)
+    #cmd_llm-client-activate_desc = Activate LLM client by provider catalog ID or specific client ID
+    #cmd_llm-client-activate_parsemode = Raw
+    #cmd_llm-client-activate_usage = \llm-client-activate provider_catalog_id_or_client_id
+    #cmd_model-activate_desc = Set active model by name or ID with smart matching
+    #cmd_model-activate_parsemode = KeyValue
+    #cmd_model-activate_usage = \model-activate[id=false] [model_text]
+    #cmd_model-catalog_desc = List available LLM models from embedded catalog
+    #cmd_model-catalog_parsemode = KeyValue
+    #cmd_model-catalog_usage = \model-catalog[provider=openai...vider, search=query] (length: 86 chars)
+    #cmd_model-delete_desc = Delete model configuration by name or ID with smart matching
+    #cmd_model-delete_parsemode = KeyValue
+    #cmd_model-delete_usage = \model-delete[id=false] model_text
+    #cmd_model-new_desc  = Create new LLM model configuration
+    #cmd_model-new_parsemode = KeyValue
+    #cmd_model-new_usage = \model-new[catalog_id=<ID>, ...] model_name
+    #cmd_model-status_desc = Display status and details of model configurations
+    #cmd_model-status_parsemode = KeyValue
+    #cmd_model-status_usage = \model-status[name=model_name,...me|created|provider] (length: 82 chars)
+    #cmd_openai-client-new_desc = Create new OpenAI client with ...soning model support (length: 82 chars)
+    #cmd_openai-client-new_parsemode = KeyValue
+    #cmd_openai-client-new_usage = \openai-client-new[key=api_key...ew (uses active key) (length: 92 chars)
+    #cmd_openai-model-new_desc = Create OpenAI model configurations with reasoning support
+    #cmd_openai-model-new_parsemode = KeyValue
+    #cmd_openai-model-new_usage = \openai-model-new[catalog_id=<ID>, reasoning_effort=<level>, ...] model_name
+    #cmd_provider-catalog_desc = List available LLM providers from embedded catalog
+    #cmd_provider-catalog_parsemode = KeyValue
+    #cmd_provider-catalog_usage = \provider-catalog[provider=ope...vider, search=query] (length: 89 chars)
+    #cmd_render-markdown_desc = Render markdown content to ANSI terminal output using Glamour
+    #cmd_render-markdown_parsemode = KeyValue
+    #cmd_render-markdown_usage = \render-markdown[raw=true] markdown content to render
+    #cmd_render_desc     = Style and highlight text using lipgloss with keyword support
+    #cmd_render_parsemode = KeyValue
+    #cmd_render_usage    = \render[keywords=[\get,\set], style=bold, theme=dark, to=var] text to render
+    #cmd_run_desc        = Execute a NeuroShell script file
+    #cmd_run_parsemode   = Raw
+    #cmd_run_usage       = \run script_path
+    #cmd_send_desc       = Send message to LLM agent
+    #cmd_send_parsemode  = KeyValue
+    #cmd_send_usage      = \send[include_thinking=false] message
+    #cmd_session-activate_desc = Activate session by name or ID with smart matching and auto-activation
+    #cmd_session-activate_parsemode = KeyValue
+    #cmd_session-activate_usage = \session-activate[id=false] session_text
+    #cmd_session-add-assistantmsg_desc = Add assistant message to specified session
+    #cmd_session-add-assistantmsg_parsemode = KeyValue
+    #cmd_session-add-assistantmsg_usage = \session-add-assistantmsg[sess...msg response_content (length: 108 chars)
+    #cmd_session-add-usermsg_desc = Add user message to specified session
+    #cmd_session-add-usermsg_parsemode = KeyValue
+    #cmd_session-add-usermsg_usage = \session-add-usermsg[session=s...rmsg message_content (length: 96 chars)
+    #cmd_session-copy_desc = Create deep copy of existing session with new identity
+    #cmd_session-copy_parsemode = KeyValue
+    #cmd_session-copy_usage = \session-copy[source_session_i...session_name="name"] (length: 91 chars)
+    #cmd_session-delete_desc = Delete an existing chat session
+    #cmd_session-delete_parsemode = KeyValue
+    #cmd_session-delete_usage = \session-delete[name=session_name] or \session-delete session_name_or_id
+    #cmd_session-edit-msg_desc = Edit message content by index using dual indexing system
+    #cmd_session-edit-msg_parsemode = KeyValue
+    #cmd_session-edit-msg_usage = \session-edit-msg[idx=N OR idx=.N, session=session_id] new_message_content
+    #cmd_session-edit-system_desc = Edit session system prompt
+    #cmd_session-edit-system_parsemode = KeyValue
+    #cmd_session-edit-system_usage = \session-edit-system[session=session_id] new_system_prompt
+    #cmd_session-edit-with-editor_desc = Edit session messages using external editor
+    #cmd_session-edit-with-editor_parsemode = KeyValue
+    #cmd_session-edit-with-editor_usage = \session-edit-with-editor[idx=N, session=session_name]
+    #cmd_session-export_desc = Export chat session in specified format
+    #cmd_session-export_parsemode = KeyValue
+    #cmd_session-export_usage = \session-export[format=json, file=path] session_identifier
+    #cmd_session-import_desc = Import chat session from file with format auto-detection
+    #cmd_session-import_parsemode = KeyValue
+    #cmd_session-import_usage = \session-import[format=json, file=path]
+    #cmd_session-json-export_desc = Export chat session to JSON file
+    #cmd_session-json-export_parsemode = KeyValue
+    #cmd_session-json-export_usage = \session-json-export[file=path] session_identifier
+    #cmd_session-json-import_desc = Import chat session from JSON file
+    #cmd_session-json-import_parsemode = KeyValue
+    #cmd_session-json-import_usage = \session-json-import[file=path]
+    #cmd_session-list_desc = List all existing chat sessions
+    #cmd_session-list_parsemode = KeyValue
+    #cmd_session-list_usage = \session-list[sort=name|created|updated, filter=active]
+    #cmd_session-new_desc = Create new chat session for LLM interactions
+    #cmd_session-new_parsemode = KeyValue
+    #cmd_session-new_usage = \session-new[system=system_prompt] [session_name]
+    #cmd_session-rename_desc = Change session name
+    #cmd_session-rename_parsemode = KeyValue
+    #cmd_session-rename_usage = \session-rename[session=session_id] new_session_name
+    #cmd_session-show_desc = Display detailed session information with smart content rendering
+    #cmd_session-show_parsemode = KeyValue
+    #cmd_session-show_usage = \session-show[id=false] session_text
+    #cmd_set-env_desc    = Set an environment variable
+    #cmd_set-env_parsemode = KeyValue
+    #cmd_set-env_usage   = \set-env[VAR=value] or \set-env VAR value
+    #cmd_set_desc        = Set a variable
+    #cmd_set_parsemode   = KeyValue
+    #cmd_set_usage       = \set[var=value] or \set var value
+    #cmd_show-stack_desc = Display the execution stack for development and debugging
+    #cmd_show-stack_parsemode = KeyValue
+    #cmd_show-stack_usage = \show-stack[detailed=true]
+    #cmd_silent_desc     = Execute commands with stdout output suppressed
+    #cmd_silent_parsemode = Raw
+    #cmd_silent_usage    = \silent command_to_execute
+    #cmd_timer_desc      = Start a visual countdown timer for the specified number of seconds
+    #cmd_timer_parsemode = KeyValue
+    #cmd_timer_usage     = \timer seconds
+    #cmd_try_desc        = Execute commands with error capture and handling
+    #cmd_try_parsemode   = Raw
+    #cmd_try_usage       = \try command_to_execute
+    #cmd_vars_desc       = List variables with optional filtering
+    #cmd_vars_parsemode  = KeyValue
+    #cmd_vars_usage      = \vars[pattern=regex, type=user|system|all]
+    #cmd_version_desc    = Show NeuroShell version information and store details in system variables
+    #cmd_version_parsemode = KeyValue
+    #cmd_version_usage   = \version
+    #cmd_write_desc      = Write content to a file with overwrite or append modes
+    #cmd_write_parsemode = KeyValue
+    #cmd_write_usage     = \write[file=path, mode=append] content
+    #message_count       = 0
+    #session_id          = session_1609459200
+    #test_mode           = true
+  Command Outputs (_):
+    _*                   = 
+    _0                   = test/golden/editor-variable-basic.neuro
+    _1                   = 
+    _@                   = 
+    _default_command     = echo
+    _editor              = nano
+    _style               = 
+
+Total: 201 variables

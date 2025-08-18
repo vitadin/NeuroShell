@@ -95,9 +95,9 @@ func (e *EditorService) OpenEditorWithGlobalContext() (string, error) {
 
 // getEditorCommand determines which editor to use based on configuration and environment.
 func (e *EditorService) getEditorCommand(ctx neurotypes.Context) string {
-	// First, check if user has set a preferred editor via \set
-	if editorVar, err := ctx.GetVariable("@editor"); err == nil && editorVar != "" {
-		logger.Debug("Using configured editor", "editor", editorVar)
+	// First, check if user has set a preferred editor via _editor variable
+	if editorVar, err := ctx.GetVariable("_editor"); err == nil && editorVar != "" {
+		logger.Debug("Using _editor variable", "editor", editorVar)
 		return editorVar
 	}
 

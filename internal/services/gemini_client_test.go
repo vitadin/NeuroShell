@@ -2,6 +2,7 @@ package services
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -22,7 +23,55 @@ func setupTestEnvironment(t *testing.T) (string, bool) {
 		t.Skip("GEMINI_API_KEY not set - skipping real API tests")
 		return "", false
 	}
+
+	// Skip tests if using invalid/test API keys
+	if isInvalidTestKey(apiKey) {
+		t.Skip("GEMINI_API_KEY appears to be invalid or test key - skipping real API tests")
+		return "", false
+	}
+
 	return apiKey, true
+}
+
+// isInvalidTestKey checks if the API key is a known test/invalid key
+func isInvalidTestKey(apiKey string) bool {
+	// Common patterns for invalid/test keys
+	invalidKeyPatterns := []string{
+		"test-",
+		"fake-",
+		"invalid",
+		"demo-",
+		"AIzaSyDemoKeyForTestingPurposes",
+		"your-api-key",
+		"replace-me",
+		"example",
+	}
+
+	// Known revoked/invalid keys from this project
+	knownInvalidKeys := []string{
+		"AIzaSyCoFWEG0G7xI5RcdFIsMOHCK2dAYFlD1rs", // Revoked key from .env
+	}
+
+	// Check against known invalid keys first
+	for _, invalidKey := range knownInvalidKeys {
+		if apiKey == invalidKey {
+			return true
+		}
+	}
+
+	apiKeyLower := strings.ToLower(apiKey)
+	for _, pattern := range invalidKeyPatterns {
+		if strings.Contains(apiKeyLower, pattern) {
+			return true
+		}
+	}
+
+	// Skip if key is too short (Google API keys are typically 39+ characters)
+	if len(apiKey) < 20 {
+		return true
+	}
+
+	return false
 }
 
 // Basic Constructor and Configuration Tests

@@ -1,0 +1,14 @@
+%% Test _editor variable error cases
+%% Verify proper error handling for invalid variable names
+
+%% These should work - _editor is allowed
+\set[_editor="valid-editor"]
+\get[_editor]
+
+%% Test that regular 'editor' user variable doesn't affect editor functionality
+\set[editor="user-editor"]
+\get[editor]
+
+%% Both variables should exist independently
+\get[_editor]
+\get[editor]

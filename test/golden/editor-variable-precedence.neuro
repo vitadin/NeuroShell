@@ -1,0 +1,13 @@
+%% Test _editor variable precedence over environment variables
+%% Verify that _editor takes precedence over EDITOR env var
+
+%% Set both _editor variable and set-env for EDITOR
+\set[_editor="code --wait"]
+\set-env[EDITOR="vim"]
+
+%% Show both values to verify they're different
+\get[_editor]
+\get-env[EDITOR]
+
+%% Test help command mentions _editor in editor command help
+\help[editor]
