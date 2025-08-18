@@ -1,0 +1,279 @@
+Auto-generated session name: 'Session 1'
+Created session 'Session 1' (ID: 00000001)
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session '00000001-0000-4000-8000-000000000001'
+Initial session state:
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:07
+Messages: 3 total
+
+[1] user (00:00:02): Message 1: First user message
+[2] assistant (00:00:04): Message 2: First assistant response
+[3] user (00:00:06): Message 3: Second user message
+=== Testing malformed indices ===
+Testing invalid index format:
+Status: 1
+Error: invalid index 'invalid': invalid reverse order index number: strconv.Atoi: parsing "invalid": invalid syntax. Usage: \session-delete-msg[idx=N, session=session_id]
+\session-delete-msg[idx=.N]
+
+Examples:
+  \session-delete-msg[idx=1]                                                    %% Delete the last message (reverse order)
+  \session-delete-msg[idx=2]                                                    %% Delete second-to-last message
+  \session-delete-msg[idx=.1]                                                   %% Delete the first message (normal order)
+  \session-delete-msg[idx=.3]                                                   %% Delete the third message
+  \session-delete-msg[session=work, idx=1]                                     %% Delete last message in work session
+  \session-delete-msg[idx=3, confirm=true]                                     %% Delete with explicit confirmation
+
+Options:
+  idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
+  session - Session name or ID (optional, defaults to active session)
+  confirm - Explicit confirmation (optional, defaults to true for safety)
+
+Note: Indexing systems:
+      - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
+      - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
+      Message is permanently removed from the session.
+Testing empty index:
+Status: 1
+Error: idx parameter is required. Usage: \session-delete-msg[idx=N, session=session_id]
+\session-delete-msg[idx=.N]
+
+Examples:
+  \session-delete-msg[idx=1]                                                    %% Delete the last message (reverse order)
+  \session-delete-msg[idx=2]                                                    %% Delete second-to-last message
+  \session-delete-msg[idx=.1]                                                   %% Delete the first message (normal order)
+  \session-delete-msg[idx=.3]                                                   %% Delete the third message
+  \session-delete-msg[session=work, idx=1]                                     %% Delete last message in work session
+  \session-delete-msg[idx=3, confirm=true]                                     %% Delete with explicit confirmation
+
+Options:
+  idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
+  session - Session name or ID (optional, defaults to active session)
+  confirm - Explicit confirmation (optional, defaults to true for safety)
+
+Note: Indexing systems:
+      - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
+      - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
+      Message is permanently removed from the session.
+Testing malformed normal order (missing number after dot):
+Status: 1
+Error: invalid index '.': invalid normal order index format (use .1, .2, .3, etc.). Usage: \session-delete-msg[idx=N, session=session_id]
+\session-delete-msg[idx=.N]
+
+Examples:
+  \session-delete-msg[idx=1]                                                    %% Delete the last message (reverse order)
+  \session-delete-msg[idx=2]                                                    %% Delete second-to-last message
+  \session-delete-msg[idx=.1]                                                   %% Delete the first message (normal order)
+  \session-delete-msg[idx=.3]                                                   %% Delete the third message
+  \session-delete-msg[session=work, idx=1]                                     %% Delete last message in work session
+  \session-delete-msg[idx=3, confirm=true]                                     %% Delete with explicit confirmation
+
+Options:
+  idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
+  session - Session name or ID (optional, defaults to active session)
+  confirm - Explicit confirmation (optional, defaults to true for safety)
+
+Note: Indexing systems:
+      - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
+      - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
+      Message is permanently removed from the session.
+Testing non-numeric reverse order:
+Status: 1
+Error: invalid index 'abc': invalid reverse order index number: strconv.Atoi: parsing "abc": invalid syntax. Usage: \session-delete-msg[idx=N, session=session_id]
+\session-delete-msg[idx=.N]
+
+Examples:
+  \session-delete-msg[idx=1]                                                    %% Delete the last message (reverse order)
+  \session-delete-msg[idx=2]                                                    %% Delete second-to-last message
+  \session-delete-msg[idx=.1]                                                   %% Delete the first message (normal order)
+  \session-delete-msg[idx=.3]                                                   %% Delete the third message
+  \session-delete-msg[session=work, idx=1]                                     %% Delete last message in work session
+  \session-delete-msg[idx=3, confirm=true]                                     %% Delete with explicit confirmation
+
+Options:
+  idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
+  session - Session name or ID (optional, defaults to active session)
+  confirm - Explicit confirmation (optional, defaults to true for safety)
+
+Note: Indexing systems:
+      - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
+      - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
+      Message is permanently removed from the session.
+Testing non-numeric normal order:
+Status: 1
+Error: invalid index '.abc': invalid normal order index number: strconv.Atoi: parsing "abc": invalid syntax. Usage: \session-delete-msg[idx=N, session=session_id]
+\session-delete-msg[idx=.N]
+
+Examples:
+  \session-delete-msg[idx=1]                                                    %% Delete the last message (reverse order)
+  \session-delete-msg[idx=2]                                                    %% Delete second-to-last message
+  \session-delete-msg[idx=.1]                                                   %% Delete the first message (normal order)
+  \session-delete-msg[idx=.3]                                                   %% Delete the third message
+  \session-delete-msg[session=work, idx=1]                                     %% Delete last message in work session
+  \session-delete-msg[idx=3, confirm=true]                                     %% Delete with explicit confirmation
+
+Options:
+  idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
+  session - Session name or ID (optional, defaults to active session)
+  confirm - Explicit confirmation (optional, defaults to true for safety)
+
+Note: Indexing systems:
+      - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
+      - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
+      Message is permanently removed from the session.
+=== Testing out of range indices ===
+Testing reverse order index too high (session has 3 messages):
+Status: 1
+Error: invalid index '5': reverse order index 5 is out of bounds (session has 3 messages). Usage: \session-delete-msg[idx=N, session=session_id]
+\session-delete-msg[idx=.N]
+
+Examples:
+  \session-delete-msg[idx=1]                                                    %% Delete the last message (reverse order)
+  \session-delete-msg[idx=2]                                                    %% Delete second-to-last message
+  \session-delete-msg[idx=.1]                                                   %% Delete the first message (normal order)
+  \session-delete-msg[idx=.3]                                                   %% Delete the third message
+  \session-delete-msg[session=work, idx=1]                                     %% Delete last message in work session
+  \session-delete-msg[idx=3, confirm=true]                                     %% Delete with explicit confirmation
+
+Options:
+  idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
+  session - Session name or ID (optional, defaults to active session)
+  confirm - Explicit confirmation (optional, defaults to true for safety)
+
+Note: Indexing systems:
+      - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
+      - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
+      Message is permanently removed from the session.
+Testing normal order index too high:
+Status: 1
+Error: invalid index '.5': normal order index 5 is out of bounds (session has 3 messages). Usage: \session-delete-msg[idx=N, session=session_id]
+\session-delete-msg[idx=.N]
+
+Examples:
+  \session-delete-msg[idx=1]                                                    %% Delete the last message (reverse order)
+  \session-delete-msg[idx=2]                                                    %% Delete second-to-last message
+  \session-delete-msg[idx=.1]                                                   %% Delete the first message (normal order)
+  \session-delete-msg[idx=.3]                                                   %% Delete the third message
+  \session-delete-msg[session=work, idx=1]                                     %% Delete last message in work session
+  \session-delete-msg[idx=3, confirm=true]                                     %% Delete with explicit confirmation
+
+Options:
+  idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
+  session - Session name or ID (optional, defaults to active session)
+  confirm - Explicit confirmation (optional, defaults to true for safety)
+
+Note: Indexing systems:
+      - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
+      - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
+      Message is permanently removed from the session.
+Testing zero index (invalid for both systems):
+Status: 1
+Error: invalid index '0': reverse order index 0 is out of bounds (session has 3 messages). Usage: \session-delete-msg[idx=N, session=session_id]
+\session-delete-msg[idx=.N]
+
+Examples:
+  \session-delete-msg[idx=1]                                                    %% Delete the last message (reverse order)
+  \session-delete-msg[idx=2]                                                    %% Delete second-to-last message
+  \session-delete-msg[idx=.1]                                                   %% Delete the first message (normal order)
+  \session-delete-msg[idx=.3]                                                   %% Delete the third message
+  \session-delete-msg[session=work, idx=1]                                     %% Delete last message in work session
+  \session-delete-msg[idx=3, confirm=true]                                     %% Delete with explicit confirmation
+
+Options:
+  idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
+  session - Session name or ID (optional, defaults to active session)
+  confirm - Explicit confirmation (optional, defaults to true for safety)
+
+Note: Indexing systems:
+      - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
+      - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
+      Message is permanently removed from the session.
+Testing zero normal order index:
+Status: 1
+Error: invalid index '.0': normal order index 0 is out of bounds (session has 3 messages). Usage: \session-delete-msg[idx=N, session=session_id]
+\session-delete-msg[idx=.N]
+
+Examples:
+  \session-delete-msg[idx=1]                                                    %% Delete the last message (reverse order)
+  \session-delete-msg[idx=2]                                                    %% Delete second-to-last message
+  \session-delete-msg[idx=.1]                                                   %% Delete the first message (normal order)
+  \session-delete-msg[idx=.3]                                                   %% Delete the third message
+  \session-delete-msg[session=work, idx=1]                                     %% Delete last message in work session
+  \session-delete-msg[idx=3, confirm=true]                                     %% Delete with explicit confirmation
+
+Options:
+  idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
+  session - Session name or ID (optional, defaults to active session)
+  confirm - Explicit confirmation (optional, defaults to true for safety)
+
+Note: Indexing systems:
+      - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
+      - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
+      Message is permanently removed from the session.
+Testing negative index:
+Status: 1
+Error: invalid index '-1': reverse order index -1 is out of bounds (session has 3 messages). Usage: \session-delete-msg[idx=N, session=session_id]
+\session-delete-msg[idx=.N]
+
+Examples:
+  \session-delete-msg[idx=1]                                                    %% Delete the last message (reverse order)
+  \session-delete-msg[idx=2]                                                    %% Delete second-to-last message
+  \session-delete-msg[idx=.1]                                                   %% Delete the first message (normal order)
+  \session-delete-msg[idx=.3]                                                   %% Delete the third message
+  \session-delete-msg[session=work, idx=1]                                     %% Delete last message in work session
+  \session-delete-msg[idx=3, confirm=true]                                     %% Delete with explicit confirmation
+
+Options:
+  idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
+  session - Session name or ID (optional, defaults to active session)
+  confirm - Explicit confirmation (optional, defaults to true for safety)
+
+Note: Indexing systems:
+      - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
+      - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
+      Message is permanently removed from the session.
+=== Testing empty session ===
+Auto-generated session name: 'Session 2'
+Created session 'Session 2' (ID: 00000005)
+Empty session created, attempting to delete from it:
+Status: 1
+Error: session 'Session 2' has no messages to delete
+=== Testing missing parameters ===
+Testing missing idx parameter:
+Status: 1
+Error: idx parameter is required. Usage: \session-delete-msg[idx=N, session=session_id]
+\session-delete-msg[idx=.N]
+
+Examples:
+  \session-delete-msg[idx=1]                                                    %% Delete the last message (reverse order)
+  \session-delete-msg[idx=2]                                                    %% Delete second-to-last message
+  \session-delete-msg[idx=.1]                                                   %% Delete the first message (normal order)
+  \session-delete-msg[idx=.3]                                                   %% Delete the third message
+  \session-delete-msg[session=work, idx=1]                                     %% Delete last message in work session
+  \session-delete-msg[idx=3, confirm=true]                                     %% Delete with explicit confirmation
+
+Options:
+  idx     - Message index (required): N for reverse order (1=last), .N for normal order (.1=first)
+  session - Session name or ID (optional, defaults to active session)
+  confirm - Explicit confirmation (optional, defaults to true for safety)
+
+Note: Indexing systems:
+      - Reverse order (idx=N): 1=last message, 2=second-to-last, 3=third-to-last, etc.
+      - Normal order (idx=.N): .1=first message, .2=second message, .3=third message, etc.
+      Message is permanently removed from the session.
+=== Verification ===
+Switching back to first session to verify it's unchanged:
+Activated session 'Session 1' (ID: 00000001, Messages: 3)
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:07
+Messages: 3 total
+
+[1] user (00:00:02): Message 1: First user message
+[2] assistant (00:00:04): Message 2: First assistant response
+[3] user (00:00:06): Message 3: Second user message
+All error tests completed - session should still have 3 messages

@@ -1,0 +1,76 @@
+%% Test session-delete-msg with non-existent sessions
+%% This test covers error handling when specified session doesn't exist
+
+%% Create a known session for reference
+\session-new[name="reference_session", system="Reference session"]
+\session-add-usermsg Reference message
+\echo Created reference session with 1 message
+
+%% Test non-existent session by name
+\echo 
+\echo === Testing non-existent session by name ===
+
+\echo Testing completely non-existent session name:
+\try \session-delete-msg[session="does_not_exist", idx=1, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+\echo Testing partial match that doesn't exist:
+\try \session-delete-msg[session="nonexist", idx=1, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+\echo Testing empty session name:
+\try \session-delete-msg[session="", idx=1, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+%% Test non-existent session by ID
+\echo 
+\echo === Testing non-existent session by ID ===
+
+\echo Testing fake UUID session ID:
+\try \session-delete-msg[session="550e8400-e29b-41d4-a716-446655440000", idx=1, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+\echo Testing short fake ID:
+\try \session-delete-msg[session="fake123", idx=1, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+%% Test with no active session and no session parameter
+\echo 
+\echo === Testing no active session scenario ===
+
+%% Clear active session by creating then deleting a temporary session
+\session-new[name="temp_to_delete", system="Temporary"]
+\session-delete temp_to_delete
+\echo Active session cleared, now testing without session parameter:
+
+\try \session-delete-msg[idx=1, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+%% Test ambiguous session name (if we had multiple sessions with similar names)
+\echo 
+\echo === Testing edge cases ===
+
+%% Create sessions with similar names
+\session-new[name="test_session_1", system="First test session"]
+\session-new[name="test_session_2", system="Second test session"]
+\session-add-usermsg Message in session 2
+
+\echo Created sessions: test_session_1 and test_session_2
+\echo Testing ambiguous prefix "test":
+\try \session-delete-msg[session="test", idx=1, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+%% Verify reference session is still intact
+\echo 
+\echo === Verification ===
+\echo Verifying reference session is unchanged:
+\session-activate reference_session
+\session-show
+\echo Reference session should still have 1 message
