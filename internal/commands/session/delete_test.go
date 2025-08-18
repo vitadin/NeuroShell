@@ -168,6 +168,9 @@ func TestDeleteCommand_Execute_SessionNotFound(t *testing.T) {
 // TestDeleteCommand_Execute_VariableInterpolation removed - interpolation is now handled by state machine
 
 func TestDeleteCommand_Execute_ServiceNotAvailable(t *testing.T) {
+	// Clear any existing services to ensure clean test
+	services.SetGlobalRegistry(services.NewRegistry())
+
 	cmd := &DeleteCommand{}
 
 	// Don't setup services - should fail

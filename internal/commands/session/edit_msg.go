@@ -4,12 +4,12 @@ package session
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"neuroshell/internal/commands"
 	"neuroshell/internal/commands/printing"
 	"neuroshell/internal/services"
+	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -221,17 +221,17 @@ func (c *EditMessageCommand) Execute(args map[string]string, input string) error
 		return fmt.Errorf("session '%s' has no messages to edit", targetSession.Name)
 	}
 
-	// Parse message index using dual indexing system
-	messageIndex, positionDesc, err := c.parseMessageIndex(idxStr, len(targetSession.Messages))
+	// Parse message index using shared logic
+	indexResult, err := stringprocessing.ParseMessageIndex(idxStr, len(targetSession.Messages))
 	if err != nil {
 		return fmt.Errorf("invalid index '%s': %w. Usage: %s", idxStr, err, c.Usage())
 	}
 
 	// Store the original content for reference
-	originalContent := targetSession.Messages[messageIndex].Content
+	originalContent := targetSession.Messages[indexResult.ZeroBasedIndex].Content
 
 	// Edit the message using the service
-	err = chatService.EditMessage(targetSession.ID, messageIndex, input)
+	err = chatService.EditMessage(targetSession.ID, indexResult.ZeroBasedIndex, input)
 	if err != nil {
 		return fmt.Errorf("failed to edit message: %w", err)
 	}
@@ -241,15 +241,15 @@ func (c *EditMessageCommand) Execute(args map[string]string, input string) error
 	if err != nil {
 		return fmt.Errorf("failed to retrieve updated session: %w", err)
 	}
-	editedMessage := updatedSession.Messages[messageIndex]
+	editedMessage := updatedSession.Messages[indexResult.ZeroBasedIndex]
 
 	// Update result variables
-	if err := c.updateMessageVariables(updatedSession, &editedMessage, idxStr, positionDesc, originalContent, input, variableService); err != nil {
+	if err := c.updateMessageVariables(updatedSession, &editedMessage, idxStr, indexResult.PositionDescription, originalContent, input, variableService); err != nil {
 		return fmt.Errorf("failed to update message variables: %w", err)
 	}
 
 	// Prepare output message
-	outputMsg := fmt.Sprintf("Edited message %s (%s) in session '%s'", idxStr, positionDesc, updatedSession.Name)
+	outputMsg := fmt.Sprintf("Edited message %s (%s) in session '%s'", idxStr, indexResult.PositionDescription, updatedSession.Name)
 
 	// Store result in _output variable
 	if err := variableService.SetSystemVariable("_output", outputMsg); err != nil {
@@ -261,90 +261,6 @@ func (c *EditMessageCommand) Execute(args map[string]string, input string) error
 	printer.Success(outputMsg)
 
 	return nil
-}
-
-// parseMessageIndex parses the idx parameter and converts it to 0-based index
-// Returns: (0-based index, position description, error)
-func (c *EditMessageCommand) parseMessageIndex(idxStr string, messageCount int) (int, string, error) {
-	if strings.HasPrefix(idxStr, ".") {
-		// Normal order: .1, .2, .3 -> 0-based: 0, 1, 2
-		numStr := idxStr[1:]
-		if numStr == "" {
-			return -1, "", fmt.Errorf("invalid normal order index format (use .1, .2, .3, etc.)")
-		}
-
-		num, err := strconv.Atoi(numStr)
-		if err != nil {
-			return -1, "", fmt.Errorf("invalid normal order index number: %w", err)
-		}
-
-		if num < 1 || num > messageCount {
-			return -1, "", fmt.Errorf("normal order index %d is out of bounds (session has %d messages)", num, messageCount)
-		}
-
-		zeroBasedIndex := num - 1
-		positionDesc := c.getOrdinalPosition(num, false)
-		return zeroBasedIndex, positionDesc, nil
-	}
-
-	// Reverse order: 1, 2, 3 -> 0-based: last, second-to-last, third-to-last
-	num, err := strconv.Atoi(idxStr)
-	if err != nil {
-		return -1, "", fmt.Errorf("invalid reverse order index number: %w", err)
-	}
-
-	if num < 1 || num > messageCount {
-		return -1, "", fmt.Errorf("reverse order index %d is out of bounds (session has %d messages)", num, messageCount)
-	}
-
-	zeroBasedIndex := messageCount - num
-	positionDesc := c.getOrdinalPosition(num, true)
-	return zeroBasedIndex, positionDesc, nil
-}
-
-// getOrdinalPosition returns a human-readable position description
-func (c *EditMessageCommand) getOrdinalPosition(num int, reverse bool) string {
-	if reverse {
-		switch num {
-		case 1:
-			return "last message"
-		case 2:
-			return "second-to-last message"
-		case 3:
-			return "third-to-last message"
-		default:
-			return fmt.Sprintf("%d%s from last message", num, getOrdinalSuffix(num))
-		}
-	} else {
-		switch num {
-		case 1:
-			return "first message"
-		case 2:
-			return "second message"
-		case 3:
-			return "third message"
-		default:
-			return fmt.Sprintf("%d%s message", num, getOrdinalSuffix(num))
-		}
-	}
-}
-
-// getOrdinalSuffix returns the appropriate ordinal suffix (st, nd, rd, th)
-func getOrdinalSuffix(num int) string {
-	// Special case for numbers ending in 11, 12, 13 (like 11, 12, 13, 111, 112, 113, etc.)
-	if num%100 >= 11 && num%100 <= 13 {
-		return "th"
-	}
-	switch num % 10 {
-	case 1:
-		return "st"
-	case 2:
-		return "nd"
-	case 3:
-		return "rd"
-	default:
-		return "th"
-	}
 }
 
 // updateMessageVariables sets message-related system variables
