@@ -3,10 +3,10 @@
 # Start a new session
 Created session 'test_session' (ID: 00000001)
 # Add some messages manually to test the resolution
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'test_session'
+Added assistant message to session 'test_session'
+Added user message to session 'test_session'
+Added assistant message to session 'test_session'
 # Test that variables resolve correctly
 "Testing lazy message history resolution:"
 "Latest message (1): "Second assistant response""

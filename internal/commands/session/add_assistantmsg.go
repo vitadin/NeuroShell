@@ -100,26 +100,34 @@ func (c *AddAssistantMessageCommand) Execute(args map[string]string, input strin
 	}
 
 	// Determine session - use provided session or default to active session
-	sessionID := args["session"]
-	if sessionID == "" {
+	var targetSession *neurotypes.ChatSession
+	sessionParam := args["session"]
+	if sessionParam == "" {
 		// No session specified, use active session
 		activeSession, err := chatService.GetActiveSession()
 		if err != nil {
 			return fmt.Errorf("no session specified and no active session found: %w. Usage: %s", err, c.Usage())
 		}
-		sessionID = activeSession.ID
+		targetSession = activeSession
+	} else {
+		// Session specified, resolve by name or ID
+		session, err := chatService.GetSessionByNameOrID(sessionParam)
+		if err != nil {
+			return fmt.Errorf("failed to find session '%s': %w", sessionParam, err)
+		}
+		targetSession = session
 	}
 
 	// Add assistant message to session
-	err = chatService.AddMessage(sessionID, "assistant", input)
+	err = chatService.AddMessage(targetSession.ID, "assistant", input)
 	if err != nil {
-		return fmt.Errorf("failed to add assistant message to session '%s': %w", sessionID, err)
+		return fmt.Errorf("failed to add assistant message to session '%s': %w", targetSession.Name, err)
 	}
 
 	// Auto-push session activation command to stack service for consistent UX
 	// Use precise ID-based activation to ensure the session becomes active
 	if stackService, err := services.GetGlobalStackService(); err == nil {
-		activateCommand := fmt.Sprintf("\\silent \\session-activate[id=true] %s", sessionID)
+		activateCommand := fmt.Sprintf("\\silent \\session-activate[id=true] %s", targetSession.ID)
 		stackService.PushCommand(activateCommand)
 	}
 
@@ -137,7 +145,7 @@ func (c *AddAssistantMessageCommand) Execute(args map[string]string, input strin
 
 	// Output confirmation
 	printer := printing.NewDefaultPrinter()
-	printer.Success(fmt.Sprintf("Added assistant message to session '%s'", sessionID))
+	printer.Success(fmt.Sprintf("Added assistant message to session '%s'", targetSession.Name))
 
 	return nil
 }

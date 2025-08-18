@@ -1,0 +1,98 @@
+%% Test session-delete-msg error cases
+%% This test covers malformed indices, out of range indices, and empty sessions
+
+%% Create a session with some messages for testing
+\session-new[name="error_test", system="You are a helpful assistant"]
+\session-add-usermsg Message 1: First user message
+\session-add-assistantmsg Message 2: First assistant response
+\session-add-usermsg Message 3: Second user message
+
+%% Show initial state
+\echo Initial session state:
+\session-show
+
+%% Test malformed indices with \try to capture errors
+\echo 
+\echo === Testing malformed indices ===
+
+\echo Testing invalid index format:
+\try \session-delete-msg[idx="invalid", confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+\echo Testing empty index:
+\try \session-delete-msg[idx="", confirm=false] 
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+\echo Testing malformed normal order (missing number after dot):
+\try \session-delete-msg[idx=".", confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+\echo Testing non-numeric reverse order:
+\try \session-delete-msg[idx="abc", confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+\echo Testing non-numeric normal order:
+\try \session-delete-msg[idx=".abc", confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+%% Test out of range indices
+\echo 
+\echo === Testing out of range indices ===
+
+\echo Testing reverse order index too high (session has 3 messages):
+\try \session-delete-msg[idx=5, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+\echo Testing normal order index too high:
+\try \session-delete-msg[idx=.5, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+\echo Testing zero index (invalid for both systems):
+\try \session-delete-msg[idx=0, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+\echo Testing zero normal order index:
+\try \session-delete-msg[idx=.0, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+\echo Testing negative index:
+\try \session-delete-msg[idx=-1, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+%% Test empty session scenario
+\echo 
+\echo === Testing empty session ===
+
+%% Create a new empty session
+\session-new[name="empty_test", system="Empty session for testing"]
+\echo Empty session created, attempting to delete from it:
+\try \session-delete-msg[idx=1, confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+%% Test missing required idx parameter
+\echo 
+\echo === Testing missing parameters ===
+
+\echo Testing missing idx parameter:
+\try \session-delete-msg[confirm=false]
+\echo Status: ${_status}
+\echo Error: ${_error}
+
+%% Verify original session is still intact
+\echo 
+\echo === Verification ===
+\echo Switching back to first session to verify it's unchanged:
+\session-activate Session 1
+\session-show
+\echo All error tests completed - session should still have 3 messages

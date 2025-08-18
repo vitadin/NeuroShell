@@ -7,10 +7,10 @@ Created session 'workflow_session' (ID: 00000001)
 %%> "\\get[#system_prompt]"
 #system_prompt = You are a helpful assistant
 %%> "\\session-add-usermsg Hello, can you help me with coding?"
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'workflow_session'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-assistantmsg Of course! I'd be happy to help you with coding questions."
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session 'workflow_session'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-edit-system You are an expert software engineer specializing in Go, Python, and JavaScript. Provide detailed, practical solutions with code examples."
 Updated system prompt for session 'workflow_session'
@@ -32,7 +32,7 @@ _output = Renamed session from 'workflow_session' to 'coding_assistant_session'
 Created session 'data_session' (ID: 00000004)
 %%> "\\silent \\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
 %%> "\\session-add-usermsg What's the best way to analyze large datasets?"
-Added user message to session '00000004-0000-4000-8000-000000000004'
+Added user message to session 'data_session'
 %%> "\\silent \\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
 %%> "\\session-edit-system[session=coding_assistant_session] You are a senior full-stack developer with expertise in modern web technologies, backend systems, and best practices."
 Updated system prompt for session 'coding_assistant_session'
