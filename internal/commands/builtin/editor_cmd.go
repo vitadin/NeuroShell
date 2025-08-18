@@ -37,21 +37,21 @@ func (e *EditorCommand) Description() string {
 func (e *EditorCommand) Usage() string {
 	return `\editor [initial_text] - Open external editor for input composition
 
-Opens your configured external editor (from $EDITOR or auto-detected) to compose
-a multi-line input. When you save and exit the editor, the content will be
+Opens your configured external editor (from ${_editor} variable, $EDITOR env var, or auto-detected) 
+to compose a multi-line input. When you save and exit the editor, the content will be
 stored in the ${_output} variable.
 
 If initial_text is provided, the editor will open with that text as starting content.
 
 The editor preference can be configured with:
-  \set[@editor="your-preferred-editor"]
+  \set[_editor="your-preferred-editor"]
 
 Examples:
   \editor                              - Open empty editor
   \editor Write a blog post about AI  - Open editor with initial text
   \editor Draft email to customer     - Start with prompt text
   \send ${_output}                    - Send the editor content
-  \set[@editor="code --wait"]         - Configure VS Code as editor
+  \set[_editor="code --wait"]         - Configure VS Code as editor
   
 After editing, you can use the content with:
   \send ${_output}          - Send the editor content to LLM
@@ -80,7 +80,7 @@ func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Start editing with prompt text pre-filled",
 			},
 			{
-				Command:     "\\set[@editor=\"code --wait\"]",
+				Command:     "\\set[_editor=\"code --wait\"]",
 				Description: "Configure VS Code as your preferred editor",
 			},
 			{
@@ -92,7 +92,7 @@ func (e *EditorCommand) HelpInfo() neurotypes.HelpInfo {
 			"If initial_text is provided, editor opens with that text as starting content",
 			"Without initial text, editor opens empty - use \\editor ${_output} to edit existing content",
 			"Content is stored in ${_output} variable when editor is saved and closed",
-			"Editor preference: 1) ${@editor} variable, 2) $EDITOR env var, 3) auto-detect",
+			"Editor preference: 1) ${_editor} variable, 2) $EDITOR env var, 3) auto-detect",
 			"Supports vim, nano, code, subl, atom, and other common editors",
 			"Use 'editor --wait' flag for GUI editors to wait for file closure",
 		},

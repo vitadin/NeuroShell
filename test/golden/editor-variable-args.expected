@@ -1,0 +1,6 @@
+Setting _editor = code --wait --new-window
+_editor = code --wait --new-window
+Setting _editor = My Custom Editor
+_editor = My Custom Editor
+Setting _editor = 
+_editor = 

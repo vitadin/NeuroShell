@@ -1,0 +1,13 @@
+%% Test _editor variable with command arguments
+%% Verify that _editor can handle editor commands with arguments
+
+\set[_editor="code --wait --new-window"]
+\get[_editor]
+
+%% Test with spaces in editor name
+\set[_editor="My Custom Editor"]
+\get[_editor]
+
+%% Test empty _editor variable (should be allowed)
+\set[_editor=""]
+\get[_editor]

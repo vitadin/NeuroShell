@@ -1,0 +1,12 @@
+%% Test actual editor invocation with mock editor
+%% This test verifies that _editor variable is used when \editor command is executed
+
+%% Set _editor to our mock editor script
+\set[_editor="test/fixtures/mock-editor.sh"]
+\get[_editor]
+
+%% Test editor invocation with initial content
+\editor Write a test message for the editor
+
+%% Check the output contains our mock editor markers
+\get[_output]

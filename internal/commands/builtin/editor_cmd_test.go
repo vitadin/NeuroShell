@@ -539,3 +539,45 @@ func TestEditorCommand_Execute_VariousInitialContent(t *testing.T) {
 		})
 	}
 }
+
+func TestEditorCommand_HelpInfo_EditorVariable(t *testing.T) {
+	cmd := &EditorCommand{}
+	helpInfo := cmd.HelpInfo()
+
+	// Check that help info mentions _editor variable, not @editor
+	assert.Contains(t, helpInfo.Usage, "\\editor")
+
+	// Check examples mention _editor
+	found := false
+	for _, example := range helpInfo.Examples {
+		if example.Command == "\\set[_editor=\"code --wait\"]" {
+			found = true
+			assert.Contains(t, example.Description, "VS Code")
+			break
+		}
+	}
+	assert.True(t, found, "Should contain example with _editor variable")
+
+	// Check notes mention _editor
+	foundNote := false
+	for _, note := range helpInfo.Notes {
+		if note == "Editor preference: 1) ${_editor} variable, 2) $EDITOR env var, 3) auto-detect" {
+			foundNote = true
+			break
+		}
+	}
+	assert.True(t, foundNote, "Should contain note about _editor variable precedence")
+}
+
+func TestEditorCommand_Usage_EditorVariable(t *testing.T) {
+	cmd := &EditorCommand{}
+	usage := cmd.Usage()
+
+	// Check that usage mentions _editor variable
+	assert.Contains(t, usage, "${_editor}")
+	assert.Contains(t, usage, "\\set[_editor=")
+
+	// Make sure it doesn't mention the old @editor syntax
+	assert.NotContains(t, usage, "\\set[@editor=")
+	assert.NotContains(t, usage, "${@editor}")
+}
