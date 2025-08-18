@@ -3,7 +3,7 @@ Setting _echo_command = true
 Created session 'error_test' (ID: 00000001)
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-usermsg Only message in session"
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'error_test'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\try \\session-edit-msg New content without idx"
 %%> "\\session-edit-msg New content without idx"

@@ -1,6 +1,6 @@
 Auto-generated session name: 'Session 1'
 Created session 'Session 1' (ID: 00000001)
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'Session 1'
 Created reference session with 1 message
 === Testing non-existent session by name ===
 Testing completely non-existent session name:

@@ -1,11 +1,11 @@
 # Test session copy deep copy verification - ensures messages are preserved
 Created session 'conversation_test' (ID: 00000001)
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'conversation_test'
+Added assistant message to session 'conversation_test'
+Added user message to session 'conversation_test'
+Added assistant message to session 'conversation_test'
+Added user message to session 'conversation_test'
+Added assistant message to session 'conversation_test'
 # Copy the session
 Copied session 'conversation_test' to 'conversation_copy' (ID: 00000008) with 6 messages
 # Verify session details

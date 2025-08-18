@@ -3,19 +3,19 @@ Setting _echo_command = true
 Created session 'variables_test_session' (ID: 00000001)
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-usermsg First test message"
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'variables_test_session'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-assistantmsg First response message"
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session 'variables_test_session'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-usermsg Second test message"
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'variables_test_session'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-assistantmsg Second response message"
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session 'variables_test_session'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-usermsg Third test message"
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'variables_test_session'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\echo \"=== Original Session Variables ===\""
 "=== Original Session Variables ==="

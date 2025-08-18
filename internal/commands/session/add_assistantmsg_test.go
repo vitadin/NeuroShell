@@ -87,7 +87,7 @@ func TestAddAssistantMessageCommand_Execute_Success(t *testing.T) {
 
 	// Check output confirmation
 	assert.Contains(t, outputStr, "Added assistant message to session")
-	assert.Contains(t, outputStr, session.ID)
+	assert.Contains(t, outputStr, session.Name)
 
 	// Verify message was added to session
 	updatedSession, err := chatService.GetSession(session.ID)
@@ -268,7 +268,7 @@ func TestAddAssistantMessageCommand_Execute_DefaultToActiveSession(t *testing.T)
 
 	// Check output confirmation mentions the active session
 	assert.Contains(t, outputStr, "Added assistant message to session")
-	assert.Contains(t, outputStr, session.ID)
+	assert.Contains(t, outputStr, session.Name)
 
 	// Verify message was added to the active session
 	updatedSession, err := chatService.GetSession(session.ID)
@@ -379,7 +379,7 @@ func TestAddAssistantMessageCommand_Execute_SessionNotFound(t *testing.T) {
 
 	err := cmd.Execute(args, response)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to add assistant message")
+	assert.Contains(t, err.Error(), "failed to find session")
 	assert.Contains(t, err.Error(), "nonexistent-session")
 }
 

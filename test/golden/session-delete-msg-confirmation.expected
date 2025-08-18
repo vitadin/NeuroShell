@@ -1,9 +1,9 @@
 Auto-generated session name: 'Session 1'
 Created session 'Session 1' (ID: 00000001)
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'Session 1'
+Added assistant message to session 'Session 1'
+Added user message to session 'Session 1'
+Added assistant message to session 'Session 1'
 Initial session state:
 Session: Session 1 (ID: 00000001)
 System: Testing confirmation mechanism
@@ -70,8 +70,8 @@ Messages: 2 total
 === Testing confirmation with session parameter ===
 Auto-generated session name: 'Session 2'
 Created session 'Session 2' (ID: 00000006)
-Added user message to session '00000006-0000-4000-8000-000000000006'
-Added assistant message to session '00000006-0000-4000-8000-000000000006'
+Added user message to session 'Session 2'
+Added assistant message to session 'Session 2'
 Created second session, now testing confirmation with session parameter:
 Status: 1
 Error: failed to find session 'confirm_session2': session 'confirm_session2' not found (tried both name and ID)

@@ -1,7 +1,7 @@
 # Test creating multiple copies from the same source session
 Created session 'master_template' (ID: 00000001)
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'master_template'
+Added assistant message to session 'master_template'
 # Create first copy
 Copied session 'master_template' to 'project_alpha' (ID: 00000004) with 2 messages
 First copy: project_alpha (ID: 00000004-0000-4000-8000-000000000004)

@@ -3,7 +3,7 @@ Setting _echo_command = true
 Created session 'format_test_session' (ID: 00000001)
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-usermsg Testing format auto-detection"
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'format_test_session'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-export[file=/tmp/neuro_test_format_detection.json] format_test_session"
 %%> "\\session-json-export[file=/tmp/neuro_test_format_detection.json] format_test_session"

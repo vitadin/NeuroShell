@@ -1,9 +1,9 @@
 Auto-generated session name: 'Session 1'
 Created session 'Session 1' (ID: 00000001)
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'Session 1'
+Added assistant message to session 'Session 1'
+Added user message to session 'Session 1'
+Added assistant message to session 'Session 1'
 Initial session state:
 Session: Session 1 (ID: 00000001)
 System: You are a helpful assistant
