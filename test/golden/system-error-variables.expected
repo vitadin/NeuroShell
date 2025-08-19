@@ -1,0 +1,88 @@
+Setting _echo_command = true
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[@last_status]"
+@last_status = 0
+%%> "\\get[@last_error]"
+@last_error = 
+%%> "\\bash echo \"success test\""
+success test
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[@last_status]"
+@last_status = 0
+%%> "\\get[@last_error]"
+@last_error = 
+%%> "\\try \\bash ls /nonexistent_directory_xyz"
+%%> "\\bash ls /nonexistent_directory_xyz"
+Error: <ls_error_macos>
+<non_zero_exit_status>
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = <ls_error_macos>
+%%> "\\get[@last_status]"
+@last_status = 0
+%%> "\\get[@last_error]"
+@last_error = 
+%%> "\\set[test_var=hello]"
+Setting test_var = hello
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[@last_status]"
+@last_status = 1
+%%> "\\get[@last_error]"
+@last_error = <ls_error_macos>
+%%> "\\try \\set[_invalid_global=value]"
+%%> "\\set[_invalid_global=value]"
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = failed to set variable _invalid_global: cannot set system variable: _invalid_global
+%%> "\\get[@last_status]"
+@last_status = 0
+%%> "\\get[@last_error]"
+@last_error = 
+%%> "\\try \\bash echo \"try success\""
+%%> "\\bash echo \"try success\""
+try success
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[_status]"
+_status = 0
+%%> "\\get[_error]"
+_error = 
+%%> "\\try \\bash ls /nonexistent_try_test"
+%%> "\\bash ls /nonexistent_try_test"
+Error: <ls_error_macos>
+<non_zero_exit_status>
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = <ls_error_macos>
+%%> "\\get[_status]"
+_status = 1
+%%> "\\get[_error]"
+_error = <ls_error_macos>
+%%> "\\bash echo \"after try\""
+after try
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[@last_status]"
+@last_status = 1
+%%> "\\get[@last_error]"
+@last_error = <ls_error_macos>
+%%> "\\get[_status]"
+_status = 0
+%%> "\\get[_error]"
+_error = 

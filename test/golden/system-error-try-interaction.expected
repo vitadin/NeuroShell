@@ -1,0 +1,90 @@
+Setting _echo_command = true
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[_status]"
+_status = 0
+%%> "\\get[_error]"
+_error = 
+%%> "\\try \\bash ls /first_nonexistent_file"
+%%> "\\bash ls /first_nonexistent_file"
+Error: <ls_error_macos>
+<non_zero_exit_status>
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = <ls_error_macos>
+%%> "\\get[@last_status]"
+@last_status = 0
+%%> "\\get[@last_error]"
+@last_error = 
+%%> "\\get[_status]"
+_status = 1
+%%> "\\get[_error]"
+_error = <ls_error_macos>
+%%> "\\try \\bash ls /second_nonexistent_file"
+%%> "\\bash ls /second_nonexistent_file"
+Error: <ls_error_macos>
+<non_zero_exit_status>
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = <ls_error_macos>
+%%> "\\get[@last_status]"
+@last_status = 0
+%%> "\\get[@last_error]"
+@last_error = 
+%%> "\\get[_status]"
+_status = 1
+%%> "\\get[_error]"
+_error = <ls_error_macos>
+%%> "\\bash echo \"post-try success\""
+post-try success
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[@last_status]"
+@last_status = 1
+%%> "\\get[@last_error]"
+@last_error = <ls_error_macos>
+%%> "\\get[_status]"
+_status = 0
+%%> "\\get[_error]"
+_error = 
+%%> "\\try \\bash echo \"try success\""
+%%> "\\bash echo \"try success\""
+try success
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[@last_status]"
+@last_status = 0
+%%> "\\get[@last_error]"
+@last_error = 
+%%> "\\get[_status]"
+_status = 0
+%%> "\\get[_error]"
+_error = 
+%%> "\\get[testvar]  %% Non-existent variable but should not change @last_*"
+testvar = 
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[@last_status]"
+@last_status = 0
+%%> "\\get[@last_error]"
+@last_error = 
+%%> "\\try \\set[_protected_var=fail]"
+%%> "\\set[_protected_var=fail]"
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = failed to set variable _protected_var: cannot set system variable: _protected_var
+%%> "\\get[@last_status]"
+@last_status = 0
+%%> "\\get[@last_error]"
+@last_error = 
