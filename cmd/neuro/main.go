@@ -13,6 +13,7 @@ import (
 	_ "neuroshell/internal/commands/render"  // Import render commands (init functions)
 	_ "neuroshell/internal/commands/session" // Import session commands (init functions)
 	"neuroshell/internal/context"
+	"neuroshell/internal/data/embedded"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
 	"neuroshell/internal/shell"
@@ -251,6 +252,12 @@ func runShell(_ *cobra.Command, _ []string) {
 
 	logger.Debug("Services initialized successfully")
 
+	// Execute system initialization script first (before user .neurorc)
+	if err := executeSystemInit(); err != nil {
+		logger.Error("Failed to execute system initialization script", "error", err)
+		// Don't exit - just log the error and continue with startup
+	}
+
 	// Execute .neurorc startup script if found
 	if err := executeNeuroRC(); err != nil {
 		logger.Error("Failed to execute .neurorc startup script", "error", err)
@@ -296,6 +303,12 @@ func runBatch(_ *cobra.Command, args []string) {
 	}
 
 	logger.Info("Services initialized successfully")
+
+	// Execute system initialization script first (before user script)
+	if err := executeSystemInit(); err != nil {
+		logger.Error("Failed to execute system initialization script", "error", err)
+		// Don't exit - just log the error and continue with script execution
+	}
 
 	// Get the global context singleton for batch execution
 	ctx := shell.GetGlobalContext()
@@ -455,6 +468,59 @@ func executeNeuroRCFile(rcPath string) error {
 	// Add backslash prefix so state machine recognizes it as a file path command
 	commandInput := "\\" + rcPath
 	return sm.Execute(commandInput)
+}
+
+// executeSystemInit loads and executes the system initialization script.
+// This script runs before user .neurorc files and contains system-level initialization commands.
+func executeSystemInit() error {
+	// Create stdlib loader for accessing embedded system scripts
+	stdlibLoader := embedded.NewStdlibLoader()
+
+	// Load the system initialization script
+	scriptContent, err := stdlibLoader.LoadScript("system-init")
+	if err != nil {
+		// If system-init.neuro doesn't exist, that's okay - just skip it
+		logger.Debug("No system initialization script found", "error", err)
+		return nil
+	}
+
+	// Get the global context for execution
+	ctx := shell.GetGlobalContext()
+	ctx.SetTestMode(testMode)
+
+	// Set global context for services to use
+	context.SetGlobalContext(ctx)
+
+	// Store system initialization information in system variables
+	systemInitPath := stdlibLoader.GetScriptPath("system-init")
+	if err := ctx.SetSystemVariable("#system_init_path", systemInitPath); err != nil {
+		logger.Error("Failed to set #system_init_path system variable", "error", err)
+	}
+	if err := ctx.SetSystemVariable("#system_init_executed", "true"); err != nil {
+		logger.Error("Failed to set #system_init_executed system variable", "error", err)
+	}
+
+	// Execute the system initialization script using state machine
+	logger.Debug("Executing system initialization script", "path", systemInitPath)
+	sm := statemachine.NewStateMachineWithDefaults(ctx)
+
+	// Execute script content directly (not as a file path)
+	lines := strings.Split(scriptContent, "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "%%") {
+			// Skip empty lines and comments
+			continue
+		}
+
+		// Execute each command silently - any errors are logged but don't stop execution
+		if err := sm.Execute(line); err != nil {
+			logger.Debug("System init command failed (continuing)", "command", line, "error", err)
+		}
+	}
+
+	logger.Debug("System initialization completed")
+	return nil
 }
 
 // confirmRCExecution prompts the user for confirmation before executing a .neurorc file.

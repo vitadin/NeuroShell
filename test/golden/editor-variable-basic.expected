@@ -201,6 +201,8 @@ System Variables:
     #cmd_write_usage     = \write[file=path, mode=append] content
     #message_count       = 0
     #session_id          = session_1609459200
+    #system_init_executed = true
+    #system_init_path    = embedded://stdlib/system-init.neuro
     #test_mode           = true
   Command Outputs (_):
     _*                   = 
@@ -209,6 +211,8 @@ System Variables:
     _@                   = 
     _default_command     = echo
     _editor              = nano
+    _error               = 
+    _status              = 0
     _style               = 
 
-Total: 204 variables
+Total: 208 variables
