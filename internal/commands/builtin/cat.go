@@ -229,7 +229,7 @@ func (c *CatCommand) Execute(args map[string]string, input string) error {
 	// Get variable service - if not available, continue without storing (graceful degradation)
 	if variableService, err := services.GetGlobalVariableService(); err == nil {
 		// Store result in target variable
-		if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
+		if targetVar == "_output" {
 			// Store in system variable (only for specific system variables)
 			_ = variableService.SetSystemVariable(targetVar, contentStr)
 		} else {

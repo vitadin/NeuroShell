@@ -4,26 +4,26 @@
 
 %% Test successful bash command
 \try \bash echo "success test"
-\get[_status]
-\get[_error]
+\get[@status]
+\get[@error]
 \get[_output]
 
 %% Test failing bash command
 \try \bash ls /nonexistent_directory_xyz
-\get[_status]
-\get[_error]
+\get[@status]
+\get[@error]
 
 %% Test successful set command
 \try \set[testvar=hello]
-\get[_status]
+\get[@status]
 \get[testvar]
 
 %% Test failing set command (invalid global variable)
 \try \set[_invalid_global=value]
-\get[_status]
-\get[_error]
+\get[@status]
+\get[@error]
 
 %% Test unknown command
 \try \unknown_command_xyz
-\get[_status]
-\get[_error]
+\get[@status]
+\get[@error]

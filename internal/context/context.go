@@ -1438,10 +1438,6 @@ func (ctx *NeuroContext) SetErrorState(status string, errorMsg string) {
 
 	ctx.currentStatus = status
 	ctx.currentError = errorMsg
-
-	// Also set backward-compatible variables for existing scripts
-	_ = ctx.SetSystemVariable("_status", status)
-	_ = ctx.SetSystemVariable("_error", errorMsg)
 }
 
 // GetCurrentErrorState returns the current error state (thread-safe read).

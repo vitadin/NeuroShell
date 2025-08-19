@@ -76,9 +76,9 @@ func (c *EqualCommand) HelpInfo() neurotypes.HelpInfo {
 		},
 		StoredVariables: []neurotypes.HelpStoredVariable{
 			{
-				Name:        "_status",
-				Description: "Exit code: '0' for pass, '1' for fail",
-				Type:        "command_output",
+				Name:        "@status",
+				Description: "Exit code: '0' for pass, '1' for fail (system variable)",
+				Type:        "system_variable",
 				Example:     "0",
 			},
 			{
@@ -110,7 +110,7 @@ func (c *EqualCommand) HelpInfo() neurotypes.HelpInfo {
 
 // Execute compares two values for equality.
 // Values are pre-interpolated by the state machine before this method is called.
-// It sets system variables _status, _assert_result, _assert_expected, and _assert_actual.
+// It sets system variables @status, @error and _assert_result, _assert_expected, and _assert_actual.
 func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 
 	// Validate required arguments
@@ -142,7 +142,7 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 		printer.Success("✓ Assertion passed: values are equal")
 		printer.Info(fmt.Sprintf("  Value: %s", expected))
 
-		// Return nil - framework will set _status to "0"
+		// Return nil - framework will set @status to "0"
 		return nil
 	}
 
@@ -157,7 +157,7 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 	printer.Info(fmt.Sprintf("  Expected: %s", expected))
 	printer.Info(fmt.Sprintf("  Actual:   %s", actual))
 
-	// Return error - framework will set _status to "1" and _error to error message
+	// Return error - framework will set @status to "1" and @error to error message
 	return fmt.Errorf("assertion failed: expected '%s' but got '%s'", expected, actual)
 }
 

@@ -215,8 +215,6 @@ System Variables:
     _@                   = 
     _default_command     = echo
     _editor              = nano
-    _error               = 
-    _status              = 0
     _style               = 
 
-Total: 212 variables
+Total: 210 variables

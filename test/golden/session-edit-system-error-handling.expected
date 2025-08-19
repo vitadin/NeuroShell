@@ -1,8 +1,8 @@
 Setting _echo_command = true
 %%> "\\try \\session-edit-system You are a test assistant"
 %%> "\\session-edit-system You are a test assistant"
-%%> "\\get[_error]"
-_error = no session specified and no active session found: no active session. Usage: \session-edit-system[session=session_id] new_system_prompt
+%%> "\\get[@error]"
+@error = no session specified and no active session found: no active session. Usage: \session-edit-system[session=session_id] new_system_prompt
 \session-edit-system new_system_prompt                                                                                                         
                                                                                                                                                
 Examples:                                                                                                                                      
@@ -26,13 +26,13 @@ Created session 'test_session' (ID: 00000001)
 Activated session 'test_session' (ID: 00000001, Messages: 0)
 %%> "\\try \\session-edit-system[session=nonexistent_session] Test prompt"
 %%> "\\session-edit-system[session=nonexistent_session] Test prompt"
-%%> "\\get[_error]"
-_error = failed to find session 'nonexistent_session': session 'nonexistent_session' not found (tried both name and ID)
+%%> "\\get[@error]"
+@error = failed to find session 'nonexistent_session': session 'nonexistent_session' not found (tried both name and ID)
 %%> "\\try \\session-edit-system[session=\"\"] Test prompt"
 %%> "\\session-edit-system[session=\"\"] Test prompt"
 Updated system prompt for session 'test_session'
-%%> "\\get[_error]"
-_error = 
+%%> "\\get[@error]"
+@error = 
 %%> "\\session-edit-system Valid system prompt"
 Updated system prompt for session 'test_session'
 %%> "\\get[_output]"

@@ -7,48 +7,48 @@
 
 %% Test missing idx parameter
 \try \session-edit-msg New content without idx
-\get[_error]
+\get[@error]
 
 %% Test empty content
 \try \session-edit-msg[idx=1] 
-\get[_error]
+\get[@error]
 
 %% Test whitespace-only content
 \try \session-edit-msg[idx=1]    
-\get[_error]
+\get[@error]
 
 %% Test invalid idx formats
 \try \session-edit-msg[idx=abc] Invalid index format
-\get[_error]
+\get[@error]
 
 \try \session-edit-msg[idx=.] Empty dot format
-\get[_error]
+\get[@error]
 
 \try \session-edit-msg[idx=.abc] Invalid dot format
-\get[_error]
+\get[@error]
 
 %% Test out of bounds - reverse order
 \try \session-edit-msg[idx=2] Out of bounds reverse
-\get[_error]
+\get[@error]
 
 \try \session-edit-msg[idx=0] Zero index reverse
-\get[_error]
+\get[@error]
 
 %% Test out of bounds - normal order
 \try \session-edit-msg[idx=.2] Out of bounds normal
-\get[_error]
+\get[@error]
 
 \try \session-edit-msg[idx=.0] Zero index normal
-\get[_error]
+\get[@error]
 
 %% Test with nonexistent session
 \try \session-edit-msg[session=nonexistent, idx=1] Edit nonexistent
-\get[_error]
+\get[@error]
 
 %% Test with empty session
 \session-new[system="Empty session"] empty_test
 \try \session-edit-msg[session=empty_test, idx=1] Edit empty session
-\get[_error]
+\get[@error]
 
 %% Clean up
 \session-delete error_test

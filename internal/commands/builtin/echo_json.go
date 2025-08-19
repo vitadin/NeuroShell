@@ -206,7 +206,7 @@ func (c *EchoJSONCommand) storeResult(targetVar, result string) {
 	}
 
 	// Store result in target variable
-	if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
+	if targetVar == "_output" {
 		// Store in system variable (only for specific system variables)
 		_ = variableService.SetSystemVariable(targetVar, result)
 	} else {

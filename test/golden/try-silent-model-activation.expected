@@ -26,7 +26,7 @@ Testing try-silent with non-existent model...
 %%> "\\silent \\model-activate[id=true] nonexistent123"
 %%> "\\echo After try-silent with non-existent model (should display)"
 After try-silent with non-existent model (should display)
-%%> "\\echo Error status: ${_status}"
+%%> "\\echo Error status: ${@status}"
 Error status: 1
 %%> "\\echo Testing try-silent with model name..."
 Testing try-silent with model name...

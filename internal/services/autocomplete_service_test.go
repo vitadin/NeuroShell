@@ -515,7 +515,7 @@ func TestAutoCompleteService_GetVariableCompletions(t *testing.T) {
 	require.NoError(t, err)
 	err = ctx.SetVariable("abcd", "test2")
 	require.NoError(t, err)
-	err = ctx.SetSystemVariable("_status", "0")
+	err = ctx.SetSystemVariable("_test_status", "0")
 	require.NoError(t, err)
 	err = ctx.SetSystemVariable("@user", "testuser")
 	require.NoError(t, err)
@@ -539,10 +539,10 @@ func TestAutoCompleteService_GetVariableCompletions(t *testing.T) {
 			expectedCount:    1,
 		},
 		{
-			name:             "complete system variables starting with '_s'",
-			prefix:           "${_s",
-			expectedContains: []string{"${_status}"},
-			expectedCount:    -1, // don't check count, as there may be other _s variables
+			name:             "complete system variables starting with '_t'",
+			prefix:           "${_t",
+			expectedContains: []string{"${_test_status}"},
+			expectedCount:    -1, // don't check count, as there may be other _t variables
 		},
 		{
 			name:             "complete system variables starting with '@u'",

@@ -57,7 +57,7 @@ try success
 %%> "\\get[@error]"
 @error = 
 %%> "\\get[_status]"
-_status = 0
+_status = 
 %%> "\\get[_error]"
 _error = 
 %%> "\\try \\bash ls /nonexistent_try_test"
@@ -69,9 +69,9 @@ Error: <ls_error_macos>
 %%> "\\get[@error]"
 @error = <ls_error_macos>
 %%> "\\get[_status]"
-_status = 1
+_status = 
 %%> "\\get[_error]"
-_error = <ls_error_macos>
+_error = 
 %%> "\\bash echo \"after try\""
 after try
 %%> "\\get[@status]"
@@ -83,6 +83,6 @@ after try
 %%> "\\get[@last_error]"
 @last_error = <ls_error_macos>
 %%> "\\get[_status]"
-_status = 0
+_status = 
 %%> "\\get[_error]"
 _error = 

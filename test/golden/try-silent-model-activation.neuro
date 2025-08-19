@@ -24,7 +24,7 @@
 \echo Testing try-silent with non-existent model...
 \try \silent \model-activate[id=true] nonexistent123
 \echo After try-silent with non-existent model (should display)
-\echo Error status: ${_status}
+\echo Error status: ${@status}
 
 %% Test 5: Test try-silent with model name activation
 \echo Testing try-silent with model name...

@@ -4,7 +4,7 @@ Setting _echo_command = true
 %%> "\\get[@error]"
 @error = 
 %%> "\\get[_status]"
-_status = 0
+_status = 
 %%> "\\get[_error]"
 _error = 
 %%> "\\try \\bash ls /nonexistent_test_file"
@@ -16,9 +16,9 @@ Error: <ls_error_macos>
 %%> "\\get[@error]"
 @error = <ls_error_macos>
 %%> "\\get[_status]"
-_status = 1
+_status = 
 %%> "\\get[_error]"
-_error = <ls_error_macos>
+_error = 
 %%> "\\try \\set[@status=999]"
 %%> "\\set[@status=999]"
 %%> "\\try \\set[@error=manual error]"
@@ -36,9 +36,9 @@ _error = <ls_error_macos>
 %%> "\\get[@error]"
 @error = failed to set variable _error: cannot set system variable: _error
 %%> "\\get[_status]"
-_status = 1
+_status = 
 %%> "\\get[_error]"
-_error = failed to set variable _error: cannot set system variable: _error
+_error = 
 %%> "\\set[my_status=42]"
 Setting my_status = 42
 %%> "\\set[my_error=custom error message]"
@@ -54,7 +54,7 @@ success
 %%> "\\get[@error]"
 @error = 
 %%> "\\get[_status]"
-_status = 0
+_status = 
 %%> "\\get[_error]"
 _error = 
 %%> "\\get[@status]  %% This should not change @last_status/@last_error"

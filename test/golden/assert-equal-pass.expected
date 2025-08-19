@@ -5,7 +5,7 @@ Setting test_value = hello world
 ✓ Assertion passed: values are equal
   Value: hello world
 %%> "\\get[_status]"
-_status = 0
+_status = 
 %%> "\\get[_assert_result]"
 _assert_result = PASS
 %%> "\\get[_assert_expected]"

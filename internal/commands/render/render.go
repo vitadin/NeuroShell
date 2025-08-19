@@ -172,7 +172,7 @@ func (c *Command) Execute(args map[string]string, input string) error {
 		targetVar = "_output" // Default to system output variable
 	}
 
-	if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
+	if targetVar == "_output" {
 		// Store in system variable
 		err = variableService.SetSystemVariable(targetVar, styledText)
 	} else {

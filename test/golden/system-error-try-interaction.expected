@@ -3,10 +3,10 @@ Setting _echo_command = true
 @status = 0
 %%> "\\get[@error]"
 @error = 
-%%> "\\get[_status]"
-_status = 0
-%%> "\\get[_error]"
-_error = 
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
 %%> "\\try \\bash ls /first_nonexistent_file"
 %%> "\\bash ls /first_nonexistent_file"
 Error: <ls_error_macos>
@@ -19,10 +19,10 @@ Error: <ls_error_macos>
 @last_status = 0
 %%> "\\get[@last_error]"
 @last_error = 
-%%> "\\get[_status]"
-_status = 1
-%%> "\\get[_error]"
-_error = <ls_error_macos>
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = <ls_error_macos>
 %%> "\\try \\bash ls /second_nonexistent_file"
 %%> "\\bash ls /second_nonexistent_file"
 Error: <ls_error_macos>
@@ -35,10 +35,10 @@ Error: <ls_error_macos>
 @last_status = 0
 %%> "\\get[@last_error]"
 @last_error = 
-%%> "\\get[_status]"
-_status = 1
-%%> "\\get[_error]"
-_error = <ls_error_macos>
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = <ls_error_macos>
 %%> "\\bash echo \"post-try success\""
 post-try success
 %%> "\\get[@status]"
@@ -49,10 +49,10 @@ post-try success
 @last_status = 1
 %%> "\\get[@last_error]"
 @last_error = <ls_error_macos>
-%%> "\\get[_status]"
-_status = 0
-%%> "\\get[_error]"
-_error = 
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
 %%> "\\try \\bash echo \"try success\""
 %%> "\\bash echo \"try success\""
 try success
@@ -64,10 +64,10 @@ try success
 @last_status = 0
 %%> "\\get[@last_error]"
 @last_error = 
-%%> "\\get[_status]"
-_status = 0
-%%> "\\get[_error]"
-_error = 
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
 %%> "\\get[testvar]  %% Non-existent variable but should not change @last_*"
 testvar = 
 %%> "\\get[@status]"
