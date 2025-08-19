@@ -10,6 +10,7 @@ import (
 	"neuroshell/internal/services"
 	"neuroshell/internal/stringprocessing"
 	"neuroshell/pkg/neurotypes"
+	"strings"
 
 	"github.com/charmbracelet/log"
 )
@@ -175,7 +176,11 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 	}
 
 	// Reset error state before processing command (moves current to last, resets current to success)
-	if sm.errorService != nil {
+	// But only for commands that can change system state - not for read-only commands like \get
+	shouldReset := sm.shouldResetErrorState(rawCommand)
+	sm.logger.Debug("Error state reset decision", "command", rawCommand, "shouldReset", shouldReset)
+	if sm.errorService != nil && shouldReset {
+		sm.logger.Debug("Resetting error state before command", "command", rawCommand)
 		if err := sm.errorService.ResetErrorState(); err != nil {
 			sm.logger.Debug("Failed to reset error state", "error", err)
 		}
@@ -197,7 +202,9 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 	}
 
 	// Set error state based on command execution result
-	if sm.errorService != nil {
+	// But only for commands that can change system state - not for read-only commands like \get
+	if sm.errorService != nil && sm.shouldResetErrorState(rawCommand) {
+		sm.logger.Debug("Setting error state from command result", "command", rawCommand, "err", err)
 		if setErr := sm.errorService.SetErrorStateFromCommandResult(err); setErr != nil {
 			sm.logger.Debug("Failed to set error state", "error", setErr)
 		}
@@ -242,4 +249,37 @@ func (sm *StackMachine) SetConfig(config neurotypes.StateMachineConfig) {
 	if sm.stateProcessor != nil {
 		sm.stateProcessor.SetConfig(config)
 	}
+}
+
+// shouldResetErrorState determines if error state should be reset before executing a command.
+// Read-only commands like \get should not reset error state to preserve try block error capture.
+func (sm *StackMachine) shouldResetErrorState(rawCommand string) bool {
+	// Parse the command to get the command name
+	cmd := strings.TrimSpace(rawCommand)
+	if !strings.HasPrefix(cmd, "\\") {
+		return true // Non-NeuroShell commands should reset error state
+	}
+
+	// Extract command name (everything after \ until first [ or space)
+	cmdName := cmd[1:] // Remove leading \
+	if idx := strings.IndexAny(cmdName, "[ "); idx != -1 {
+		cmdName = cmdName[:idx]
+	}
+
+	// List of read-only commands that should NOT reset error state
+	readOnlyCommands := map[string]bool{
+		"get":  true, // \get command only reads variables
+		"vars": true, // \vars command only lists variables
+		"help": true, // \help command only shows help
+		"echo": true, // \echo command only outputs text
+		"cat":  true, // \cat command only reads files
+	}
+
+	// Don't reset error state for read-only commands
+	if readOnlyCommands[cmdName] {
+		return false
+	}
+
+	// Reset error state for all other commands (commands that can change system state)
+	return true
 }

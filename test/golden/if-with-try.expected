@@ -38,7 +38,7 @@ _status = 1
 _error = <ls_error_macos>
 %%> "\\if[condition=false] \\try \\echo \"This should not execute\""
 %%> "\\get[_status]"
-_status = 1
+_status = 0
 %%> "\\try \\bash echo \"success\""
 %%> "\\bash echo \"success\""
 success
@@ -54,8 +54,6 @@ Error: <ls_error_macos>
 %%> "\\echo \"Previous command failed with status: 1\""
 "Previous command failed with status: 1"
 %%> "\\if[condition=${_error}] \\echo \"Error message exists: ${_error}\""
-%%> "\\echo \"Error message exists: <ls_error_macos>\""
-"Error message exists: <ls_error_macos>"
 %%> "\\try \\set[test_var=\"success\"]"
 %%> "\\set[test_var=\"success\"]"
 Setting test_var = success

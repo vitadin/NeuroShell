@@ -96,8 +96,11 @@ func (th *TryHandler) HandleTryError(err error) {
 	}
 
 	// Set error state using the error management service
+	th.logger.Debug("Setting error state in try block", "originalError", err.Error(), "extractedError", errorMsg)
 	if setErr := th.errorService.SetErrorState("1", errorMsg); setErr != nil {
 		th.logger.Debug("Failed to set error state in try block", "error", setErr)
+	} else {
+		th.logger.Debug("Successfully set error state in try block", "status", "1", "errorMsg", errorMsg)
 	}
 
 	// Mark the try block as having captured an error
@@ -176,11 +179,21 @@ func (th *TryHandler) EnterTryBlock(tryID string) {
 func (th *TryHandler) ExitTryBlock(tryID string) {
 	th.logger.Debug("Exiting try block", "tryID", tryID)
 
+	// Check if error was captured and add debug logging
+	errorCaptured := false
+	if th.stackService != nil {
+		errorCaptured = th.stackService.IsTryErrorCaptured()
+		th.logger.Debug("Try block error capture status", "tryID", tryID, "errorCaptured", errorCaptured)
+	}
+
 	// Set success variables if no error was captured
-	if th.errorService != nil && th.stackService != nil && !th.stackService.IsTryErrorCaptured() {
+	if th.errorService != nil && th.stackService != nil && !errorCaptured {
+		th.logger.Debug("Setting success state because no error was captured", "tryID", tryID)
 		if setErr := th.errorService.SetErrorState("0", ""); setErr != nil {
 			th.logger.Debug("Failed to set success state when exiting try block", "error", setErr)
 		}
+	} else if errorCaptured {
+		th.logger.Debug("Preserving error state because error was captured", "tryID", tryID)
 	}
 
 	if th.stackService != nil {
