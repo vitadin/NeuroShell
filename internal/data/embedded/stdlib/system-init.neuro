@@ -1,0 +1,13 @@
+%% System initialization script - runs before user .neurorc
+%% This script contains system-level initialization commands that are executed
+%% automatically when NeuroShell starts up, before any user configuration files.
+
+%% Load API keys from environment and .env files silently
+%% This ensures LLM API keys are available without requiring user configuration
+\silent \try \llm-api-load
+
+%% Future system initialization commands can be added here
+%% Examples:
+%% - Additional service initialization
+%% - Default configuration setup
+%% - System-wide variable definitions
