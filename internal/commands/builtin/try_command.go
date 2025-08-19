@@ -92,9 +92,15 @@ func (c *TryCommand) Execute(_ map[string]string, input string) error {
 	}
 
 	if targetCommand == "" {
-		// Empty try command - set success variables
-		_ = variableService.SetSystemVariable("_status", "0")
-		_ = variableService.SetSystemVariable("_error", "")
+		// Empty try command - use error management service to set success state
+		errorService, err := services.GetGlobalErrorManagementService()
+		if err != nil {
+			// Fallback to direct variable setting if error service not available
+			_ = variableService.SetSystemVariable("_status", "0")
+			_ = variableService.SetSystemVariable("_error", "")
+		} else {
+			_ = errorService.SetErrorState("0", "")
+		}
 		_ = variableService.SetSystemVariable("_output", "")
 		return nil
 	}

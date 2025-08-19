@@ -130,10 +130,9 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 		return fmt.Errorf("variable service not available: %w", err)
 	}
 
-	// Set system variables based on result
+	// Set assertion-specific variables (not _status - let framework handle that)
 	if isEqual {
 		// Assertion passed
-		_ = variableService.SetSystemVariable("_status", "0")
 		_ = variableService.SetSystemVariable("_assert_result", "PASS")
 		_ = variableService.SetSystemVariable("_assert_expected", expected)
 		_ = variableService.SetSystemVariable("_assert_actual", actual)
@@ -142,21 +141,24 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 		printer := printing.NewDefaultPrinter()
 		printer.Success("✓ Assertion passed: values are equal")
 		printer.Info(fmt.Sprintf("  Value: %s", expected))
-	} else {
-		// Assertion failed
-		_ = variableService.SetSystemVariable("_status", "1")
-		_ = variableService.SetSystemVariable("_assert_result", "FAIL")
-		_ = variableService.SetSystemVariable("_assert_expected", expected)
-		_ = variableService.SetSystemVariable("_assert_actual", actual)
 
-		// Output failure message with diff-style information
-		printer := printing.NewDefaultPrinter()
-		printer.Warning("✗ Assertion failed: values are not equal")
-		printer.Info(fmt.Sprintf("  Expected: %s", expected))
-		printer.Info(fmt.Sprintf("  Actual:   %s", actual))
+		// Return nil - framework will set _status to "0"
+		return nil
 	}
 
-	return nil
+	// Assertion failed
+	_ = variableService.SetSystemVariable("_assert_result", "FAIL")
+	_ = variableService.SetSystemVariable("_assert_expected", expected)
+	_ = variableService.SetSystemVariable("_assert_actual", actual)
+
+	// Output failure message with diff-style information
+	printer := printing.NewDefaultPrinter()
+	printer.Warning("✗ Assertion failed: values are not equal")
+	printer.Info(fmt.Sprintf("  Expected: %s", expected))
+	printer.Info(fmt.Sprintf("  Actual:   %s", actual))
+
+	// Return error - framework will set _status to "1" and _error to error message
+	return fmt.Errorf("assertion failed: expected '%s' but got '%s'", expected, actual)
 }
 
 func init() {

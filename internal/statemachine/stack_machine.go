@@ -33,6 +33,7 @@ type StackMachine struct {
 	// Services
 	stackService    *services.StackService
 	variableService *services.VariableService
+	errorService    *services.ErrorManagementService
 }
 
 // NewStackMachine creates a new stack-based execution engine.
@@ -56,6 +57,11 @@ func NewStackMachine(ctx *context.NeuroContext, config neurotypes.StateMachineCo
 	sm.variableService, err = services.GetGlobalVariableService()
 	if err != nil {
 		sm.logger.Error("Failed to get variable service", "error", err)
+	}
+
+	sm.errorService, err = services.GetGlobalErrorManagementService()
+	if err != nil {
+		sm.logger.Error("Failed to get error management service", "error", err)
 	}
 
 	return sm
@@ -168,20 +174,36 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 		return nil
 	}
 
+	// Reset error state before processing command (moves current to last, resets current to success)
+	if sm.errorService != nil {
+		if err := sm.errorService.ResetErrorState(); err != nil {
+			sm.logger.Debug("Failed to reset error state", "error", err)
+		}
+	}
+
 	// Output command line with %%> prefix if echo_commands is enabled and not in silent block
 	if sm.config.EchoCommands && !sm.silentHandler.IsInSilentBlock() {
 		fmt.Printf("%%%%> %q\n", rawCommand)
 	}
 
 	// Use the state processor to handle the command through the proven pipeline
-	// Suppress output if in silent block
+	var err error
 	if sm.silentHandler.IsInSilentBlock() {
-		return stringprocessing.WithSuppressedOutput(func() error {
+		err = stringprocessing.WithSuppressedOutput(func() error {
 			return sm.stateProcessor.ProcessCommand(rawCommand)
 		})
+	} else {
+		err = sm.stateProcessor.ProcessCommand(rawCommand)
 	}
 
-	return sm.stateProcessor.ProcessCommand(rawCommand)
+	// Set error state based on command execution result
+	if sm.errorService != nil {
+		if setErr := sm.errorService.SetErrorStateFromCommandResult(err); setErr != nil {
+			sm.logger.Debug("Failed to set error state", "error", setErr)
+		}
+	}
+
+	return err
 }
 
 // updateEchoConfig updates the echo configuration based on the _echo_command variable.

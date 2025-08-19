@@ -111,13 +111,10 @@ func TestEqualCommand_Execute_EqualValues(t *testing.T) {
 
 	err := cmd.Execute(args, "")
 
+	// Passing assertions should not return errors
 	assert.NoError(t, err)
 
-	// Check system variables are set correctly for passing assertion
-	status, err := ctx.GetVariable("_status")
-	assert.NoError(t, err)
-	assert.Equal(t, "0", status)
-
+	// Check assert-specific variables are set correctly for passing assertion
 	result, err := ctx.GetVariable("_assert_result")
 	assert.NoError(t, err)
 	assert.Equal(t, "PASS", result)
@@ -129,6 +126,8 @@ func TestEqualCommand_Execute_EqualValues(t *testing.T) {
 	actual, err := ctx.GetVariable("_assert_actual")
 	assert.NoError(t, err)
 	assert.Equal(t, "test_value", actual)
+
+	// Note: _status and _error are now managed by ErrorManagementService at framework level
 }
 
 func TestEqualCommand_Execute_UnequalValues(t *testing.T) {
@@ -144,13 +143,11 @@ func TestEqualCommand_Execute_UnequalValues(t *testing.T) {
 
 	err := cmd.Execute(args, "")
 
-	assert.NoError(t, err)
+	// Assert commands should return errors when assertions fail
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "assertion failed")
 
-	// Check system variables are set correctly for failing assertion
-	status, err := ctx.GetVariable("_status")
-	assert.NoError(t, err)
-	assert.Equal(t, "1", status)
-
+	// Check assert-specific variables are still set correctly
 	result, err := ctx.GetVariable("_assert_result")
 	assert.NoError(t, err)
 	assert.Equal(t, "FAIL", result)
@@ -162,6 +159,8 @@ func TestEqualCommand_Execute_UnequalValues(t *testing.T) {
 	actual, err := ctx.GetVariable("_assert_actual")
 	assert.NoError(t, err)
 	assert.Equal(t, "different_value", actual)
+
+	// Note: _status and _error are now managed by ErrorManagementService at framework level
 }
 
 func TestEqualCommand_Execute_ServiceNotAvailable(t *testing.T) {
@@ -231,9 +230,16 @@ func TestEqualCommand_Execute_EdgeCases(t *testing.T) {
 			}
 
 			err := cmd.Execute(args, "")
-			assert.NoError(t, err)
 
-			// Check assertion result
+			// Check if command should succeed or fail
+			if tt.wantPass {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), "assertion failed")
+			}
+
+			// Check assertion result variable
 			result, err := ctx.GetVariable("_assert_result")
 			assert.NoError(t, err)
 			if tt.wantPass {

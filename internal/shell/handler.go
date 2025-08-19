@@ -67,6 +67,10 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
+	if err := services.GetGlobalRegistry().RegisterService(services.NewErrorManagementService()); err != nil {
+		return err
+	}
+
 	if err := services.GetGlobalRegistry().RegisterService(services.NewBashService()); err != nil {
 		return err
 	}

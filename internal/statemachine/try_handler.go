@@ -18,6 +18,7 @@ type TryHandler struct {
 	// Services
 	stackService    *services.StackService
 	variableService *services.VariableService
+	errorService    *services.ErrorManagementService
 	// Logger
 	logger *log.Logger
 }
@@ -38,6 +39,11 @@ func NewTryHandler() *TryHandler {
 	th.variableService, err = services.GetGlobalVariableService()
 	if err != nil {
 		th.logger.Error("Failed to get variable service", "error", err)
+	}
+
+	th.errorService, err = services.GetGlobalErrorManagementService()
+	if err != nil {
+		th.logger.Error("Failed to get error management service", "error", err)
 	}
 
 	return th
@@ -67,16 +73,13 @@ func (th *TryHandler) PushTryBoundary(tryID string, targetCommand string) {
 }
 
 // HandleTryError handles errors that occur within a try block.
-// It sets the appropriate status and error variables.
+// It sets the appropriate status and error variables using the error management service.
 func (th *TryHandler) HandleTryError(err error) {
 	th.logger.Debug("Handling try block error", "error", err)
 
-	if th.variableService == nil {
+	if th.errorService == nil {
 		return
 	}
-
-	// Set error variables exactly like current implementation
-	_ = th.variableService.SetSystemVariable("_status", "1")
 
 	// Unwrap error messages to get the original error
 	errorMsg := err.Error()
@@ -91,7 +94,11 @@ func (th *TryHandler) HandleTryError(err error) {
 			errorMsg = errorMsg[idx+2:]
 		}
 	}
-	_ = th.variableService.SetSystemVariable("_error", errorMsg)
+
+	// Set error state using the error management service
+	if setErr := th.errorService.SetErrorState("1", errorMsg); setErr != nil {
+		th.logger.Debug("Failed to set error state in try block", "error", setErr)
+	}
 
 	// Mark the try block as having captured an error
 	if th.stackService != nil {
@@ -170,9 +177,10 @@ func (th *TryHandler) ExitTryBlock(tryID string) {
 	th.logger.Debug("Exiting try block", "tryID", tryID)
 
 	// Set success variables if no error was captured
-	if th.variableService != nil && th.stackService != nil && !th.stackService.IsTryErrorCaptured() {
-		_ = th.variableService.SetSystemVariable("_status", "0")
-		_ = th.variableService.SetSystemVariable("_error", "")
+	if th.errorService != nil && th.stackService != nil && !th.stackService.IsTryErrorCaptured() {
+		if setErr := th.errorService.SetErrorState("0", ""); setErr != nil {
+			th.logger.Debug("Failed to set success state when exiting try block", "error", setErr)
+		}
 	}
 
 	if th.stackService != nil {
@@ -182,14 +190,17 @@ func (th *TryHandler) ExitTryBlock(tryID string) {
 
 // SetupEmptyTryCommand sets up variables for an empty try command.
 func (th *TryHandler) SetupEmptyTryCommand() {
-	if th.variableService == nil {
-		return
+	// Empty try command - set success state using error management service
+	if th.errorService != nil {
+		if setErr := th.errorService.SetErrorState("0", ""); setErr != nil {
+			th.logger.Debug("Failed to set success state for empty try command", "error", setErr)
+		}
 	}
 
-	// Empty try command - set success variables
-	_ = th.variableService.SetSystemVariable("_status", "0")
-	_ = th.variableService.SetSystemVariable("_error", "")
-	_ = th.variableService.SetSystemVariable("_output", "")
+	// Set _output variable (this is not error-related, so use variable service directly)
+	if th.variableService != nil {
+		_ = th.variableService.SetSystemVariable("_output", "")
+	}
 }
 
 // IsInTryBlock returns true if currently inside a try block.

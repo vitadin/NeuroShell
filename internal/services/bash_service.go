@@ -96,12 +96,12 @@ func (b *BashService) Execute(command string) (string, string, int, error) {
 	stdoutStr := strings.TrimRight(string(stdout), "\n")
 	stderrStr := strings.TrimRight(string(stderr), "\n")
 
-	// Set system variables for command results using the global context singleton
+	// Set only _output variable - error state is now managed by the framework
 	globalCtx := neuroshellcontext.GetGlobalContext()
 	if neuroCtx, ok := globalCtx.(*neuroshellcontext.NeuroContext); ok {
 		_ = neuroCtx.SetSystemVariable("_output", stdoutStr)
-		_ = neuroCtx.SetSystemVariable("_error", stderrStr)
-		_ = neuroCtx.SetSystemVariable("_status", fmt.Sprintf("%d", exitCode))
+		// Note: _error and _status are now set by the stack machine framework
+		// based on command execution results, not by individual services
 	}
 
 	return stdoutStr, stderrStr, exitCode, nil
