@@ -29,15 +29,18 @@ var (
 var versionCodenames = map[string]string{
 	"0.1.0": "Hydra",    // Simple nerve net, basic neural processing
 	"0.2.0": "Planaria", // Simple brain, basic learning ability
-	"0.3.0": "Dendro",   // Branching neural connections emerge
-	"0.4.0": "Tentara",  // Distributed multi-core intelligence
-	"0.5.0": "Corvex",   // Advanced spatial reasoning and cognition
-	"0.6.0": "Labris",   // Complex learning and memory formation
-	"0.7.0": "Primax",   // Advanced social and collaborative intelligence
-	"0.8.0": "Cognita",  // Abstract thinking and tool creation
-	"0.9.0": "Resonix",  // Self-awareness and complex communication
-	"1.0.0": "Saprix",   // Human-level intelligence milestone
-	"2.0.0": "Omnix",    // Transcendent synthetic intelligence beyond biological
+	"0.2.3": "Planaria", // Simple brain, basic learning ability (continued)
+	"0.2.4": "Planaria", // Simple brain, basic learning ability (continued)
+	"0.2.5": "Dendro",   // Branching neural connections emerge
+	// Future codenames (commented out for upcoming releases)
+	// "0.3.0": "Tentara",  // Distributed multi-core intelligence
+	// "0.4.0": "Corvex",   // Advanced spatial reasoning and cognition
+	// "0.5.0": "Labris",   // Complex learning and memory formation
+	// "0.6.0": "Primax",   // Advanced social and collaborative intelligence
+	// "0.7.0": "Cognita",  // Abstract thinking and tool creation
+	// "0.8.0": "Resonix",  // Self-awareness and complex communication
+	// "0.9.0": "Saprix",   // Human-level intelligence milestone
+	// "1.0.0": "Omnix",    // Transcendent synthetic intelligence beyond biological
 }
 
 // Info represents comprehensive version information
@@ -104,20 +107,26 @@ func GetCommitCount() int {
 }
 
 // GetCodenameForVersion returns the codename for a specific version
-// Handles patch versions by using the major.minor.0 base version
+// Handles patch versions by using the major.minor.patch format, then major.minor.0 base version
 func GetCodenameForVersion(version string) string {
 	// First try exact match
 	if codename, exists := versionCodenames[version]; exists {
 		return codename
 	}
 
-	// Parse the version to handle patch versions
+	// Parse the version to handle build metadata and prerelease
 	sv, err := semver.NewVersion(version)
 	if err != nil {
 		return ""
 	}
 
-	// Try major.minor.0 format for patch versions
+	// Try major.minor.patch format (without build metadata)
+	exactVersion := fmt.Sprintf("%d.%d.%d", sv.Major(), sv.Minor(), sv.Patch())
+	if codename, exists := versionCodenames[exactVersion]; exists {
+		return codename
+	}
+
+	// Try major.minor.0 format for patch versions fallback
 	baseVersion := fmt.Sprintf("%d.%d.0", sv.Major(), sv.Minor())
 	if codename, exists := versionCodenames[baseVersion]; exists {
 		return codename

@@ -22,9 +22,9 @@ func TestGetCodenameForVersion(t *testing.T) {
 			expectedCodename: "Planaria",
 		},
 		{
-			name:             "patch version 0.2.5 should use 0.2.0 codename",
+			name:             "exact match for 0.2.5",
 			version:          "0.2.5",
-			expectedCodename: "Planaria",
+			expectedCodename: "Dendro",
 		},
 		{
 			name:             "patch version 0.2.99 should use 0.2.0 codename",
@@ -32,14 +32,14 @@ func TestGetCodenameForVersion(t *testing.T) {
 			expectedCodename: "Planaria",
 		},
 		{
-			name:             "exact match for 1.0.0",
+			name:             "future version 1.0.0 (codename commented out)",
 			version:          "1.0.0",
-			expectedCodename: "Saprix",
+			expectedCodename: "",
 		},
 		{
-			name:             "patch version 1.0.1 should use 1.0.0 codename",
+			name:             "future patch version 1.0.1 (codename commented out)",
 			version:          "1.0.1",
-			expectedCodename: "Saprix",
+			expectedCodename: "",
 		},
 		{
 			name:             "version without codename",
@@ -119,19 +119,14 @@ func TestGetCodename(t *testing.T) {
 }
 
 func TestVersionCodenames(t *testing.T) {
-	// Test that all defined codenames are accessible
+	// Test that all currently defined codenames are accessible
+	// (Future codenames are commented out until their respective releases)
 	expectedCodenames := map[string]string{
 		"0.1.0": "Hydra",
 		"0.2.0": "Planaria",
-		"0.3.0": "Dendro",
-		"0.4.0": "Tentara",
-		"0.5.0": "Corvex",
-		"0.6.0": "Labris",
-		"0.7.0": "Primax",
-		"0.8.0": "Cognita",
-		"0.9.0": "Resonix",
-		"1.0.0": "Saprix",
-		"2.0.0": "Omnix",
+		"0.2.3": "Planaria",
+		"0.2.4": "Planaria",
+		"0.2.5": "Dendro",
 	}
 
 	for version, expectedCodename := range expectedCodenames {

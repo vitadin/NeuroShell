@@ -1,7 +1,7 @@
 class Neuroshell < Formula
   desc "A specialized shell environment for seamless interaction with LLM agents"
   homepage "https://github.com/vitadin/NeuroShell"
-  url "https://github.com/vitadin/NeuroShell/archive/refs/tags/v0.2.4.tar.gz"
+  url "https://github.com/vitadin/NeuroShell/archive/refs/tags/v0.2.5.tar.gz"
   sha256 "" # This will be calculated automatically by Homebrew
   license "LGPL-3.0"
   head "https://github.com/vitadin/NeuroShell.git", branch: "main"
