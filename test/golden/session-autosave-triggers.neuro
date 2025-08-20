@@ -36,37 +36,37 @@
 
 %% Test 3: session-add-usermsg auto-save trigger
 \echo === Testing session-add-usermsg auto-save trigger ===
-\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json
 \session-add-usermsg[session="trigger_test_new"] Test user message for auto-save trigger
-\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json
 \echo "✓ session-add-usermsg auto-save should have updated file timestamp"
 
 %% Test 4: session-add-assistantmsg auto-save trigger
 \echo === Testing session-add-assistantmsg auto-save trigger ===
-\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json
 \session-add-assistantmsg[session="trigger_test_new"] Test assistant message for auto-save trigger
-\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json
 \echo "✓ session-add-assistantmsg auto-save should have updated file timestamp"
 
 %% Test 5: session-edit-system auto-save trigger
 \echo === Testing session-edit-system auto-save trigger ===
-\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json
 \session-edit-system[session="trigger_test_new"] Modified system prompt to test auto-save trigger functionality
-\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json
 \echo "✓ session-edit-system auto-save should have updated file timestamp"
 
 %% Test 6: session-edit-msg auto-save trigger
 \echo === Testing session-edit-msg auto-save trigger ===
-\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json
 \session-edit-msg[session="trigger_test_new", idx="1"] Modified user message to test auto-save trigger
-\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json
 \echo "✓ session-edit-msg auto-save should have updated file timestamp"
 
 %% Test 7: session-delete-msg auto-save trigger
 \echo === Testing session-delete-msg auto-save trigger ===
-\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json
 \session-delete-msg[session="trigger_test_new", idx="2", confirm="false"]
-\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json
 \echo "✓ session-delete-msg auto-save should have updated file timestamp"
 
 %% Test 8: Auto-save disabled - no triggers should fire

@@ -44,55 +44,65 @@ Session saved to sessions/00000001-0000-4000-8000-000000000001.json
 ✓ Second session also auto-saved
 %%> "\\echo === Testing session-add-usermsg auto-save trigger ==="
 === Testing session-add-usermsg auto-save trigger ===
-%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json"
+  "updated_at": "2025-01-01T00:00:01Z",
 %%> "\\session-add-usermsg[session=\"trigger_test_new\"] Test user message for auto-save trigger"
 Added user message to session 'trigger_test_new'
 %%> "\\session-save 00000001-0000-4000-8000-000000000001"
 Session saved to sessions/00000001-0000-4000-8000-000000000001.json
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
-%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json"
+  "updated_at": "2025-01-01T00:00:04Z",
 %%> "\\echo \"✓ session-add-usermsg auto-save should have updated file timestamp\""
 "✓ session-add-usermsg auto-save should have updated file timestamp"
 %%> "\\echo === Testing session-add-assistantmsg auto-save trigger ==="
 === Testing session-add-assistantmsg auto-save trigger ===
-%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json"
+  "updated_at": "2025-01-01T00:00:04Z",
 %%> "\\session-add-assistantmsg[session=\"trigger_test_new\"] Test assistant message for auto-save trigger"
 Added assistant message to session 'trigger_test_new'
 %%> "\\session-save 00000001-0000-4000-8000-000000000001"
 Session saved to sessions/00000001-0000-4000-8000-000000000001.json
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
-%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json"
+  "updated_at": "2025-01-01T00:00:06Z",
 %%> "\\echo \"✓ session-add-assistantmsg auto-save should have updated file timestamp\""
 "✓ session-add-assistantmsg auto-save should have updated file timestamp"
 %%> "\\echo === Testing session-edit-system auto-save trigger ==="
 === Testing session-edit-system auto-save trigger ===
-%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json"
+  "updated_at": "2025-01-01T00:00:06Z",
 %%> "\\session-edit-system[session=\"trigger_test_new\"] Modified system prompt to test auto-save trigger functionality"
 Updated system prompt for session 'trigger_test_new'
 %%> "\\session-save 00000001-0000-4000-8000-000000000001"
 Session saved to sessions/00000001-0000-4000-8000-000000000001.json
-%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json"
+  "updated_at": "2025-01-01T00:00:07Z",
 %%> "\\echo \"✓ session-edit-system auto-save should have updated file timestamp\""
 "✓ session-edit-system auto-save should have updated file timestamp"
 %%> "\\echo === Testing session-edit-msg auto-save trigger ==="
 === Testing session-edit-msg auto-save trigger ===
-%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json"
+  "updated_at": "2025-01-01T00:00:07Z",
 %%> "\\session-edit-msg[session=\"trigger_test_new\", idx=\"1\"] Modified user message to test auto-save trigger"
 Edited message 1 (last message) in session 'trigger_test_new'
 %%> "\\session-save 00000001-0000-4000-8000-000000000001"
 Session saved to sessions/00000001-0000-4000-8000-000000000001.json
-%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json"
+  "updated_at": "2025-01-01T00:00:08Z",
 %%> "\\echo \"✓ session-edit-msg auto-save should have updated file timestamp\""
 "✓ session-edit-msg auto-save should have updated file timestamp"
 %%> "\\echo === Testing session-delete-msg auto-save trigger ==="
 === Testing session-delete-msg auto-save trigger ===
-%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json"
+  "updated_at": "2025-01-01T00:00:08Z",
 %%> "\\session-delete-msg[session=\"trigger_test_new\", idx=\"2\", confirm=\"false\"]"
 Deleted message 2 (second-to-last message) from session 'trigger_test_new'
 Session now has 1 messages remaining
 %%> "\\session-save 00000001-0000-4000-8000-000000000001"
 Session saved to sessions/00000001-0000-4000-8000-000000000001.json
-%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\bash grep 'updated_at' /tmp/neuroshell-test-config/sessions/${new_session_id}.json"
+  "updated_at": "2025-01-01T00:00:09Z",
 %%> "\\echo \"✓ session-delete-msg auto-save should have updated file timestamp\""
 "✓ session-delete-msg auto-save should have updated file timestamp"
 %%> "\\echo === Testing auto-save disabled ==="
