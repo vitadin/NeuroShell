@@ -59,6 +59,7 @@ Session Management:
       \session-import     - Import chat session from file with format auto-detection
       \session-json-export - Export chat session to JSON file
       \session-json-import - Import chat session from JSON file
+      \session-save       - Save chat session to auto-save directory
 
 
 Model Management:

@@ -1,0 +1,83 @@
+%% Test error handling for session-save command
+\set[_echo_command="true"]
+
+%% Clean up from previous runs
+\try \bash rm -rf /tmp/neuroshell-test-config/sessions
+
+%% Show config directory setup
+\config-path
+
+%% Test 1: Empty session identifier
+\echo === Testing empty session identifier ===
+\try \session-save ""
+
+%% Test 2: Non-existent session
+\echo === Testing non-existent session ===
+\try \session-save nonexistent_session_12345
+
+%% Test 3: Ambiguous prefix matching
+\echo === Testing ambiguous prefix matching ===
+\session-new[system="First test session"] test_session_one
+\session-new[system="Second test session"] test_session_two
+
+%% This should fail due to ambiguous prefix
+\try \session-save test_
+
+%% Test 4: Valid session save
+\echo === Testing valid session save ===
+\session-save test_session_one
+
+%% Verify it worked by checking directory
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+
+%% Test 5: Save by exact session ID  
+\echo === Testing save by session ID ===
+\session-activate test_session_one
+\get[#session_id]
+\session-save ${#session_id}
+
+%% Test 6: Save by unique prefix
+\echo === Testing save by unique prefix ===
+\session-save test_session_t
+
+%% Test 7: Session save when directories don't exist (should create them)
+\echo === Testing directory creation ===
+\bash rm -rf /tmp/neuroshell-test-config/sessions
+\bash ls /tmp/neuroshell-test-config/
+
+%% This should create the sessions directory
+\session-save test_session_one
+
+%% Verify directory was created
+\bash ls /tmp/neuroshell-test-config/
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+
+%% Test 8: Test _output variable content
+\echo === Testing _output variable ===
+\session-save test_session_two
+\get[_output]
+\echo "Output should contain session filename"
+
+%% Test 9: Multiple saves (overwrite behavior)
+\echo === Testing overwrite behavior ===
+\get[#session_id]
+\bash ls /tmp/neuroshell-test-config/sessions/${#session_id}.json
+\session-save test_session_two
+\bash ls /tmp/neuroshell-test-config/sessions/${#session_id}.json
+\echo "File should have been overwritten with newer timestamp"
+
+%% Test 10: Session save with special characters in session name
+\echo === Testing special characters ===
+\session-new[system="Session with special chars"] test-session_with.special@chars
+\session-save test-session_with.special@chars
+\get[#session_id]
+\bash ls /tmp/neuroshell-test-config/sessions/${#session_id}.json
+
+%% Summary
+\echo === Session save error handling summary ===
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+\bash echo "Total saved sessions:"
+\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l
+
+%% Clean up
+\try \bash rm -rf /tmp/neuroshell-test-config/sessions

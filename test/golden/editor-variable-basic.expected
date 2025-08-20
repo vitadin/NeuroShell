@@ -39,7 +39,7 @@ System Variables:
     #cmd_config-path_desc = Display configuration file paths and their loading status
     #cmd_config-path_parsemode = KeyValue
     #cmd_config-path_usage = \config-path
-    #cmd_count           = 62
+    #cmd_count           = 63
     #cmd_echo-json_desc  = Pretty-print JSON data in readable format
     #cmd_echo-json_parsemode = KeyValue
     #cmd_echo-json_usage = \echo-json[to=var_name, indent=2] json_string
@@ -76,7 +76,7 @@ System Variables:
     #cmd_license_desc    = Display NeuroShell license inf... in system variables (length: 84 chars)
     #cmd_license_parsemode = KeyValue
     #cmd_license_usage   = \license
-    #cmd_list            = anthropic-client-new,assert-eq...y,vars,version,write (length: 739 chars)
+    #cmd_list            = anthropic-client-new,assert-eq...y,vars,version,write (length: 752 chars)
     #cmd_llm-api-activate_desc = Activate an API key for a specific provider
     #cmd_llm-api-activate_parsemode = KeyValue
     #cmd_llm-api-activate_usage = \llm-api-activate[provider=<name>, key=<source.KEY_NAME>]
@@ -173,6 +173,9 @@ System Variables:
     #cmd_session-rename_desc = Change session name
     #cmd_session-rename_parsemode = KeyValue
     #cmd_session-rename_usage = \session-rename[session=session_id] new_session_name
+    #cmd_session-save_desc = Save chat session to auto-save directory
+    #cmd_session-save_parsemode = KeyValue
+    #cmd_session-save_usage = \session-save session_identifier
     #cmd_session-show_desc = Display detailed session information with smart content rendering
     #cmd_session-show_parsemode = KeyValue
     #cmd_session-show_usage = \session-show[id=false] session_text
@@ -217,4 +220,4 @@ System Variables:
     _editor              = nano
     _style               = 
 
-Total: 210 variables
+Total: 213 variables

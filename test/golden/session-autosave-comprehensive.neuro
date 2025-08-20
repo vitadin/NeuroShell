@@ -1,0 +1,98 @@
+%% Comprehensive test for session auto-save functionality across all session modification commands
+\set[_echo_command="true"]
+
+%% Clean up any existing auto-save files from previous test runs
+\try \bash rm -rf /tmp/neuroshell-test-config/sessions
+
+%% Enable session auto-save
+\set[_session_autosave="true"]
+
+%% Show initial config state to verify test environment setup
+\config-path
+
+%% Verify the sessions directory doesn't exist yet
+\bash ls /tmp/neuroshell-test-config/
+
+%% Test 1: \session-new should trigger auto-save
+\session-new[system="You are a helpful test assistant for auto-save testing"] autosave_test_session
+
+%% Verify session was created and auto-saved
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+\get[#session_id]
+\bash ls /tmp/neuroshell-test-config/sessions/${#session_id}.json
+
+%% Test 2: \session-activate should trigger auto-save
+\session-new[system="Another test session"] second_session
+\get[#session_id]
+\set[second_session_id="${#session_id}"]
+
+%% Activate the first session (should trigger auto-save)
+\session-activate autosave_test_session
+
+%% Verify both sessions are auto-saved
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+\bash wc -l /tmp/neuroshell-test-config/sessions/*.json
+
+%% Test 3: \session-add-usermsg should trigger auto-save
+\session-add-usermsg[session="autosave_test_session"] This is a test user message to verify auto-save works
+
+%% Check if auto-save happened by verifying file modification
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+
+%% Test 4: \session-add-assistantmsg should trigger auto-save
+\session-add-assistantmsg[session="autosave_test_session"] This is a test assistant response to verify auto-save functionality
+
+%% Verify file was updated again
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+
+%% Test 5: \session-edit-system should trigger auto-save
+\session-edit-system[session="autosave_test_session"] You are a helpful assistant specializing in auto-save testing. Modified system prompt.
+
+%% Test 6: \session-edit-msg should trigger auto-save
+\session-edit-msg[session="autosave_test_session", idx="1"] Modified user message to test auto-save on message editing
+
+%% Test 7: \session-delete-msg should trigger auto-save
+\session-delete-msg[session="autosave_test_session", idx="2", confirm="false"]
+
+%% Verify final state - show the auto-saved session content
+\get[#session_id]
+\cat /tmp/neuroshell-test-config/sessions/${#session_id}.json
+
+%% Test 8: Test \session-save command directly (should work regardless of auto-save setting)
+\session-save autosave_test_session
+
+%% Test 9: Disable auto-save and verify it stops working
+\set[_session_autosave="false"]
+
+%% Create a new session with auto-save disabled
+\session-new[system="Auto-save disabled session"] no_autosave_session
+\get[#session_id]
+\set[no_autosave_session_id="${#session_id}"]
+
+%% Add a message (should NOT trigger auto-save)
+\session-add-usermsg[session="no_autosave_session"] This message should not be auto-saved
+
+%% Verify the file was NOT created automatically
+\bash ls /tmp/neuroshell-test-config/sessions/${no_autosave_session_id}.json 2>/dev/null || echo "File not found (expected behavior)"
+
+%% But manual session-save should still work
+\session-save no_autosave_session
+\bash ls /tmp/neuroshell-test-config/sessions/${no_autosave_session_id}.json
+
+%% Test 10: Test with different session identifiers (prefix matching)
+\set[_session_autosave="true"]
+\session-new[system="Prefix test session"] prefix_matching_test
+\session-add-usermsg[session="prefix_matching_test"] Test message using prefix matching
+
+%% Verify auto-save worked with prefix matching
+\get[#session_id]
+\bash ls /tmp/neuroshell-test-config/sessions/${#session_id}.json
+
+%% Final cleanup and summary
+\bash echo "=== Auto-save test summary ==="
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+\bash echo "Total auto-saved sessions:"
+\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l
+
+%% Clean up test files
+\try \bash rm -rf /tmp/neuroshell-test-config/sessions

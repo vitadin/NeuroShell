@@ -215,6 +215,9 @@ func (c *ActivateCommand) handleNoParameter(chatSessionService *services.ChatSes
 		return fmt.Errorf("failed to update activation variables: %w", err)
 	}
 
+	// Trigger auto-save if enabled
+	chatSessionService.TriggerAutoSave(latestSession.ID)
+
 	// Store session ID in system variable
 	return variableService.SetSystemVariable("_session_id", latestSession.ID)
 }
@@ -364,6 +367,9 @@ func (c *ActivateCommand) activateSession(session *neurotypes.ChatSession, chatS
 	// Print confirmation
 	printer := printing.NewDefaultPrinter()
 	printer.Success(outputMsg)
+
+	// Trigger auto-save if enabled
+	chatSessionService.TriggerAutoSave(session.ID)
 
 	return nil
 }

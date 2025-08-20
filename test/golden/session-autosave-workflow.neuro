@@ -1,0 +1,121 @@
+%% Test session auto-save integration with existing session workflow commands
+\set[_echo_command="true"]
+
+%% Clean up from previous runs
+\try \bash rm -rf /tmp/neuroshell-test-config/sessions
+
+%% Enable auto-save
+\set[_session_autosave="true"]
+
+%% Show initial config
+\config-path
+
+%% Create a comprehensive session workflow with auto-save
+\echo === Creating initial session ===
+\session-new[system="You are a helpful assistant for testing the complete session auto-save workflow"] workflow_test
+
+%% Get session info
+\get[#session_id]
+\get[#session_name]
+\set[original_session_id="${#session_id}"]
+
+%% Verify auto-save triggered for session creation
+\bash test -f /tmp/neuroshell-test-config/sessions/${original_session_id}.json && echo "✓ Auto-save triggered for session-new" || echo "✗ Auto-save failed for session-new"
+
+%% Add conversation content with auto-save
+\echo === Building conversation ===
+\session-add-usermsg Can you help me test the auto-save functionality?
+\session-add-assistantmsg Absolutely! I'll help you test the auto-save feature. Each message should trigger an automatic save.
+\session-add-usermsg Great! Let's also test editing messages.
+
+%% Show session content
+\session-show workflow_test
+
+%% Test session editing with auto-save
+\echo === Testing session editing ===
+\session-edit-system[session="workflow_test"] You are a helpful assistant specializing in auto-save testing. Your responses should be thorough and helpful.
+\session-edit-msg[session="workflow_test", idx="1"] Can you help me test the auto-save functionality? This message has been edited.
+
+%% Test message deletion with auto-save
+\echo === Testing message deletion ===
+\session-delete-msg[session="workflow_test", idx="3", confirm="false"]
+
+%% Show updated session
+\session-show workflow_test
+
+%% Test session copy with auto-save
+\echo === Testing session copy ===
+\session-copy[source_session_name="workflow_test", target_session_name="workflow_test_copy"]
+\get[#session_id]
+\set[copy_session_id="${#session_id}"]
+
+%% Manually save the copied session since copy doesn't auto-trigger save
+\session-save workflow_test_copy
+
+%% Both original and copy should be auto-saved
+\bash test -f /tmp/neuroshell-test-config/sessions/${original_session_id}.json && echo "✓ Original session auto-saved" || echo "✗ Original session auto-save failed"
+\bash test -f /tmp/neuroshell-test-config/sessions/${copy_session_id}.json && echo "✓ Copied session auto-saved" || echo "✗ Copied session auto-save failed"
+
+%% Test session activation switching with auto-save
+\echo === Testing session activation switching ===
+\session-new[system="Another test session"] second_workflow_session
+\get[#session_id]
+\set[second_session_id="${#session_id}"]
+
+%% Verify all sessions are auto-saved after creation
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+\echo "All sessions should be auto-saved"
+
+%% Test renaming with auto-save
+\echo === Testing session renaming ===
+\session-rename[session="second_workflow_session"] renamed_workflow_session
+
+%% Verify the renamed session is still auto-saved with same ID
+\bash test -f /tmp/neuroshell-test-config/sessions/${second_session_id}.json && echo "✓ Renamed session auto-saved" || echo "✗ Renamed session auto-save failed"
+
+%% Test import/export integration with auto-save
+\echo === Testing export/import with auto-save ===
+\session-export[file="/tmp/neuro_workflow_export.json"] workflow_test
+
+%% Import as new session (should trigger auto-save for imported session)
+\session-import[file="/tmp/neuro_workflow_export.json"]
+\get[#session_id]
+\set[imported_session_id="${#session_id}"]
+
+%% Verify imported session is auto-saved
+\bash test -f /tmp/neuroshell-test-config/sessions/${imported_session_id}.json && echo "✓ Imported session auto-saved" || echo "✗ Imported session auto-save failed"
+
+%% Test manual session-save vs auto-save
+\echo === Testing manual vs auto-save ===
+\session-save workflow_test
+\echo "Manual save completed - should overwrite auto-save file"
+
+%% Disable auto-save and test that manual save still works
+\echo === Testing with auto-save disabled ===
+\set[_session_autosave="false"]
+
+\session-new[system="Session with auto-save disabled"] manual_save_only
+\get[#session_id]
+\set[manual_session_id="${#session_id}"]
+
+%% Add content (should NOT auto-save)
+\session-add-usermsg This should not trigger auto-save
+\bash test -f /tmp/neuroshell-test-config/sessions/${manual_session_id}.json && echo "✗ Auto-save unexpectedly triggered" || echo "✓ Auto-save correctly disabled"
+
+%% But manual save should still work
+\session-save manual_save_only
+\bash test -f /tmp/neuroshell-test-config/sessions/${manual_session_id}.json && echo "✓ Manual save works when auto-save disabled" || echo "✗ Manual save failed"
+
+%% Final summary
+\echo === Workflow test summary ===
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+\bash echo "Total sessions in auto-save directory:"
+\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l
+
+%% Show content of one saved session to verify JSON structure
+\echo === Sample auto-saved session content ===
+\cat /tmp/neuroshell-test-config/sessions/${original_session_id}.json
+
+%% Clean up
+\bash rm -f /tmp/neuro_workflow_export.json
+\try \bash rm -rf /tmp/neuroshell-test-config/sessions

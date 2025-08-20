@@ -193,7 +193,7 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 		"session-edit-msg": true, "session-delete-msg": true,
 		"session-edit-with-editor": true,
 		"session-rename":           true, "session-edit-system": true,
-		"session-export": true, "session-import": true,
+		"session-export": true, "session-import": true, "session-save": true,
 		"session-json-export": true, "session-json-import": true, "session-list": true,
 		"session-new": true, "session-show": true,
 	}
@@ -248,7 +248,7 @@ func (c *HelpCommand) displaySessionCommandsGrouped(sessionCommands []*neurotype
 			sessionGroups["Basic Management"] = append(sessionGroups["Basic Management"], cmdInfo)
 		case "session-add-usermsg", "session-add-assistantmsg", "session-edit-msg", "session-delete-msg":
 			sessionGroups["Conversation"] = append(sessionGroups["Conversation"], cmdInfo)
-		case "session-export", "session-import", "session-json-export", "session-json-import":
+		case "session-export", "session-import", "session-json-export", "session-json-import", "session-save":
 			sessionGroups["Import/Export"] = append(sessionGroups["Import/Export"], cmdInfo)
 		default:
 			sessionGroups["Basic Management"] = append(sessionGroups["Basic Management"], cmdInfo)

@@ -39,6 +39,46 @@ func (c *ChatSessionService) Initialize() error {
 	return nil
 }
 
+// TriggerAutoSave checks if auto-save is enabled and triggers a session save if so.
+// This method is called by session modification commands to automatically save sessions.
+// Failures are logged but do not interrupt the main operation.
+func (c *ChatSessionService) TriggerAutoSave(sessionID string) {
+	if !c.initialized {
+		return // Service not initialized, skip auto-save
+	}
+
+	// Get global context directly
+	ctx := neuroshellcontext.GetGlobalContext()
+	if ctx == nil {
+		return // Context not available, skip auto-save
+	}
+
+	// Check if auto-save is enabled via context
+	autosaveValue, err := ctx.GetVariable("_session_autosave")
+	if err != nil {
+		// Variable doesn't exist or error occurred, skip auto-save
+		return
+	}
+
+	// Check for truthy values
+	if autosaveValue != "true" && autosaveValue != "1" && autosaveValue != "yes" {
+		return // Auto-save not enabled
+	}
+
+	// Get stack service to push the session-save command
+	stackService, err := GetGlobalStackService()
+	if err != nil {
+		// Log error but don't interrupt main operation
+		serviceLogger := logger.NewStyledLogger("ChatSessionService")
+		serviceLogger.Debug("Failed to get stack service for auto-save", "error", err)
+		return
+	}
+
+	// Push session-save command to stack for execution
+	command := fmt.Sprintf("\\session-save %s", sessionID)
+	stackService.PushCommand(command)
+}
+
 // ValidateSessionName checks if a session name is valid according to NeuroShell naming rules.
 // It performs smart preprocessing including trimming whitespace and removing quotes.
 // Returns the processed name and any validation error.
