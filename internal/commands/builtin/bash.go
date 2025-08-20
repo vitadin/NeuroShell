@@ -151,6 +151,11 @@ func (c *BashCommand) Execute(_ map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the bash command modifies system state.
+func (c *BashCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GlobalRegistry.Register(&BashCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register bash command: %v", err))

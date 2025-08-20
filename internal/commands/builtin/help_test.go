@@ -594,6 +594,10 @@ func (m *MockCommand) HelpInfo() neurotypes.HelpInfo {
 	}
 }
 
+func (m *MockCommand) IsReadOnly() bool {
+	return true // Mock commands are read-only by default
+}
+
 // Benchmark tests
 func BenchmarkHelpCommand_Execute_SmallRegistry(b *testing.B) {
 	// Create test registry with few commands

@@ -148,6 +148,11 @@ func (c *SetCommand) Execute(args map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the set command modifies system state.
+func (c *SetCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&SetCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register set command: %v", err))

@@ -165,6 +165,10 @@ func (c *GeminiClientNewCommand) resolveAPIKey(args map[string]string, variableS
 		"  3. Set GOOGLE_API_KEY environment variable")
 }
 
+// IsReadOnly returns false as the llm command modifies system state.
+func (c *GeminiClientNewCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GlobalRegistry.Register(&GeminiClientNewCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register gemini-client-new command: %v", err))

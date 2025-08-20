@@ -114,6 +114,11 @@ func (c *TryCommand) Execute(_ map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the try command modifies system state.
+func (c *TryCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&TryCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register try command: %v", err))

@@ -321,6 +321,10 @@ func truncateContent(content string, maxLength int) string {
 	return content[:maxLength] + "..."
 }
 
+// IsReadOnly returns false as the session-delete-msg command modifies system state.
+func (c *DeleteMessageCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&DeleteMessageCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-delete-msg command: %v", err))

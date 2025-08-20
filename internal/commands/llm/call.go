@@ -575,6 +575,10 @@ func (c *CommandRenderConfig) GetThinkingStyle() string {
 	return c.thinkingStyle
 }
 
+// IsReadOnly returns false as the llm command modifies system state.
+func (c *CallCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&CallCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register llm-call command: %v", err))

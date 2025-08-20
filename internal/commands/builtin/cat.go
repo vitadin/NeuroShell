@@ -439,6 +439,11 @@ func (c *CatCommand) getThemeObject() *services.Theme {
 	return themeService.GetThemeByName(styleValue)
 }
 
+// IsReadOnly returns true as the cat command doesn't modify system state.
+func (c *CatCommand) IsReadOnly() bool {
+	return true
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&CatCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register cat command: %v", err))

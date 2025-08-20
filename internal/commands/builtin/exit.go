@@ -128,6 +128,11 @@ func (c *ExitCommand) Execute(args map[string]string, _ string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the exit command modifies system state.
+func (c *ExitCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GlobalRegistry.Register(&ExitCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register exit command: %v", err))

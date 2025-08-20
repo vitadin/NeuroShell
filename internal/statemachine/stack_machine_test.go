@@ -399,3 +399,219 @@ func BenchmarkStackMachine_ProcessStack(b *testing.B) {
 		}
 	}
 }
+
+// Test cases for read-only functionality in stack machine
+
+func TestStackMachine_shouldResetErrorState_ReadOnlyCommands(t *testing.T) {
+	ctx, err := setupStackTestEnvironment()
+	require.NoError(t, err)
+
+	config := neurotypes.DefaultStateMachineConfig()
+	sm := NewStackMachine(ctx, config)
+
+	tests := []struct {
+		name          string
+		command       string
+		expectedReset bool
+		description   string
+	}{
+		{
+			name:          "read-only get command should not reset error state",
+			command:       "\\get[var]",
+			expectedReset: false,
+			description:   "get command is read-only by default",
+		},
+		{
+			name:          "read-only help command should not reset error state",
+			command:       "\\help",
+			expectedReset: false,
+			description:   "help command is read-only by default",
+		},
+		{
+			name:          "read-only echo command should not reset error state",
+			command:       "\\echo message",
+			expectedReset: false,
+			description:   "echo command is read-only by default",
+		},
+		{
+			name:          "writable set command should reset error state",
+			command:       "\\set[var=value]",
+			expectedReset: true,
+			description:   "set command is writable by default",
+		},
+		{
+			name:          "non-neuroshell command should reset error state",
+			command:       "regular command",
+			expectedReset: true,
+			description:   "non-NeuroShell commands should reset error state",
+		},
+		{
+			name:          "unknown neuroshell command should reset error state",
+			command:       "\\unknown",
+			expectedReset: true,
+			description:   "unknown commands should reset error state",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := sm.shouldResetErrorState(tt.command)
+			assert.Equal(t, tt.expectedReset, result, tt.description)
+		})
+	}
+}
+
+func TestStackMachine_shouldResetErrorState_WithOverrides(t *testing.T) {
+	ctx, err := setupStackTestEnvironment()
+	require.NoError(t, err)
+
+	config := neurotypes.DefaultStateMachineConfig()
+	sm := NewStackMachine(ctx, config)
+
+	// Set some read-only overrides to test the dynamic behavior
+	ctx.SetCommandReadOnly("get", false) // Override read-only command to writable
+	ctx.SetCommandReadOnly("set", true)  // Override writable command to read-only
+
+	tests := []struct {
+		name          string
+		command       string
+		expectedReset bool
+		description   string
+	}{
+		{
+			name:          "get command overridden to writable should reset error state",
+			command:       "\\get[var]",
+			expectedReset: true,
+			description:   "get command overridden from read-only to writable",
+		},
+		{
+			name:          "set command overridden to read-only should not reset error state",
+			command:       "\\set[var=value]",
+			expectedReset: false,
+			description:   "set command overridden from writable to read-only",
+		},
+		{
+			name:          "help command without override should still not reset error state",
+			command:       "\\help",
+			expectedReset: false,
+			description:   "help command should remain read-only",
+		},
+		{
+			name:          "echo command without override should still not reset error state",
+			command:       "\\echo message",
+			expectedReset: false,
+			description:   "echo command should remain read-only",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := sm.shouldResetErrorState(tt.command)
+			assert.Equal(t, tt.expectedReset, result, tt.description)
+		})
+	}
+}
+
+func TestStackMachine_shouldResetErrorState_CommandParsing(t *testing.T) {
+	ctx, err := setupStackTestEnvironment()
+	require.NoError(t, err)
+
+	config := neurotypes.DefaultStateMachineConfig()
+	sm := NewStackMachine(ctx, config)
+
+	tests := []struct {
+		name          string
+		command       string
+		expectedReset bool
+		description   string
+	}{
+		{
+			name:          "command with options",
+			command:       "\\get[var=value,other=test]",
+			expectedReset: false,
+			description:   "should parse command name correctly from options",
+		},
+		{
+			name:          "command with spaces",
+			command:       "\\echo hello world",
+			expectedReset: false,
+			description:   "should parse command name correctly with spaces",
+		},
+		{
+			name:          "command with extra whitespace",
+			command:       "  \\get[var]  ",
+			expectedReset: false,
+			description:   "should handle whitespace around command",
+		},
+		{
+			name:          "command with complex options",
+			command:       "\\set[var=value, other=test, flag]",
+			expectedReset: true,
+			description:   "should parse complex options correctly",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := sm.shouldResetErrorState(tt.command)
+			assert.Equal(t, tt.expectedReset, result, tt.description)
+		})
+	}
+}
+
+func TestStackMachine_ReadOnlyCommands_Integration(t *testing.T) {
+	ctx, err := setupStackTestEnvironment()
+	require.NoError(t, err)
+
+	config := neurotypes.DefaultStateMachineConfig()
+	sm := NewStackMachine(ctx, config)
+
+	// Set up error state initially
+	if sm.errorService != nil {
+		err := sm.errorService.SetErrorStateFromCommandResult(assert.AnError)
+		require.NoError(t, err)
+	}
+
+	// Test that read-only commands don't reset error state
+	err = sm.processCommand("\\get[nonexistent]")
+	// The get command itself shouldn't error for non-existent variables, it just returns empty
+	assert.NoError(t, err)
+
+	// Test that writable commands do reset error state
+	err = sm.processCommand("\\set[test_var=test_value]")
+	assert.NoError(t, err)
+
+	// Verify the variable was set
+	value, err := ctx.GetVariable("test_var")
+	assert.NoError(t, err)
+	assert.Equal(t, "test_value", value)
+}
+
+func TestStackMachine_ReadOnlyOverrides_Integration(t *testing.T) {
+	ctx, err := setupStackTestEnvironment()
+	require.NoError(t, err)
+
+	config := neurotypes.DefaultStateMachineConfig()
+	sm := NewStackMachine(ctx, config)
+
+	// Override a read-only command to be writable
+	ctx.SetCommandReadOnly("get", false)
+
+	// Test that the overridden command now resets error state
+	result := sm.shouldResetErrorState("\\get[var]")
+	assert.True(t, result, "get command should reset error state when overridden to writable")
+
+	// Override a writable command to be read-only
+	ctx.SetCommandReadOnly("set", true)
+
+	// Test that the overridden command now doesn't reset error state
+	result = sm.shouldResetErrorState("\\set[var=value]")
+	assert.False(t, result, "set command should not reset error state when overridden to read-only")
+
+	// Remove the override for get command
+	ctx.RemoveCommandReadOnlyOverride("get")
+
+	// Test that it returns to its original behavior
+	result = sm.shouldResetErrorState("\\get[var]")
+	assert.False(t, result, "get command should not reset error state after override removal")
+}

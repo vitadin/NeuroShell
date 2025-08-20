@@ -768,3 +768,143 @@ func TestConfigurationService_GetAllAPIKeys_NotInitialized(t *testing.T) {
 	assert.Contains(t, err.Error(), "not initialized")
 	assert.Nil(t, keys)
 }
+
+func TestConfigurationService_ReadOnlyOverrides(t *testing.T) {
+	_ = context.NewTestContext()
+	service := NewConfigurationService()
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Initially should have no overrides
+	overrides, err := service.GetReadOnlyOverrides()
+	require.NoError(t, err)
+	assert.Empty(t, overrides)
+
+	// Set a read-only override
+	err = service.SetReadOnlyOverride("test-command", true)
+	require.NoError(t, err)
+
+	// Should now appear in overrides
+	overrides, err = service.GetReadOnlyOverrides()
+	require.NoError(t, err)
+	assert.Contains(t, overrides, "test-command")
+	assert.True(t, overrides["test-command"])
+
+	// Set another override with different value
+	err = service.SetReadOnlyOverride("another-command", false)
+	require.NoError(t, err)
+
+	// Should now have both overrides
+	overrides, err = service.GetReadOnlyOverrides()
+	require.NoError(t, err)
+	assert.Len(t, overrides, 2)
+	assert.True(t, overrides["test-command"])
+	assert.False(t, overrides["another-command"])
+
+	// Remove first override
+	err = service.RemoveReadOnlyOverride("test-command")
+	require.NoError(t, err)
+
+	// Should now only have the second override
+	overrides, err = service.GetReadOnlyOverrides()
+	require.NoError(t, err)
+	assert.Len(t, overrides, 1)
+	assert.Contains(t, overrides, "another-command")
+	assert.NotContains(t, overrides, "test-command")
+}
+
+func TestConfigurationService_ReadOnlyOverrides_NotInitialized(t *testing.T) {
+	service := NewConfigurationService()
+	// Don't initialize the service
+
+	// All methods should return errors when not initialized
+	_, err := service.GetReadOnlyOverrides()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	err = service.SetReadOnlyOverride("command", true)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	err = service.RemoveReadOnlyOverride("command")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	err = service.LoadReadOnlyOverrides()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+}
+
+func TestConfigurationService_LoadReadOnlyOverrides(t *testing.T) {
+	tests := []struct {
+		name              string
+		configValue       string
+		expectedOverrides map[string]bool
+	}{
+		{
+			name:        "load single override",
+			configValue: "get:true",
+			expectedOverrides: map[string]bool{
+				"get": true,
+			},
+		},
+		{
+			name:        "load multiple overrides",
+			configValue: "get:true,set:false,vars:true",
+			expectedOverrides: map[string]bool{
+				"get":  true,
+				"set":  false,
+				"vars": true,
+			},
+		},
+		{
+			name:        "load with spaces",
+			configValue: "get : true , set : false",
+			expectedOverrides: map[string]bool{
+				"get": true,
+				"set": false,
+			},
+		},
+		{
+			name:              "empty configuration",
+			configValue:       "",
+			expectedOverrides: map[string]bool{},
+		},
+		{
+			name:        "malformed entries ignored",
+			configValue: "get:true,invalid,set:false,another:invalid,vars:true",
+			expectedOverrides: map[string]bool{
+				"get":  true,
+				"set":  false,
+				"vars": true,
+			},
+		},
+		{
+			name:              "only command names",
+			configValue:       "get,set,vars",
+			expectedOverrides: map[string]bool{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_ = context.NewTestContext()
+			service := NewConfigurationService()
+			err := service.Initialize()
+			require.NoError(t, err)
+
+			// Set the NEURO_READONLY_COMMANDS configuration
+			err = service.SetConfigValue("NEURO_READONLY_COMMANDS", tt.configValue)
+			require.NoError(t, err)
+
+			// Load read-only overrides from configuration
+			err = service.LoadReadOnlyOverrides()
+			require.NoError(t, err)
+
+			// Check that the overrides match expectations
+			overrides, err := service.GetReadOnlyOverrides()
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedOverrides, overrides)
+		})
+	}
+}

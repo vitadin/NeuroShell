@@ -131,6 +131,10 @@ func (c *EditWithEditorCommand) Execute(args map[string]string, _ string) error 
 	return nil
 }
 
+// IsReadOnly returns false as the session-edit-with-editor command modifies system state.
+func (c *EditWithEditorCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&EditWithEditorCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-edit-with-editor command: %v", err))

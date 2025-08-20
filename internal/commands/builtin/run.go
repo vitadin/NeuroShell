@@ -103,6 +103,11 @@ func (c *RunCommand) Execute(_ map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the run command modifies system state.
+func (c *RunCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&RunCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register run command: %v", err))

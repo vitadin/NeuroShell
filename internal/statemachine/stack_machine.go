@@ -5,6 +5,7 @@ package statemachine
 
 import (
 	"fmt"
+	"neuroshell/internal/commands"
 	"neuroshell/internal/context"
 	"neuroshell/internal/logger"
 	"neuroshell/internal/services"
@@ -266,20 +267,13 @@ func (sm *StackMachine) shouldResetErrorState(rawCommand string) bool {
 		cmdName = cmdName[:idx]
 	}
 
-	// List of read-only commands that should NOT reset error state
-	readOnlyCommands := map[string]bool{
-		"get":  true, // \get command only reads variables
-		"vars": true, // \vars command only lists variables
-		"help": true, // \help command only shows help
-		"echo": true, // \echo command only outputs text
-		"cat":  true, // \cat command only reads files
+	// Get command from registry
+	command, exists := commands.GetGlobalRegistry().Get(cmdName)
+	if !exists {
+		return true // Unknown commands reset error state
 	}
 
+	// Use context to check if command is read-only (considers both self-declaration and overrides)
 	// Don't reset error state for read-only commands
-	if readOnlyCommands[cmdName] {
-		return false
-	}
-
-	// Reset error state for all other commands (commands that can change system state)
-	return true
+	return !sm.context.IsCommandReadOnly(command)
 }

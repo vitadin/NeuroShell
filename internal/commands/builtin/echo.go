@@ -212,6 +212,11 @@ func interpretEscapeSequences(s string) string {
 	return s
 }
 
+// IsReadOnly returns true as the echo command doesn't modify system state.
+func (c *EchoCommand) IsReadOnly() bool {
+	return true
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&EchoCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register echo command: %v", err))

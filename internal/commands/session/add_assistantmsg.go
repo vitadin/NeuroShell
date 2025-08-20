@@ -150,6 +150,10 @@ func (c *AddAssistantMessageCommand) Execute(args map[string]string, input strin
 	return nil
 }
 
+// IsReadOnly returns false as the session-add-assistantmsg command modifies system state.
+func (c *AddAssistantMessageCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&AddAssistantMessageCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-add-assistantmsg command: %v", err))

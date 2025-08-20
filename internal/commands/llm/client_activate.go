@@ -172,6 +172,10 @@ func (c *ClientActivateCommand) getClientTypeDescription(clientID string) string
 	}
 }
 
+// IsReadOnly returns false as the llm command modifies system state.
+func (c *ClientActivateCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&ClientActivateCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register llm-client-activate command: %v", err))

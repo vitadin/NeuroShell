@@ -287,6 +287,10 @@ func (c *EditMessageCommand) updateMessageVariables(session *neurotypes.ChatSess
 	return nil
 }
 
+// IsReadOnly returns false as the session-edit-msg command modifies system state.
+func (c *EditMessageCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&EditMessageCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-edit-msg command: %v", err))

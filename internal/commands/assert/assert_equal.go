@@ -161,6 +161,10 @@ func (c *EqualCommand) Execute(args map[string]string, _ string) error {
 	return fmt.Errorf("assertion failed: expected '%s' but got '%s'", expected, actual)
 }
 
+// IsReadOnly returns true as the assert command doesn't modify system state.
+func (c *EqualCommand) IsReadOnly() bool {
+	return true
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&EqualCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register assert-equal command: %v", err))

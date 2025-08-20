@@ -341,3 +341,68 @@ func (c *ConfigurationService) GetConfigurationPaths() (*ConfigPaths, error) {
 		NeuroRCExecuted: false, // Will be set by command from system variables
 	}, nil
 }
+
+// GetReadOnlyOverrides returns all current read-only command overrides from the context.
+// This provides access to dynamic read-only configuration for debugging and listing.
+func (c *ConfigurationService) GetReadOnlyOverrides() (map[string]bool, error) {
+	if !c.initialized {
+		return nil, fmt.Errorf("configuration service not initialized")
+	}
+
+	ctx := neuroshellcontext.GetGlobalContext()
+	return ctx.GetReadOnlyOverrides(), nil
+}
+
+// SetReadOnlyOverride sets a read-only override for a specific command.
+// This allows dynamic runtime configuration of command read-only status.
+func (c *ConfigurationService) SetReadOnlyOverride(commandName string, readOnly bool) error {
+	if !c.initialized {
+		return fmt.Errorf("configuration service not initialized")
+	}
+
+	ctx := neuroshellcontext.GetGlobalContext()
+	ctx.SetCommandReadOnly(commandName, readOnly)
+	return nil
+}
+
+// RemoveReadOnlyOverride removes a read-only override for a specific command,
+// reverting to the command's self-declared IsReadOnly() status.
+func (c *ConfigurationService) RemoveReadOnlyOverride(commandName string) error {
+	if !c.initialized {
+		return fmt.Errorf("configuration service not initialized")
+	}
+
+	ctx := neuroshellcontext.GetGlobalContext()
+	ctx.RemoveCommandReadOnlyOverride(commandName)
+	return nil
+}
+
+// LoadReadOnlyOverrides loads read-only overrides from configuration sources.
+// Configuration key format: NEURO_READONLY_COMMANDS="command1:true,command2:false"
+func (c *ConfigurationService) LoadReadOnlyOverrides() error {
+	if !c.initialized {
+		return fmt.Errorf("configuration service not initialized")
+	}
+
+	ctx := neuroshellcontext.GetGlobalContext()
+
+	// Get read-only configuration from config map
+	if readOnlyConfig, exists := ctx.GetConfigValue("NEURO_READONLY_COMMANDS"); exists && readOnlyConfig != "" {
+		// Parse configuration string: "command1:true,command2:false"
+		pairs := strings.Split(readOnlyConfig, ",")
+		for _, pair := range pairs {
+			parts := strings.Split(strings.TrimSpace(pair), ":")
+			if len(parts) == 2 {
+				commandName := strings.TrimSpace(parts[0])
+				readOnlyStr := strings.TrimSpace(parts[1])
+
+				if commandName != "" && (readOnlyStr == "true" || readOnlyStr == "false") {
+					readOnly := readOnlyStr == "true"
+					ctx.SetCommandReadOnly(commandName, readOnly)
+				}
+			}
+		}
+	}
+
+	return nil
+}

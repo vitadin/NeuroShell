@@ -216,6 +216,11 @@ func (c *EchoJSONCommand) storeResult(targetVar, result string) {
 	// Ignore storage errors to ensure echo-json never fails
 }
 
+// IsReadOnly returns false as the echo-json command modifies system state.
+func (c *EchoJSONCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&EchoJSONCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register echo-json command: %v", err))

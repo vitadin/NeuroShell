@@ -396,6 +396,10 @@ func (c *ShowCommand) truncateContent(content string, maxLength int) string {
 	return fmt.Sprintf("%s%s%s (%d chars)", prefix, TruncationIndicator, suffix, len(content))
 }
 
+// IsReadOnly returns false as the session-show command modifies system state.
+func (c *ShowCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&ShowCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-show command: %v", err))

@@ -341,6 +341,10 @@ func (c *Command) applyGlobalStyling(text string, args map[string]string, theme 
 	return style.Render(text)
 }
 
+// IsReadOnly returns true as the render command doesn't modify system state.
+func (c *Command) IsReadOnly() bool {
+	return true
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&Command{}); err != nil {
 		panic(fmt.Sprintf("failed to register render command: %v", err))

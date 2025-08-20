@@ -48,6 +48,10 @@ func (m *MockCommand) Execute(_ map[string]string, _ string) error {
 	return nil
 }
 
+func (m *MockCommand) IsReadOnly() bool {
+	return true // Mock commands are read-only by default
+}
+
 func TestAutoCompleteService_Name(t *testing.T) {
 	service := NewAutoCompleteService()
 	assert.Equal(t, "autocomplete", service.Name())

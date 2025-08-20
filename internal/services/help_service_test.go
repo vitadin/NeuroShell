@@ -302,3 +302,7 @@ func (m *MockHelpCommand) HelpInfo() neurotypes.HelpInfo {
 		Examples:    []neurotypes.HelpExample{},
 	}
 }
+
+func (m *MockHelpCommand) IsReadOnly() bool {
+	return true // Mock commands are read-only by default
+}

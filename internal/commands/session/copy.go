@@ -268,6 +268,10 @@ func (c *CopyCommand) updateSessionVariables(copiedSession *neurotypes.ChatSessi
 	return nil
 }
 
+// IsReadOnly returns false as the session-copy command modifies system state.
+func (c *CopyCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&CopyCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-copy command: %v", err))

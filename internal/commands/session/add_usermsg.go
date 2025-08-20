@@ -137,6 +137,10 @@ func (c *AddUserMessageCommand) Execute(args map[string]string, input string) er
 	return nil
 }
 
+// IsReadOnly returns false as the session-add-usermsg command modifies system state.
+func (c *AddUserMessageCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&AddUserMessageCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-add-usermsg command: %v", err))

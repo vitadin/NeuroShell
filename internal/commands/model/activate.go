@@ -512,6 +512,11 @@ func (c *ActivateCommand) generateClientNewCommand(catalogID string, model *neur
 	}
 }
 
+// IsReadOnly returns false as the model-activate command modifies system state.
+func (c *ActivateCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&ActivateCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register model-activate command: %v", err))

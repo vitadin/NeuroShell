@@ -215,6 +215,10 @@ func (c *RenameCommand) updateRenameVariables(session *neurotypes.ChatSession, o
 	return nil
 }
 
+// IsReadOnly returns false as the session-rename command modifies system state.
+func (c *RenameCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&RenameCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-rename command: %v", err))

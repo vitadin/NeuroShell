@@ -181,6 +181,11 @@ func (c *WriteCommand) Execute(args map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the write command modifies system state.
+func (c *WriteCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&WriteCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register write command: %v", err))

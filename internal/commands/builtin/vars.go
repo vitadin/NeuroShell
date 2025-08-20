@@ -317,6 +317,11 @@ func (c *VarsCommand) displayVariableGroupUnified(vars map[string]string, printe
 	}
 }
 
+// IsReadOnly returns true as the vars command only lists variables and doesn't modify system state.
+func (c *VarsCommand) IsReadOnly() bool {
+	return true
+}
+
 func init() {
 	if err := commands.GlobalRegistry.Register(&VarsCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register vars command: %v", err))
