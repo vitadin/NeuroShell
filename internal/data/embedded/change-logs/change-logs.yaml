@@ -3,6 +3,49 @@
 # Each entry represents a significant change, bug fix, or feature addition
 
 entries:
+  - id: "CL5"
+    version: "0.2.5"
+    date: "2025-08-20"
+    type: "feature"
+    title: "Session Auto-Save System, Message Management, Error State Framework, and Homebrew Distribution"
+    description: "Implemented comprehensive session auto-save system with automatic session persistence triggered by user interactions. Added advanced message management with dual-indexing message deletion supporting both reverse order (1=last) and normal order (.1=first) operations. Introduced centralized error state management framework with @status/@error system variables for robust command execution tracking. Enhanced editor integration with @editor variable support and user-configurable editor commands. Added system initialization framework with automatic API key loading at startup. Implemented Homebrew tap distribution with official formula for macOS package management. Fixed critical CI/CD cross-platform compatibility issues ensuring reliable test execution across macOS and Linux environments."
+    impact: "Users now benefit from automatic session backup preventing data loss, advanced message manipulation capabilities with intuitive indexing, comprehensive error tracking with system variables, seamless editor integration with environment variable support, and zero-configuration API key loading at startup. The Homebrew distribution makes installation on macOS trivial with 'brew install vitadin/neuroshell/neuroshell'. Enhanced CI/CD reliability ensures consistent behavior across all platforms. These improvements significantly enhance user experience, data safety, and development workflow reliability."
+    files_changed: [
+      "internal/commands/session/save.go",
+      "internal/commands/session/save_test.go", 
+      "internal/commands/session/delete_msg.go",
+      "internal/commands/session/delete_msg_test.go",
+      "internal/commands/session/add_usermsg.go",
+      "internal/commands/session/add_assistantmsg.go",
+      "internal/commands/builtin/editor_cmd.go",
+      "internal/commands/builtin/editor_cmd_test.go",
+      "internal/commands/builtin/bash.go",
+      "internal/commands/builtin/try_command.go",
+      "internal/services/chat_session_service.go",
+      "internal/services/error_management_service.go",
+      "internal/services/error_management_service_test.go",
+      "internal/services/configuration_service.go",
+      "internal/services/configuration_service_test.go",
+      "internal/context/context.go",
+      "internal/context/context_test.go",
+      "internal/stringprocessing/message_index.go",
+      "internal/stringprocessing/message_index_test.go", 
+      "internal/statemachine/stack_machine.go",
+      "internal/statemachine/try_handler.go",
+      "internal/data/embedded/stdlib/system-init.neuro",
+      "cmd/neuro/main.go",
+      "cmd/neuro/system_init_test.go",
+      "Formula/neuroshell.rb",
+      "homebrew-README.md",
+      "HOMEBREW_INSTRUCTIONS.md",
+      "BREW_SETUP.md",
+      "test/golden/session-autosave-*",
+      "test/golden/session-save-*",
+      "test/golden/session-delete-msg-*",
+      "test/golden/editor-variable-*",
+      "test/golden/system-error-*",
+      "test/fixtures/mock-editor.sh"
+    ]
   - id: "CL4"
     version: "0.2.4"
     date: "2025-08-17"
