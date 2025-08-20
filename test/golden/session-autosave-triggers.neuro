@@ -1,0 +1,116 @@
+%% Test auto-save triggers for each session modification command
+\set[_echo_command="true"]
+
+%% Clean up from previous runs
+\try \bash rm -rf /tmp/neuroshell-test-config/sessions
+
+%% Show initial state
+\config-path
+
+%% Enable auto-save
+\set[_session_autosave="true"]
+\echo Auto-save enabled: ${_session_autosave}
+
+%% Test 1: session-new auto-save trigger
+\echo === Testing session-new auto-save trigger ===
+\session-new[system="Test session for new trigger"] trigger_test_new
+\get[#session_id]
+\set[new_session_id="${#session_id}"]
+
+%% Verify auto-save file exists
+\bash test -f /tmp/neuroshell-test-config/sessions/${new_session_id}.json && echo "✓ session-new auto-save triggered" || echo "✗ session-new auto-save failed"
+
+%% Test 2: session-activate auto-save trigger
+\echo === Testing session-activate auto-save trigger ===
+\session-new[system="Second session for activate trigger"] trigger_test_activate
+\get[#session_id]
+\set[activate_session_id="${#session_id}"]
+
+%% Activate first session - should trigger auto-save for the activated session
+\session-activate trigger_test_new
+
+%% Both sessions should now be auto-saved
+\bash test -f /tmp/neuroshell-test-config/sessions/${new_session_id}.json && echo "✓ session-activate auto-save triggered for activated session" || echo "✗ session-activate auto-save failed"
+\bash test -f /tmp/neuroshell-test-config/sessions/${activate_session_id}.json && echo "✓ Second session also auto-saved" || echo "✗ Second session auto-save failed"
+
+%% Test 3: session-add-usermsg auto-save trigger
+\echo === Testing session-add-usermsg auto-save trigger ===
+\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\session-add-usermsg[session="trigger_test_new"] Test user message for auto-save trigger
+\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\echo "✓ session-add-usermsg auto-save should have updated file timestamp"
+
+%% Test 4: session-add-assistantmsg auto-save trigger
+\echo === Testing session-add-assistantmsg auto-save trigger ===
+\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\session-add-assistantmsg[session="trigger_test_new"] Test assistant message for auto-save trigger
+\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\echo "✓ session-add-assistantmsg auto-save should have updated file timestamp"
+
+%% Test 5: session-edit-system auto-save trigger
+\echo === Testing session-edit-system auto-save trigger ===
+\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\session-edit-system[session="trigger_test_new"] Modified system prompt to test auto-save trigger functionality
+\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\echo "✓ session-edit-system auto-save should have updated file timestamp"
+
+%% Test 6: session-edit-msg auto-save trigger
+\echo === Testing session-edit-msg auto-save trigger ===
+\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\session-edit-msg[session="trigger_test_new", idx="1"] Modified user message to test auto-save trigger
+\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\echo "✓ session-edit-msg auto-save should have updated file timestamp"
+
+%% Test 7: session-delete-msg auto-save trigger
+\echo === Testing session-delete-msg auto-save trigger ===
+\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\session-delete-msg[session="trigger_test_new", idx="2", confirm="false"]
+\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1
+\echo "✓ session-delete-msg auto-save should have updated file timestamp"
+
+%% Test 8: Auto-save disabled - no triggers should fire
+\echo === Testing auto-save disabled ===
+\set[_session_autosave="false"]
+\echo Auto-save disabled: ${_session_autosave}
+
+\session-new[system="Session with auto-save disabled"] no_autosave_test
+\get[#session_id]
+\set[no_autosave_id="${#session_id}"]
+
+%% Add content - should NOT trigger auto-save
+\session-add-usermsg[session="no_autosave_test"] This should not be auto-saved
+
+%% Verify file was NOT created
+\bash test -f /tmp/neuroshell-test-config/sessions/${no_autosave_id}.json && echo "✗ Auto-save unexpectedly triggered" || echo "✓ Auto-save correctly disabled"
+
+%% Test 9: Different values for _session_autosave variable
+\echo === Testing different auto-save values ===
+
+%% Test with "1"
+\set[_session_autosave="1"]
+\session-new[system="Testing with value 1"] value_test_1
+\get[#session_id]
+\set[value_1_id="${#session_id}"]
+\bash test -f /tmp/neuroshell-test-config/sessions/${value_1_id}.json && echo "✓ Auto-save works with value '1'" || echo "✗ Auto-save failed with value '1'"
+
+%% Test with "yes"
+\set[_session_autosave="yes"]
+\session-new[system="Testing with value yes"] value_test_yes
+\get[#session_id]
+\set[value_yes_id="${#session_id}"]
+\bash test -f /tmp/neuroshell-test-config/sessions/${value_yes_id}.json && echo "✓ Auto-save works with value 'yes'" || echo "✗ Auto-save failed with value 'yes'"
+
+%% Test with "0" (should disable)
+\set[_session_autosave="0"]
+\session-new[system="Testing with value 0"] value_test_0
+\get[#session_id]
+\set[value_0_id="${#session_id}"]
+\bash test -f /tmp/neuroshell-test-config/sessions/${value_0_id}.json && echo "✗ Auto-save unexpectedly triggered with '0'" || echo "✓ Auto-save correctly disabled with value '0'"
+
+%% Summary
+\echo === Auto-save test summary ===
+\bash ls /tmp/neuroshell-test-config/sessions/ 2>/dev/null | sort || echo "No sessions directory found"
+\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l | xargs echo "Total auto-saved files:"
+
+%% Clean up
+\try \bash rm -rf /tmp/neuroshell-test-config/sessions

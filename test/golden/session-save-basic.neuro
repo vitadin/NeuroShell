@@ -1,0 +1,68 @@
+%% Test the \session-save command with fixed path behavior
+\set[_echo_command="true"]
+
+%% Clean up any existing files
+\try \bash rm -rf /tmp/neuroshell-test-config/sessions
+
+%% Show config directory (should be test mode)
+\config-path
+
+%% Create a test session with some content
+\session-new[system="You are a helpful assistant for testing session-save functionality"] save_test_session
+
+%% Add some conversation content
+\session-add-usermsg This is a test message to verify the session-save command works correctly
+\session-add-assistantmsg I understand! I'm here to help test the session-save functionality. The session should be saved to the auto-save directory.
+
+%% Show session before saving
+\session-show save_test_session
+
+%% Get session ID for verification
+\get[#session_id]
+
+%% Test \session-save command - should save to fixed location
+\session-save save_test_session
+
+%% Verify the file was created in the correct location
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+
+%% Show the JSON content to verify it contains the session data
+\cat /tmp/neuroshell-test-config/sessions/${#session_id}.json
+
+%% Test saving by session ID instead of name
+\session-save ${#session_id}
+
+%% Verify it overwrote the same file (should have same name)
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+
+%% Test prefix matching
+\session-save save_test
+
+%% Test the _output variable was set correctly
+\get[_output]
+
+%% Create another session to test multiple saves
+\session-new[system="Second test session"] second_save_test
+\session-add-usermsg Another test message for the second session
+\get[#session_id]
+\set[second_session_id="${#session_id}"]
+
+%% Save the second session
+\session-save second_save_test
+
+%% Verify both sessions are saved
+\bash ls /tmp/neuroshell-test-config/sessions/ | sort
+\bash echo "Number of saved sessions:"
+\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l
+
+%% Test error cases
+\echo Testing error cases:
+
+%% Try to save non-existent session
+\try \session-save nonexistent_session_name
+
+%% Try to save with empty input
+\try \session-save ""
+
+%% Clean up
+\try \bash rm -rf /tmp/neuroshell-test-config/sessions

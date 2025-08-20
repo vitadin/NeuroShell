@@ -147,6 +147,9 @@ func (c *AddAssistantMessageCommand) Execute(args map[string]string, input strin
 	printer := printing.NewDefaultPrinter()
 	printer.Success(fmt.Sprintf("Added assistant message to session '%s'", targetSession.Name))
 
+	// Trigger auto-save if enabled
+	chatService.TriggerAutoSave(targetSession.ID)
+
 	return nil
 }
 

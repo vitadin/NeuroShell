@@ -197,6 +197,9 @@ func (c *NewCommand) Execute(args map[string]string, input string) error {
 	printer := printing.NewDefaultPrinter()
 	printer.Success(outputMsg)
 
+	// Trigger auto-save if enabled
+	chatService.TriggerAutoSave(session.ID)
+
 	return nil
 }
 

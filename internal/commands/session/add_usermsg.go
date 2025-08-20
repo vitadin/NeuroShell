@@ -134,6 +134,9 @@ func (c *AddUserMessageCommand) Execute(args map[string]string, input string) er
 	printer := printing.NewDefaultPrinter()
 	printer.Success(fmt.Sprintf("Added user message to session '%s'", targetSession.Name))
 
+	// Trigger auto-save if enabled
+	chatService.TriggerAutoSave(targetSession.ID)
+
 	return nil
 }
 
