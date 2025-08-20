@@ -62,16 +62,6 @@ func TestConfigPathCommand_Execute_Success(t *testing.T) {
 	registry := services.NewRegistry()
 	services.SetGlobalRegistry(registry)
 
-	// Register required services
-	err := registry.RegisterService(services.NewVariableService())
-	require.NoError(t, err)
-	err = registry.RegisterService(services.NewConfigurationService())
-	require.NoError(t, err)
-
-	// Initialize services
-	err = registry.InitializeAll()
-	require.NoError(t, err)
-
 	// Setup temp directories for test
 	tempConfigDir := "/tmp/neuroshell-test-config"
 	tempWorkDir := "/tmp/neuroshell-test-workdir"
@@ -79,7 +69,7 @@ func TestConfigPathCommand_Execute_Success(t *testing.T) {
 	// Clean up and create directories
 	_ = os.RemoveAll(tempConfigDir)
 	_ = os.RemoveAll(tempWorkDir)
-	err = os.MkdirAll(tempConfigDir, 0755)
+	err := os.MkdirAll(tempConfigDir, 0755)
 	require.NoError(t, err)
 	err = os.MkdirAll(tempWorkDir, 0755)
 	require.NoError(t, err)
@@ -96,6 +86,16 @@ func TestConfigPathCommand_Execute_Success(t *testing.T) {
 	// Create local .env file
 	localEnvContent := "LOCAL_TEST_KEY=local-value\n"
 	err = os.WriteFile(tempWorkDir+"/.env", []byte(localEnvContent), 0644)
+	require.NoError(t, err)
+
+	// Register required services
+	err = registry.RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+	err = registry.RegisterService(services.NewConfigurationService())
+	require.NoError(t, err)
+
+	// Initialize services
+	err = registry.InitializeAll()
 	require.NoError(t, err)
 
 	// Set up .neurorc execution tracking
@@ -165,6 +165,10 @@ func TestConfigPathCommand_Execute_NoConfigFiles(t *testing.T) {
 	registry := services.NewRegistry()
 	services.SetGlobalRegistry(registry)
 
+	// Clean up test directories first
+	_ = os.RemoveAll("/tmp/neuroshell-test-config")
+	_ = os.RemoveAll("/tmp/neuroshell-test-workdir")
+
 	// Register required services
 	err := registry.RegisterService(services.NewVariableService())
 	require.NoError(t, err)
@@ -202,20 +206,11 @@ func TestConfigPathCommand_Execute_PartialConfigFiles(t *testing.T) {
 	registry := services.NewRegistry()
 	services.SetGlobalRegistry(registry)
 
-	// Register required services
-	err := registry.RegisterService(services.NewVariableService())
-	require.NoError(t, err)
-	err = registry.RegisterService(services.NewConfigurationService())
-	require.NoError(t, err)
-
-	// Initialize services
-	err = registry.InitializeAll()
-	require.NoError(t, err)
-
 	// Setup temp directories
 	tempConfigDir := "/tmp/neuroshell-test-config"
 	_ = os.RemoveAll(tempConfigDir)
-	err = os.MkdirAll(tempConfigDir, 0755)
+	_ = os.RemoveAll("/tmp/neuroshell-test-workdir")
+	err := os.MkdirAll(tempConfigDir, 0755)
 	require.NoError(t, err)
 	defer func() {
 		_ = os.RemoveAll(tempConfigDir)
@@ -224,6 +219,16 @@ func TestConfigPathCommand_Execute_PartialConfigFiles(t *testing.T) {
 	// Create only config .env file (no local .env)
 	configEnvContent := "NEURO_TEST_KEY=config-value\n"
 	err = os.WriteFile(tempConfigDir+"/.env", []byte(configEnvContent), 0644)
+	require.NoError(t, err)
+
+	// Register required services
+	err = registry.RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+	err = registry.RegisterService(services.NewConfigurationService())
+	require.NoError(t, err)
+
+	// Initialize services
+	err = registry.InitializeAll()
 	require.NoError(t, err)
 
 	// Set up only .neurorc path (not executed)
