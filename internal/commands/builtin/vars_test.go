@@ -279,7 +279,7 @@ func TestVarsCommand_MatchesTypeFilter(t *testing.T) {
 		{"@ system var with system filter", "@pwd", "system", true},
 		{"@ system var with user filter", "@pwd", "user", false},
 		{"# system var with system filter", "#session_id", "system", true},
-		{"_ system var with system filter", "_status", "system", true},
+		{"_ system var with system filter", "_output", "system", true},
 		{"unknown type defaults to all", "any_var", "unknown", true},
 	}
 

@@ -159,6 +159,11 @@ func (c *TimerCommand) waitForTimerCompletion(temporalService *services.Temporal
 	}
 }
 
+// IsReadOnly returns false as the timer command modifies system state.
+func (c *TimerCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&TimerCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register timer command: %v", err))

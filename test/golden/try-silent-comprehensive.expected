@@ -37,11 +37,11 @@ Counter value: 2
 Testing error recovery...
 %%> "\\try \\silent \\unknown-error1"
 %%> "\\silent \\unknown-error1"
-%%> "\\echo After first error (status: ${_status})"
+%%> "\\echo After first error (status: ${@status})"
 After first error (status: 1)
 %%> "\\try \\silent \\set[recovery=success]"
 %%> "\\silent \\set[recovery=success]"
-%%> "\\echo After recovery (status: ${_status}, value: ${recovery})"
+%%> "\\echo After recovery (status: ${@status}, value: ${recovery})"
 After recovery (status: 0, value: success)
 %%> "\\echo Testing mixed with other commands..."
 Testing mixed with other commands...

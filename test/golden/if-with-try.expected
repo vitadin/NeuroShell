@@ -3,28 +3,28 @@ Setting _echo_command = true
 %%> "\\if[condition=true] \\echo \"If inside try - success\""
 %%> "\\echo \"If inside try - success\""
 "If inside try - success"
-%%> "\\get[_status]"
-_status = 0
-%%> "\\get[_error]"
-_error = 
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
 %%> "\\try \\if[condition=false] \\echo \"This should not appear\""
 %%> "\\if[condition=false] \\echo \"This should not appear\""
-%%> "\\get[_status]"
-_status = 0
-%%> "\\get[_error]"
-_error = 
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
 %%> "\\try \\if \\echo \"This should fail\""
 %%> "\\if \\echo \"This should fail\""
-%%> "\\get[_status]"
-_status = 1
-%%> "\\get[_error]"
-_error = condition parameter is required
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = condition parameter is required
 %%> "\\if[condition=true] \\try \\echo \"Try inside if - success\""
 %%> "\\try \\echo \"Try inside if - success\""
 %%> "\\echo \"Try inside if - success\""
 "Try inside if - success"
-%%> "\\get[_status]"
-_status = 0
+%%> "\\get[@status]"
+@status = 0
 %%> "\\get[_output]"
 _output = "Try inside if - success"
 %%> "\\if[condition=true] \\try \\bash ls /nonexistent_directory_test"
@@ -32,17 +32,17 @@ _output = "Try inside if - success"
 %%> "\\bash ls /nonexistent_directory_test"
 Error: <ls_error_macos>
 <non_zero_exit_status>
-%%> "\\get[_status]"
-_status = 1
-%%> "\\get[_error]"
-_error = <ls_error_macos>
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = <ls_error_macos>
 %%> "\\if[condition=false] \\try \\echo \"This should not execute\""
-%%> "\\get[_status]"
-_status = 1
+%%> "\\get[@status]"
+@status = 0
 %%> "\\try \\bash echo \"success\""
 %%> "\\bash echo \"success\""
 success
-%%> "\\if[condition=${_status}] \\echo \"Command failed (status != 0)\""
+%%> "\\if[condition=${@status}] \\echo \"Command failed (status != 0)\""
 %%> "\\if[condition=${_output}] \\echo \"Command produced output: ${_output}\""
 %%> "\\echo \"Command produced output: success\""
 "Command produced output: success"
@@ -50,16 +50,12 @@ success
 %%> "\\bash ls /does_not_exist"
 Error: <ls_error_macos>
 <non_zero_exit_status>
-%%> "\\if[condition=${_status}] \\echo \"Previous command failed with status: ${_status}\""
-%%> "\\echo \"Previous command failed with status: 1\""
-"Previous command failed with status: 1"
-%%> "\\if[condition=${_error}] \\echo \"Error message exists: ${_error}\""
-%%> "\\echo \"Error message exists: <ls_error_macos>\""
-"Error message exists: <ls_error_macos>"
+%%> "\\if[condition=${@status}] \\echo \"Previous command failed with status: ${@status}\""
+%%> "\\if[condition=${@error}] \\echo \"Error message exists: ${@error}\""
 %%> "\\try \\set[test_var=\"success\"]"
 %%> "\\set[test_var=\"success\"]"
 Setting test_var = success
-%%> "\\if[condition=${_status}] \\echo \"Set command failed unexpectedly\""
+%%> "\\if[condition=${@status}] \\echo \"Set command failed unexpectedly\""
 %%> "\\get[test_var]"
 test_var = success
 %%> "\\try \\bash echo \"test output\""
@@ -76,8 +72,8 @@ output_captured = true
 Setting nested_var = nested_success
 %%> "\\get[nested_var]"
 nested_var = nested_success
-%%> "\\get[_status]"
-_status = 0
+%%> "\\get[@status]"
+@status = 0
 %%> "\\if[condition=true] \\set[first_result=\"true\"]"
 %%> "\\set[first_result=\"true\"]"
 Setting first_result = true
@@ -87,8 +83,8 @@ Setting first_result = true
 %%> "\\set[should_fail=\"false\"]"
 Setting should_fail = false
 %%> "\\if[condition=${should_fail}] \\try \\bash this_command_does_not_exist"
-%%> "\\get[_status]"
-_status = 0
+%%> "\\get[@status]"
+@status = 0
 %%> "\\try \\bash echo \"conditional test\""
 %%> "\\bash echo \"conditional test\""
 conditional test
@@ -97,7 +93,7 @@ Setting has_output = true
 %%> "\\if[condition=${has_output}] \\echo \"Output detected: ${_output}\""
 %%> "\\echo \"Output detected: conditional test\""
 "Output detected: conditional test"
-%%> "\\if[condition=${_status}] \\echo \"Command had error status\""
+%%> "\\if[condition=${@status}] \\echo \"Command had error status\""
 %%> "\\if[condition=true] \\set[dummy=\"test\"]"
 %%> "\\set[dummy=\"test\"]"
 Setting dummy = test
@@ -111,14 +107,12 @@ test
 %%> "\\try \\bash false"
 %%> "\\bash false"
 <non_zero_exit_status>
-%%> "\\if[condition=${_status}] \\set[error_detected=\"true\"]"
-%%> "\\set[error_detected=\"true\"]"
-Setting error_detected = true
+%%> "\\if[condition=${@status}] \\set[error_detected=\"true\"]"
 %%> "\\get[error_detected]"
-error_detected = true
+error_detected = 
 %%> "\\try \\bash true"
 %%> "\\bash true"
-%%> "\\if[condition=${_status}] \\echo \"Unexpected error\""
+%%> "\\if[condition=${@status}] \\echo \"Unexpected error\""
 %%> "\\if[condition=${_output}] \\echo \"Unexpected output\""
 %%> "\\echo \"Success path completed\""
 "Success path completed"

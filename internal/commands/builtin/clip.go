@@ -130,6 +130,11 @@ func (c *ClipCommand) fallbackToVariable(content, reason string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the clip command modifies system state.
+func (c *ClipCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GlobalRegistry.Register(&ClipCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register clip command: %v", err))

@@ -324,6 +324,11 @@ func (c *ChangeLogShowCommand) getThemeObject() *services.Theme {
 	return themeService.GetThemeByName(styleValue)
 }
 
+// IsReadOnly returns true as the change-log-show command doesn't modify system state.
+func (c *ChangeLogShowCommand) IsReadOnly() bool {
+	return true
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&ChangeLogShowCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register change-log-show command: %v", err))

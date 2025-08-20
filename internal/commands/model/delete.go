@@ -283,6 +283,10 @@ func (c *DeleteCommand) updateDeletionVariables(modelName, modelID, provider, ba
 	return nil
 }
 
+// IsReadOnly returns false as the model command modifies system state.
+func (c *DeleteCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&DeleteCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register model-delete command: %v", err))

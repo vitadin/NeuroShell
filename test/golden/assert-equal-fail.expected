@@ -7,11 +7,4 @@ Setting actual_value = world
 ✗ Assertion failed: values are not equal
   Expected: hello
   Actual:   world
-%%> "\\get[_status]"
-_status = 1
-%%> "\\get[_assert_result]"
-_assert_result = FAIL
-%%> "\\get[_assert_expected]"
-_assert_expected = hello
-%%> "\\get[_assert_actual]"
-_assert_actual = world
+FATA Script execution failed error="command execution failed: assertion failed: expected 'hello' but got 'world'"

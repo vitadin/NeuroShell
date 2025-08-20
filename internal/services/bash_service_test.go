@@ -302,24 +302,20 @@ func TestBashService_Execute_SetsSystemVariables(t *testing.T) {
 	stdout, stderr, exitCode, err := service.Execute("echo test")
 	require.NoError(t, err)
 
-	// The BashService should call SetSystemVariable, which our MockContext now supports
-	// Verify the expected values
+	// Verify the expected return values
 	assert.Equal(t, "test", stdout)
 	assert.Equal(t, "", stderr)
 	assert.Equal(t, 0, exitCode)
 
-	// Since the service calls SetSystemVariable through the VariableService,
-	// the variables should be set in the context
-	// We can test this by trying to get the variables directly
+	// The BashService should only set _output variable now.
+	// _status and _error are managed by the ErrorManagementService at the framework level.
 	if outputVar, err := ctx.GetVariable("_output"); err == nil {
 		assert.Equal(t, stdout, outputVar)
 	}
-	if statusVar, err := ctx.GetVariable("_status"); err == nil {
-		assert.Equal(t, fmt.Sprintf("%d", exitCode), statusVar)
-	}
-	if errorVar, err := ctx.GetVariable("_error"); err == nil {
-		assert.Equal(t, stderr, errorVar)
-	}
+
+	// Note: _status and _error are no longer set by BashService directly.
+	// They are managed by the ErrorManagementService in the stack machine framework.
+	// This change improves separation of concerns and makes error handling more consistent.
 }
 
 func TestBashService_Execute_VariableServiceError(t *testing.T) {

@@ -129,6 +129,11 @@ func (c *GetEnvCommand) Execute(args map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns true as the get-env command doesn't modify system state.
+func (c *GetEnvCommand) IsReadOnly() bool {
+	return true
+}
+
 func init() {
 	if err := commands.GlobalRegistry.Register(&GetEnvCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register get-env command: %v", err))

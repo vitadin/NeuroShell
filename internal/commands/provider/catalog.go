@@ -428,6 +428,11 @@ func (c *CatalogCommand) getThemeObject() *services.Theme {
 	return themeService.GetThemeByName(styleValue)
 }
 
+// IsReadOnly returns false as the provider-catalog command modifies system state.
+func (c *CatalogCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&CatalogCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register provider-catalog command: %v", err))

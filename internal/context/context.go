@@ -93,6 +93,17 @@ type NeuroContext struct {
 
 	// Script metadata protection
 	scriptMutex sync.RWMutex // Protects scriptMetadata map
+
+	// Error state management
+	lastStatus      string       // Last command's exit status
+	lastError       string       // Last command's error message
+	currentStatus   string       // Current command's exit status (0 = success, non-zero = error)
+	currentError    string       // Current command's error message
+	errorStateMutex sync.RWMutex // Protects error state fields
+
+	// Read-only command management
+	readOnlyOverrides map[string]bool // Dynamic overrides: true=readonly, false=writable
+	readOnlyMutex     sync.RWMutex    // Protects readOnlyOverrides
 }
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
@@ -136,8 +147,17 @@ func New() *NeuroContext {
 		// Initialize configuration management
 		configMap: make(map[string]string),
 
+		// Initialize read-only command management
+		readOnlyOverrides: make(map[string]bool),
+
 		// Initialize default command
 		defaultCommand: "echo", // Default to echo for development convenience
+
+		// Initialize error state management (start with success state)
+		lastStatus:    "0",
+		lastError:     "",
+		currentStatus: "0",
+		currentError:  "",
 	}
 
 	// Generate initial session ID (will be deterministic if test mode is set later)
@@ -262,6 +282,22 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 			return "12:00:00", true
 		case "@os":
 			return "test-os", true
+		case "@status":
+			ctx.errorStateMutex.RLock()
+			defer ctx.errorStateMutex.RUnlock()
+			return ctx.currentStatus, true
+		case "@error":
+			ctx.errorStateMutex.RLock()
+			defer ctx.errorStateMutex.RUnlock()
+			return ctx.currentError, true
+		case "@last_status":
+			ctx.errorStateMutex.RLock()
+			defer ctx.errorStateMutex.RUnlock()
+			return ctx.lastStatus, true
+		case "@last_error":
+			ctx.errorStateMutex.RLock()
+			defer ctx.errorStateMutex.RUnlock()
+			return ctx.lastError, true
 		}
 	}
 
@@ -284,6 +320,22 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		return testutils.GetCurrentTime(ctx).Format("15:04:05"), true
 	case "@os":
 		return fmt.Sprintf("%s/%s", os.Getenv("GOOS"), os.Getenv("GOARCH")), true
+	case "@status":
+		ctx.errorStateMutex.RLock()
+		defer ctx.errorStateMutex.RUnlock()
+		return ctx.currentStatus, true
+	case "@error":
+		ctx.errorStateMutex.RLock()
+		defer ctx.errorStateMutex.RUnlock()
+		return ctx.currentError, true
+	case "@last_status":
+		ctx.errorStateMutex.RLock()
+		defer ctx.errorStateMutex.RUnlock()
+		return ctx.lastStatus, true
+	case "@last_error":
+		ctx.errorStateMutex.RLock()
+		defer ctx.errorStateMutex.RUnlock()
+		return ctx.lastError, true
 	case "#session_id":
 		// Check if there's a stored chat session ID first
 		value, ok := ctx.variables["#session_id"]
@@ -511,7 +563,7 @@ func (ctx *NeuroContext) GetAllVariables() map[string]string {
 	}
 
 	// Add computed system variables
-	systemVars := []string{"@pwd", "@user", "@home", "@date", "@time", "@os", "#session_id", "#message_count", "#test_mode"}
+	systemVars := []string{"@pwd", "@user", "@home", "@date", "@time", "@os", "@status", "@error", "@last_status", "@last_error", "#session_id", "#message_count", "#test_mode"}
 	for _, varName := range systemVars {
 		if value, ok := ctx.getSystemVariable(varName); ok {
 			result[varName] = value
@@ -1366,4 +1418,95 @@ func (ctx *NeuroContext) IsValidProvider(provider string) bool {
 		}
 	}
 	return false
+}
+
+// Error state management methods
+
+// ResetErrorState resets the current error state to success (0/"") and moves current to last.
+// This should be called before executing a new command.
+func (ctx *NeuroContext) ResetErrorState() {
+	ctx.errorStateMutex.Lock()
+	defer ctx.errorStateMutex.Unlock()
+
+	// Move current error state to last
+	ctx.lastStatus = ctx.currentStatus
+	ctx.lastError = ctx.currentError
+
+	// Reset current state to success
+	ctx.currentStatus = "0"
+	ctx.currentError = ""
+}
+
+// SetErrorState sets the current error state based on command execution results.
+// This should be called after command execution with the results.
+func (ctx *NeuroContext) SetErrorState(status string, errorMsg string) {
+	ctx.errorStateMutex.Lock()
+	defer ctx.errorStateMutex.Unlock()
+
+	ctx.currentStatus = status
+	ctx.currentError = errorMsg
+}
+
+// GetCurrentErrorState returns the current error state (thread-safe read).
+func (ctx *NeuroContext) GetCurrentErrorState() (status string, errorMsg string) {
+	ctx.errorStateMutex.RLock()
+	defer ctx.errorStateMutex.RUnlock()
+
+	return ctx.currentStatus, ctx.currentError
+}
+
+// GetLastErrorState returns the last error state (thread-safe read).
+func (ctx *NeuroContext) GetLastErrorState() (status string, errorMsg string) {
+	ctx.errorStateMutex.RLock()
+	defer ctx.errorStateMutex.RUnlock()
+
+	return ctx.lastStatus, ctx.lastError
+}
+
+// SetCommandReadOnly sets or removes a read-only override for a specific command.
+// This allows dynamic configuration of read-only status at runtime.
+func (ctx *NeuroContext) SetCommandReadOnly(commandName string, readOnly bool) {
+	ctx.readOnlyMutex.Lock()
+	defer ctx.readOnlyMutex.Unlock()
+
+	ctx.readOnlyOverrides[commandName] = readOnly
+}
+
+// RemoveCommandReadOnlyOverride removes any read-only override for a command,
+// reverting to the command's self-declared IsReadOnly() status.
+func (ctx *NeuroContext) RemoveCommandReadOnlyOverride(commandName string) {
+	ctx.readOnlyMutex.Lock()
+	defer ctx.readOnlyMutex.Unlock()
+
+	delete(ctx.readOnlyOverrides, commandName)
+}
+
+// IsCommandReadOnly checks if a command is read-only by considering both
+// the command's self-declared status and any dynamic overrides.
+// Dynamic overrides take precedence over self-declared status.
+func (ctx *NeuroContext) IsCommandReadOnly(cmd neurotypes.Command) bool {
+	ctx.readOnlyMutex.RLock()
+	defer ctx.readOnlyMutex.RUnlock()
+
+	// Check for dynamic override first
+	if override, exists := ctx.readOnlyOverrides[cmd.Name()]; exists {
+		return override
+	}
+
+	// Fall back to command's self-declared read-only status
+	return cmd.IsReadOnly()
+}
+
+// GetReadOnlyOverrides returns a copy of all current read-only overrides.
+// This is useful for configuration services and debugging.
+func (ctx *NeuroContext) GetReadOnlyOverrides() map[string]bool {
+	ctx.readOnlyMutex.RLock()
+	defer ctx.readOnlyMutex.RUnlock()
+
+	// Return a copy to prevent external modification
+	overrides := make(map[string]bool)
+	for name, readOnly := range ctx.readOnlyOverrides {
+		overrides[name] = readOnly
+	}
+	return overrides
 }

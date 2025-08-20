@@ -138,6 +138,11 @@ func (c *IfNotCommand) evaluateCondition(condition string) bool {
 	return stringprocessing.IsTruthy(strings.TrimSpace(condition))
 }
 
+// IsReadOnly returns false as the if-not command modifies system state.
+func (c *IfNotCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&IfNotCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register if-not command: %v", err))

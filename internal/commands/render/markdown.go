@@ -148,6 +148,10 @@ func (c *MarkdownCommand) Execute(args map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns true as the render command doesn't modify system state.
+func (c *MarkdownCommand) IsReadOnly() bool {
+	return true
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&MarkdownCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register render-markdown command: %v", err))

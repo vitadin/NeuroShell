@@ -323,9 +323,29 @@ func (r *Registry) GetStackService() (*StackService, error) {
 	return stackService, nil
 }
 
+// GetErrorManagementService retrieves the error management service with proper type casting.
+func (r *Registry) GetErrorManagementService() (*ErrorManagementService, error) {
+	service, err := r.GetService("error_management")
+	if err != nil {
+		return nil, err
+	}
+
+	errorManagementService, ok := service.(*ErrorManagementService)
+	if !ok {
+		return nil, fmt.Errorf("error management service has incorrect type")
+	}
+
+	return errorManagementService, nil
+}
+
 // GetGlobalStackService returns the stack service from the global registry.
 func GetGlobalStackService() (*StackService, error) {
 	return GetGlobalRegistry().GetStackService()
+}
+
+// GetGlobalErrorManagementService returns the error management service from the global registry.
+func GetGlobalErrorManagementService() (*ErrorManagementService, error) {
+	return GetGlobalRegistry().GetErrorManagementService()
 }
 
 // GetGlobalMarkdownService returns the markdown service from the global registry.

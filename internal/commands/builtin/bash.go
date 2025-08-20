@@ -71,15 +71,15 @@ func (c *BashCommand) HelpInfo() neurotypes.HelpInfo {
 				Example:     "hello world",
 			},
 			{
-				Name:        "_error",
-				Description: "Command's standard error output",
-				Type:        "command_output",
+				Name:        "@error",
+				Description: "Command's standard error output (system variable)",
+				Type:        "system_variable",
 				Example:     "file not found",
 			},
 			{
-				Name:        "_status",
-				Description: "Command's exit code",
-				Type:        "command_output",
+				Name:        "@status",
+				Description: "Command's exit code (system variable)",
+				Type:        "system_variable",
 				Example:     "0",
 			},
 		},
@@ -93,7 +93,7 @@ func (c *BashCommand) HelpInfo() neurotypes.HelpInfo {
 	}
 }
 
-// Execute runs system commands using bash and sets _output, _error, and _status variables.
+// Execute runs system commands using bash and sets _output, @error, and @status variables.
 func (c *BashCommand) Execute(_ map[string]string, input string) error {
 	// Get the command to execute
 	command := strings.TrimSpace(input)
@@ -149,6 +149,11 @@ func (c *BashCommand) Execute(_ map[string]string, input string) error {
 	}
 
 	return nil
+}
+
+// IsReadOnly returns false as the bash command modifies system state.
+func (c *BashCommand) IsReadOnly() bool {
+	return false
 }
 
 func init() {

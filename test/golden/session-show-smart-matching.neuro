@@ -20,19 +20,19 @@
 
 %% Test ambiguous name matching (should show error with multiple matches)
 \try \session-show work_project
-\get[_error]
+\get[@error]
 
 %% Test ambiguous ID prefix matching (should show error)
 \try \session-show[id=true] 000000
-\get[_error]
+\get[@error]
 
 %% Test no matches by name
 \try \session-show nonexistent_session
-\get[_error]
+\get[@error]
 
 %% Test no matches by ID
 \try \session-show[id=true] xyz999
-\get[_error]
+\get[@error]
 
 %% Clean up all sessions
 \session-delete work_project_alpha

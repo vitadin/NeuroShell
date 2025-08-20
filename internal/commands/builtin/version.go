@@ -174,6 +174,11 @@ func (c *VersionCommand) Execute(_ map[string]string, _ string) error {
 	return nil
 }
 
+// IsReadOnly returns true as the version command doesn't modify system state.
+func (c *VersionCommand) IsReadOnly() bool {
+	return true
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&VersionCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register version command: %v", err))

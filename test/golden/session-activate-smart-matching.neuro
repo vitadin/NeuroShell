@@ -29,11 +29,11 @@
 
 %% Test that ambiguous prefix shows error (work matches both work_session_1 and work_session_2)
 \try \session-activate work
-\get[_error]
+\get[@error]
 
 %% Test that ambiguous ID prefix shows error
 \try \session-activate[id=true] 000000
-\get[_error]
+\get[@error]
 
 %% Clean up all sessions
 \session-delete work_session_1

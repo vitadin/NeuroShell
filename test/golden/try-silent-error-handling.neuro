@@ -13,14 +13,14 @@
 \echo After try-silent error (should display)
 
 %% Test 2: Verify error variables are set correctly
-\echo Error status: ${_status}
-\echo Error message: ${_error}
+\echo Error status: ${@status}
+\echo Error message: ${@error}
 
 %% Test 3: try-silent with command that succeeds
 \echo Testing try-silent with successful command...
 \try \silent \set[test_var=success]
 \echo After try-silent success (should display)
-\echo Success status: ${_status}
+\echo Success status: ${@status}
 \echo Test variable: ${test_var}
 
 %% Test 4: Nested try blocks with silent

@@ -168,6 +168,11 @@ func (c *LicenseCommand) Execute(_ map[string]string, _ string) error {
 	return nil
 }
 
+// IsReadOnly returns true as the license command doesn't modify system state.
+func (c *LicenseCommand) IsReadOnly() bool {
+	return true
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&LicenseCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register license command: %v", err))

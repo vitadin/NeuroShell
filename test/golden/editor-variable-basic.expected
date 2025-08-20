@@ -5,9 +5,13 @@ Variables
 System Variables:
   Environment (@):
     @date                = 2024-01-01
+    @error               = 
     @home                = /test/home
+    @last_error          = 
+    @last_status         = 0
     @os                  = test-os
     @pwd                 = /test/pwd
+    @status              = 0
     @time                = 12:00:00
     @user                = testuser
   Metadata (#):
@@ -211,8 +215,6 @@ System Variables:
     _@                   = 
     _default_command     = echo
     _editor              = nano
-    _error               = 
-    _status              = 0
     _style               = 
 
-Total: 208 variables
+Total: 210 variables

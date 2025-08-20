@@ -370,6 +370,10 @@ func (c *StatusCommand) updateStatusVariables(allModels map[string]*neurotypes.M
 	return nil
 }
 
+// IsReadOnly returns false as the model command modifies system state.
+func (c *StatusCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&StatusCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register model-status command: %v", err))

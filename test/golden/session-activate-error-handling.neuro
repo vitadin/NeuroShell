@@ -3,11 +3,11 @@
 
 %% Test error when trying to activate non-existent session by name
 \try \session-activate nonexistent_session
-\get[_error]
+\get[@error]
 
 %% Test error when trying to activate by non-existent ID
 \try \session-activate[id=true] 99999999
-\get[_error]
+\get[@error]
 
 %% Create multiple sessions with similar names for ambiguous match testing
 \session-new work_proj
@@ -16,7 +16,7 @@
 
 %% Test ambiguous name match error
 \try \session-activate work_proj
-\get[_error]
+\get[@error]
 
 %% Create sessions for ID prefix ambiguity test (in test mode, IDs are sequential)
 \session-new session_a
@@ -24,7 +24,7 @@
 
 %% Test ambiguous ID prefix match error (using prefix that matches multiple)
 \try \session-activate[id=true] 0000000
-\get[_error]
+\get[@error]
 
 %% Test successful activation after fixing ambiguity
 \session-activate work_project_alpha
@@ -43,4 +43,4 @@
 
 %% Test error when no sessions exist after cleanup
 \try \session-activate some_session
-\get[_error]
+\get[@error]

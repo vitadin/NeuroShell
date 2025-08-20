@@ -12,18 +12,18 @@
 
 \echo Testing completely non-existent session name:
 \try \session-delete-msg[session="does_not_exist", idx=1, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing partial match that doesn't exist:
 \try \session-delete-msg[session="nonexist", idx=1, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing empty session name:
 \try \session-delete-msg[session="", idx=1, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 %% Test non-existent session by ID
 \echo 
@@ -31,13 +31,13 @@
 
 \echo Testing fake UUID session ID:
 \try \session-delete-msg[session="550e8400-e29b-41d4-a716-446655440000", idx=1, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing short fake ID:
 \try \session-delete-msg[session="fake123", idx=1, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 %% Test with no active session and no session parameter
 \echo 
@@ -49,8 +49,8 @@
 \echo Active session cleared, now testing without session parameter:
 
 \try \session-delete-msg[idx=1, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 %% Test ambiguous session name (if we had multiple sessions with similar names)
 \echo 
@@ -64,8 +64,8 @@
 \echo Created sessions: test_session_1 and test_session_2
 \echo Testing ambiguous prefix "test":
 \try \session-delete-msg[session="test", idx=1, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 %% Verify reference session is still intact
 \echo 

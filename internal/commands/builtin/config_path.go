@@ -210,6 +210,11 @@ func (c *ConfigPathCommand) Execute(_ map[string]string, _ string) error {
 	return nil
 }
 
+// IsReadOnly returns true as the config-path command doesn't modify system state.
+func (c *ConfigPathCommand) IsReadOnly() bool {
+	return true
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&ConfigPathCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register config-path command: %v", err))

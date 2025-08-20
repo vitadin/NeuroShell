@@ -106,6 +106,11 @@ func (c *SilentCommand) Execute(_ map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the silent command modifies system state.
+func (c *SilentCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&SilentCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register silent command: %v", err))

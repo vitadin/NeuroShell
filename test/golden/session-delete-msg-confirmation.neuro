@@ -18,8 +18,8 @@
 
 \echo Attempting to delete without confirm parameter (should require confirmation):
 \try \session-delete-msg[idx=1]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 %% Test explicit confirmation=true (should fail)
 \echo 
@@ -27,8 +27,8 @@
 
 \echo Attempting to delete with confirm=true:
 \try \session-delete-msg[idx=1, confirm=true]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 %% Test bypass with confirm=false (should succeed)
 \echo 
@@ -47,8 +47,8 @@
 
 \echo Attempting to delete .1 (first message) with default confirmation:
 \try \session-delete-msg[idx=.1]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Successfully deleting .1 with confirm=false:
 \session-delete-msg[idx=.1, confirm=false]
@@ -68,8 +68,8 @@
 
 \echo Created second session, now testing confirmation with session parameter:
 \try \session-delete-msg[session="confirm_session2", idx=1]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Bypassing confirmation for second session:
 \session-delete-msg[session="confirm_session2", idx=1, confirm=false]
@@ -81,13 +81,13 @@
 
 \echo Testing invalid confirm parameter value:
 \try \session-delete-msg[idx=1, confirm="invalid"]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing confirm=false with invalid index (should still fail on index validation):
 \try \session-delete-msg[idx=99, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 %% Verify final state
 \echo 

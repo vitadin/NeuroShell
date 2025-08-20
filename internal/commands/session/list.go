@@ -264,6 +264,10 @@ func (c *ListCommand) formatSessionList(sessions []*neurotypes.ChatSession) stri
 	return result.String()
 }
 
+// IsReadOnly returns false as the session-list command modifies system state.
+func (c *ListCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&ListCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-list command: %v", err))

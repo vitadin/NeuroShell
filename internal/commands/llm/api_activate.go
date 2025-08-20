@@ -186,6 +186,10 @@ func (c *APIActivateCommand) isValidKeyFormat(key string) bool {
 	return true
 }
 
+// IsReadOnly returns false as the llm command modifies system state.
+func (c *APIActivateCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GlobalRegistry.Register(&APIActivateCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register llm-api-activate command: %v", err))

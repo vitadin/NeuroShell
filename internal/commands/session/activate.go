@@ -387,6 +387,10 @@ func (c *ActivateCommand) updateActivationVariables(session *neurotypes.ChatSess
 	return nil
 }
 
+// IsReadOnly returns false as the session-activate command modifies system state.
+func (c *ActivateCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&ActivateCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-activate command: %v", err))

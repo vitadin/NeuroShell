@@ -206,7 +206,7 @@ func (c *EchoJSONCommand) storeResult(targetVar, result string) {
 	}
 
 	// Store result in target variable
-	if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
+	if targetVar == "_output" {
 		// Store in system variable (only for specific system variables)
 		_ = variableService.SetSystemVariable(targetVar, result)
 	} else {
@@ -214,6 +214,11 @@ func (c *EchoJSONCommand) storeResult(targetVar, result string) {
 		_ = variableService.Set(targetVar, result)
 	}
 	// Ignore storage errors to ensure echo-json never fails
+}
+
+// IsReadOnly returns false as the echo-json command modifies system state.
+func (c *EchoJSONCommand) IsReadOnly() bool {
+	return false
 }
 
 func init() {

@@ -154,6 +154,10 @@ func (c *JSONExportCommand) Execute(args map[string]string, input string) error 
 	return nil
 }
 
+// IsReadOnly returns false as the session-json-export command modifies system state.
+func (c *JSONExportCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&JSONExportCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-json-export command: %v", err))

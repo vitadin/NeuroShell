@@ -656,6 +656,10 @@ func (c *CatalogCommand) getParameterNotes(parameters []neurotypes.ParameterDefi
 	return notes
 }
 
+// IsReadOnly returns false as the model command modifies system state.
+func (c *CatalogCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&CatalogCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register model-catalog command: %v", err))

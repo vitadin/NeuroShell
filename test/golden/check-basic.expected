@@ -10,6 +10,7 @@ Service Status Check:
   [OK] configuration        - available/initialized
   [OK] debug_transport      - available/initialized
   [OK] editor               - available/initialized
+  [OK] error_management     - available/initialized
   [OK] help                 - available/initialized
   [OK] llm                  - available/initialized
   [OK] markdown             - available/initialized
@@ -23,4 +24,4 @@ Service Status Check:
   [OK] thinking-renderer    - available/initialized
   [OK] variable             - available/initialized
 
-Summary: 20/20 services healthy
+Summary: 21/21 services healthy

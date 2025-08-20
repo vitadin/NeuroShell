@@ -1,0 +1,59 @@
+%% Test interaction between system error variables and try blocks
+%% Try blocks should capture errors in regular variables but not affect system state
+
+\set[_echo_command="true"]
+%% Initial state
+\get[@status]
+\get[@error]
+\get[@status]
+\get[@error]
+
+%% Failing command in try block to avoid script termination
+\try \bash ls /first_nonexistent_file
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]
+\get[@status]
+\get[@error]
+
+%% Try block with failing command - should update regular vars but preserve system state
+\try \bash ls /second_nonexistent_file
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]
+\get[@status]
+\get[@error]
+
+%% Successful command after try - should reset regular vars and update system state
+\bash echo "post-try success"
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]
+\get[@status]
+\get[@error]
+
+%% Try block with successful command - should update regular vars, system state unchanged
+\try \bash echo "try success"  
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]
+\get[@status]
+\get[@error]
+
+%% Read-only command to verify it doesn't affect system error history
+\get[testvar]  %% Non-existent variable but should not change @last_*
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]
+
+%% Final failing command to verify system error tracking
+\try \set[_protected_var=fail]
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]

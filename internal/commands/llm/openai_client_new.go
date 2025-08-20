@@ -202,6 +202,10 @@ func (c *OpenAIClientNewCommand) resolveAPIKey(args map[string]string, variableS
 		"  3. Set OPENAI_API_KEY environment variable")
 }
 
+// IsReadOnly returns false as the llm command modifies system state.
+func (c *OpenAIClientNewCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GlobalRegistry.Register(&OpenAIClientNewCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register openai-client-new command: %v", err))

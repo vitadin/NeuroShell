@@ -433,6 +433,11 @@ func (c *HelpCommand) getHelpService() (*services.HelpService, error) {
 	return services.GetGlobalHelpService()
 }
 
+// IsReadOnly returns true as the help command doesn't modify system state.
+func (c *HelpCommand) IsReadOnly() bool {
+	return true
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&HelpCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register help command: %v", err))

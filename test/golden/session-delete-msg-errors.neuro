@@ -17,28 +17,28 @@
 
 \echo Testing invalid index format:
 \try \session-delete-msg[idx="invalid", confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing empty index:
 \try \session-delete-msg[idx="", confirm=false] 
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing malformed normal order (missing number after dot):
 \try \session-delete-msg[idx=".", confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing non-numeric reverse order:
 \try \session-delete-msg[idx="abc", confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing non-numeric normal order:
 \try \session-delete-msg[idx=".abc", confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 %% Test out of range indices
 \echo 
@@ -46,28 +46,28 @@
 
 \echo Testing reverse order index too high (session has 3 messages):
 \try \session-delete-msg[idx=5, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing normal order index too high:
 \try \session-delete-msg[idx=.5, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing zero index (invalid for both systems):
 \try \session-delete-msg[idx=0, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing zero normal order index:
 \try \session-delete-msg[idx=.0, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 \echo Testing negative index:
 \try \session-delete-msg[idx=-1, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 %% Test empty session scenario
 \echo 
@@ -77,8 +77,8 @@
 \session-new[name="empty_test", system="Empty session for testing"]
 \echo Empty session created, attempting to delete from it:
 \try \session-delete-msg[idx=1, confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 %% Test missing required idx parameter
 \echo 
@@ -86,8 +86,8 @@
 
 \echo Testing missing idx parameter:
 \try \session-delete-msg[confirm=false]
-\echo Status: ${_status}
-\echo Error: ${_error}
+\echo Status: ${@status}
+\echo Error: ${@error}
 
 %% Verify original session is still intact
 \echo 

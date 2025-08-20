@@ -265,12 +265,7 @@ func TestBashCommand_Execute_VariablesSet(t *testing.T) {
 	if outputVar, exists := allVars["_output"]; exists {
 		assert.Equal(t, "test", outputVar)
 	}
-	if statusVar, exists := allVars["_status"]; exists {
-		assert.Equal(t, "0", statusVar)
-	}
-	if errorVar, exists := allVars["_error"]; exists {
-		assert.Equal(t, "", errorVar)
-	}
+	// Note: @status and @error are now managed by the ErrorManagementService at framework level
 }
 
 func TestBashCommand_Execute_FailedCommandVariables(t *testing.T) {
@@ -290,15 +285,10 @@ func TestBashCommand_Execute_FailedCommandVariables(t *testing.T) {
 	// Verify system variables are set for failed command by checking MockContext directly
 	allVars := ctx.GetAllVariables()
 
-	if statusVar, exists := allVars["_status"]; exists {
-		assert.Equal(t, "1", statusVar)
-	}
 	if outputVar, exists := allVars["_output"]; exists {
 		assert.Equal(t, "", outputVar) // false produces no output
 	}
-	if errorVar, exists := allVars["_error"]; exists {
-		assert.Equal(t, "", errorVar) // false produces no error output
-	}
+	// Note: @status and @error are now managed by the ErrorManagementService at framework level
 }
 
 func TestBashCommand_Execute_IntegrationWithRealCommands(t *testing.T) {
@@ -318,43 +308,31 @@ func TestBashCommand_Execute_IntegrationWithRealCommands(t *testing.T) {
 		{
 			name:    "pwd command",
 			command: "pwd",
-			check: func(t *testing.T, output string, ctx neurotypes.Context) {
+			check: func(t *testing.T, output string, _ neurotypes.Context) {
 				// Should contain a path
 				assert.Contains(t, output, "/")
 
-				// Status should be 0 - check via MockContext directly
-				allVars := ctx.GetAllVariables()
-				if statusVar, exists := allVars["_status"]; exists {
-					assert.Equal(t, "0", statusVar)
-				}
+				// Note: @status is now managed by the ErrorManagementService at framework level
 			},
 		},
 		{
 			name:    "date command",
 			command: "date +%Y",
-			check: func(t *testing.T, output string, ctx neurotypes.Context) {
+			check: func(t *testing.T, output string, _ neurotypes.Context) {
 				// Should contain a 4-digit year
 				assert.Regexp(t, `\d{4}`, output)
 
-				// Status should be 0 - check via MockContext directly
-				allVars := ctx.GetAllVariables()
-				if statusVar, exists := allVars["_status"]; exists {
-					assert.Equal(t, "0", statusVar)
-				}
+				// Note: @status is now managed by the ErrorManagementService at framework level
 			},
 		},
 		{
 			name:    "ls of current directory",
 			command: "ls -la .",
-			check: func(t *testing.T, output string, ctx neurotypes.Context) {
+			check: func(t *testing.T, output string, _ neurotypes.Context) {
 				// Should contain directory listing markers
 				assert.Contains(t, output, ".")
 
-				// Status should be 0 - check via MockContext directly
-				allVars := ctx.GetAllVariables()
-				if statusVar, exists := allVars["_status"]; exists {
-					assert.Equal(t, "0", statusVar)
-				}
+				// Note: @status is now managed by the ErrorManagementService at framework level
 			},
 		},
 	}

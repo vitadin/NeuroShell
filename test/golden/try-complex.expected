@@ -6,46 +6,46 @@ Setting test_var = hello
 %%> "\\try \\bash echo \"Testing ${test_var}\""
 %%> "\\bash echo \"Testing hello\""
 Testing hello
-%%> "\\get[_status]"
-_status = 0
+%%> "\\get[@status]"
+@status = 0
 %%> "\\get[_output]"
 _output = Testing hello
 %%> "\\try \\bash cat ${test_file}"
 %%> "\\bash cat /tmp/nonexistent_test_file"
 Error: cat: /tmp/nonexistent_test_file: No such file or directory
 <non_zero_exit_status>
-%%> "\\get[_status]"
-_status = 1
-%%> "\\get[_error]"
-_error = cat: /tmp/nonexistent_test_file: No such file or directory
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = cat: /tmp/nonexistent_test_file: No such file or directory
 %%> "\\set[base_value=world]"
 Setting base_value = world
 %%> "\\try \\set[combined=${test_var}_${base_value}]"
 %%> "\\set[combined=hello_world]"
 Setting combined = hello_world
-%%> "\\get[_status]"
-_status = 0
+%%> "\\get[@status]"
+@status = 0
 %%> "\\get[combined]"
 combined = hello_world
 %%> "\\try \\bash echo \"test\" | grep \"test\""
 %%> "\\bash echo \"test\" | grep \"test\""
 test
-%%> "\\get[_status]"
-_status = 0
+%%> "\\get[@status]"
+@status = 0
 %%> "\\get[_output]"
 _output = test
 %%> "\\try \\silent \\bash echo \"test\" | grep \"notfound\" | wc -l"
 %%> "\\silent \\bash echo \"test\" | grep \"notfound\" | wc -l"
-%%> "\\get[_status]"
-_status = 0
+%%> "\\get[@status]"
+@status = 0
 %%> "\\set[before_try=preserved]"
 Setting before_try = preserved
 %%> "\\try \\set[_invalid=fail]"
 %%> "\\set[_invalid=fail]"
 %%> "\\get[before_try]"
 before_try = preserved
-%%> "\\get[_status]"
-_status = 1
+%%> "\\get[@status]"
+@status = 1
 %%> "\\try \\set[seq1=first]"
 %%> "\\set[seq1=first]"
 Setting seq1 = first
@@ -59,5 +59,5 @@ sequence test
 seq1 = first
 %%> "\\get[seq2]"
 seq2 = second
-%%> "\\get[_status]"
-_status = 0
+%%> "\\get[@status]"
+@status = 0

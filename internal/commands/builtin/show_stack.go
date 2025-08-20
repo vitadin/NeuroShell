@@ -170,6 +170,11 @@ func (c *ShowStackCommand) Execute(options map[string]string, _ string) error {
 	return nil
 }
 
+// IsReadOnly returns true as the show-stack command doesn't modify system state.
+func (c *ShowStackCommand) IsReadOnly() bool {
+	return true
+}
+
 // init registers the ShowStackCommand with the global command registry.
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&ShowStackCommand{}); err != nil {
