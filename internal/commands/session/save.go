@@ -4,6 +4,7 @@ package session
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"neuroshell/internal/commands"
@@ -125,6 +126,11 @@ func (c *SaveCommand) Execute(_ map[string]string, input string) error {
 
 	// Construct sessions directory path
 	sessionsDir := filepath.Join(configDir, "sessions")
+
+	// Create sessions directory and any missing parent directories (like mkdir -p)
+	if err := os.MkdirAll(sessionsDir, 0755); err != nil {
+		return fmt.Errorf("failed to create sessions directory: %w", err)
+	}
 
 	// Construct filename using session ID
 	filename := fmt.Sprintf("%s.json", session.ID)
