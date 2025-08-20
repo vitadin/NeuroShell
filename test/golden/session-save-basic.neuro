@@ -1,8 +1,9 @@
 %% Test the \session-save command with fixed path behavior
 \set[_echo_command="true"]
 
-%% Clean up any existing files
+%% Clean up any existing files and ensure consistent directory state
 \try \bash rm -rf /tmp/neuroshell-test-config/sessions
+\bash mkdir -p /tmp/neuroshell-test-config
 
 %% Show config directory (should be test mode)
 \config-path

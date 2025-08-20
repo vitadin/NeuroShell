@@ -1,6 +1,7 @@
 Setting _echo_command = true
 %%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
 %%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash mkdir -p /tmp/neuroshell-test-config"
 %%> "\\set[_session_autosave=\"true\"]"
 Setting _session_autosave = true
 %%> "\\config-path"

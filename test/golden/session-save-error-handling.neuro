@@ -1,8 +1,9 @@
 %% Test error handling for session-save command
 \set[_echo_command="true"]
 
-%% Clean up from previous runs
+%% Clean up from previous runs and ensure consistent directory state
 \try \bash rm -rf /tmp/neuroshell-test-config/sessions
+\bash mkdir -p /tmp/neuroshell-test-config
 
 %% Show config directory setup
 \config-path

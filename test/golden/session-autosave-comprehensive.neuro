@@ -1,8 +1,9 @@
 %% Comprehensive test for session auto-save functionality across all session modification commands
 \set[_echo_command="true"]
 
-%% Clean up any existing auto-save files from previous test runs
+%% Clean up any existing auto-save files from previous test runs and ensure consistent directory state
 \try \bash rm -rf /tmp/neuroshell-test-config/sessions
+\bash mkdir -p /tmp/neuroshell-test-config
 
 %% Enable session auto-save
 \set[_session_autosave="true"]

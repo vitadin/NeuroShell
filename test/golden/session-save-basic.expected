@@ -1,6 +1,7 @@
 Setting _echo_command = true
 %%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
 %%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash mkdir -p /tmp/neuroshell-test-config"
 %%> "\\config-path"
 Config Directory: /tmp/neuroshell-test-config (exists)
 Config .env: /tmp/neuroshell-test-config/.env (not found)

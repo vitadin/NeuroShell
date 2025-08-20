@@ -1,8 +1,9 @@
 %% Test session auto-save integration with existing session workflow commands
 \set[_echo_command="true"]
 
-%% Clean up from previous runs
+%% Clean up from previous runs and ensure consistent directory state
 \try \bash rm -rf /tmp/neuroshell-test-config/sessions
+\bash mkdir -p /tmp/neuroshell-test-config
 
 %% Enable auto-save
 \set[_session_autosave="true"]
