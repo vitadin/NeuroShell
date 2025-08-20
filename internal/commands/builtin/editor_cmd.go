@@ -145,6 +145,11 @@ func (e *EditorCommand) Execute(args map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the editor command modifies system state.
+func (e *EditorCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&EditorCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register editor command: %v", err))

@@ -156,6 +156,10 @@ func (c *ImportCommand) detectFormatFromExtension(filePath string) string {
 	}
 }
 
+// IsReadOnly returns false as the session-import command modifies system state.
+func (c *ImportCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&ImportCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-import command: %v", err))

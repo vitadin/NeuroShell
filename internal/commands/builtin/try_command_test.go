@@ -60,11 +60,13 @@ func TestTryCommand_Execute_EmptyCommand(t *testing.T) {
 	err := cmd.Execute(args, "")
 	assert.NoError(t, err)
 
-	// Check if success variables were set
-	status, _ := concreteCtx.GetVariable("_status")
+	// Check if success variables were set in system variables
+	status, err := concreteCtx.GetVariable("@status")
+	assert.NoError(t, err)
 	assert.Equal(t, "0", status)
 
-	errorVar, _ := concreteCtx.GetVariable("_error")
+	errorVar, err := concreteCtx.GetVariable("@error")
+	assert.NoError(t, err)
 	assert.Equal(t, "", errorVar)
 
 	output, _ := concreteCtx.GetVariable("_output")
@@ -133,10 +135,12 @@ func TestTryCommand_Execute_WhitespaceCommand(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Whitespace-only command should be treated as empty
-	status, _ := concreteCtx.GetVariable("_status")
+	status, err := concreteCtx.GetVariable("@status")
+	assert.NoError(t, err)
 	assert.Equal(t, "0", status)
 
-	errorVar, _ := concreteCtx.GetVariable("_error")
+	errorVar, err := concreteCtx.GetVariable("@error")
+	assert.NoError(t, err)
 	assert.Equal(t, "", errorVar)
 
 	output, _ := concreteCtx.GetVariable("_output")

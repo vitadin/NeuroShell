@@ -169,6 +169,11 @@ func (c *SendCommand) Execute(options map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the send command modifies system state.
+func (c *SendCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&SendCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register send command: %v", err))

@@ -3,7 +3,7 @@
 
 %% Test error when no active session exists
 \try \session-rename New Name
-\get[_error]
+\get[@error]
 
 %% Create sessions for testing
 \session-new test_session_one
@@ -11,19 +11,19 @@
 
 %% Test error when new name is empty
 \try \session-rename ""
-\get[_error]
+\get[@error]
 
 %% Test error when new name is only whitespace
 \try \session-rename "   "
-\get[_error]
+\get[@error]
 
 %% Test error when specified session doesn't exist
 \try \session-rename[session=nonexistent_session] New Name
-\get[_error]
+\get[@error]
 
 %% Test error when trying to rename to existing session name
 \try \session-rename[session=test_session_one] test_session_two
-\get[_error]
+\get[@error]
 
 %% Test successful rename to verify command works
 \session-rename[session=test_session_one] valid_new_name

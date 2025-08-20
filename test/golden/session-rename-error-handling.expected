@@ -1,8 +1,8 @@
 Setting _echo_command = true
 %%> "\\try \\session-rename New Name"
 %%> "\\session-rename New Name"
-%%> "\\get[_error]"
-_error = no session specified and no active session found: no active session. Usage: \session-rename[session=session_id] new_session_name
+%%> "\\get[@error]"
+@error = no session specified and no active session found: no active session. Usage: \session-rename[session=session_id] new_session_name
 \session-rename new_session_name                                                                                                         
                                                                                                                                          
 Examples:                                                                                                                                
@@ -27,20 +27,20 @@ Created session 'test_session_two' (ID: 00000002)
 %%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
 %%> "\\try \\session-rename \"\""
 %%> "\\session-rename \"\""
-%%> "\\get[_error]"
-_error = failed to rename session: invalid new session name: session name cannot be empty
+%%> "\\get[@error]"
+@error = failed to rename session: invalid new session name: session name cannot be empty
 %%> "\\try \\session-rename \"   \""
 %%> "\\session-rename \"   \""
-%%> "\\get[_error]"
-_error = failed to rename session: invalid new session name: session name cannot be empty
+%%> "\\get[@error]"
+@error = failed to rename session: invalid new session name: session name cannot be empty
 %%> "\\try \\session-rename[session=nonexistent_session] New Name"
 %%> "\\session-rename[session=nonexistent_session] New Name"
-%%> "\\get[_error]"
-_error = failed to find session 'nonexistent_session': session 'nonexistent_session' not found (tried both name and ID)
+%%> "\\get[@error]"
+@error = failed to find session 'nonexistent_session': session 'nonexistent_session' not found (tried both name and ID)
 %%> "\\try \\session-rename[session=test_session_one] test_session_two"
 %%> "\\session-rename[session=test_session_one] test_session_two"
-%%> "\\get[_error]"
-_error = failed to rename session: session name 'test_session_two' is already in use
+%%> "\\get[@error]"
+@error = failed to rename session: session name 'test_session_two' is already in use
 %%> "\\session-rename[session=test_session_one] valid_new_name"
 Renamed session from 'test_session_one' to 'valid_new_name'
 %%> "\\get[_output]"

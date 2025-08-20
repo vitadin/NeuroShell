@@ -498,6 +498,10 @@ func (c *NewCommand) generateClientNewCommand(provider string) string {
 	}
 }
 
+// IsReadOnly returns false as the model command modifies system state.
+func (c *NewCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&NewCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register model-new command: %v", err))

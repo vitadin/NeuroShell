@@ -42,7 +42,7 @@ func (b *BashService) SetTimeout(timeout time.Duration) {
 }
 
 // Execute runs a bash command and returns the output, error, and exit status.
-// It also sets the _output, _error, and _status variables in the global context.
+// It also sets the _output variable and @error, @status system variables in the global context.
 func (b *BashService) Execute(command string) (string, string, int, error) {
 	if !b.initialized {
 		return "", "", -1, fmt.Errorf("bash service not initialized")
@@ -96,12 +96,12 @@ func (b *BashService) Execute(command string) (string, string, int, error) {
 	stdoutStr := strings.TrimRight(string(stdout), "\n")
 	stderrStr := strings.TrimRight(string(stderr), "\n")
 
-	// Set system variables for command results using the global context singleton
+	// Set only _output variable - error state is now managed by the framework
 	globalCtx := neuroshellcontext.GetGlobalContext()
 	if neuroCtx, ok := globalCtx.(*neuroshellcontext.NeuroContext); ok {
 		_ = neuroCtx.SetSystemVariable("_output", stdoutStr)
-		_ = neuroCtx.SetSystemVariable("_error", stderrStr)
-		_ = neuroCtx.SetSystemVariable("_status", fmt.Sprintf("%d", exitCode))
+		// Note: @error and @status are now set by the stack machine framework
+		// based on command execution results, not by individual services
 	}
 
 	return stdoutStr, stderrStr, exitCode, nil

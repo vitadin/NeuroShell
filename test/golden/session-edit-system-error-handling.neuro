@@ -3,7 +3,7 @@
 
 %% Test error when no active session exists
 \try \session-edit-system You are a test assistant
-\get[_error]
+\get[@error]
 
 %% Create a session for testing
 \session-new test_session
@@ -11,11 +11,11 @@
 
 %% Test error when specified session doesn't exist
 \try \session-edit-system[session=nonexistent_session] Test prompt
-\get[_error]
+\get[@error]
 
 %% Test error when session parameter is invalid
 \try \session-edit-system[session=""] Test prompt
-\get[_error]
+\get[@error]
 
 %% Test successful edit to verify command works
 \session-edit-system Valid system prompt

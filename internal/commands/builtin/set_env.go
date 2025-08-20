@@ -140,6 +140,11 @@ func (c *SetEnvCommand) Execute(args map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the set-env command modifies system state.
+func (c *SetEnvCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GlobalRegistry.Register(&SetEnvCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register set-env command: %v", err))

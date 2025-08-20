@@ -3,11 +3,11 @@
 # Start a new session
 Created session 'message_order_test' (ID: 00000001)
 # Add a series of messages to test ordering
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'message_order_test'
+Added assistant message to session 'message_order_test'
+Added user message to session 'message_order_test'
+Added assistant message to session 'message_order_test'
+Added user message to session 'message_order_test'
 # Test reverse order access () - most recent first
 "=== REVERSE ORDER ACCESS () - Most Recent First ==="
 "Latest message (1): "Message E: Third user message""

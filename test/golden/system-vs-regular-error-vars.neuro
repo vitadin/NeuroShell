@@ -1,0 +1,56 @@
+%% Test the difference between system variables (@) and regular variables (_)
+%% System variables are computed and reflect actual system state
+%% Regular variables can be manually set and are session-scoped
+
+\set[_echo_command="true"]
+%% Start with clean state
+\get[@status]
+\get[@error]
+\get[_status]
+\get[_error]
+
+%% Execute a failing command in try block to avoid script termination
+\try \bash ls /nonexistent_test_file
+\get[@status]
+\get[@error]
+\get[_status]
+\get[_error]
+
+%% Try to manually set system variables (should fail - wrap in try blocks)
+\try \set[@status=999]
+\try \set[@error=manual error]
+\get[@status]
+\get[@error]
+
+%% Manually set regular variables (should work - but _status/_error are also protected)
+\try \set[_status=42]
+\try \set[_error=custom error message]
+\get[@status]
+\get[@error]
+\get[_status]
+\get[_error]
+
+%% Set regular user variables (these should work)
+\set[my_status=42]
+\set[my_error=custom error message]
+\get[my_status]
+\get[my_error]
+
+%% Execute successful command - should reset regular variables but system shows actual state
+\bash echo "success"
+\get[@status]
+\get[@error]
+\get[_status]
+\get[_error]
+
+%% Test read-only command behavior with system variables
+\get[@status]  %% This should not change @last_status/@last_error
+\get[@last_status]
+\get[@last_error]
+
+%% Another failing command to see last state preservation
+\try \unknown_command_test
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]

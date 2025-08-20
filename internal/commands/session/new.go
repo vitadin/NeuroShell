@@ -220,6 +220,11 @@ func (c *NewCommand) updateSessionVariables(session *neurotypes.ChatSession, var
 	return nil
 }
 
+// IsReadOnly returns false as the session-new command modifies system state.
+func (c *NewCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&NewCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-new command: %v", err))

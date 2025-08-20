@@ -87,6 +87,12 @@ type Context interface {
 	GetSupportedProviders() []string
 	GetProviderEnvPrefixes() []string
 	IsValidProvider(provider string) bool
+
+	// Read-only command override management
+	SetCommandReadOnly(commandName string, readOnly bool)
+	RemoveCommandReadOnlyOverride(commandName string)
+	GetReadOnlyOverrides() map[string]bool
+	IsCommandReadOnly(cmd Command) bool
 }
 
 // Service defines the interface for NeuroShell services that provide specific functionality.
@@ -107,6 +113,7 @@ type Command interface {
 	Usage() string
 	HelpInfo() HelpInfo
 	Execute(args map[string]string, input string) error
+	IsReadOnly() bool
 }
 
 // ServiceRegistry manages the registration and retrieval of services within NeuroShell.

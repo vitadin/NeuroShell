@@ -183,13 +183,13 @@ func TestCommand_Execute_OutputVariable(t *testing.T) {
 			systemVar: false,
 		},
 		{
-			name: "system error variable",
+			name: "user variable with underscore",
 			args: map[string]string{
-				"to": "_error",
+				"to": "test_error",
 			},
 			input:     "error text",
-			outputVar: "_error",
-			systemVar: true,
+			outputVar: "test_error",
+			systemVar: false,
 		},
 	}
 

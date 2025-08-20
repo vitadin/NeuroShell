@@ -137,6 +137,11 @@ func (c *IfCommand) evaluateCondition(condition string) bool {
 	return stringprocessing.IsTruthy(strings.TrimSpace(condition))
 }
 
+// IsReadOnly returns false as the if command modifies system state.
+func (c *IfCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&IfCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register if command: %v", err))

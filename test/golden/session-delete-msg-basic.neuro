@@ -1,0 +1,47 @@
+%% Test basic session-delete-msg functionality
+%% This test covers successful message deletion with both indexing systems
+
+%% Create a session and add some messages
+\session-new[name="delete_test", system="You are a helpful assistant"]
+\session-add-usermsg Message 1: This is the first user message
+\session-add-assistantmsg Message 2: This is the first assistant response  
+\session-add-usermsg Message 3: This is the second user message
+\session-add-assistantmsg Message 4: This is the second assistant response
+
+%% Show initial state
+\echo Initial session state:
+\session-show
+
+%% Test reverse order deletion (1=last message)
+\echo 
+\echo === Testing reverse order deletion ===
+\echo Deleting last message (idx=1):
+\session-delete-msg[idx=1, confirm=false]
+\echo Remaining messages:
+\session-show
+
+%% Test normal order deletion (.1=first message)
+\echo 
+\echo === Testing normal order deletion ===
+\echo Deleting first message (idx=.1):
+\session-delete-msg[idx=.1, confirm=false]
+\echo Remaining messages:
+\session-show
+
+%% Test deleting middle message (reverse order)
+\echo 
+\echo === Testing middle message deletion ===
+\echo Deleting second-to-last message (idx=2):
+\session-delete-msg[idx=2, confirm=false]
+\echo Final state:
+\session-show
+
+%% Show variables set by delete operations
+\echo 
+\echo === Delete operation variables ===
+\get[#deleted_message_id]
+\get[#deleted_message_role]
+\get[#deleted_message_index]
+\get[#deleted_message_position]
+\get[#remaining_messages]
+\get[_output]

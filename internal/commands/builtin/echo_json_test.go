@@ -221,8 +221,8 @@ func TestEchoJSONCommand_Execute_CustomTargetVariable(t *testing.T) {
 			input:     `{"test": "value"}`,
 		},
 		{
-			name:      "system variable",
-			targetVar: "_error",
+			name:      "user variable with underscore",
+			targetVar: "test_variable",
 			input:     `{"error": "none"}`,
 		},
 		{

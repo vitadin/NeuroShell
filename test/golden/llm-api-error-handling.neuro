@@ -4,43 +4,43 @@
 %% Test 1: Missing required arguments for activation
 \echo ═══ Testing Missing Required Arguments ═══
 \try \llm-api-activate[provider=openai]
-\echo Missing key error: ${_error}
+\echo Missing key error: ${@error}
 
 \try \llm-api-activate[key=os.TEST_KEY]
-\echo Missing provider error: ${_error}
+\echo Missing provider error: ${@error}
 
 \try \llm-api-activate
-\echo Missing both error: ${_error}
+\echo Missing both error: ${@error}
 
 %% Test 2: Invalid provider names
 \echo ═══ Testing Invalid Provider Names ═══
 \try \llm-api-activate[provider=invalid, key=os.TEST_KEY]
-\echo Invalid provider error: ${_error}
+\echo Invalid provider error: ${@error}
 
 \try \llm-api-activate[provider=OPENAI, key=os.TEST_KEY]
-\echo Case sensitive error: ${_error}
+\echo Case sensitive error: ${@error}
 
 \try \llm-api-activate[provider=gpt, key=os.TEST_KEY]
-\echo Wrong provider name error: ${_error}
+\echo Wrong provider name error: ${@error}
 
 %% Test 3: Invalid key formats
 \echo ═══ Testing Invalid Key Formats ═══
 \try \llm-api-activate[provider=openai, key=OPENAI_API_KEY]
-\echo No source prefix error: ${_error}
+\echo No source prefix error: ${@error}
 
 \try \llm-api-activate[provider=openai, key=invalid.TEST_KEY]
-\echo Invalid source error: ${_error}
+\echo Invalid source error: ${@error}
 
 \try \llm-api-activate[provider=openai, key=os.]
-\echo Empty key name error: ${_error}
+\echo Empty key name error: ${@error}
 
 %% Test 4: Non-existent keys
 \echo ═══ Testing Non-existent Keys ═══
 \try \llm-api-activate[provider=openai, key=os.NONEXISTENT_KEY]
-\echo Non-existent key error: ${_error}
+\echo Non-existent key error: ${@error}
 
 \try \llm-api-activate[provider=anthropic, key=config.MISSING_KEY]
-\echo Missing config key error: ${_error}
+\echo Missing config key error: ${@error}
 
 %% Test 5: Load command with invalid provider
 \echo ═══ Testing Load Command with Invalid Provider ═══

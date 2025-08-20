@@ -337,6 +337,10 @@ func (c *GeminiModelNewCommand) validateThinkingBudgetSpecialCases(thinkingBudge
 	return nil
 }
 
+// IsReadOnly returns false as the model command modifies system state.
+func (c *GeminiModelNewCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GlobalRegistry.Register(&GeminiModelNewCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register gemini-model-new command: %v", err))

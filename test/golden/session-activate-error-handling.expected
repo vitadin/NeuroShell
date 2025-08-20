@@ -1,12 +1,12 @@
 Setting _echo_command = true
 %%> "\\try \\session-activate nonexistent_session"
 %%> "\\session-activate nonexistent_session"
-%%> "\\get[_error]"
-_error = no sessions found. Use \session-new to create session configurations
+%%> "\\get[@error]"
+@error = no sessions found. Use \session-new to create session configurations
 %%> "\\try \\session-activate[id=true] 99999999"
 %%> "\\session-activate[id=true] 99999999"
-%%> "\\get[_error]"
-_error = no sessions found. Use \session-new to create session configurations
+%%> "\\get[@error]"
+@error = no sessions found. Use \session-new to create session configurations
 %%> "\\session-new work_proj"
 Created session 'work_proj' (ID: 00000001)
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
@@ -18,8 +18,8 @@ Created session 'work_project_alpha' (ID: 00000003)
 %%> "\\silent \\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
 %%> "\\try \\session-activate work_proj"
 %%> "\\session-activate work_proj"
-%%> "\\get[_error]"
-_error = Multiple sessions match name 'work_proj'. Please be more specific:   
+%%> "\\get[@error]"
+@error = Multiple sessions match name 'work_proj'. Please be more specific:   
   work_proj (ID: 00000001, messages: 0)                                       
   work_project (ID: 00000002, messages: 0)                                    
   work_project_alpha (ID: 00000003, messages: 0)                              
@@ -33,8 +33,8 @@ Created session 'session_b' (ID: 00000005)
 %%> "\\silent \\session-activate[id=true] 00000005-0000-4000-8000-000000000005"
 %%> "\\try \\session-activate[id=true] 0000000"
 %%> "\\session-activate[id=true] 0000000"
-%%> "\\get[_error]"
-_error = Multiple sessions match ID prefix '0000000'. Please be more specific:
+%%> "\\get[@error]"
+@error = Multiple sessions match ID prefix '0000000'. Please be more specific:
   ID: 00000001 (name: work_proj, messages: 0)                                 
   ID: 00000002 (name: work_project, messages: 0)                              
   ID: 00000003 (name: work_project_alpha, messages: 0)                        
@@ -67,5 +67,5 @@ Deleted session 'session_b' (ID: 00000005)
 %%> "\\silent \\session-activate"
 %%> "\\try \\session-activate some_session"
 %%> "\\session-activate some_session"
-%%> "\\get[_error]"
-_error = no sessions found. Use \session-new to create session configurations
+%%> "\\get[@error]"
+@error = no sessions found. Use \session-new to create session configurations

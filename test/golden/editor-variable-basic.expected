@@ -5,9 +5,13 @@ Variables
 System Variables:
   Environment (@):
     @date                = 2024-01-01
+    @error               = 
     @home                = /test/home
+    @last_error          = 
+    @last_status         = 0
     @os                  = test-os
     @pwd                 = /test/pwd
+    @status              = 0
     @time                = 12:00:00
     @user                = testuser
   Metadata (#):
@@ -35,7 +39,7 @@ System Variables:
     #cmd_config-path_desc = Display configuration file paths and their loading status
     #cmd_config-path_parsemode = KeyValue
     #cmd_config-path_usage = \config-path
-    #cmd_count           = 61
+    #cmd_count           = 62
     #cmd_echo-json_desc  = Pretty-print JSON data in readable format
     #cmd_echo-json_parsemode = KeyValue
     #cmd_echo-json_usage = \echo-json[to=var_name, indent=2] json_string
@@ -72,7 +76,7 @@ System Variables:
     #cmd_license_desc    = Display NeuroShell license inf... in system variables (length: 84 chars)
     #cmd_license_parsemode = KeyValue
     #cmd_license_usage   = \license
-    #cmd_list            = anthropic-client-new,assert-eq...y,vars,version,write (length: 720 chars)
+    #cmd_list            = anthropic-client-new,assert-eq...y,vars,version,write (length: 739 chars)
     #cmd_llm-api-activate_desc = Activate an API key for a specific provider
     #cmd_llm-api-activate_parsemode = KeyValue
     #cmd_llm-api-activate_usage = \llm-api-activate[provider=<name>, key=<source.KEY_NAME>]
@@ -133,6 +137,9 @@ System Variables:
     #cmd_session-copy_desc = Create deep copy of existing session with new identity
     #cmd_session-copy_parsemode = KeyValue
     #cmd_session-copy_usage = \session-copy[source_session_i...session_name="name"] (length: 91 chars)
+    #cmd_session-delete-msg_desc = Delete message by index using dual indexing system
+    #cmd_session-delete-msg_parsemode = KeyValue
+    #cmd_session-delete-msg_usage = \session-delete-msg[idx=N OR idx=.N, session=session_id, confirm=true]
     #cmd_session-delete_desc = Delete an existing chat session
     #cmd_session-delete_parsemode = KeyValue
     #cmd_session-delete_usage = \session-delete[name=session_name] or \session-delete session_name_or_id
@@ -198,6 +205,8 @@ System Variables:
     #cmd_write_usage     = \write[file=path, mode=append] content
     #message_count       = 0
     #session_id          = session_1609459200
+    #system_init_executed = true
+    #system_init_path    = embedded://stdlib/system-init.neuro
     #test_mode           = true
   Command Outputs (_):
     _*                   = 
@@ -208,4 +217,4 @@ System Variables:
     _editor              = nano
     _style               = 
 
-Total: 201 variables
+Total: 210 variables

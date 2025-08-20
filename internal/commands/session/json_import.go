@@ -243,6 +243,10 @@ func (c *JSONImportCommand) updateSessionVariables(newSession *neurotypes.ChatSe
 	return nil
 }
 
+// IsReadOnly returns false as the session-json-import command modifies system state.
+func (c *JSONImportCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&JSONImportCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-json-import command: %v", err))

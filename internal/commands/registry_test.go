@@ -73,6 +73,10 @@ func (m *MockCommand) SetExecuteFunc(fn func(args map[string]string, input strin
 	m.executeFunc = fn
 }
 
+func (m *MockCommand) IsReadOnly() bool {
+	return true // Mock commands are read-only by default
+}
+
 func TestRegistry_NewRegistry(t *testing.T) {
 	registry := NewRegistry()
 

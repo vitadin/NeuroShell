@@ -3,10 +3,10 @@ Setting _echo_command = true
 Created session 'export_test_session' (ID: 00000001)
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-usermsg Hello, can you help me test the export functionality?"
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'export_test_session'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-assistantmsg Hello! Yes, I'd be happy to help you test the session export functionality."
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session 'export_test_session'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-json-export[file=/tmp/neuro_test_export_basic.json] export_test_session"
 Exported session 'export_test_session' (ID: 00000001) to /tmp/neuro_test_export_basic.json

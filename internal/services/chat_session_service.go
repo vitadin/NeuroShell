@@ -638,6 +638,49 @@ func (c *ChatSessionService) EditMessageWithContext(nameOrID string, messageInde
 	return nil
 }
 
+// DeleteMessage deletes a specific message from the specified session.
+// The messageIndex parameter uses 0-based indexing internally.
+func (c *ChatSessionService) DeleteMessage(nameOrID string, messageIndex int) error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	return c.DeleteMessageWithContext(nameOrID, messageIndex, ctx)
+}
+
+// DeleteMessageWithContext deletes a specific message from the specified session using provided context.
+// The messageIndex parameter uses 0-based indexing internally.
+func (c *ChatSessionService) DeleteMessageWithContext(nameOrID string, messageIndex int, ctx neurotypes.Context) error {
+	if !c.initialized {
+		return fmt.Errorf("chat session service not initialized")
+	}
+
+	// Get the session using smart prefix matching
+	session, err := c.FindSessionByPrefixWithContext(nameOrID, ctx)
+	if err != nil {
+		return err
+	}
+
+	// Validate message index bounds
+	if messageIndex < 0 || messageIndex >= len(session.Messages) {
+		return fmt.Errorf("message index %d is out of bounds (session has %d messages)", messageIndex+1, len(session.Messages))
+	}
+
+	// Delete the message by removing it from the slice
+	session.Messages = append(session.Messages[:messageIndex], session.Messages[messageIndex+1:]...)
+	session.UpdatedAt = testutils.GetCurrentTime(ctx)
+
+	// Update session in context
+	sessions := ctx.GetChatSessions()
+	sessions[session.ID] = session
+	ctx.SetChatSessions(sessions)
+
+	logger.Debug("Message deleted successfully",
+		"session_id", session.ID,
+		"session_name", session.Name,
+		"message_index", messageIndex,
+		"remaining_messages", len(session.Messages))
+
+	return nil
+}
+
 // GetSessionNames returns all session names for easy listing.
 func (c *ChatSessionService) GetSessionNames() []string {
 	ctx := neuroshellcontext.GetGlobalContext()

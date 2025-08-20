@@ -291,9 +291,9 @@ func TestCatCommand_Execute_ToOption(t *testing.T) {
 			expectedVal: content,
 		},
 		{
-			name:        "store in system variable _error",
-			args:        map[string]string{"path": tempFile, "to": "_error"},
-			expectedVar: "_error",
+			name:        "store in user variable test_error",
+			args:        map[string]string{"path": tempFile, "to": "test_error"},
+			expectedVar: "test_error",
 			expectedVal: content,
 		},
 	}

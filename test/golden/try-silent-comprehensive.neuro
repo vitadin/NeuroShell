@@ -33,9 +33,9 @@
 %% Test 5: Error recovery in sequence
 \echo Testing error recovery...
 \try \silent \unknown-error1
-\echo After first error (status: ${_status})
+\echo After first error (status: ${@status})
 \try \silent \set[recovery=success]
-\echo After recovery (status: ${_status}, value: ${recovery})
+\echo After recovery (status: ${@status}, value: ${recovery})
 
 %% Test 6: Mixed with other commands
 \echo Testing mixed with other commands...

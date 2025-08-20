@@ -189,8 +189,10 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 
 	sessionCommands := map[string]bool{
 		"session-activate": true, "session-add-assistantmsg": true, "session-add-usermsg": true,
-		"session-copy": true, "session-delete": true, "session-edit-msg": true, "session-edit-with-editor": true,
-		"session-rename": true, "session-edit-system": true,
+		"session-copy": true, "session-delete": true,
+		"session-edit-msg": true, "session-delete-msg": true,
+		"session-edit-with-editor": true,
+		"session-rename":           true, "session-edit-system": true,
 		"session-export": true, "session-import": true,
 		"session-json-export": true, "session-json-import": true, "session-list": true,
 		"session-new": true, "session-show": true,
@@ -244,7 +246,7 @@ func (c *HelpCommand) displaySessionCommandsGrouped(sessionCommands []*neurotype
 		switch cmdInfo.Command {
 		case "session-new", "session-list", "session-activate", "session-copy", "session-delete", "session-show":
 			sessionGroups["Basic Management"] = append(sessionGroups["Basic Management"], cmdInfo)
-		case "session-add-usermsg", "session-add-assistantmsg", "session-edit-msg":
+		case "session-add-usermsg", "session-add-assistantmsg", "session-edit-msg", "session-delete-msg":
 			sessionGroups["Conversation"] = append(sessionGroups["Conversation"], cmdInfo)
 		case "session-export", "session-import", "session-json-export", "session-json-import":
 			sessionGroups["Import/Export"] = append(sessionGroups["Import/Export"], cmdInfo)
@@ -429,6 +431,11 @@ func (c *HelpCommand) parseModeToString(mode neurotypes.ParseMode) string {
 // getHelpService retrieves the help service from the global registry
 func (c *HelpCommand) getHelpService() (*services.HelpService, error) {
 	return services.GetGlobalHelpService()
+}
+
+// IsReadOnly returns true as the help command doesn't modify system state.
+func (c *HelpCommand) IsReadOnly() bool {
+	return true
 }
 
 func init() {

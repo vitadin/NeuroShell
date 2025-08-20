@@ -1,0 +1,103 @@
+%% Test session-delete-msg confirmation mechanism
+%% This test covers the safety confirmation feature and bypass options
+
+%% Create a session with multiple messages
+\session-new[name="confirm_test", system="Testing confirmation mechanism"]
+\session-add-usermsg First user message
+\session-add-assistantmsg First assistant response
+\session-add-usermsg Second user message
+\session-add-assistantmsg Second assistant response
+
+%% Show initial state
+\echo Initial session state:
+\session-show
+
+%% Test default confirmation behavior (should require confirmation)
+\echo 
+\echo === Testing default confirmation (should fail) ===
+
+\echo Attempting to delete without confirm parameter (should require confirmation):
+\try \session-delete-msg[idx=1]
+\echo Status: ${@status}
+\echo Error: ${@error}
+
+%% Test explicit confirmation=true (should fail)
+\echo 
+\echo === Testing explicit confirmation=true (should fail) ===
+
+\echo Attempting to delete with confirm=true:
+\try \session-delete-msg[idx=1, confirm=true]
+\echo Status: ${@status}
+\echo Error: ${@error}
+
+%% Test bypass with confirm=false (should succeed)
+\echo 
+\echo === Testing confirmation bypass (should succeed) ===
+
+\echo Deleting with confirm=false:
+\session-delete-msg[idx=1, confirm=false]
+\echo Delete result: ${_output}
+
+\echo Session state after deletion:
+\session-show
+
+%% Test confirmation with different index formats
+\echo 
+\echo === Testing confirmation with normal order indexing ===
+
+\echo Attempting to delete .1 (first message) with default confirmation:
+\try \session-delete-msg[idx=.1]
+\echo Status: ${@status}
+\echo Error: ${@error}
+
+\echo Successfully deleting .1 with confirm=false:
+\session-delete-msg[idx=.1, confirm=false]
+\echo Delete result: ${_output}
+
+\echo Session state after second deletion:
+\session-show
+
+%% Test confirmation with specific session parameter
+\echo 
+\echo === Testing confirmation with session parameter ===
+
+%% Create another session for testing
+\session-new[name="confirm_session2", system="Second confirmation test"]
+\session-add-usermsg Message in second session
+\session-add-assistantmsg Response in second session
+
+\echo Created second session, now testing confirmation with session parameter:
+\try \session-delete-msg[session="confirm_session2", idx=1]
+\echo Status: ${@status}
+\echo Error: ${@error}
+
+\echo Bypassing confirmation for second session:
+\session-delete-msg[session="confirm_session2", idx=1, confirm=false]
+\echo Delete result: ${_output}
+
+%% Test edge cases with confirmation
+\echo 
+\echo === Testing confirmation edge cases ===
+
+\echo Testing invalid confirm parameter value:
+\try \session-delete-msg[idx=1, confirm="invalid"]
+\echo Status: ${@status}
+\echo Error: ${@error}
+
+\echo Testing confirm=false with invalid index (should still fail on index validation):
+\try \session-delete-msg[idx=99, confirm=false]
+\echo Status: ${@status}
+\echo Error: ${@error}
+
+%% Verify final state
+\echo 
+\echo === Final verification ===
+\echo Final state of confirm_test session:
+\session-activate confirm_test
+\session-show
+
+\echo Final state of confirm_session2:
+\session-activate confirm_session2
+\session-show
+
+\echo Confirmation mechanism test completed

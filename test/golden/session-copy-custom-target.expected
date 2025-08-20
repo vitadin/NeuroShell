@@ -1,7 +1,7 @@
 # Test session copy with custom target name
 Created session 'original_coding_session' (ID: 00000001)
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'original_coding_session'
+Added assistant message to session 'original_coding_session'
 Copied session 'original_coding_session' to 'backup_coding_session' (ID: 00000004) with 2 messages
 Target session name: backup_coding_session
 Source session name: original_coding_session

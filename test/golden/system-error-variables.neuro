@@ -1,0 +1,60 @@
+%% Test system error variables @status, @error, @last_status, @last_error
+%% These are computed system variables that reflect current and previous error states
+
+\set[_echo_command="true"]
+%% Initially, status should be 0 and error should be empty
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]
+
+%% Execute a successful command
+\bash echo "success test"
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]
+
+%% Execute a failing command in try block to avoid script termination
+\try \bash ls /nonexistent_directory_xyz
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]
+
+%% Execute another successful command - should update current and preserve last error
+\set[test_var=hello]
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]
+
+%% Execute another failing command in try block
+\try \set[_invalid_global=value]
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]
+
+%% Test with try blocks - should not affect @status/@error (only _status/_error)
+\try \bash echo "try success"
+\get[@status]
+\get[@error]
+\get[_status]
+\get[_error]
+
+%% Try a failing command in try block
+\try \bash ls /nonexistent_try_test
+\get[@status]
+\get[@error]
+\get[_status]
+\get[_error]
+
+%% Regular command after try should reset _status/_error but update @status/@error
+\bash echo "after try"
+\get[@status]
+\get[@error]
+\get[@last_status]
+\get[@last_error]
+\get[_status]
+\get[_error]

@@ -1,7 +1,7 @@
 # Test session copy with prefix matching functionality
 Created session 'project_management_main' (ID: 00000001)
-Added user message to session '00000001-0000-4000-8000-000000000001'
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'project_management_main'
+Added assistant message to session 'project_management_main'
 # Test prefix matching by name (should match project_management_main)
 Copied session 'project_management_main' to 'pm_backup' (ID: 00000004) with 2 messages
 Copied from: project_management_main

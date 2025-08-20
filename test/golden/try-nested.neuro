@@ -4,26 +4,26 @@
 
 %% Test successful nested try
 \try \try \bash echo "nested success"
-\get[_status]
-\get[_error]
+\get[@status]
+\get[@error]
 \get[_output]
 
 %% Test nested try with inner failure
 \try \try \bash ls /nonexistent_nested
-\get[_status]
-\get[_error]
+\get[@status]
+\get[@error]
 
 %% Test nested try with unknown command
 \try \try \unknown_nested_command
-\get[_status]
-\get[_error]
+\get[@status]
+\get[@error]
 
 %% Test triple nesting
 \try \try \try \set[nested_var=deep]
-\get[_status]
+\get[@status]
 \get[nested_var]
 
 %% Test nested try with outer failure (try of unknown command)
 \try \unknown_outer_command \try \bash echo "never executed"
-\get[_status]
-\get[_error]
+\get[@status]
+\get[@error]

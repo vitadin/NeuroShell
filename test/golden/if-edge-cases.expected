@@ -2,15 +2,15 @@ Setting _echo_command = true
 %%> "\\try \\if \\echo \"This should fail\""
 %%> "\\if \\echo \"This should fail\""
 %%> "\\get[_status]"
-_status = 1
+_status = 
 %%> "\\get[_error]"
-_error = condition parameter is required
+_error = 
 %%> "\\try \\if[] \\echo \"This should also fail\""
 %%> "\\if[] \\echo \"This should also fail\""
 %%> "\\get[_status]"
-_status = 1
+_status = 
 %%> "\\get[_error]"
-_error = condition parameter is required
+_error = 
 %%> "\\if[condition=\"\"] \\echo \"This should not appear - empty condition\""
 %%> "\\if[condition=\"   \"] \\echo \"This should not appear - whitespace condition\""
 %%> "\\set[very_long=\"This is an extremely long condition string that goes on and on and contains many characters to test the limits of condition processing and ensure that very long strings are handled correctly by the if command implementation\"]"
@@ -71,7 +71,7 @@ test4 =
 %%> "\\set[malformed]"
 Setting malformed = 
 %%> "\\get[_status]"
-_status = 0
+_status = 
 %%> "\\get[_error]"
 _error = 
 %%> "\\set[level1=\"true\"]"

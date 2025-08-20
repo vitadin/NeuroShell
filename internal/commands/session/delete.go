@@ -189,6 +189,10 @@ func (c *DeleteCommand) Execute(args map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns false as the session-delete command modifies system state.
+func (c *DeleteCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&DeleteCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-delete command: %v", err))

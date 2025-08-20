@@ -1,0 +1,79 @@
+Auto-generated session name: 'Session 1'
+Created session 'Session 1' (ID: 00000001)
+Added user message to session 'Session 1'
+Added assistant message to session 'Session 1'
+Added user message to session 'Session 1'
+Added assistant message to session 'Session 1'
+Initial session state:
+Session: Session 1 (ID: 00000001)
+System: Testing confirmation mechanism
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:09
+Messages: 4 total
+
+[1] user (00:00:02): First user message
+[2] assistant (00:00:04): First assistant response
+[3] user (00:00:06): Second user message
+[4] assistant (00:00:08): Second assistant response
+=== Testing default confirmation (should fail) ===
+Attempting to delete without confirm parameter (should require confirmation):
+About to delete message 1 (last message) from session 'Session 1'
+Message content: Second assistant response
+Deletion is permanent and cannot be undone
+To proceed without confirmation, use: confirm=false
+Status: 1
+Error: deletion cancelled for safety - use confirm=false to bypass confirmation
+=== Testing explicit confirmation=true (should fail) ===
+Attempting to delete with confirm=true:
+About to delete message 1 (last message) from session 'Session 1'
+Message content: Second assistant response
+Deletion is permanent and cannot be undone
+To proceed without confirmation, use: confirm=false
+Status: 1
+Error: deletion cancelled for safety - use confirm=false to bypass confirmation
+=== Testing confirmation bypass (should succeed) ===
+Deleting with confirm=false:
+Deleted message 1 (last message) from session 'Session 1'
+Session now has 3 messages remaining
+Delete result: Deleted message 1 (last message) from session 'Session 1'
+Session state after deletion:
+Session: Session 1 (ID: 00000001)
+System: Testing confirmation mechanism
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:10
+Messages: 3 total
+
+[1] user (00:00:02): First user message
+[2] assistant (00:00:04): First assistant response
+[3] user (00:00:06): Second user message
+=== Testing confirmation with normal order indexing ===
+Attempting to delete .1 (first message) with default confirmation:
+About to delete message .1 (first message) from session 'Session 1'
+Message content: First user message
+Deletion is permanent and cannot be undone
+To proceed without confirmation, use: confirm=false
+Status: 1
+Error: deletion cancelled for safety - use confirm=false to bypass confirmation
+Successfully deleting .1 with confirm=false:
+Deleted message .1 (first message) from session 'Session 1'
+Session now has 2 messages remaining
+Delete result: Deleted message .1 (first message) from session 'Session 1'
+Session state after second deletion:
+Session: Session 1 (ID: 00000001)
+System: Testing confirmation mechanism
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:11
+Messages: 2 total
+
+[1] assistant (00:00:04): First assistant response
+[2] user (00:00:06): Second user message
+=== Testing confirmation with session parameter ===
+Auto-generated session name: 'Session 2'
+Created session 'Session 2' (ID: 00000006)
+Added user message to session 'Session 2'
+Added assistant message to session 'Session 2'
+Created second session, now testing confirmation with session parameter:
+Status: 1
+Error: failed to find session 'confirm_session2': session 'confirm_session2' not found (tried both name and ID)
+Bypassing confirmation for second session:
+FATA Script execution failed error="command execution failed: failed to find session 'confirm_session2': session 'confirm_session2' not found (tried both name and ID)"

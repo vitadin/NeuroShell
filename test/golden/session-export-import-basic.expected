@@ -3,13 +3,13 @@ Setting _echo_command = true
 Created session 'roundtrip_original' (ID: 00000001)
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-usermsg Can you help me test the export-import workflow?"
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'roundtrip_original'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-assistantmsg Absolutely! I'll help you verify that the round-trip export-import process preserves all session data correctly."
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session 'roundtrip_original'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-usermsg Perfect! Let's make sure all messages are preserved."
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'roundtrip_original'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\get[#session_id]"
 #session_id = 00000001-0000-4000-8000-000000000001

@@ -7,9 +7,9 @@ Testing try-silent with failing command...
 %%> "\\silent \\unknown-command-that-fails"
 %%> "\\echo After try-silent error (should display)"
 After try-silent error (should display)
-%%> "\\echo Error status: ${_status}"
+%%> "\\echo Error status: ${@status}"
 Error status: 1
-%%> "\\echo Error message: ${_error}"
+%%> "\\echo Error message: ${@error}"
 Error message: unknown command: unknown-command-that-fails
 %%> "\\echo Testing try-silent with successful command..."
 Testing try-silent with successful command...
@@ -17,7 +17,7 @@ Testing try-silent with successful command...
 %%> "\\silent \\set[test_var=success]"
 %%> "\\echo After try-silent success (should display)"
 After try-silent success (should display)
-%%> "\\echo Success status: ${_status}"
+%%> "\\echo Success status: ${@status}"
 Success status: 0
 %%> "\\echo Test variable: ${test_var}"
 Test variable: success

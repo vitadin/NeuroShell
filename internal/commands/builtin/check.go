@@ -340,6 +340,11 @@ func (c *CheckCommand) displayResults(results []ServiceCheckResult) {
 	}
 }
 
+// IsReadOnly returns false as the check command modifies system state.
+func (c *CheckCommand) IsReadOnly() bool {
+	return false
+}
+
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&CheckCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register check command: %v", err))

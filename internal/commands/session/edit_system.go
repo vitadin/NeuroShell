@@ -220,6 +220,10 @@ func (c *EditSystemCommand) updateSystemVariables(session *neurotypes.ChatSessio
 	return nil
 }
 
+// IsReadOnly returns false as the session-edit-system command modifies system state.
+func (c *EditSystemCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GetGlobalRegistry().Register(&EditSystemCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register session-edit-system command: %v", err))

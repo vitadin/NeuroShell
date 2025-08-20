@@ -3,28 +3,28 @@ Setting _echo_command = true
 Created session 'workflow_session_1' (ID: 00000001)
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-usermsg Can you help me with Python?"
-Added user message to session '00000001-0000-4000-8000-000000000001'
+Added user message to session 'workflow_session_1'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-add-assistantmsg Of course! I'd be happy to help you with Python programming."
-Added assistant message to session '00000001-0000-4000-8000-000000000001'
+Added assistant message to session 'workflow_session_1'
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
 %%> "\\session-new[system=\"You are a writing assistant\"] workflow_session_2"
 Created session 'workflow_session_2' (ID: 00000004)
 %%> "\\silent \\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
 %%> "\\session-add-usermsg Help me write a story"
-Added user message to session '00000004-0000-4000-8000-000000000004'
+Added user message to session 'workflow_session_2'
 %%> "\\silent \\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
 %%> "\\session-add-assistantmsg I'd love to help you craft an engaging story!"
-Added assistant message to session '00000004-0000-4000-8000-000000000004'
+Added assistant message to session 'workflow_session_2'
 %%> "\\silent \\session-activate[id=true] 00000004-0000-4000-8000-000000000004"
 %%> "\\session-new[system=\"You are a math tutor\"] workflow_session_3"
 Created session 'workflow_session_3' (ID: 00000007)
 %%> "\\silent \\session-activate[id=true] 00000007-0000-4000-8000-000000000007"
 %%> "\\session-add-usermsg Explain calculus basics"
-Added user message to session '00000007-0000-4000-8000-000000000007'
+Added user message to session 'workflow_session_3'
 %%> "\\silent \\session-activate[id=true] 00000007-0000-4000-8000-000000000007"
 %%> "\\session-add-assistantmsg Let me explain the fundamental concepts of calculus step by step."
-Added assistant message to session '00000007-0000-4000-8000-000000000007'
+Added assistant message to session 'workflow_session_3'
 %%> "\\silent \\session-activate[id=true] 00000007-0000-4000-8000-000000000007"
 %%> "\\session-export[file=/tmp/neuro_workflow_coding.json] workflow_session_1"
 %%> "\\session-json-export[file=/tmp/neuro_workflow_coding.json] workflow_session_1"

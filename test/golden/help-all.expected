@@ -51,6 +51,7 @@ Session Management:
     Conversation:
       \session-add-assistantmsg - Add assistant message to specified session
       \session-add-usermsg - Add user message to specified session
+      \session-delete-msg - Delete message by index using dual indexing system
       \session-edit-msg   - Edit message content by index using dual indexing system
 
     Import/Export:

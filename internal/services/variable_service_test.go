@@ -411,7 +411,7 @@ func TestVariableService_SetSystemVariable(t *testing.T) {
 	}{
 		{
 			name:     "set system variable with underscore prefix",
-			varName:  "_status",
+			varName:  "_test_var",
 			varValue: "success",
 		},
 		{

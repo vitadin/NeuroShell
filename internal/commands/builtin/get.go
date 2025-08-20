@@ -117,6 +117,11 @@ func (c *GetCommand) Execute(args map[string]string, input string) error {
 	return nil
 }
 
+// IsReadOnly returns true as the get command only reads variables and doesn't modify system state.
+func (c *GetCommand) IsReadOnly() bool {
+	return true
+}
+
 func init() {
 	if err := commands.GlobalRegistry.Register(&GetCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register get command: %v", err))

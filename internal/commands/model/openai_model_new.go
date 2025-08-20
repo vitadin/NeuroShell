@@ -336,6 +336,10 @@ func (c *OpenAIModelNewCommand) generateClientNewCommand(clientType string) stri
 	}
 }
 
+// IsReadOnly returns false as the model command modifies system state.
+func (c *OpenAIModelNewCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GlobalRegistry.Register(&OpenAIModelNewCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register openai-model-new command: %v", err))

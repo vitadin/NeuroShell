@@ -173,6 +173,10 @@ func (c *AnthropicClientNewCommand) resolveAPIKey(args map[string]string, variab
 		"  3. Set ANTHROPIC_API_KEY environment variable")
 }
 
+// IsReadOnly returns false as the llm command modifies system state.
+func (c *AnthropicClientNewCommand) IsReadOnly() bool {
+	return false
+}
 func init() {
 	if err := commands.GlobalRegistry.Register(&AnthropicClientNewCommand{}); err != nil {
 		panic(fmt.Sprintf("failed to register anthropic-client-new command: %v", err))

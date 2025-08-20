@@ -504,7 +504,6 @@ func TestEditMessageCommand_Execute_MessageMetadataPreservation(t *testing.T) {
 }
 
 func TestEditMessageCommand_ParseMessageIndex(t *testing.T) {
-	cmd := &EditMessageCommand{}
 
 	tests := []struct {
 		name         string
@@ -635,7 +634,7 @@ func TestEditMessageCommand_ParseMessageIndex(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			idx, pos, err := cmd.parseMessageIndex(tt.idxStr, tt.messageCount)
+			result, err := stringprocessing.ParseMessageIndex(tt.idxStr, tt.messageCount)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -644,8 +643,8 @@ func TestEditMessageCommand_ParseMessageIndex(t *testing.T) {
 				}
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedIdx, idx)
-				assert.Equal(t, tt.expectedPos, pos)
+				assert.Equal(t, tt.expectedIdx, result.ZeroBasedIndex)
+				assert.Equal(t, tt.expectedPos, result.PositionDescription)
 			}
 		})
 	}
@@ -679,7 +678,7 @@ func TestEditMessageCommand_GetOrdinalSuffix(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("ordinal_%d", tt.num), func(t *testing.T) {
-			result := getOrdinalSuffix(tt.num)
+			result := stringprocessing.GetOrdinalSuffix(tt.num)
 			assert.Equal(t, tt.expected, result)
 		})
 	}

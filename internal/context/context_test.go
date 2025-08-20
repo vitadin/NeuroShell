@@ -907,3 +907,223 @@ func BenchmarkLargeVariableMap(b *testing.B) {
 		_, _ = ctx.GetVariable("var500") // Access middle variable
 	}
 }
+
+// Test cases for read-only command functionality
+
+// MockCommand for testing read-only functionality
+type MockTestCommand struct {
+	name     string
+	readOnly bool
+}
+
+func (m *MockTestCommand) Name() string                                { return m.name }
+func (m *MockTestCommand) ParseMode() neurotypes.ParseMode             { return neurotypes.ParseModeKeyValue }
+func (m *MockTestCommand) Description() string                         { return "Test command" }
+func (m *MockTestCommand) Usage() string                               { return "\\test" }
+func (m *MockTestCommand) Execute(_ map[string]string, _ string) error { return nil }
+func (m *MockTestCommand) HelpInfo() neurotypes.HelpInfo {
+	return neurotypes.HelpInfo{
+		Command:     m.Name(),
+		Description: m.Description(),
+		Usage:       m.Usage(),
+		ParseMode:   m.ParseMode(),
+		Examples:    []neurotypes.HelpExample{},
+	}
+}
+func (m *MockTestCommand) IsReadOnly() bool { return m.readOnly }
+
+func TestNeuroContext_ReadOnlyOverrides(t *testing.T) {
+	ctx := New()
+
+	// Initially should have no overrides
+	overrides := ctx.GetReadOnlyOverrides()
+	assert.Empty(t, overrides)
+
+	// Set a read-only override
+	ctx.SetCommandReadOnly("test-command", true)
+
+	// Should now appear in overrides
+	overrides = ctx.GetReadOnlyOverrides()
+	assert.Contains(t, overrides, "test-command")
+	assert.True(t, overrides["test-command"])
+
+	// Set another override with different value
+	ctx.SetCommandReadOnly("another-command", false)
+
+	// Should now have both overrides
+	overrides = ctx.GetReadOnlyOverrides()
+	assert.Len(t, overrides, 2)
+	assert.True(t, overrides["test-command"])
+	assert.False(t, overrides["another-command"])
+
+	// Remove first override
+	ctx.RemoveCommandReadOnlyOverride("test-command")
+
+	// Should now only have the second override
+	overrides = ctx.GetReadOnlyOverrides()
+	assert.Len(t, overrides, 1)
+	assert.Contains(t, overrides, "another-command")
+	assert.NotContains(t, overrides, "test-command")
+}
+
+func TestNeuroContext_IsCommandReadOnly_SelfDeclared(t *testing.T) {
+	ctx := New()
+
+	tests := []struct {
+		name             string
+		command          neurotypes.Command
+		expectedReadOnly bool
+	}{
+		{
+			name:             "read-only command",
+			command:          &MockTestCommand{name: "get", readOnly: true},
+			expectedReadOnly: true,
+		},
+		{
+			name:             "writable command",
+			command:          &MockTestCommand{name: "set", readOnly: false},
+			expectedReadOnly: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := ctx.IsCommandReadOnly(tt.command)
+			assert.Equal(t, tt.expectedReadOnly, result)
+		})
+	}
+}
+
+func TestNeuroContext_IsCommandReadOnly_WithOverrides(t *testing.T) {
+	ctx := New()
+
+	// Create test commands with different self-declared read-only status
+	readOnlyCmd := &MockTestCommand{name: "get", readOnly: true}
+	writableCmd := &MockTestCommand{name: "set", readOnly: false}
+
+	tests := []struct {
+		name             string
+		command          neurotypes.Command
+		override         *bool // nil means no override
+		expectedReadOnly bool
+	}{
+		{
+			name:             "read-only command without override",
+			command:          readOnlyCmd,
+			override:         nil,
+			expectedReadOnly: true,
+		},
+		{
+			name:             "read-only command overridden to writable",
+			command:          readOnlyCmd,
+			override:         &[]bool{false}[0],
+			expectedReadOnly: false,
+		},
+		{
+			name:             "writable command without override",
+			command:          writableCmd,
+			override:         nil,
+			expectedReadOnly: false,
+		},
+		{
+			name:             "writable command overridden to read-only",
+			command:          writableCmd,
+			override:         &[]bool{true}[0],
+			expectedReadOnly: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Clear previous overrides
+			ctx.readOnlyOverrides = make(map[string]bool)
+
+			// Set override if specified
+			if tt.override != nil {
+				ctx.SetCommandReadOnly(tt.command.Name(), *tt.override)
+			}
+
+			result := ctx.IsCommandReadOnly(tt.command)
+			assert.Equal(t, tt.expectedReadOnly, result)
+		})
+	}
+}
+
+func TestNeuroContext_ReadOnlyOverrides_ThreadSafety(t *testing.T) {
+	ctx := New()
+
+	// Test concurrent access to read-only overrides
+	done := make(chan bool)
+	numGoroutines := 10
+
+	// Start multiple goroutines that read and write overrides
+	for i := 0; i < numGoroutines; i++ {
+		go func(id int) {
+			commandName := fmt.Sprintf("command-%d", id)
+
+			// Set override
+			ctx.SetCommandReadOnly(commandName, id%2 == 0)
+
+			// Read override
+			overrides := ctx.GetReadOnlyOverrides()
+			assert.Contains(t, overrides, commandName)
+
+			// Remove override
+			ctx.RemoveCommandReadOnlyOverride(commandName)
+
+			done <- true
+		}(i)
+	}
+
+	// Wait for all goroutines to complete
+	for i := 0; i < numGoroutines; i++ {
+		<-done
+	}
+
+	// All overrides should be removed
+	overrides := ctx.GetReadOnlyOverrides()
+	assert.Empty(t, overrides)
+}
+
+func TestNeuroContext_ReadOnlyOverrides_Integration(t *testing.T) {
+	ctx := New()
+
+	// Create commands with different self-declared read-only status
+	commands := []neurotypes.Command{
+		&MockTestCommand{name: "get", readOnly: true},
+		&MockTestCommand{name: "set", readOnly: false},
+		&MockTestCommand{name: "vars", readOnly: true},
+		&MockTestCommand{name: "bash", readOnly: false},
+	}
+
+	// Test initial state (should use self-declared status)
+	assert.True(t, ctx.IsCommandReadOnly(commands[0]))  // get: read-only
+	assert.False(t, ctx.IsCommandReadOnly(commands[1])) // set: writable
+	assert.True(t, ctx.IsCommandReadOnly(commands[2]))  // vars: read-only
+	assert.False(t, ctx.IsCommandReadOnly(commands[3])) // bash: writable
+
+	// Apply some overrides
+	ctx.SetCommandReadOnly("get", false) // Override read-only to writable
+	ctx.SetCommandReadOnly("set", true)  // Override writable to read-only
+
+	// Test overridden state
+	assert.False(t, ctx.IsCommandReadOnly(commands[0])) // get: overridden to writable
+	assert.True(t, ctx.IsCommandReadOnly(commands[1]))  // set: overridden to read-only
+	assert.True(t, ctx.IsCommandReadOnly(commands[2]))  // vars: unchanged (read-only)
+	assert.False(t, ctx.IsCommandReadOnly(commands[3])) // bash: unchanged (writable)
+
+	// Remove one override
+	ctx.RemoveCommandReadOnlyOverride("get")
+
+	// Test state after removing override
+	assert.True(t, ctx.IsCommandReadOnly(commands[0]))  // get: back to self-declared (read-only)
+	assert.True(t, ctx.IsCommandReadOnly(commands[1]))  // set: still overridden (read-only)
+	assert.True(t, ctx.IsCommandReadOnly(commands[2]))  // vars: unchanged (read-only)
+	assert.False(t, ctx.IsCommandReadOnly(commands[3])) // bash: unchanged (writable)
+
+	// Verify overrides map contains only remaining override
+	overrides := ctx.GetReadOnlyOverrides()
+	assert.Len(t, overrides, 1)
+	assert.Contains(t, overrides, "set")
+	assert.True(t, overrides["set"])
+}

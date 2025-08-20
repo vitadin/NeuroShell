@@ -159,7 +159,7 @@ func (c *EchoCommand) Execute(args map[string]string, input string) error {
 	// Get variable service - if not available, continue without storing (graceful degradation)
 	if variableService, err := services.GetGlobalVariableService(); err == nil {
 		// Store result in target variable
-		if targetVar == "_output" || targetVar == "_error" || targetVar == "_status" {
+		if targetVar == "_output" {
 			// Store in system variable (only for specific system variables)
 			_ = variableService.SetSystemVariable(targetVar, storeMessage)
 		} else {
@@ -210,6 +210,11 @@ func interpretEscapeSequences(s string) string {
 
 	// If unquoting fails (e.g., malformed escape sequences), return original string
 	return s
+}
+
+// IsReadOnly returns true as the echo command doesn't modify system state.
+func (c *EchoCommand) IsReadOnly() bool {
+	return true
 }
 
 func init() {
