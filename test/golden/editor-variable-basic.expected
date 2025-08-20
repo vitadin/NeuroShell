@@ -218,6 +218,8 @@ System Variables:
     _@                   = 
     _default_command     = echo
     _editor              = nano
+    _prompt_line1        = neuro> 
+    _prompt_lines_count  = 1
     _style               = 
 
-Total: 213 variables
+Total: 215 variables

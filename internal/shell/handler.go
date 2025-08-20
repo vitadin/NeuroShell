@@ -20,6 +20,9 @@ import (
 	"github.com/abiosoft/ishell/v2"
 )
 
+// PromptUpdateCallback is called after command execution to update shell prompt
+var PromptUpdateCallback func()
+
 // ProcessInput handles user input from the interactive shell and executes commands.
 func ProcessInput(c *ishell.Context) {
 	if len(c.RawArgs) == 0 {
@@ -149,6 +152,13 @@ func InitializeServices(testMode bool) error {
 		}
 	}
 
+	// Register ShellPromptService if not already registered
+	if !services.GetGlobalRegistry().HasService("shell_prompt") {
+		if err := services.GetGlobalRegistry().RegisterService(services.NewShellPromptService()); err != nil {
+			return err
+		}
+	}
+
 	// Enhanced command resolution will be implemented later
 
 	// Initialize all services
@@ -181,5 +191,10 @@ func executeCommand(c *ishell.Context, rawInput string) {
 		if !strings.Contains(strings.ToLower(rawInput), "help") {
 			c.Println("Type \\help for available commands")
 		}
+	}
+
+	// Update shell prompt after command execution
+	if PromptUpdateCallback != nil {
+		PromptUpdateCallback()
 	}
 }
