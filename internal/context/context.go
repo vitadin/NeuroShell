@@ -26,6 +26,7 @@ var allowedGlobalVariables = []string{
 	"_default_command",
 	"_stream",
 	"_editor",
+	"_session_autosave",
 }
 
 // TryBlockContext represents the context for a try block with error boundaries

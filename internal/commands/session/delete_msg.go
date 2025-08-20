@@ -286,6 +286,9 @@ func (c *DeleteMessageCommand) Execute(args map[string]string, input string) err
 	printer.Success(outputMsg)
 	printer.Info(fmt.Sprintf("Session now has %d messages remaining", len(updatedSession.Messages)))
 
+	// Trigger auto-save if enabled
+	chatService.TriggerAutoSave(targetSession.ID)
+
 	return nil
 }
 
