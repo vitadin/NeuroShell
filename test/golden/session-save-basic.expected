@@ -78,8 +78,8 @@ Session saved to sessions/00000004-0000-4000-8000-000000000004.json
 00000004-0000-4000-8000-000000000004.json
 %%> "\\bash echo \"Number of saved sessions:\""
 Number of saved sessions:
-%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l"
-       2
+%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l | tr -d ' '"
+2
 %%> "\\echo Testing error cases:"
 Testing error cases:
 %%> "\\try \\session-save nonexistent_session_name"

@@ -110,7 +110,7 @@
 %% Summary
 \echo === Auto-save test summary ===
 \bash ls /tmp/neuroshell-test-config/sessions/ 2>/dev/null | sort || echo "No sessions directory found"
-\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l | xargs echo "Total auto-saved files:"
+\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l | tr -d ' ' | xargs echo "Total auto-saved files:"
 
 %% Clean up
 \try \bash rm -rf /tmp/neuroshell-test-config/sessions

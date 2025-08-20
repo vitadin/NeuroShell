@@ -77,7 +77,7 @@
 \echo === Session save error handling summary ===
 \bash ls /tmp/neuroshell-test-config/sessions/ | sort
 \bash echo "Total saved sessions:"
-\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l
+\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l | tr -d ' '
 
 %% Clean up
 \try \bash rm -rf /tmp/neuroshell-test-config/sessions

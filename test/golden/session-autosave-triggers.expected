@@ -158,7 +158,7 @@ Setting value_0_id = 00000009-0000-4000-8000-000000000009
 00000002-0000-4000-8000-000000000002.json
 00000007-0000-4000-8000-000000000007.json
 00000008-0000-4000-8000-000000000008.json
-%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l | xargs echo \"Total auto-saved files:\""
+%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l | tr -d ' ' | xargs echo \"Total auto-saved files:\""
 Total auto-saved files: 4
 %%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
 %%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"

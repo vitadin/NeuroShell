@@ -165,8 +165,8 @@ Session saved to sessions/0000000a-0000-4000-8000-00000000000a.json
 0000000a-0000-4000-8000-00000000000a.json
 %%> "\\bash echo \"Total sessions in auto-save directory:\""
 Total sessions in auto-save directory:
-%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l"
-       5
+%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l | tr -d ' '"
+5
 %%> "\\echo === Sample auto-saved session content ==="
 === Sample auto-saved session content ===
 %%> "\\cat /tmp/neuroshell-test-config/sessions/${original_session_id}.json"

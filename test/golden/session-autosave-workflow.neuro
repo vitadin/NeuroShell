@@ -110,7 +110,7 @@
 \echo === Workflow test summary ===
 \bash ls /tmp/neuroshell-test-config/sessions/ | sort
 \bash echo "Total sessions in auto-save directory:"
-\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l
+\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l | tr -d ' '
 
 %% Show content of one saved session to verify JSON structure
 \echo === Sample auto-saved session content ===

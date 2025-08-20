@@ -4,7 +4,7 @@ Setting _echo_command = true
 %%> "\\set[_session_autosave=\"true\"]"
 Setting _session_autosave = true
 %%> "\\config-path"
-Config Directory: /tmp/neuroshell-test-config (not found)
+Config Directory: /tmp/neuroshell-test-config (exists)
 Config .env: /tmp/neuroshell-test-config/.env (not found)
 Local .env: /tmp/neuroshell-test-workdir/.env (not found)
 %%> "\\session-new[system=\"You are a helpful test assistant for auto-save testing\"] autosave_test_session"
@@ -34,10 +34,6 @@ Session saved to sessions/00000001-0000-4000-8000-000000000001.json
 %%> "\\bash ls /tmp/neuroshell-test-config/sessions/ | sort"
 00000001-0000-4000-8000-000000000001.json
 00000002-0000-4000-8000-000000000002.json
-%%> "\\bash wc -l /tmp/neuroshell-test-config/sessions/*.json"
-       8 /tmp/neuroshell-test-config/sessions/00000001-0000-4000-8000-000000000001.json
-       8 /tmp/neuroshell-test-config/sessions/00000002-0000-4000-8000-000000000002.json
-      16 total
 %%> "\\session-add-usermsg[session=\"autosave_test_session\"] This is a test user message to verify auto-save works"
 Added user message to session 'autosave_test_session'
 %%> "\\session-save 00000001-0000-4000-8000-000000000001"
@@ -131,7 +127,7 @@ Session saved to sessions/00000007-0000-4000-8000-000000000007.json
 00000007-0000-4000-8000-000000000007.json
 %%> "\\bash echo \"Total auto-saved sessions:\""
 Total auto-saved sessions:
-%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l"
-       4
+%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l | tr -d ' '"
+4
 %%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
 %%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"

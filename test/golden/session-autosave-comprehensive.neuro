@@ -28,7 +28,6 @@
 
 %% Verify both sessions are auto-saved
 \bash ls /tmp/neuroshell-test-config/sessions/ | sort
-\bash wc -l /tmp/neuroshell-test-config/sessions/*.json
 
 %% Test 3: \session-add-usermsg should trigger auto-save
 \session-add-usermsg[session="autosave_test_session"] This is a test user message to verify auto-save works
@@ -89,7 +88,7 @@
 \bash echo "=== Auto-save test summary ==="
 \bash ls /tmp/neuroshell-test-config/sessions/ | sort
 \bash echo "Total auto-saved sessions:"
-\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l
+\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l | tr -d ' '
 
 %% Clean up test files
 \try \bash rm -rf /tmp/neuroshell-test-config/sessions

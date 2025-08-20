@@ -90,7 +90,7 @@ Session saved to sessions/00000003-0000-4000-8000-000000000003.json
 00000003-0000-4000-8000-000000000003.json
 %%> "\\bash echo \"Total saved sessions:\""
 Total saved sessions:
-%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l"
-       3
+%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l | tr -d ' '"
+3
 %%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
 %%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"

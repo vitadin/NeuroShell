@@ -53,7 +53,7 @@
 %% Verify both sessions are saved
 \bash ls /tmp/neuroshell-test-config/sessions/ | sort
 \bash echo "Number of saved sessions:"
-\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l
+\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l | tr -d ' '
 
 %% Test error cases
 \echo Testing error cases:
