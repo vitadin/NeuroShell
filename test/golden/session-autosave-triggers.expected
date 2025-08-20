@@ -1,0 +1,164 @@
+Setting _echo_command = true
+%%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\config-path"
+Config Directory: /tmp/neuroshell-test-config (exists)
+Config .env: /tmp/neuroshell-test-config/.env (not found)
+Local .env: /tmp/neuroshell-test-workdir/.env (not found)
+%%> "\\set[_session_autosave=\"true\"]"
+Setting _session_autosave = true
+%%> "\\echo Auto-save enabled: ${_session_autosave}"
+Auto-save enabled: true
+%%> "\\echo === Testing session-new auto-save trigger ==="
+=== Testing session-new auto-save trigger ===
+%%> "\\session-new[system=\"Test session for new trigger\"] trigger_test_new"
+Created session 'trigger_test_new' (ID: 00000001)
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\get[#session_id]"
+#session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\set[new_session_id=\"${#session_id}\"]"
+Setting new_session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${new_session_id}.json && echo \"✓ session-new auto-save triggered\" || echo \"✗ session-new auto-save failed\""
+✓ session-new auto-save triggered
+%%> "\\echo === Testing session-activate auto-save trigger ==="
+=== Testing session-activate auto-save trigger ===
+%%> "\\session-new[system=\"Second session for activate trigger\"] trigger_test_activate"
+Created session 'trigger_test_activate' (ID: 00000002)
+%%> "\\session-save 00000002-0000-4000-8000-000000000002"
+Session saved to sessions/00000002-0000-4000-8000-000000000002.json
+%%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\get[#session_id]"
+#session_id = 00000002-0000-4000-8000-000000000002
+%%> "\\set[activate_session_id=\"${#session_id}\"]"
+Setting activate_session_id = 00000002-0000-4000-8000-000000000002
+%%> "\\session-activate trigger_test_new"
+Activated session 'trigger_test_new' (ID: 00000001, Messages: 0)
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${new_session_id}.json && echo \"✓ session-activate auto-save triggered for activated session\" || echo \"✗ session-activate auto-save failed\""
+✓ session-activate auto-save triggered for activated session
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${activate_session_id}.json && echo \"✓ Second session also auto-saved\" || echo \"✗ Second session auto-save failed\""
+✓ Second session also auto-saved
+%%> "\\echo === Testing session-add-usermsg auto-save trigger ==="
+=== Testing session-add-usermsg auto-save trigger ===
+%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\session-add-usermsg[session=\"trigger_test_new\"] Test user message for auto-save trigger"
+Added user message to session 'trigger_test_new'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\echo \"✓ session-add-usermsg auto-save should have updated file timestamp\""
+"✓ session-add-usermsg auto-save should have updated file timestamp"
+%%> "\\echo === Testing session-add-assistantmsg auto-save trigger ==="
+=== Testing session-add-assistantmsg auto-save trigger ===
+%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\session-add-assistantmsg[session=\"trigger_test_new\"] Test assistant message for auto-save trigger"
+Added assistant message to session 'trigger_test_new'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\echo \"✓ session-add-assistantmsg auto-save should have updated file timestamp\""
+"✓ session-add-assistantmsg auto-save should have updated file timestamp"
+%%> "\\echo === Testing session-edit-system auto-save trigger ==="
+=== Testing session-edit-system auto-save trigger ===
+%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\session-edit-system[session=\"trigger_test_new\"] Modified system prompt to test auto-save trigger functionality"
+Updated system prompt for session 'trigger_test_new'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\echo \"✓ session-edit-system auto-save should have updated file timestamp\""
+"✓ session-edit-system auto-save should have updated file timestamp"
+%%> "\\echo === Testing session-edit-msg auto-save trigger ==="
+=== Testing session-edit-msg auto-save trigger ===
+%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\session-edit-msg[session=\"trigger_test_new\", idx=\"1\"] Modified user message to test auto-save trigger"
+Edited message 1 (last message) in session 'trigger_test_new'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\echo \"✓ session-edit-msg auto-save should have updated file timestamp\""
+"✓ session-edit-msg auto-save should have updated file timestamp"
+%%> "\\echo === Testing session-delete-msg auto-save trigger ==="
+=== Testing session-delete-msg auto-save trigger ===
+%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\session-delete-msg[session=\"trigger_test_new\", idx=\"2\", confirm=\"false\"]"
+Deleted message 2 (second-to-last message) from session 'trigger_test_new'
+Session now has 1 messages remaining
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\bash stat /tmp/neuroshell-test-config/sessions/${new_session_id}.json | grep Modify | head -1"
+%%> "\\echo \"✓ session-delete-msg auto-save should have updated file timestamp\""
+"✓ session-delete-msg auto-save should have updated file timestamp"
+%%> "\\echo === Testing auto-save disabled ==="
+=== Testing auto-save disabled ===
+%%> "\\set[_session_autosave=\"false\"]"
+Setting _session_autosave = false
+%%> "\\echo Auto-save disabled: ${_session_autosave}"
+Auto-save disabled: false
+%%> "\\session-new[system=\"Session with auto-save disabled\"] no_autosave_test"
+Created session 'no_autosave_test' (ID: 00000005)
+%%> "\\silent \\session-activate[id=true] 00000005-0000-4000-8000-000000000005"
+%%> "\\get[#session_id]"
+#session_id = 00000005-0000-4000-8000-000000000005
+%%> "\\set[no_autosave_id=\"${#session_id}\"]"
+Setting no_autosave_id = 00000005-0000-4000-8000-000000000005
+%%> "\\session-add-usermsg[session=\"no_autosave_test\"] This should not be auto-saved"
+Added user message to session 'no_autosave_test'
+%%> "\\silent \\session-activate[id=true] 00000005-0000-4000-8000-000000000005"
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${no_autosave_id}.json && echo \"✗ Auto-save unexpectedly triggered\" || echo \"✓ Auto-save correctly disabled\""
+✓ Auto-save correctly disabled
+%%> "\\echo === Testing different auto-save values ==="
+=== Testing different auto-save values ===
+%%> "\\set[_session_autosave=\"1\"]"
+Setting _session_autosave = 1
+%%> "\\session-new[system=\"Testing with value 1\"] value_test_1"
+Created session 'value_test_1' (ID: 00000007)
+%%> "\\session-save 00000007-0000-4000-8000-000000000007"
+Session saved to sessions/00000007-0000-4000-8000-000000000007.json
+%%> "\\silent \\session-activate[id=true] 00000007-0000-4000-8000-000000000007"
+%%> "\\get[#session_id]"
+#session_id = 00000007-0000-4000-8000-000000000007
+%%> "\\set[value_1_id=\"${#session_id}\"]"
+Setting value_1_id = 00000007-0000-4000-8000-000000000007
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${value_1_id}.json && echo \"✓ Auto-save works with value '1'\" || echo \"✗ Auto-save failed with value '1'\""
+✓ Auto-save works with value '1'
+%%> "\\set[_session_autosave=\"yes\"]"
+Setting _session_autosave = yes
+%%> "\\session-new[system=\"Testing with value yes\"] value_test_yes"
+Created session 'value_test_yes' (ID: 00000008)
+%%> "\\session-save 00000008-0000-4000-8000-000000000008"
+Session saved to sessions/00000008-0000-4000-8000-000000000008.json
+%%> "\\silent \\session-activate[id=true] 00000008-0000-4000-8000-000000000008"
+%%> "\\get[#session_id]"
+#session_id = 00000008-0000-4000-8000-000000000008
+%%> "\\set[value_yes_id=\"${#session_id}\"]"
+Setting value_yes_id = 00000008-0000-4000-8000-000000000008
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${value_yes_id}.json && echo \"✓ Auto-save works with value 'yes'\" || echo \"✗ Auto-save failed with value 'yes'\""
+✓ Auto-save works with value 'yes'
+%%> "\\set[_session_autosave=\"0\"]"
+Setting _session_autosave = 0
+%%> "\\session-new[system=\"Testing with value 0\"] value_test_0"
+Created session 'value_test_0' (ID: 00000009)
+%%> "\\silent \\session-activate[id=true] 00000009-0000-4000-8000-000000000009"
+%%> "\\get[#session_id]"
+#session_id = 00000009-0000-4000-8000-000000000009
+%%> "\\set[value_0_id=\"${#session_id}\"]"
+Setting value_0_id = 00000009-0000-4000-8000-000000000009
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${value_0_id}.json && echo \"✗ Auto-save unexpectedly triggered with '0'\" || echo \"✓ Auto-save correctly disabled with value '0'\""
+✓ Auto-save correctly disabled with value '0'
+%%> "\\echo === Auto-save test summary ==="
+=== Auto-save test summary ===
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/ 2>/dev/null | sort || echo \"No sessions directory found\""
+00000001-0000-4000-8000-000000000001.json
+00000002-0000-4000-8000-000000000002.json
+00000007-0000-4000-8000-000000000007.json
+00000008-0000-4000-8000-000000000008.json
+%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l | xargs echo \"Total auto-saved files:\""
+Total auto-saved files: 4
+%%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"
