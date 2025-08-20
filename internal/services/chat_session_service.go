@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -875,13 +876,13 @@ func (c *ChatSessionService) CopySessionWithContext(sourceIdentifier, targetName
 
 // ExportSessionToJSON exports a session by ID to a JSON file.
 // The session must exist and the file path must be valid and writable.
-func (c *ChatSessionService) ExportSessionToJSON(sessionID, filepath string) error {
+func (c *ChatSessionService) ExportSessionToJSON(sessionID, filePath string) error {
 	ctx := neuroshellcontext.GetGlobalContext()
-	return c.ExportSessionToJSONWithContext(sessionID, filepath, ctx)
+	return c.ExportSessionToJSONWithContext(sessionID, filePath, ctx)
 }
 
 // ExportSessionToJSONWithContext exports a session by ID to a JSON file using provided context.
-func (c *ChatSessionService) ExportSessionToJSONWithContext(sessionID, filepath string, ctx neurotypes.Context) error {
+func (c *ChatSessionService) ExportSessionToJSONWithContext(sessionID, filePath string, ctx neurotypes.Context) error {
 	if !c.initialized {
 		return fmt.Errorf("chat session service not initialized")
 	}
@@ -898,8 +899,13 @@ func (c *ChatSessionService) ExportSessionToJSONWithContext(sessionID, filepath 
 		return fmt.Errorf("failed to marshal session to JSON: %w", err)
 	}
 
+	// Create parent directory if it doesn't exist
+	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
+		return fmt.Errorf("failed to create parent directory: %w", err)
+	}
+
 	// Write JSON data to file
-	if err := os.WriteFile(filepath, jsonData, 0644); err != nil {
+	if err := os.WriteFile(filePath, jsonData, 0644); err != nil {
 		return fmt.Errorf("failed to write JSON file: %w", err)
 	}
 

@@ -4,10 +4,9 @@ Setting _echo_command = true
 %%> "\\set[_session_autosave=\"true\"]"
 Setting _session_autosave = true
 %%> "\\config-path"
-Config Directory: /tmp/neuroshell-test-config (exists)
+Config Directory: /tmp/neuroshell-test-config (not found)
 Config .env: /tmp/neuroshell-test-config/.env (not found)
 Local .env: /tmp/neuroshell-test-workdir/.env (not found)
-%%> "\\bash ls /tmp/neuroshell-test-config/"
 %%> "\\session-new[system=\"You are a helpful test assistant for auto-save testing\"] autosave_test_session"
 Created session 'autosave_test_session' (ID: 00000001)
 %%> "\\session-save 00000001-0000-4000-8000-000000000001"

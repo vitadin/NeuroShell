@@ -10,9 +10,6 @@
 %% Show initial config state to verify test environment setup
 \config-path
 
-%% Verify the sessions directory doesn't exist yet
-\bash ls /tmp/neuroshell-test-config/
-
 %% Test 1: \session-new should trigger auto-save
 \session-new[system="You are a helpful test assistant for auto-save testing"] autosave_test_session
 
