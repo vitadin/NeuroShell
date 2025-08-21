@@ -1,0 +1,36 @@
+%% Shell prompt variable interpolation test
+\set[_echo_command="true"]
+%% Tests variable interpolation in shell prompt templates
+
+%% Set up various test variables
+\set[project="NeuroShell"]
+\set[branch="main"] 
+\set[status="clean"]
+
+%% Test user variables in prompt
+\shell-prompt[lines=3, line1="Project: ${project}", line2="Branch: ${branch} (${status})", line3="${@user}@${@pwd}❯ "]
+\shell-prompt-preview
+
+%% Test system variables
+\shell-prompt[lines=2, line1="[${@time}] ${@user}@${@pwd}", line2="Session: ${#session_name:-none} (${#message_count:-0} msgs) ❯ "]
+\shell-prompt-preview
+
+%% Test metadata variables and fallbacks
+\shell-prompt[lines=2, line1="Model: ${#active_model:-no-model}", line2="Test Mode: ${#test_mode:-false} ❯ "]
+\shell-prompt-preview
+
+%% Test mixed variable types
+\shell-prompt[lines=4, line1="┌─[${@time}] ${project} on ${branch}", line2="├─[${@user}@${@pwd}]", line3="├─Session: ${#session_name:-none} | Model: ${#active_model:-none}", line4="└─(${status})❯ "]
+\shell-prompt-preview
+
+%% Test variables that might not exist (with fallbacks)
+\shell-prompt[lines=2, line1="Nonexistent: ${nonexistent:-default}", line2="Testing: ${#undefined_metadata:-fallback} ❯ "]
+\shell-prompt-preview
+
+%% Test nested/complex interpolation
+\set[full_status="${branch}:${status}"]
+\shell-prompt[lines=1, line1="${project}[${full_status}]@${@pwd}❯ "]
+\shell-prompt-preview
+
+%% Verify that variables are stored correctly after interpolation
+\get[_prompt_line1]

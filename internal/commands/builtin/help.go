@@ -166,6 +166,7 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 		{Name: "Core Commands", Commands: []*neurotypes.HelpInfo{}},
 		{Name: "Session Management", Commands: []*neurotypes.HelpInfo{}},
 		{Name: "Model Management", Commands: []*neurotypes.HelpInfo{}},
+		{Name: "Shell & Prompt", Commands: []*neurotypes.HelpInfo{}},
 		{Name: "System & Tools", Commands: []*neurotypes.HelpInfo{}},
 		{Name: "Testing & Debugging", Commands: []*neurotypes.HelpInfo{}},
 	}
@@ -185,6 +186,10 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 
 	modelCommands := map[string]bool{
 		"model-catalog": true, "model-new": true, "model-status": true,
+	}
+
+	shellCommands := map[string]bool{
+		"shell-prompt": true, "shell-prompt-show": true, "shell-prompt-preset": true, "shell-prompt-preview": true,
 	}
 
 	sessionCommands := map[string]bool{
@@ -211,10 +216,12 @@ func (c *HelpCommand) categorizeCommands(allCommands []*neurotypes.HelpInfo) []C
 			categories[1].Commands = append(categories[1].Commands, cmdInfo) // Session Management
 		case modelCommands[cmdInfo.Command]:
 			categories[2].Commands = append(categories[2].Commands, cmdInfo) // Model Management
+		case shellCommands[cmdInfo.Command]:
+			categories[3].Commands = append(categories[3].Commands, cmdInfo) // Shell & Prompt
 		case systemCommands[cmdInfo.Command]:
-			categories[3].Commands = append(categories[3].Commands, cmdInfo) // System & Tools
+			categories[4].Commands = append(categories[4].Commands, cmdInfo) // System & Tools
 		case testingCommands[cmdInfo.Command]:
-			categories[4].Commands = append(categories[4].Commands, cmdInfo) // Testing & Debugging
+			categories[5].Commands = append(categories[5].Commands, cmdInfo) // Testing & Debugging
 		default:
 			// Unknown commands go to Core Commands category
 			categories[0].Commands = append(categories[0].Commands, cmdInfo)
@@ -273,6 +280,47 @@ func (c *HelpCommand) displaySessionCommandsGrouped(sessionCommands []*neurotype
 	}
 }
 
+// displayShellPromptCommandsGrouped displays shell prompt commands organized by functionality
+func (c *HelpCommand) displayShellPromptCommandsGrouped(shellCommands []*neurotypes.HelpInfo, printer *output.Printer) {
+	// Group shell prompt commands by functionality
+	shellGroups := map[string][]*neurotypes.HelpInfo{
+		"Configuration": {},
+		"Display":       {},
+		"Presets":       {},
+	}
+
+	// Categorize shell prompt commands
+	for _, cmdInfo := range shellCommands {
+		switch cmdInfo.Command {
+		case "shell-prompt":
+			shellGroups["Configuration"] = append(shellGroups["Configuration"], cmdInfo)
+		case "shell-prompt-show", "shell-prompt-preview":
+			shellGroups["Display"] = append(shellGroups["Display"], cmdInfo)
+		case "shell-prompt-preset":
+			shellGroups["Presets"] = append(shellGroups["Presets"], cmdInfo)
+		default:
+			shellGroups["Configuration"] = append(shellGroups["Configuration"], cmdInfo)
+		}
+	}
+
+	// Display each group
+	groupOrder := []string{"Configuration", "Display", "Presets"}
+	for _, groupName := range groupOrder {
+		commands := shellGroups[groupName]
+		if len(commands) > 0 {
+			printer.Print("    ")
+			printer.Info(groupName + ":")
+			for _, cmdInfo := range commands {
+				printer.Print("      ")
+				printer.Code(fmt.Sprintf("\\%-18s", cmdInfo.Command))
+				printer.Print(" - ")
+				printer.Println(cmdInfo.Description)
+			}
+			printer.Println("")
+		}
+	}
+}
+
 // showAllCommandsStyled displays all commands using semantic output types
 func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.HelpInfo) error {
 	// Create output printer with optional style injection
@@ -297,10 +345,13 @@ func (c *HelpCommand) showAllCommandsStyled(allCommands []*neurotypes.HelpInfo) 
 
 		printer.Warning(category.Name + ":")
 
-		// Special handling for Session Management to show subcategories
-		if category.Name == "Session Management" {
+		// Special handling for certain categories to show subcategories
+		switch category.Name {
+		case "Session Management":
 			c.displaySessionCommandsGrouped(category.Commands, printer)
-		} else {
+		case "Shell & Prompt":
+			c.displayShellPromptCommandsGrouped(category.Commands, printer)
+		default:
 			for _, cmdInfo := range category.Commands {
 				printer.Print("  ")
 				printer.Code(fmt.Sprintf("\\%-20s", cmdInfo.Command))

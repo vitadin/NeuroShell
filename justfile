@@ -210,7 +210,8 @@ test-all-units:
         ./internal/commands/session/... \
         ./internal/commands/model/... \
         ./internal/commands/provider/... \
-        ./internal/commands/llm/...
+        ./internal/commands/llm/... \
+        ./internal/commands/shell/...
     # ./internal/commands/... # Commented out during state machine transition (except specific integrated commands)
     @echo "All unit, command, parser, context, execution, and shell tests complete"
 
@@ -232,7 +233,8 @@ test-all-units-coverage:
         ./internal/commands/session/... \
         ./internal/commands/model/... \
         ./internal/commands/provider/... \
-        ./internal/commands/llm/...
+        ./internal/commands/llm/... \
+        ./internal/commands/shell/...
     # ./internal/commands/... # Commented out during state machine transition (except specific integrated commands)
     go tool cover -html=all-units-coverage.out -o all-units-coverage.html
     go tool cover -func=all-units-coverage.out

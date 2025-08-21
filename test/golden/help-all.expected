@@ -67,6 +67,18 @@ Model Management:
   \model-new            - Create new LLM model configuration
   \model-status         - Display status and details of model configurations
 
+Shell & Prompt:
+    Configuration:
+      \shell-prompt       - Configure the shell prompt display
+
+    Display:
+      \shell-prompt-preview - Preview the current shell prompt with current context
+      \shell-prompt-show  - Display current shell prompt configuration
+
+    Presets:
+      \shell-prompt-preset - Apply preset shell prompt configurations
+
+
 System & Tools:
   \change-log-show      - Show NeuroShell development change log with search capabilities
   \check                - Check service initialization status and availability
