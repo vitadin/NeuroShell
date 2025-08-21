@@ -1,0 +1,22 @@
+%% Shell prompt preset configurations test
+\set[_echo_command="true"]
+%% Tests shell-prompt-preset functionality: applying predefined configurations
+
+%% Test minimal preset
+\shell-prompt-preset[style="minimal"]
+\shell-prompt-show
+
+%% Test default preset
+\shell-prompt-preset[style="default"]
+\shell-prompt-show
+
+%% Test developer preset
+\shell-prompt-preset[style="developer"]
+\shell-prompt-show
+
+%% Test powerline preset
+\shell-prompt-preset[style="powerline"]
+\shell-prompt-show
+
+%% Test that powerline preset was applied successfully
+\get[_prompt_lines_count]

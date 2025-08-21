@@ -12,6 +12,7 @@ import (
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
 	_ "neuroshell/internal/commands/render"  // Import render commands (init functions)
 	_ "neuroshell/internal/commands/session" // Import session commands (init functions)
+	_ "neuroshell/internal/commands/shell"   // Import shell commands (init functions)
 	"neuroshell/internal/context"
 	"neuroshell/internal/data/embedded"
 	"neuroshell/internal/logger"
@@ -38,6 +39,8 @@ var (
 	noRC      bool
 	rcFile    string
 	confirmRC bool
+	// Global shell instance for prompt updates
+	globalShell *ishell.Shell
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -166,7 +169,7 @@ func initConfig() {
 // createCustomReadlineConfig creates a readline configuration with custom key bindings.
 func createCustomReadlineConfig() *readline.Config {
 	cfg := &readline.Config{
-		Prompt:      "neuro> ",
+		Prompt:      generateDynamicPrompt(), // Use dynamic prompt generation
 		HistoryFile: "/tmp/neuro_history",
 	}
 
@@ -197,6 +200,101 @@ func createCustomReadlineConfig() *readline.Config {
 	})
 
 	return cfg
+}
+
+// generateDynamicPrompt creates the current prompt with variable interpolation.
+// This function retrieves prompt templates from the ShellPromptService and
+// performs interpolation using the context's InterpolateVariables method.
+// For multi-line prompts, only returns the last line for readline.
+func generateDynamicPrompt() string {
+	// Get prompt service
+	promptService, err := services.GetGlobalRegistry().GetService("shell_prompt")
+	if err != nil {
+		logger.Debug("Shell prompt service not available, using default", "error", err)
+		return "neuro> "
+	}
+
+	shellPrompt := promptService.(*services.ShellPromptService)
+	lines, err := shellPrompt.GetPromptLines()
+	if err != nil {
+		logger.Debug("Failed to get prompt lines, using default", "error", err)
+		return "neuro> "
+	}
+
+	// Get context for interpolation
+	ctx := shell.GetGlobalContext()
+	if ctx == nil {
+		logger.Debug("Global context not available, using default prompt")
+		return "neuro> "
+	}
+
+	// Interpolate all lines
+	var interpolatedLines []string
+	for _, template := range lines {
+		// Use context's InterpolateVariables method (handled by context layer)
+		interpolated := ctx.InterpolateVariables(template)
+		interpolatedLines = append(interpolatedLines, interpolated)
+	}
+
+	// Return only the last line for readline
+	if len(interpolatedLines) > 0 {
+		return interpolatedLines[len(interpolatedLines)-1]
+	}
+
+	return "neuro> "
+}
+
+// generatePromptPrefix creates the prefix lines for multi-line prompts.
+// Returns the first N-1 lines that should be printed before the readline prompt.
+func generatePromptPrefix() []string {
+	// Get prompt service
+	promptService, err := services.GetGlobalRegistry().GetService("shell_prompt")
+	if err != nil {
+		return nil
+	}
+
+	shellPrompt := promptService.(*services.ShellPromptService)
+	lines, err := shellPrompt.GetPromptLines()
+	if err != nil {
+		return nil
+	}
+
+	// Get context for interpolation
+	ctx := shell.GetGlobalContext()
+	if ctx == nil {
+		return nil
+	}
+
+	// If only one line, no prefix needed
+	if len(lines) <= 1 {
+		return nil
+	}
+
+	// Interpolate the first N-1 lines for the prefix
+	var prefixLines []string
+	for i := 0; i < len(lines)-1; i++ {
+		interpolated := ctx.InterpolateVariables(lines[i])
+		prefixLines = append(prefixLines, interpolated)
+	}
+
+	return prefixLines
+}
+
+// updateShellPrompt updates the shell prompt with current context.
+// This should be called after command execution to refresh the prompt display.
+func updateShellPrompt(sh *ishell.Shell) {
+	if sh == nil {
+		return
+	}
+
+	// Set prefix lines for multi-line prompts using new ishell functionality
+	prefixLines := generatePromptPrefix()
+	sh.SetPromptPrefix(prefixLines)
+
+	// Set only the last line as the readline prompt
+	newPrompt := generateDynamicPrompt()
+	sh.SetPrompt(newPrompt)
+	logger.Debug("Shell prompt updated", "prefixLines", len(prefixLines), "prompt", newPrompt)
 }
 
 // openEditorAndGetContent opens the external editor with initial content and returns the edited content.
@@ -268,10 +366,21 @@ func runShell(_ *cobra.Command, _ []string) {
 	cfg := createCustomReadlineConfig()
 	sh := ishell.NewWithConfig(cfg)
 
+	// Store shell instance globally for prompt updates
+	globalShell = sh
+
 	// Set up autocomplete
 	if err := setupAutoComplete(sh); err != nil {
 		logger.Error("Failed to setup autocomplete", "error", err)
 		// Don't fail startup, just log the error
+	}
+
+	// Initialize dynamic prompt
+	updateShellPrompt(sh)
+
+	// Set up prompt update callback for the shell handler
+	shell.PromptUpdateCallback = func() {
+		updateShellPrompt(globalShell)
 	}
 
 	// Remove built-in commands so they become user messages or Neuro commands

@@ -1,0 +1,41 @@
+Setting _echo_command = true
+%%> "\\set[custom_var=\"custom_value\"]"
+Setting custom_var = custom_value
+%%> "\\shell-prompt[lines=2, line1=\"${@user}@${@pwd}\", line2=\"neuro❯ \"]"
+Prompt lines set to 2
+Prompt line 1 set to: testuser@/test/pwd
+Prompt line 2 set to: neuro❯ 
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+testuser@/test/pwd
+neuro❯ 
+█
+%%> "\\shell-prompt[lines=3, line1=\"┌─[${@time}] Custom: ${custom_var}\", line2=\"├─[${@pwd}] Session: ${#session_name:-none}\", line3=\"└❯ \"]"
+Prompt lines set to 3
+Prompt line 1 set to: ┌─[12:00:00] Custom: custom_value
+Prompt line 2 set to: ├─[/test/pwd] Session: 
+Prompt line 3 set to: └❯ 
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+┌─[12:00:00] Custom: custom_value
+├─[/test/pwd] Session: 
+└❯ 
+█
+%%> "\\shell-prompt-preset[style=\"minimal\"]"
+Applied minimal prompt preset
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+neuro> 
+█
+%%> "\\shell-prompt-preset[style=\"powerline\"]"
+Applied powerline prompt preset
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+┌─[testuser@]-[12:00:00]
+├─[:]-[]
+└─➤ 
+█

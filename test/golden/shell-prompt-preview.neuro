@@ -1,0 +1,28 @@
+%% Shell prompt preview functionality test
+\set[_echo_command="true"]
+%% Tests shell-prompt-preview functionality: previewing prompt with current context
+
+%% Set up some context variables to see in preview
+\set[custom_var="custom_value"]
+
+%% Set up a basic prompt configuration
+\shell-prompt[lines=2, line1="${@user}@${@pwd}", line2="neuro❯ "]
+
+%% Test basic preview
+\shell-prompt-preview
+
+%% Change to a more complex prompt with session variables
+\shell-prompt[lines=3, line1="┌─[${@time}] Custom: ${custom_var}", line2="├─[${@pwd}] Session: ${#session_name:-none}", line3="└❯ "]
+
+%% Test preview with complex prompt
+\shell-prompt-preview
+
+%% Set up minimal prompt
+\shell-prompt-preset[style="minimal"]
+
+%% Test minimal preview
+\shell-prompt-preview
+
+%% Set up powerline preset and preview
+\shell-prompt-preset[style="powerline"]
+\shell-prompt-preview

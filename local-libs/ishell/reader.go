@@ -25,6 +25,7 @@ type (
 		showPrompt   bool
 		completer    readline.AutoCompleter
 		defaultInput string
+		promptPrefix []string // Lines to display before the actual prompt
 		sync.Mutex
 	}
 )
@@ -60,6 +61,11 @@ func (s *shellReader) setMultiMode(use bool) {
 	s.readingMulti = use
 }
 
+// setPromptPrefix sets the prefix lines to display before the actual prompt
+func (s *shellReader) setPromptPrefix(lines []string) {
+	s.promptPrefix = lines
+}
+
 func (s *shellReader) readLine(consumer chan lineString) {
 	s.Lock()
 	defer s.Unlock()
@@ -70,6 +76,17 @@ func (s *shellReader) readLine(consumer chan lineString) {
 	}
 	s.reading = true
 	// start reading
+
+	// Display prompt prefix lines (multi-line prompt support)
+	if len(s.promptPrefix) > 0 && s.showPrompt {
+		// Add separator newline before first prompt line for multi-line prompts only
+		s.scanner.Stdout().Write([]byte("\n"))
+		for _, line := range s.promptPrefix {
+			// Use ANSI codes to ensure proper display
+			// Clear line and print prefix
+			s.scanner.Stdout().Write([]byte("\r\033[K" + line + "\n"))
+		}
+	}
 
 	// detect if print is called to
 	// prevent readline lib from clearing line.

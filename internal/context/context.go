@@ -27,6 +27,13 @@ var allowedGlobalVariables = []string{
 	"_stream",
 	"_editor",
 	"_session_autosave",
+	// Shell prompt configuration variables
+	"_prompt_lines_count",
+	"_prompt_line1",
+	"_prompt_line2",
+	"_prompt_line3",
+	"_prompt_line4",
+	"_prompt_line5",
 }
 
 // TryBlockContext represents the context for a try block with error boundaries

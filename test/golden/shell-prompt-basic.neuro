@@ -1,0 +1,24 @@
+%% Basic shell prompt configuration test
+\set[_echo_command="true"]
+%% Tests core shell-prompt functionality: setting lines, configuring templates
+
+%% Test basic single-line prompt configuration
+\shell-prompt[lines=1, line1="neuro> "]
+
+%% Test two-line prompt configuration
+\shell-prompt[lines=2, line1="${@pwd}", line2="❯ "]
+
+%% Test three-line prompt configuration
+\shell-prompt[lines=3, line1="┌─[${@time}]", line2="├─[${@pwd}]", line3="└➤ "]
+
+%% Test showing current configuration with no arguments
+\shell-prompt
+
+%% Test setting lines count only
+\shell-prompt[lines=2]
+
+%% Test setting specific line without changing count
+\shell-prompt[line1="modified> "]
+
+%% Verify final configuration
+\shell-prompt

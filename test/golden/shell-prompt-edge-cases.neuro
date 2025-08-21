@@ -1,0 +1,38 @@
+%% Shell prompt edge cases and error handling test
+\set[_echo_command="true"]
+%% Tests shell-prompt commands error handling and edge cases
+
+%% Test invalid lines count (too high)
+\try[\shell-prompt[lines=10]]
+\get[_error]
+
+%% Test invalid lines count (too low)
+\try[\shell-prompt[lines=0]]
+\get[_error]
+
+%% Test invalid lines count (non-numeric)
+\try[\shell-prompt[lines="abc"]]
+\get[_error]
+
+%% Test empty line configuration (should work)
+\shell-prompt[line1=""]
+\shell-prompt-show
+
+%% Test unicode characters in prompt
+\shell-prompt[lines=2, line1="🚀 ${@pwd}", line2="⚡ "]
+\shell-prompt-preview
+
+%% Test very long prompt line
+\shell-prompt[line1="This is a very long prompt line that contains a lot of text to test how the system handles longer strings in prompt templates"]
+\shell-prompt-preview
+
+%% Test special characters and escaping
+\shell-prompt[lines=2, line1="[${@user}] ${@pwd} \"quotes\"", line2="$ "]
+\shell-prompt-preview
+
+%% Test configuration with no prompt set (default behavior)
+\shell-prompt[lines=1]
+\shell-prompt
+
+%% Reset to known state
+\shell-prompt-preset[style="default"]
