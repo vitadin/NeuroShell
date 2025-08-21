@@ -187,7 +187,7 @@ System Variables:
     #cmd_set_usage       = \set[var=value] or \set var value
     #cmd_shell-prompt-preset_desc = Apply preset shell prompt configurations
     #cmd_shell-prompt-preset_parsemode = KeyValue
-    #cmd_shell-prompt-preset_usage = \shell-prompt-preset[style=NAM...set[style=powerline] (length: 486 chars)
+    #cmd_shell-prompt-preset_usage = \shell-prompt-preset[style=NAM...yle=powerline-color] (length: 915 chars)
     #cmd_shell-prompt-preview_desc = Preview the current shell prompt with current context
     #cmd_shell-prompt-preview_parsemode = Raw
     #cmd_shell-prompt-preview_usage = \shell-prompt-preview\n\nShow ...shell-prompt-preview (length: 132 chars)
@@ -196,7 +196,7 @@ System Variables:
     #cmd_shell-prompt-show_usage = \shell-prompt-show\n\nDisplay ...  \shell-prompt-show (length: 130 chars)
     #cmd_shell-prompt_desc = Configure the shell prompt display
     #cmd_shell-prompt_parsemode = KeyValue
-    #cmd_shell-prompt_usage = \shell-prompt[lines=N, line1="...rrently active model (length: 942 chars)
+    #cmd_shell-prompt_usage = \shell-prompt[lines=N, line1="..., keyword, highlight (length: 1801 chars)
     #cmd_show-stack_desc = Display the execution stack for development and debugging
     #cmd_show-stack_parsemode = KeyValue
     #cmd_show-stack_usage = \show-stack[detailed=true]

@@ -1,0 +1,25 @@
+%% Colorized shell prompt preview test
+\set[_echo_command="true"]
+%% Tests that shell-prompt-preview properly renders colors instead of showing raw markup
+
+%% Set up context variables for testing
+\set[custom_var="test_value"]
+
+%% Test preview with minimal-color preset
+\shell-prompt-preset[style="minimal-color"]
+\shell-prompt-preview
+
+%% Test preview with custom color markup
+\set[_prompt_line1={{color:red}}ERROR{{/color}} {{bold}}BOLD{{/bold}} {{color:green}}OK{{/color}}> ]
+\shell-prompt-preview
+
+%% Test preview with semantic colors and variables
+\set[_prompt_line1={{color:info}}${@user}{{/color}}@{{color:success}}${@pwd}{{/color}} [{{color:warning}}${custom_var}{{/color}}] ]
+\set[_prompt_line2={{color:cyan}}❯{{/color}} ]
+\set[_prompt_lines_count=2]
+\shell-prompt-preview
+
+%% Test preview with style markup combinations
+\set[_prompt_line1={{bold}}{{color:blue}}BOLD-BLUE{{/color}}{{/bold}} {{italic}}{{color:yellow}}ITALIC-YELLOW{{/color}}{{/italic}}> ]
+\set[_prompt_lines_count=1]
+\shell-prompt-preview

@@ -417,12 +417,20 @@ func TestTemporalDisplayService_RendererWithStyling(t *testing.T) {
 
 // Test the service registration
 func TestTemporalDisplayService_ServiceRegistration(t *testing.T) {
-	// The service should be auto-registered in init()
-	service, err := GlobalRegistry.GetService("temporal-display")
-	assert.NoError(t, err)
-	assert.NotNil(t, service)
+	// Create a new registry to avoid test isolation issues
+	registry := NewRegistry()
 
-	temporalService, ok := service.(*TemporalDisplayService)
+	// Register the service manually for this test
+	service := NewTemporalDisplayService()
+	err := registry.RegisterService(service)
+	assert.NoError(t, err)
+
+	// Test that we can retrieve it
+	retrievedService, err := registry.GetService("temporal-display")
+	assert.NoError(t, err)
+	assert.NotNil(t, retrievedService)
+
+	temporalService, ok := retrievedService.(*TemporalDisplayService)
 	assert.True(t, ok)
 	assert.Equal(t, "temporal-display", temporalService.Name())
 }

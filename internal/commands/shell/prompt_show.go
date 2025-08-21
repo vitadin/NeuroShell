@@ -6,6 +6,7 @@ import (
 
 	"neuroshell/internal/commands"
 	neuroshellcontext "neuroshell/internal/context"
+	"neuroshell/internal/services"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -94,13 +95,30 @@ func (c *PromptShowCommand) Execute(_ map[string]string, _ string) error {
 			template = "neuro> "
 		}
 		if template != "" {
-			// Use context's interpolation to show preview
+			// Use context's interpolation and color processing to show preview
 			interpolated := ctx.InterpolateVariables(template)
-			fmt.Printf("  %s\n", interpolated)
+			colored := c.processPromptLine(interpolated)
+			fmt.Printf("  %s\n", colored)
 		}
 	}
 
 	return nil
+}
+
+// processPromptLine processes a prompt line with color markup, similar to main.go
+func (c *PromptShowCommand) processPromptLine(template string) string {
+	colorService, err := services.GetGlobalRegistry().GetService("prompt_color")
+	if err != nil {
+		// If color service is not available, return as-is
+		return template
+	}
+
+	promptColor, ok := colorService.(*services.PromptColorService)
+	if !ok {
+		return template
+	}
+
+	return promptColor.ProcessColorMarkup(template)
 }
 
 // IsReadOnly returns true as this command only displays information.

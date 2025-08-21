@@ -1,0 +1,22 @@
+%% Colorized shell prompt show test
+\set[_echo_command="true"]
+%% Tests that shell-prompt-show properly renders colors in the preview section
+
+%% Test show with minimal-color preset
+\shell-prompt-preset[style="minimal-color"]
+\shell-prompt-show
+
+%% Test show with custom color markup in templates
+\set[_prompt_line1={{color:red}}RED{{/color}} {{bold}}BOLD{{/bold}} {{color:blue}}BLUE{{/color}}> ]
+\shell-prompt-show
+
+%% Test show with developer-color preset (multi-line)
+\shell-prompt-preset[style="developer-color"]
+\shell-prompt-show
+
+%% Test show with complex color combinations
+\set[_prompt_line1={{color:bright-green}}┌─[{{/color}}{{color:yellow}}${@time}{{/color}}{{color:bright-green}}]{{/color}} ]
+\set[_prompt_line2={{color:bright-green}}├─[{{/color}}{{color:cyan}}${@user}@${@pwd}{{/color}}{{color:bright-green}}]{{/color}} ]
+\set[_prompt_line3={{color:bright-green}}└─{{/color}}{{color:bright-red}}❯{{/color}} ]
+\set[_prompt_lines_count=3]
+\shell-prompt-show

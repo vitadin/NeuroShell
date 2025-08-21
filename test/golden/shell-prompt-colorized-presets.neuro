@@ -1,0 +1,23 @@
+%% Colorized shell prompt presets test
+\set[_echo_command="true"]
+%% Tests the new colorized shell prompt presets: minimal-color, default-color, developer-color, powerline-color
+
+%% Test minimal-color preset
+\shell-prompt-preset[style="minimal-color"]
+\shell-prompt-show
+
+%% Test default-color preset
+\shell-prompt-preset[style="default-color"]
+\shell-prompt-show
+
+%% Test developer-color preset
+\shell-prompt-preset[style="developer-color"]
+\shell-prompt-show
+
+%% Test powerline-color preset
+\shell-prompt-preset[style="powerline-color"]
+\shell-prompt-show
+
+%% Verify that preset was applied by checking lines count
+\get[_prompt_lines_count]
+\get[_prompt_line1]

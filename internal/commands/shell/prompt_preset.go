@@ -29,16 +29,24 @@ func (c *PromptPresetCommand) Usage() string {
 Apply a preset prompt configuration.
 
 Available presets:
-  minimal     - Single line minimal prompt ("neuro> ")
-  default     - Two-line default prompt with path and session
-  developer   - Two-line developer prompt with git and status
-  powerline   - Three-line powerline-style prompt
+  minimal        - Single line minimal prompt ("neuro> ")
+  minimal-color  - Single line minimal prompt with colors
+  default        - Two-line default prompt with path and session
+  default-color  - Two-line default prompt with colors
+  developer      - Two-line developer prompt with git and status
+  developer-color - Two-line developer prompt with colors
+  powerline      - Three-line powerline-style prompt
+  powerline-color - Three-line powerline-style prompt with colors
 
 Examples:
   \shell-prompt-preset[style=minimal]
+  \shell-prompt-preset[style=minimal-color]
   \shell-prompt-preset[style=default]
+  \shell-prompt-preset[style=default-color]
   \shell-prompt-preset[style=developer]
-  \shell-prompt-preset[style=powerline]`
+  \shell-prompt-preset[style=developer-color]
+  \shell-prompt-preset[style=powerline]
+  \shell-prompt-preset[style=powerline-color]`
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
@@ -56,7 +64,7 @@ func (c *PromptPresetCommand) HelpInfo() neurotypes.HelpInfo {
 		Options: []neurotypes.HelpOption{
 			{
 				Name:        "style",
-				Description: "Preset style name (minimal, default, developer, powerline)",
+				Description: "Preset style name (minimal, minimal-color, default, default-color, developer, developer-color, powerline, powerline-color)",
 				Required:    true,
 				Type:        "string",
 			},
@@ -67,8 +75,16 @@ func (c *PromptPresetCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Apply default two-line prompt preset",
 			},
 			{
-				Command:     "\\shell-prompt-preset[style=powerline]",
-				Description: "Apply powerline three-line prompt preset",
+				Command:     "\\shell-prompt-preset[style=default-color]",
+				Description: "Apply colorized default two-line prompt preset",
+			},
+			{
+				Command:     "\\shell-prompt-preset[style=powerline-color]",
+				Description: "Apply colorized powerline three-line prompt preset",
+			},
+			{
+				Command:     "\\shell-prompt-preset[style=minimal-color]",
+				Description: "Apply colorized minimal single-line prompt preset",
 			},
 		},
 	}
@@ -134,8 +150,56 @@ func (c *PromptPresetCommand) Execute(options map[string]string, _ string) error
 		}
 		fmt.Println("Applied powerline prompt preset")
 
+	case "minimal-color":
+		if err := ctx.SetVariable("_prompt_lines_count", "1"); err != nil {
+			return fmt.Errorf("failed to set lines count: %w", err)
+		}
+		if err := ctx.SetVariable("_prompt_line1", "{{color:info}}neuro{{/color}}{{color:success}}>{{/color}} "); err != nil {
+			return fmt.Errorf("failed to set prompt line: %w", err)
+		}
+		fmt.Println("Applied minimal-color prompt preset")
+
+	case "default-color":
+		if err := ctx.SetVariable("_prompt_lines_count", "2"); err != nil {
+			return fmt.Errorf("failed to set lines count: %w", err)
+		}
+		if err := ctx.SetVariable("_prompt_line1", "{{color:blue}}${@pwd}{{/color}} [{{color:yellow}}${#session_name:-no-session}{{/color}}]"); err != nil {
+			return fmt.Errorf("failed to set prompt line 1: %w", err)
+		}
+		if err := ctx.SetVariable("_prompt_line2", "{{color:success}}neuro>{{/color}} "); err != nil {
+			return fmt.Errorf("failed to set prompt line 2: %w", err)
+		}
+		fmt.Println("Applied default-color prompt preset")
+
+	case "developer-color":
+		if err := ctx.SetVariable("_prompt_lines_count", "2"); err != nil {
+			return fmt.Errorf("failed to set lines count: %w", err)
+		}
+		if err := ctx.SetVariable("_prompt_line1", "{{color:cyan}}${@pwd}{{/color}} {{color:green}}${@status}{{/color}}"); err != nil {
+			return fmt.Errorf("failed to set prompt line 1: %w", err)
+		}
+		if err := ctx.SetVariable("_prompt_line2", "{{color:magenta}}❯{{/color}} "); err != nil {
+			return fmt.Errorf("failed to set prompt line 2: %w", err)
+		}
+		fmt.Println("Applied developer-color prompt preset")
+
+	case "powerline-color":
+		if err := ctx.SetVariable("_prompt_lines_count", "3"); err != nil {
+			return fmt.Errorf("failed to set lines count: %w", err)
+		}
+		if err := ctx.SetVariable("_prompt_line1", "{{color:bright-blue}}┌─[{{/color}}{{color:bright-white}}${@user}@${@hostname:-local}{{/color}}{{color:bright-blue}}]-[{{/color}}{{color:bright-green}}${@time}{{/color}}{{color:bright-blue}}]{{/color}}"); err != nil {
+			return fmt.Errorf("failed to set prompt line 1: %w", err)
+		}
+		if err := ctx.SetVariable("_prompt_line2", "{{color:bright-blue}}├─[{{/color}}{{color:yellow}}${#session_name:-no-session}:${#message_count:-0}{{/color}}{{color:bright-blue}}]-[{{/color}}{{color:cyan}}${#active_model:-none}{{/color}}{{color:bright-blue}}]{{/color}}"); err != nil {
+			return fmt.Errorf("failed to set prompt line 2: %w", err)
+		}
+		if err := ctx.SetVariable("_prompt_line3", "{{color:bright-blue}}└─{{/color}}{{color:bright-red}}➤{{/color}} "); err != nil {
+			return fmt.Errorf("failed to set prompt line 3: %w", err)
+		}
+		fmt.Println("Applied powerline-color prompt preset")
+
 	default:
-		return fmt.Errorf("unknown preset style: %s. Available: minimal, default, developer, powerline", style)
+		return fmt.Errorf("unknown preset style: %s. Available: minimal, minimal-color, default, default-color, developer, developer-color, powerline, powerline-color", style)
 	}
 
 	return nil

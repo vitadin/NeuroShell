@@ -27,7 +27,7 @@ func (c *PromptCommand) Description() string {
 func (c *PromptCommand) Usage() string {
 	return `\shell-prompt[lines=N, line1="template", line2="template", ...]
 
-Configure the shell prompt appearance with 1-5 lines.
+Configure the shell prompt appearance with 1-5 lines, including colors and styles.
 
 Options:
   lines=N          Set number of prompt lines (1-5)
@@ -37,10 +37,21 @@ Options:
   line4="template" Set template for fourth line
   line5="template" Set template for fifth line
 
+Color and Style Syntax:
+  {{color:semantic}}text{{/color}}  - Use semantic colors (info, success, warning, error, etc.)
+  {{color:#hex}}text{{/color}}      - Use hex colors (#ff0000, #00ff00, etc.)
+  {{color:name}}text{{/color}}      - Use color names (red, blue, green, yellow, etc.)
+  {{bold}}text{{/bold}}             - Bold text
+  {{italic}}text{{/italic}}         - Italic text
+  {{underline}}text{{/underline}}   - Underlined text
+  
+  Styles automatically adapt to terminal capabilities and user color preferences.
+
 Examples:
   \shell-prompt[lines=1, line1="neuro> "]
-  \shell-prompt[lines=2, line1="${@pwd} [${#session_name}]", line2="❯ "]
-  \shell-prompt[lines=3, line1="┌─[${@time}]", line2="├─[${@pwd}]", line3="└➤ "]
+  \shell-prompt[lines=1, line1="{{color:info}}neuro{{/color}}{{color:success}}>{{/color}} "]
+  \shell-prompt[lines=2, line1="{{color:blue}}${@pwd}{{/color}} [{{color:yellow}}${#session_name}{{/color}}]", line2="{{bold}}❯{{/bold}} "]
+  \shell-prompt[lines=3, line1="┌─[{{color:cyan}}${@time}{{/color}}]", line2="├─[{{color:blue}}${@pwd}{{/color}}]", line3="└➤ "]
 
 Available variables:
   ${@pwd}           Current working directory
@@ -49,7 +60,10 @@ Available variables:
   ${@time}          Current time
   ${#session_name}  Active session name
   ${#message_count} Number of messages in session
-  ${#active_model}  Currently active model`
+  ${#active_model}  Currently active model
+
+Available semantic colors:
+  info, success, warning, error, command, variable, keyword, highlight`
 }
 
 // ParseMode returns ParseModeKeyValue for standard argument parsing.
@@ -88,6 +102,14 @@ func (c *PromptCommand) HelpInfo() neurotypes.HelpInfo {
 			{
 				Command:     "\\shell-prompt[lines=2, line1=\"${@pwd}\", line2=\"❯ \"]",
 				Description: "Set two-line prompt with path and arrow",
+			},
+			{
+				Command:     "\\shell-prompt[lines=1, line1=\"{{color:info}}neuro{{/color}}{{color:success}}>{{/color}} \"]",
+				Description: "Set colorized single-line prompt",
+			},
+			{
+				Command:     "\\shell-prompt[lines=2, line1=\"{{color:blue}}${@pwd}{{/color}} [{{color:yellow}}${#session_name}{{/color}}]\", line2=\"{{bold}}❯{{/bold}} \"]",
+				Description: "Set colorized two-line prompt with variables",
 			},
 			{
 				Command:     "\\shell-prompt",
