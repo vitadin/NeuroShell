@@ -12,6 +12,7 @@ import (
 	_ "neuroshell/internal/commands/builtin" // Import for side effects (init functions)
 	_ "neuroshell/internal/commands/render"  // Import render commands (init functions)
 	_ "neuroshell/internal/commands/session" // Import session commands (init functions)
+	_ "neuroshell/internal/commands/shell"   // Import shell commands (init functions)
 	"neuroshell/internal/context"
 	"neuroshell/internal/data/embedded"
 	"neuroshell/internal/logger"
