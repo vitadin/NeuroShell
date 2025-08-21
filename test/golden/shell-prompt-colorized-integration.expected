@@ -1,0 +1,85 @@
+Setting _echo_command = true
+%%> "\\set[project=\"NeuroShell\"]"
+Setting project = NeuroShell
+%%> "\\set[branch=\"colorized-prompts\"]"
+Setting branch = colorized-prompts
+%%> "\\set[_prompt_line1={{color:blue}}${project}{{/color}}:{{color:yellow}}${branch}{{/color}} {{color:green}}${@user}{{/color}}> ]"
+Setting _prompt_line1 = {{color:blue}}NeuroShell{{/color}}:{{color:yellow}}colorized-prompts{{/color}} {{color:green}}testuser{{/color}}>
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+NeuroShell:colorized-prompts testuser>
+█
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 1
+
+Templates:
+  Line 1: {{color:blue}}NeuroShell{{/color}}:{{color:yellow}}colorized-prompts{{/color}} {{color:green}}testuser{{/color}}>
+
+Preview:
+  NeuroShell:colorized-prompts testuser>
+%%> "\\shell-prompt-preset[style=\"default-color\"]"
+Applied default-color prompt preset
+%%> "\\get[_prompt_line1]"
+_prompt_line1 = {{color:blue}}${@pwd}{{/color}} [{{color:yellow}}${#session_name:-no-session}{{/color}}]
+%%> "\\get[_prompt_line2]"
+_prompt_line2 = {{color:success}}neuro>{{/color}} 
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+/test/pwd []
+neuro> 
+█
+%%> "\\set[_prompt_line1={{color:cyan}}${@pwd}{{/color}} [{{color:bright-white}}${@os}{{/color}}] {{color:magenta}}❯{{/color}} ]"
+Setting _prompt_line1 = {{color:cyan}}/test/pwd{{/color}} [{{color:bright-white}}test-os{{/color}}] {{color:magenta}}❯{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+/test/pwd [test-os] ❯
+neuro> 
+█
+%%> "\\set[_prompt_line1={{color:bright-blue}}[{{/color}}{{color:yellow}}${#session_name:-no-session}{{/color}}{{color:bright-blue}}]{{/color}} {{color:success}}❯{{/color}} ]"
+Setting _prompt_line1 = {{color:bright-blue}}[{{/color}}{{color:yellow}}{{/color}}{{color:bright-blue}}]{{/color}} {{color:success}}❯{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+[] ❯
+neuro> 
+█
+%%> "\\shell-prompt-preset[style=\"minimal\"]"
+Applied minimal prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 1
+
+Templates:
+  Line 1: neuro> 
+
+Preview:
+  neuro> 
+%%> "\\shell-prompt-preset[style=\"minimal-color\"]"
+Applied minimal-color prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 1
+
+Templates:
+  Line 1: {{color:info}}neuro{{/color}}{{color:success}}>{{/color}} 
+
+Preview:
+  neuro> 
+%%> "\\shell-prompt-preset[style=\"powerline-color\"]"
+Applied powerline-color prompt preset
+%%> "\\get[_prompt_lines_count]"
+_prompt_lines_count = 3
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+┌─[testuser@]-[12:00:00]
+├─[:]-[]
+└─➤ 
+█

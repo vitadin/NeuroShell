@@ -1,0 +1,37 @@
+%% Colorized shell prompt integration test
+\set[_echo_command="true"]
+%% Tests integration between colorized prompts, variables, and other shell features
+
+%% Set up some context for testing
+\set[project="NeuroShell"]
+\set[branch="colorized-prompts"]
+
+%% Test colorized prompt with variable interpolation
+\set[_prompt_line1={{color:blue}}${project}{{/color}}:{{color:yellow}}${branch}{{/color}} {{color:green}}${@user}{{/color}}> ]
+\shell-prompt-preview
+\shell-prompt-show
+
+%% Test that presets work correctly with variables
+\shell-prompt-preset[style="default-color"]
+\get[_prompt_line1]
+\get[_prompt_line2]
+\shell-prompt-preview
+
+%% Test colorized prompt with system variables
+\set[_prompt_line1={{color:cyan}}${@pwd}{{/color}} [{{color:bright-white}}${@os}{{/color}}] {{color:magenta}}❯{{/color}} ]
+\shell-prompt-preview
+
+%% Test that colorized prompts work with session variables
+\set[_prompt_line1={{color:bright-blue}}[{{/color}}{{color:yellow}}${#session_name:-no-session}{{/color}}{{color:bright-blue}}]{{/color}} {{color:success}}❯{{/color}} ]
+\shell-prompt-preview
+
+%% Test switching between colorized and non-colorized presets
+\shell-prompt-preset[style="minimal"]
+\shell-prompt-show
+\shell-prompt-preset[style="minimal-color"]
+\shell-prompt-show
+
+%% Test that colors work with powerline preset
+\shell-prompt-preset[style="powerline-color"]
+\get[_prompt_lines_count]
+\shell-prompt-preview

@@ -1,0 +1,61 @@
+Setting _echo_command = true
+%%> "\\shell-prompt-preset[style=\"minimal-color\"]"
+Applied minimal-color prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 1
+
+Templates:
+  Line 1: {{color:info}}neuro{{/color}}{{color:success}}>{{/color}} 
+
+Preview:
+  neuro> 
+%%> "\\shell-prompt-preset[style=\"default-color\"]"
+Applied default-color prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 2
+
+Templates:
+  Line 1: {{color:blue}}${@pwd}{{/color}} [{{color:yellow}}${#session_name:-no-session}{{/color}}]
+  Line 2: {{color:success}}neuro>{{/color}} 
+
+Preview:
+  /test/pwd []
+  neuro> 
+%%> "\\shell-prompt-preset[style=\"developer-color\"]"
+Applied developer-color prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 2
+
+Templates:
+  Line 1: {{color:cyan}}${@pwd}{{/color}} {{color:green}}${@status}{{/color}}
+  Line 2: {{color:magenta}}❯{{/color}} 
+
+Preview:
+  /test/pwd 0
+  ❯ 
+%%> "\\shell-prompt-preset[style=\"powerline-color\"]"
+Applied powerline-color prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 3
+
+Templates:
+  Line 1: {{color:bright-blue}}┌─[{{/color}}{{color:bright-white}}${@user}@${@hostname:-local}{{/color}}{{color:bright-blue}}]-[{{/color}}{{color:bright-green}}${@time}{{/color}}{{color:bright-blue}}]{{/color}}
+  Line 2: {{color:bright-blue}}├─[{{/color}}{{color:yellow}}${#session_name:-no-session}:${#message_count:-0}{{/color}}{{color:bright-blue}}]-[{{/color}}{{color:cyan}}${#active_model:-none}{{/color}}{{color:bright-blue}}]{{/color}}
+  Line 3: {{color:bright-blue}}└─{{/color}}{{color:bright-red}}➤{{/color}} 
+
+Preview:
+  ┌─[testuser@]-[12:00:00]
+  ├─[:]-[]
+  └─➤ 
+%%> "\\get[_prompt_lines_count]"
+_prompt_lines_count = 3
+%%> "\\get[_prompt_line1]"
+_prompt_line1 = {{color:bright-blue}}┌─[{{/color}}{{color:bright-white}}${@user}@${@hostname:-local}{{/color}}{{color:bright-blue}}]-[{{/color}}{{color:bright-green}}${@time}{{/color}}{{color:bright-blue}}]{{/color}}

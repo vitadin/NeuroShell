@@ -1,0 +1,52 @@
+Setting _echo_command = true
+%%> "\\set[_prompt_line1={{color:red}}RED{{/color}} {{color:blue}}BLUE{{/color}} {{color:green}}GREEN{{/color}} ]"
+Setting _prompt_line1 = {{color:red}}RED{{/color}} {{color:blue}}BLUE{{/color}} {{color:green}}GREEN{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+RED BLUE GREEN
+█
+%%> "\\set[_prompt_line1={{color:#ff0000}}HEX-RED{{/color}} {{color:#00ff00}}HEX-GREEN{{/color}} {{color:#0000ff}}HEX-BLUE{{/color}} ]"
+Setting _prompt_line1 = {{color:#ff0000}}HEX-RED{{/color}} {{color:#00ff00}}HEX-GREEN{{/color}} {{color:#0000ff}}HEX-BLUE{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+HEX-RED HEX-GREEN HEX-BLUE
+█
+%%> "\\set[_prompt_line1={{color:info}}INFO{{/color}} {{color:success}}SUCCESS{{/color}} {{color:warning}}WARNING{{/color}} {{color:error}}ERROR{{/color}} ]"
+Setting _prompt_line1 = {{color:info}}INFO{{/color}} {{color:success}}SUCCESS{{/color}} {{color:warning}}WARNING{{/color}} {{color:error}}ERROR{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+INFO SUCCESS WARNING ERROR
+█
+%%> "\\set[_prompt_line1={{bold}}BOLD{{/bold}} {{italic}}ITALIC{{/italic}} {{underline}}UNDERLINE{{/underline}} ]"
+Setting _prompt_line1 = {{bold}}BOLD{{/bold}} {{italic}}ITALIC{{/italic}} {{underline}}UNDERLINE{{/underline}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+BOLD ITALIC UNDERLINE
+█
+%%> "\\set[_prompt_line1={{bold}}{{color:red}}BOLD-RED{{/color}}{{/bold}} {{italic}}{{color:blue}}ITALIC-BLUE{{/color}}{{/italic}} ]"
+Setting _prompt_line1 = {{bold}}{{color:red}}BOLD-RED{{/color}}{{/bold}} {{italic}}{{color:blue}}ITALIC-BLUE{{/color}}{{/italic}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+BOLD-RED ITALIC-BLUE
+█
+%%> "\\set[status=\"OK\"]"
+Setting status = OK
+%%> "\\set[_prompt_line1={{color:green}}[{{bold}}${status}{{/bold}}]{{/color}} {{color:cyan}}${@user}{{/color}}> ]"
+Setting _prompt_line1 = {{color:green}}[{{bold}}OK{{/bold}}]{{/color}} {{color:cyan}}testuser{{/color}}>
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+[OK] testuser>
+█
+%%> "\\set[_prompt_line1={{color:cyan}}${@pwd}{{/color}} {{color:yellow}}[{{/color}}{{color:magenta}}session{{/color}}{{color:yellow}}]{{/color}} {{color:green}}❯{{/color}} ]"
+Setting _prompt_line1 = {{color:cyan}}/test/pwd{{/color}} {{color:yellow}}[{{/color}}{{color:magenta}}session{{/color}}{{color:yellow}}]{{/color}} {{color:green}}❯{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+/test/pwd [session] ❯
+█
