@@ -1,0 +1,21 @@
+%% Shell prompt show command test
+\set[_echo_command="true"]
+%% Tests shell-prompt-show functionality: displaying current configuration
+
+%% First set up a known prompt configuration
+\shell-prompt[lines=2, line1="${@user}@${@pwd}", line2="neuro❯ "]
+
+%% Test showing the configuration
+\shell-prompt-show
+
+%% Change to a different configuration
+\shell-prompt[lines=1, line1="simple> "]
+
+%% Show the updated configuration
+\shell-prompt-show
+
+%% Test with a more complex multi-line configuration
+\shell-prompt[lines=4, line1="┌─[${@time}] Session: ${#session_name:-none}", line2="├─[${@user}@${@pwd}]", line3="├─Model: ${#active_model:-none}", line4="└❯ "]
+
+%% Show the complex configuration
+\shell-prompt-show

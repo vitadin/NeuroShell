@@ -1,0 +1,59 @@
+Setting _echo_command = true
+%%> "\\shell-prompt-preset[style=\"minimal\"]"
+Applied minimal prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 1
+
+Templates:
+  Line 1: > 
+
+Preview:
+  > 
+%%> "\\shell-prompt-preset[style=\"default\"]"
+Applied default prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 2
+
+Templates:
+  Line 1: ${@pwd} [${#session_name:-no-session}]
+  Line 2: neuro> 
+
+Preview:
+  /test/pwd []
+  neuro> 
+%%> "\\shell-prompt-preset[style=\"developer\"]"
+Applied developer prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 2
+
+Templates:
+  Line 1: ${@pwd} ${@status}
+  Line 2: ❯ 
+
+Preview:
+  /test/pwd 0
+  ❯ 
+%%> "\\shell-prompt-preset[style=\"powerline\"]"
+Applied powerline prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 3
+
+Templates:
+  Line 1: ┌─[${@user}@${@hostname:-local}]-[${@time}]
+  Line 2: ├─[${#session_name:-no-session}:${#message_count:-0}]-[${#active_model:-none}]
+  Line 3: └─➤ 
+
+Preview:
+  ┌─[testuser@]-[12:00:00]
+  ├─[:]-[]
+  └─➤ 
+%%> "\\get[_prompt_lines_count]"
+_prompt_lines_count = 3

@@ -1,0 +1,60 @@
+Setting _echo_command = true
+%%> "\\try[\\shell-prompt[lines=10]]"
+%%> "\\get[_error]"
+_error = 
+%%> "\\try[\\shell-prompt[lines=0]]"
+%%> "\\get[_error]"
+_error = 
+%%> "\\try[\\shell-prompt[lines=\"abc\"]]"
+%%> "\\get[_error]"
+_error = 
+%%> "\\shell-prompt[line1=\"\"]"
+Prompt line 1 set to: 
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 2
+
+Templates:
+  Line 1: neuro> 
+  Line 2: neuro> 
+
+Preview:
+  neuro> 
+  neuro> 
+%%> "\\shell-prompt[lines=2, line1=\"🚀 ${@pwd}\", line2=\"⚡ \"]"
+Prompt lines set to 2
+Prompt line 1 set to: 🚀 /test/pwd
+Prompt line 2 set to: ⚡ 
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+🚀 /test/pwd
+⚡ 
+█
+%%> "\\shell-prompt[line1=\"This is a very long prompt line that contains a lot of text to test how the system handles longer strings in prompt templates\"]"
+Prompt line 1 set to: This is a very long prompt line that contains a lot of text to test how the system handles longer strings in prompt templates
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+This is a very long prompt line that contains a lot of text to test how the system handles longer strings in prompt templates
+⚡ 
+█
+%%> "\\shell-prompt[lines=2, line1=\"[${@user}] ${@pwd} \\\"quotes\\\"\", line2=\"$ \"]"
+Prompt lines set to 2
+Prompt line 1 set to: [testuser] /test/pwd \"quotes\"
+Prompt line 2 set to: $ 
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+[testuser] /test/pwd \"quotes\"
+$ 
+█
+%%> "\\shell-prompt[lines=1]"
+Prompt lines set to 1
+%%> "\\shell-prompt"
+Current shell prompt configuration:
+  Lines: 1
+  Line 1: [testuser] /test/pwd \"quotes\"
+%%> "\\shell-prompt-preset[style=\"default\"]"
+Applied default prompt preset
