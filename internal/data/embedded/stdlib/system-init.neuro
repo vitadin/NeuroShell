@@ -6,6 +6,10 @@
 %% This ensures LLM API keys are available without requiring user configuration
 \silent \try \llm-api-load
 
+%% Set up default shell prompt configuration
+%% This provides a clean two-line prompt with current directory and session info
+\silent \shell-prompt-preset[style=default]
+
 %% Future system initialization commands can be added here
 %% Examples:
 %% - Additional service initialization
