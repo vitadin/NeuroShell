@@ -29,7 +29,7 @@ func (c *PromptPresetCommand) Usage() string {
 Apply a preset prompt configuration.
 
 Available presets:
-  minimal     - Single line minimal prompt ("> ")
+  minimal     - Single line minimal prompt ("neuro> ")
   default     - Two-line default prompt with path and session
   developer   - Two-line developer prompt with git and status
   powerline   - Three-line powerline-style prompt
@@ -90,7 +90,7 @@ func (c *PromptPresetCommand) Execute(options map[string]string, _ string) error
 		if err := ctx.SetVariable("_prompt_lines_count", "1"); err != nil {
 			return fmt.Errorf("failed to set lines count: %w", err)
 		}
-		if err := ctx.SetVariable("_prompt_line1", "> "); err != nil {
+		if err := ctx.SetVariable("_prompt_line1", "neuro> "); err != nil {
 			return fmt.Errorf("failed to set prompt line: %w", err)
 		}
 		fmt.Println("Applied minimal prompt preset")

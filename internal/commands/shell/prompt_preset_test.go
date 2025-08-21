@@ -32,7 +32,7 @@ func TestPromptPresetCommand_Execute_Minimal(t *testing.T) {
 
 	line1, err := ctx.GetVariable("_prompt_line1")
 	assert.NoError(t, err)
-	assert.Equal(t, "> ", line1)
+	assert.Equal(t, "neuro> ", line1)
 }
 
 func TestPromptPresetCommand_Execute_Default(t *testing.T) {

@@ -7,10 +7,10 @@ Shell Prompt Configuration:
 Number of lines: 1
 
 Templates:
-  Line 1: > 
+  Line 1: neuro> 
 
 Preview:
-  > 
+  neuro> 
 %%> "\\shell-prompt-preset[style=\"default\"]"
 Applied default prompt preset
 %%> "\\shell-prompt-show"

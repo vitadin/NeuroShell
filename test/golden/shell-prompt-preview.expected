@@ -28,7 +28,7 @@ Applied minimal prompt preset
 %%> "\\shell-prompt-preview"
 Prompt Preview:
 ===============
-> 
+neuro> 
 █
 %%> "\\shell-prompt-preset[style=\"powerline\"]"
 Applied powerline prompt preset

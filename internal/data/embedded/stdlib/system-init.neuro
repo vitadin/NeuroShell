@@ -7,8 +7,8 @@
 \silent \try \llm-api-load
 
 %% Set up default shell prompt configuration
-%% This provides a clean two-line prompt with current directory and session info
-\silent \shell-prompt-preset[style=default]
+%% This provides a clean single-line prompt for simplicity
+\silent \shell-prompt-preset[style=minimal]
 
 %% Future system initialization commands can be added here
 %% Examples:

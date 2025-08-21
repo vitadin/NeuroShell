@@ -13,14 +13,12 @@ Prompt line 1 set to:
 %%> "\\shell-prompt-show"
 Shell Prompt Configuration:
 ==========================
-Number of lines: 2
+Number of lines: 1
 
 Templates:
   Line 1: neuro> 
-  Line 2: neuro> 
 
 Preview:
-  neuro> 
   neuro> 
 %%> "\\shell-prompt[lines=2, line1=\"🚀 ${@pwd}\", line2=\"⚡ \"]"
 Prompt lines set to 2
