@@ -205,6 +205,7 @@ func createCustomReadlineConfig() *readline.Config {
 // generateDynamicPrompt creates the current prompt with variable interpolation.
 // This function retrieves prompt templates from the ShellPromptService and
 // performs interpolation using the context's InterpolateVariables method.
+// For multi-line prompts, only returns the last line for readline.
 func generateDynamicPrompt() string {
 	// Get prompt service
 	promptService, err := services.GetGlobalRegistry().GetService("shell_prompt")
@@ -227,19 +228,56 @@ func generateDynamicPrompt() string {
 		return "neuro> "
 	}
 
-	// Interpolate each line using context's interpolation
-	var promptBuilder strings.Builder
-	for i, template := range lines {
+	// Interpolate all lines
+	var interpolatedLines []string
+	for _, template := range lines {
 		// Use context's InterpolateVariables method (handled by context layer)
 		interpolated := ctx.InterpolateVariables(template)
-
-		promptBuilder.WriteString(interpolated)
-		if i < len(lines)-1 {
-			promptBuilder.WriteString("\n")
-		}
+		interpolatedLines = append(interpolatedLines, interpolated)
 	}
 
-	return promptBuilder.String()
+	// Return only the last line for readline
+	if len(interpolatedLines) > 0 {
+		return interpolatedLines[len(interpolatedLines)-1]
+	}
+
+	return "neuro> "
+}
+
+// generatePromptPrefix creates the prefix lines for multi-line prompts.
+// Returns the first N-1 lines that should be printed before the readline prompt.
+func generatePromptPrefix() []string {
+	// Get prompt service
+	promptService, err := services.GetGlobalRegistry().GetService("shell_prompt")
+	if err != nil {
+		return nil
+	}
+
+	shellPrompt := promptService.(*services.ShellPromptService)
+	lines, err := shellPrompt.GetPromptLines()
+	if err != nil {
+		return nil
+	}
+
+	// Get context for interpolation
+	ctx := shell.GetGlobalContext()
+	if ctx == nil {
+		return nil
+	}
+
+	// If only one line, no prefix needed
+	if len(lines) <= 1 {
+		return nil
+	}
+
+	// Interpolate the first N-1 lines for the prefix
+	var prefixLines []string
+	for i := 0; i < len(lines)-1; i++ {
+		interpolated := ctx.InterpolateVariables(lines[i])
+		prefixLines = append(prefixLines, interpolated)
+	}
+
+	return prefixLines
 }
 
 // updateShellPrompt updates the shell prompt with current context.
@@ -249,9 +287,14 @@ func updateShellPrompt(sh *ishell.Shell) {
 		return
 	}
 
+	// Set prefix lines for multi-line prompts using new ishell functionality
+	prefixLines := generatePromptPrefix()
+	sh.SetPromptPrefix(prefixLines)
+
+	// Set only the last line as the readline prompt
 	newPrompt := generateDynamicPrompt()
 	sh.SetPrompt(newPrompt)
-	logger.Debug("Shell prompt updated", "prompt", strings.ReplaceAll(newPrompt, "\n", "\\n"))
+	logger.Debug("Shell prompt updated", "prefixLines", len(prefixLines), "prompt", newPrompt)
 }
 
 // openEditorAndGetContent opens the external editor with initial content and returns the edited content.

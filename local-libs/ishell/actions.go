@@ -53,6 +53,8 @@ type Actions interface {
 	// SetMultiPrompt sets the prompt string used for multiple lines. The string to be displayed before
 	// the cursor; starting from the second line of input.
 	SetMultiPrompt(prompt string)
+	// SetPromptPrefix sets prefix lines to display before the main prompt (for multi-line prompts)
+	SetPromptPrefix(lines []string)
 	// SetMultiChoicePrompt sets the prompt strings used for MultiChoice().
 	SetMultiChoicePrompt(prompt, spacer string)
 	// SetChecklistOptions sets the strings representing the options of Checklist().
@@ -147,6 +149,10 @@ func (s *shellActionsImpl) SetPrompt(prompt string) {
 
 func (s *shellActionsImpl) SetMultiPrompt(prompt string) {
 	s.reader.multiPrompt = prompt
+}
+
+func (s *shellActionsImpl) SetPromptPrefix(lines []string) {
+	s.reader.setPromptPrefix(lines)
 }
 
 func (s *shellActionsImpl) SetMultiChoicePrompt(prompt, spacer string) {

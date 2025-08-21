@@ -1,3 +1,5 @@
 Current directory .neurorc executed (correct priority)
 Setting priority_test = current_dir_wins
+[K/test/pwd []
 priority_test = current_dir_wins
+[K/test/pwd []
