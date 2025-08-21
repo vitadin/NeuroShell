@@ -303,16 +303,8 @@ func (h *CommandHighlighter) Paint(line []rune, _ int) []rune {
 	// Get the full match (command prefix including brackets)
 	commandPrefix := matches[0]
 
-	// Create style for command highlighting
-	// Use semantic "command" color if available, fallback to "info"
-	style := h.colorService.createColorStyle("command")
-	// Check if the command style is effectively empty (has no meaningful styling)
-	if style.GetForeground() == lipgloss.Color("") {
-		style = h.colorService.createColorStyle("info")
-	}
-
-	// Apply highlighting to the command prefix
-	highlightedPrefix := style.Render(commandPrefix)
+	// Apply safe highlighting using direct ANSI codes to avoid terminal detection sequences
+	highlightedPrefix := h.applySafeHighlighting(commandPrefix)
 
 	// Replace the command prefix in the original input
 	remainingInput := input[len(commandPrefix):]
@@ -320,6 +312,36 @@ func (h *CommandHighlighter) Paint(line []rune, _ int) []rune {
 
 	// Convert back to runes
 	return []rune(highlighted)
+}
+
+// applySafeHighlighting applies color highlighting using direct ANSI codes
+// to avoid terminal detection sequences that can leak into input
+func (h *CommandHighlighter) applySafeHighlighting(text string) string {
+	// Use simple, safe ANSI color codes for command highlighting
+	// These are basic colors that don't trigger terminal capability detection
+
+	const (
+		// Basic ANSI color codes - safe and widely supported
+		ansiBrightBlue = "\033[94m" // Bright blue for commands
+		ansiCyan       = "\033[36m" // Cyan as fallback
+		ansiReset      = "\033[0m"  // Reset formatting
+	)
+
+	// Choose color based on theme if available, otherwise use default
+	colorCode := ansiBrightBlue
+	if h.colorService.themeService != nil {
+		// Try to get semantic color from theme
+		if theme, exists := h.colorService.themeService.GetTheme("default"); exists {
+			// Use theme command color if it has a foreground set
+			if theme.Command.GetForeground() != lipgloss.Color("") {
+				// Extract basic color from theme - simplified approach
+				colorCode = ansiCyan // Use cyan for themed environments
+			}
+		}
+	}
+
+	// Apply safe highlighting
+	return colorCode + text + ansiReset
 }
 
 // Interface compliance check
