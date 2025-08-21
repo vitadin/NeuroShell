@@ -8,6 +8,7 @@ import (
 	"neuroshell/pkg/neurotypes"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/chzyer/readline"
 	"github.com/muesli/termenv"
 )
 
@@ -265,6 +266,60 @@ func (p *PromptColorService) stripStyleMarkup(input string) string {
 // IsColorSupported returns true if the terminal supports colors.
 func (p *PromptColorService) IsColorSupported() bool {
 	return lipgloss.ColorProfile() != termenv.Ascii
+}
+
+// CommandHighlighter implements readline.Painter to highlight command prefixes
+type CommandHighlighter struct {
+	colorService *PromptColorService
+	commandRegex *regexp.Regexp
+}
+
+// CreateCommandHighlighter returns a readline.Painter that highlights command prefixes
+func (p *PromptColorService) CreateCommandHighlighter() readline.Painter {
+	return &CommandHighlighter{
+		colorService: p,
+		// Regex to match command prefix: \command or \command[options]
+		commandRegex: regexp.MustCompile(`^\\([a-zA-Z][a-zA-Z0-9-]*(?:\[[^\]]*\])?)`),
+	}
+}
+
+// Paint implements readline.Painter interface to highlight command prefixes
+func (h *CommandHighlighter) Paint(line []rune, _ int) []rune {
+	// Convert runes to string for processing
+	input := string(line)
+
+	// Skip highlighting if colors are not supported
+	if !h.colorService.IsColorSupported() {
+		return line
+	}
+
+	// Find command prefix match
+	matches := h.commandRegex.FindStringSubmatch(input)
+	if len(matches) < 2 {
+		// No command prefix found, return original line
+		return line
+	}
+
+	// Get the full match (command prefix including brackets)
+	commandPrefix := matches[0]
+
+	// Create style for command highlighting
+	// Use semantic "command" color if available, fallback to "info"
+	style := h.colorService.createColorStyle("command")
+	// Check if the command style is effectively empty (has no meaningful styling)
+	if style.GetForeground() == lipgloss.Color("") {
+		style = h.colorService.createColorStyle("info")
+	}
+
+	// Apply highlighting to the command prefix
+	highlightedPrefix := style.Render(commandPrefix)
+
+	// Replace the command prefix in the original input
+	remainingInput := input[len(commandPrefix):]
+	highlighted := highlightedPrefix + remainingInput
+
+	// Convert back to runes
+	return []rune(highlighted)
 }
 
 // Interface compliance check

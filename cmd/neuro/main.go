@@ -173,6 +173,13 @@ func createCustomReadlineConfig() *readline.Config {
 		HistoryFile: "/tmp/neuro_history",
 	}
 
+	// Set up command highlighting using PromptColorService
+	if colorService, err := services.GetGlobalRegistry().GetService("prompt_color"); err == nil {
+		if promptColor, ok := colorService.(*services.PromptColorService); ok {
+			cfg.Painter = promptColor.CreateCommandHighlighter()
+		}
+	}
+
 	// Set up custom key listener for Ctrl+E editor shortcut
 	cfg.SetListener(func(line []rune, pos int, key rune) (newLine []rune, newPos int, ok bool) {
 		switch key {
