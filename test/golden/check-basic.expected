@@ -17,6 +17,7 @@ Service Status Check:
   [OK] model                - available/initialized
   [OK] model_catalog        - available/initialized
   [OK] parameter_validator  - available/initialized
+  [OK] prompt_color         - available/initialized
   [OK] provider_catalog     - available/initialized
   [OK] shell_prompt         - available/initialized
   [OK] stack                - available/initialized
@@ -25,4 +26,4 @@ Service Status Check:
   [OK] thinking-renderer    - available/initialized
   [OK] variable             - available/initialized
 
-Summary: 22/22 services healthy
+Summary: 23/23 services healthy
