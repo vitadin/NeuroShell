@@ -173,6 +173,13 @@ func createCustomReadlineConfig() *readline.Config {
 		HistoryFile: "/tmp/neuro_history",
 	}
 
+	// Set up command highlighting using PromptColorService
+	if colorService, err := services.GetGlobalRegistry().GetService("prompt_color"); err == nil {
+		if promptColor, ok := colorService.(*services.PromptColorService); ok {
+			cfg.Painter = promptColor.CreateCommandHighlighter()
+		}
+	}
+
 	// Set up custom key listener for Ctrl+E editor shortcut
 	cfg.SetListener(func(line []rune, pos int, key rune) (newLine []rune, newPos int, ok bool) {
 		switch key {
@@ -206,6 +213,22 @@ func createCustomReadlineConfig() *readline.Config {
 // This function retrieves prompt templates from the ShellPromptService and
 // performs interpolation using the context's InterpolateVariables method.
 // For multi-line prompts, only returns the last line for readline.
+// processPromptLine applies variable interpolation and color processing to a prompt line.
+func processPromptLine(template string, ctx *context.NeuroContext) string {
+	// First, interpolate variables
+	interpolated := ctx.InterpolateVariables(template)
+
+	// Then, apply color processing if available
+	colorService, err := services.GetGlobalRegistry().GetService("prompt_color")
+	if err != nil {
+		// Color service not available, return interpolated text
+		return interpolated
+	}
+
+	promptColor := colorService.(*services.PromptColorService)
+	return promptColor.ProcessColorMarkup(interpolated)
+}
+
 func generateDynamicPrompt() string {
 	// Get prompt service
 	promptService, err := services.GetGlobalRegistry().GetService("shell_prompt")
@@ -228,17 +251,16 @@ func generateDynamicPrompt() string {
 		return "neuro> "
 	}
 
-	// Interpolate all lines
-	var interpolatedLines []string
+	// Process all lines (interpolation + color processing)
+	var processedLines []string
 	for _, template := range lines {
-		// Use context's InterpolateVariables method (handled by context layer)
-		interpolated := ctx.InterpolateVariables(template)
-		interpolatedLines = append(interpolatedLines, interpolated)
+		processed := processPromptLine(template, ctx)
+		processedLines = append(processedLines, processed)
 	}
 
 	// Return only the last line for readline
-	if len(interpolatedLines) > 0 {
-		return interpolatedLines[len(interpolatedLines)-1]
+	if len(processedLines) > 0 {
+		return processedLines[len(processedLines)-1]
 	}
 
 	return "neuro> "
@@ -270,11 +292,11 @@ func generatePromptPrefix() []string {
 		return nil
 	}
 
-	// Interpolate the first N-1 lines for the prefix
+	// Process the first N-1 lines for the prefix (interpolation + color processing)
 	var prefixLines []string
 	for i := 0; i < len(lines)-1; i++ {
-		interpolated := ctx.InterpolateVariables(lines[i])
-		prefixLines = append(prefixLines, interpolated)
+		processed := processPromptLine(lines[i], ctx)
+		prefixLines = append(prefixLines, processed)
 	}
 
 	return prefixLines

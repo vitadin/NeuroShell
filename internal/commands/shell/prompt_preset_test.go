@@ -149,3 +149,69 @@ func TestPromptPresetCommand_IsReadOnly(t *testing.T) {
 	cmd := &PromptPresetCommand{}
 	assert.False(t, cmd.IsReadOnly())
 }
+
+func TestPromptPresetCommand_Execute_ColorizedPresets(t *testing.T) {
+	tests := []struct {
+		name     string
+		style    string
+		expected map[string]string
+	}{
+		{
+			name:  "minimal-color preset",
+			style: "minimal-color",
+			expected: map[string]string{
+				"_prompt_lines_count": "1",
+				"_prompt_line1":       "{{color:info}}neuro{{/color}}{{color:success}}>{{/color}} ",
+			},
+		},
+		{
+			name:  "default-color preset",
+			style: "default-color",
+			expected: map[string]string{
+				"_prompt_lines_count": "2",
+				"_prompt_line1":       "{{color:blue}}${@pwd}{{/color}} [{{color:yellow}}${#session_name:-no-session}{{/color}}]",
+				"_prompt_line2":       "{{color:success}}neuro>{{/color}} ",
+			},
+		},
+		{
+			name:  "developer-color preset",
+			style: "developer-color",
+			expected: map[string]string{
+				"_prompt_lines_count": "2",
+				"_prompt_line1":       "{{color:cyan}}${@pwd}{{/color}} {{color:green}}${@status}{{/color}}",
+				"_prompt_line2":       "{{color:magenta}}❯{{/color}} ",
+			},
+		},
+		{
+			name:  "powerline-color preset",
+			style: "powerline-color",
+			expected: map[string]string{
+				"_prompt_lines_count": "3",
+				"_prompt_line1":       "{{color:bright-blue}}┌─[{{/color}}{{color:bright-white}}${@user}@${@hostname:-local}{{/color}}{{color:bright-blue}}]-[{{/color}}{{color:bright-green}}${@time}{{/color}}{{color:bright-blue}}]{{/color}}",
+				"_prompt_line2":       "{{color:bright-blue}}├─[{{/color}}{{color:yellow}}${#session_name:-no-session}:${#message_count:-0}{{/color}}{{color:bright-blue}}]-[{{/color}}{{color:cyan}}${#active_model:-none}{{/color}}{{color:bright-blue}}]{{/color}}",
+				"_prompt_line3":       "{{color:bright-blue}}└─{{/color}}{{color:bright-red}}➤{{/color}} ",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Setup test context
+			ctx := context.NewTestContext()
+			context.SetGlobalContext(ctx)
+			defer context.ResetGlobalContext()
+
+			cmd := &PromptPresetCommand{}
+			err := cmd.Execute(map[string]string{"style": tt.style}, "")
+
+			assert.NoError(t, err)
+
+			// Check that all expected variables are set correctly
+			for varName, expectedValue := range tt.expected {
+				actualValue, err := ctx.GetVariable(varName)
+				assert.NoError(t, err, "Failed to get variable %s", varName)
+				assert.Equal(t, expectedValue, actualValue, "Variable %s should match expected value", varName)
+			}
+		})
+	}
+}

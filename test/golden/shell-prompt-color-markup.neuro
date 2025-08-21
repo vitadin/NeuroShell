@@ -1,0 +1,32 @@
+%% Custom color markup syntax test
+\set[_echo_command="true"]
+%% Tests the color markup syntax: {{color:type}}text{{/color}} and style markup
+
+%% Test basic direct colors
+\set[_prompt_line1={{color:red}}RED{{/color}} {{color:blue}}BLUE{{/color}} {{color:green}}GREEN{{/color}} ]
+\shell-prompt-preview
+
+%% Test hex colors
+\set[_prompt_line1={{color:#ff0000}}HEX-RED{{/color}} {{color:#00ff00}}HEX-GREEN{{/color}} {{color:#0000ff}}HEX-BLUE{{/color}} ]
+\shell-prompt-preview
+
+%% Test semantic colors
+\set[_prompt_line1={{color:info}}INFO{{/color}} {{color:success}}SUCCESS{{/color}} {{color:warning}}WARNING{{/color}} {{color:error}}ERROR{{/color}} ]
+\shell-prompt-preview
+
+%% Test style markup
+\set[_prompt_line1={{bold}}BOLD{{/bold}} {{italic}}ITALIC{{/italic}} {{underline}}UNDERLINE{{/underline}} ]
+\shell-prompt-preview
+
+%% Test combined color and style markup
+\set[_prompt_line1={{bold}}{{color:red}}BOLD-RED{{/color}}{{/bold}} {{italic}}{{color:blue}}ITALIC-BLUE{{/color}}{{/italic}} ]
+\shell-prompt-preview
+
+%% Test nested markup with variables
+\set[status="OK"]
+\set[_prompt_line1={{color:green}}[{{bold}}${status}{{/bold}}]{{/color}} {{color:cyan}}${@user}{{/color}}> ]
+\shell-prompt-preview
+
+%% Test multiple colors in single line
+\set[_prompt_line1={{color:cyan}}${@pwd}{{/color}} {{color:yellow}}[{{/color}}{{color:magenta}}session{{/color}}{{color:yellow}}]{{/color}} {{color:green}}❯{{/color}} ]
+\shell-prompt-preview

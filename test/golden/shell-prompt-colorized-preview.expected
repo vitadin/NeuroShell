@@ -1,0 +1,38 @@
+Setting _echo_command = true
+%%> "\\set[custom_var=\"test_value\"]"
+Setting custom_var = test_value
+%%> "\\shell-prompt-preset[style=\"minimal-color\"]"
+Applied minimal-color prompt preset
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+neuro> 
+█
+%%> "\\set[_prompt_line1={{color:red}}ERROR{{/color}} {{bold}}BOLD{{/bold}} {{color:green}}OK{{/color}}> ]"
+Setting _prompt_line1 = {{color:red}}ERROR{{/color}} {{bold}}BOLD{{/bold}} {{color:green}}OK{{/color}}>
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+ERROR BOLD OK>
+█
+%%> "\\set[_prompt_line1={{color:info}}${@user}{{/color}}@{{color:success}}${@pwd}{{/color}} [{{color:warning}}${custom_var}{{/color}}] ]"
+Setting _prompt_line1 = {{color:info}}testuser{{/color}}@{{color:success}}/test/pwd{{/color}} [{{color:warning}}test_value{{/color}}]
+%%> "\\set[_prompt_line2={{color:cyan}}❯{{/color}} ]"
+Setting _prompt_line2 = {{color:cyan}}❯{{/color}}
+%%> "\\set[_prompt_lines_count=2]"
+Setting _prompt_lines_count = 2
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+testuser@/test/pwd [test_value]
+❯
+█
+%%> "\\set[_prompt_line1={{bold}}{{color:blue}}BOLD-BLUE{{/color}}{{/bold}} {{italic}}{{color:yellow}}ITALIC-YELLOW{{/color}}{{/italic}}> ]"
+Setting _prompt_line1 = {{bold}}{{color:blue}}BOLD-BLUE{{/color}}{{/bold}} {{italic}}{{color:yellow}}ITALIC-YELLOW{{/color}}{{/italic}}>
+%%> "\\set[_prompt_lines_count=1]"
+Setting _prompt_lines_count = 1
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+BOLD-BLUE ITALIC-YELLOW>
+█

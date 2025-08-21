@@ -1,0 +1,31 @@
+%% Color fallback and compatibility test
+\set[_echo_command="true"]
+%% Tests graceful fallback for terminals without color support and edge cases
+
+%% Test that invalid color names are handled gracefully
+\set[_prompt_line1={{color:invalidcolor}}TEXT{{/color}} {{color:red}}VALID{{/color}} ]
+\shell-prompt-preview
+
+%% Test empty color markup
+\set[_prompt_line1={{color:}}EMPTY{{/color}} {{color:blue}}BLUE{{/color}} ]
+\shell-prompt-preview
+
+%% Test malformed markup (should be stripped or ignored)
+\set[_prompt_line1={{color:red}}UNCLOSED {{color:blue}}BLUE{{/color}} ]
+\shell-prompt-preview
+
+%% Test mixed valid and invalid markup
+\set[_prompt_line1={{bold}}VALID-BOLD{{/bold}} {{unknownstyle}}UNKNOWN{{/unknownstyle}} {{color:green}}VALID-GREEN{{/color}} ]
+\shell-prompt-preview
+
+%% Test bright colors
+\set[_prompt_line1={{color:bright-red}}BRIGHT-RED{{/color}} {{color:bright-blue}}BRIGHT-BLUE{{/color}} {{color:bright-white}}BRIGHT-WHITE{{/color}} ]
+\shell-prompt-preview
+
+%% Test color markup with special characters
+\set[_prompt_line1={{color:cyan}}[{{/color}}{{color:yellow}}特殊字符 Unicode 🎨{{/color}}{{color:cyan}}]{{/color}} ]
+\shell-prompt-preview
+
+%% Test very long color markup
+\set[_prompt_line1={{color:red}}This is a very long line with {{/color}}{{color:blue}}multiple{{/color}} {{bold}}{{color:green}}nested{{/color}}{{/bold}} {{color:yellow}}color{{/color}} {{color:magenta}}segments{{/color}} {{color:cyan}}to test{{/color}} {{color:white}}performance{{/color}} ]
+\shell-prompt-preview

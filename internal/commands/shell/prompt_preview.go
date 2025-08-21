@@ -72,11 +72,14 @@ func (c *PromptPreviewCommand) Execute(_ map[string]string, _ string) error {
 	fmt.Println("Prompt Preview:")
 	fmt.Println("===============")
 
-	// Show each line with interpolation
+	// Show each line with interpolation and color processing
 	for i, template := range lines {
 		// Interpolate variables using context
 		interpolated := ctx.InterpolateVariables(template)
-		fmt.Printf("%s\n", interpolated)
+
+		// Process color markup
+		colored := c.processPromptLine(interpolated)
+		fmt.Printf("%s\n", colored)
 
 		// Don't add extra newline after the last line
 		if i == len(lines)-1 {
@@ -87,6 +90,22 @@ func (c *PromptPreviewCommand) Execute(_ map[string]string, _ string) error {
 	fmt.Println() // Final newline
 
 	return nil
+}
+
+// processPromptLine processes a prompt line with color markup, similar to main.go
+func (c *PromptPreviewCommand) processPromptLine(template string) string {
+	colorService, err := services.GetGlobalRegistry().GetService("prompt_color")
+	if err != nil {
+		// If color service is not available, return as-is
+		return template
+	}
+
+	promptColor, ok := colorService.(*services.PromptColorService)
+	if !ok {
+		return template
+	}
+
+	return promptColor.ProcessColorMarkup(template)
 }
 
 // IsReadOnly returns true as this command only displays a preview.
