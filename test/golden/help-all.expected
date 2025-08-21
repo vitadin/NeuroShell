@@ -29,10 +29,6 @@ Core Commands:
   \send                 - Send message to LLM agent
   \set                  - Set a variable
   \set-env              - Set an environment variable
-  \shell-prompt         - Configure the shell prompt display
-  \shell-prompt-preset  - Apply preset shell prompt configurations
-  \shell-prompt-preview - Preview the current shell prompt with current context
-  \shell-prompt-show    - Display current shell prompt configuration
   \show-stack           - Display the execution stack for development and debugging
   \silent               - Execute commands with stdout output suppressed
   \timer                - Start a visual countdown timer for the specified number of seconds
@@ -70,6 +66,18 @@ Model Management:
   \model-catalog        - List available LLM models from embedded catalog
   \model-new            - Create new LLM model configuration
   \model-status         - Display status and details of model configurations
+
+Shell & Prompt:
+    Configuration:
+      \shell-prompt       - Configure the shell prompt display
+
+    Display:
+      \shell-prompt-preview - Preview the current shell prompt with current context
+      \shell-prompt-show  - Display current shell prompt configuration
+
+    Presets:
+      \shell-prompt-preset - Apply preset shell prompt configurations
+
 
 System & Tools:
   \change-log-show      - Show NeuroShell development change log with search capabilities
