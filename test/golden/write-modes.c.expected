@@ -1,0 +1,19 @@
+Wrote 15 bytes to 'test/fixtures/write-modes-test.txt'
+Initial file content:
+Initial content
+Wrote 19 bytes to 'test/fixtures/write-modes-test.txt'
+After overwrite:
+Overwritten content
+Appended 0 bytes to 'test/fixtures/write-modes-test.txt'
+Additional line 1
+Additional line 2
+After append:
+Overwritten content
+Wrote 14 bytes to 'test/fixtures/write-case-test.txt'
+Appended 17 bytes to 'test/fixtures/write-case-test.txt'
+Case variation test:
+Uppercase modeMixed case append
+Wrote 16 bytes to 'test/fixtures/write-space-test.txt'
+Appended 18 bytes to 'test/fixtures/write-space-test.txt'
+Space in mode test:
+Mode with spacesAppend with spaces

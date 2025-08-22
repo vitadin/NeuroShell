@@ -1,0 +1,60 @@
+Setting _echo_command = true
+%%> "\\echo === Show-Stack During Batch Execution ==="
+=== Show-Stack During Batch Execution ===
+%%> "\\echo Step 1: Script start - checking initial stack"
+Step 1: Script start - checking initial stack
+%%> "\\show-stack"
+Execution Stack:
+🔝 \echo
+   \echo Step 2: Setting up variables and commands
+   \set[task1="Initialize database"]
+   \set[task2="Process records"]
+   \set[task3="Generate report"]
+   \echo
+   \echo Step 3: Simulating multi-step workflow
+   \if[condition="true"] \echo "Task 1: ${task1}"
+   \if[condition="true"] \echo "Task 2: ${task2}"
+   \if[condition="true"] \echo "Task 3: ${task3}"
+   \echo
+   \echo Step 4: Stack state during workflow execution
+   \show-stack[detailed=true]
+   \echo
+   \echo Step 5: Workflow complete
+🔻 \echo "All tasks processed"
+%%> "\\echo"
+%%> "\\echo Step 2: Setting up variables and commands"
+Step 2: Setting up variables and commands
+%%> "\\set[task1=\"Initialize database\"]"
+Setting task1 = Initialize database
+%%> "\\set[task2=\"Process records\"]"
+Setting task2 = Process records
+%%> "\\set[task3=\"Generate report\"]"
+Setting task3 = Generate report
+%%> "\\echo"
+%%> "\\echo Step 3: Simulating multi-step workflow"
+Step 3: Simulating multi-step workflow
+%%> "\\if[condition=\"true\"] \\echo \"Task 1: ${task1}\""
+%%> "\\echo \"Task 1: Initialize database\""
+"Task 1: Initialize database"
+%%> "\\if[condition=\"true\"] \\echo \"Task 2: ${task2}\""
+%%> "\\echo \"Task 2: Process records\""
+"Task 2: Process records"
+%%> "\\if[condition=\"true\"] \\echo \"Task 3: ${task3}\""
+%%> "\\echo \"Task 3: Generate report\""
+"Task 3: Generate report"
+%%> "\\echo"
+%%> "\\echo Step 4: Stack state during workflow execution"
+Step 4: Stack state during workflow execution
+%%> "\\show-stack[detailed=true]"
+Execution Stack (Size: 3)
+[TOP] \echo
+[   1] \echo Step 5: Workflow complete
+[BOTTOM] \echo "All tasks processed"
+                                           
+Stack operations: LIFO (Last In, First Out)
+Next command to execute: \echo
+%%> "\\echo"
+%%> "\\echo Step 5: Workflow complete"
+Step 5: Workflow complete
+%%> "\\echo \"All tasks processed\""
+"All tasks processed"

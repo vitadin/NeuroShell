@@ -1,0 +1,42 @@
+Setting _style = dark1
+=== Basic Send with Thinking Blocks Test ===
+Testing seamless \send workflow with mock LLM thinking blocks
+Testing first message...
+<thinking id="2-1">
+Thinking about the user's message: "Hello, can you help me with a simple question?". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 1 messages, last: Hello, can you help me  
+  with a simple question?)                                                    
+
+Testing follow-up message...
+<thinking id="4-1">
+Thinking about the user's message: "What's the weather like today?". This helps verify the message flow in tests. The user sent 3 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 3 messages, last: What's the weather like 
+  today?)                                                                     
+
+Testing third message to verify conversation flow...
+<thinking id="6-1">
+Thinking about the user's message: "Thanks for your help!". This helps verify the message flow in tests. The user sent 5 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 5 messages, last: Thanks for your help!)  
+
+Session created by \send command:
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant.
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:14
+Messages: 6 total
+
+[1] user (00:00:02): Hello, can you help me with a simple question?
+[2] assistant (00:00:05): This is a mocking reply (received 1 mess... you help me with a simple question?) (99 chars)
+[3] user (00:00:07): What's the weather like today?
+[4] assistant (00:00:09): This is a mocking reply (received 3 mess...last: What's the weather like today?) (83 chars)
+[5] user (00:00:11): Thanks for your help!
+[6] assistant (00:00:13): This is a mocking reply (received 5 messages, last: Thanks for your help!)
+Active model created by \send command:
+#active_model_name = default_model
+Model: default_model

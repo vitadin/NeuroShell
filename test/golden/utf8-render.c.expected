@@ -1,0 +1,25 @@
+Setting _echo_command = true
+%%> "\\render Basic UTF-8: café, naïve, résumé"
+Basic UTF-8: café, naïve, résumé
+%%> "\\render Non-Latin: 日本語, Ελληνικά, Русский"
+Non-Latin: 日本語, Ελληνικά, Русский
+%%> "\\render Symbols: — – \"\" …"
+Symbols: — – "" …
+%%> "\\render Emojis: 🚀 ✨ 🌟 💫 ⭐"
+Emojis: 🚀 ✨ 🌟 💫 ⭐
+%%> "\\render Math: π ∑ ∞ ≠ ≤ ≥"
+Math: π ∑ ∞ ≠ ≤ ≥
+%%> "\\render Currency: € £ ¥ ₽ ₹"
+Currency: € £ ¥ ₽ ₹
+%%> "\\set[utf8_content=\"café with 🚀 and — dash\"]"
+Setting utf8_content = café with 🚀 and — dash
+%%> "\\render Interpolated: ${utf8_content}"
+Interpolated: café with 🚀 and — dash
+%%> "\\render Complex: \"Hello\" said the café owner in 日本語"
+Complex: "Hello" said the café owner in 日本語
+%%> "\\get[_output]"
+_output = Complex: "Hello" said the café owner in 日本語
+%%> "\\render Code-like: function café() { return \"🚀\"; }"
+Code-like: function café() { return "🚀"; }
+%%> "\\get[_output]"
+_output = Code-like: function café() { return "🚀"; }

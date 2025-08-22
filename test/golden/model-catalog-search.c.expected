@@ -1,0 +1,192 @@
+Setting _echo_command = true
+%%> "\\model-catalog[search=o3]"
+Model Catalog - Search: 'o3' (3 models):
+Anthropic Models:
+
+  [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
+    Provider: anthropic (ANC)
+    Context: 200,000 tokens (max output: 4,096 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $15.00/1M input, $75.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2023-08-01
+    Version: 2024-02-29
+    Description: Top-level intelligence, fluency, and understanding
+
+Openai Models:
+
+  [O3R] O3 Reasoning (o3)
+    Provider: openai (OAR)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
+    Modalities: text-input, text-output, image-input
+    Pricing: $2.00/1M input, $8.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: web-search, file-search, image-generation, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Snapshots: o3, o3-2025-04-16
+    Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
+
+  [O3PR] o3-pro Reasoning (o3-pro-2025-06-10)
+    Provider: openai (OAR)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, tool-use, vision, web-search, file-search, image-generation, reinforcement-learning, complex-reasoning
+    Modalities: text-input, image-input, text-output
+    Pricing: $20.00/1M input, $80.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: web-search, file-search, image-generation
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Version: 2025-06-10
+    Last Updated: 2025-08-10
+    Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
+%%> "\\model-catalog[search=claude]"
+Model Catalog - Search: 'claude' (5 models):
+Anthropic Models:
+
+  [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
+    Provider: anthropic (ANC)
+    Context: 200,000 tokens (max output: 4,096 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $15.00/1M input, $75.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2023-08-01
+    Version: 2024-02-29
+    Description: Top-level intelligence, fluency, and understanding
+
+  [CS37] Claude 3.7 Sonnet (claude-3-7-sonnet-20250219)
+    Provider: anthropic (ANC)
+    Context: 200,000 tokens (max output: 64,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $3.00/1M input, $15.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2024-11-01
+    Extended thinking supported
+    Version: 2025-02-19
+    Description: High intelligence with toggleable extended thinking
+
+  [CO4] Claude Opus 4 (claude-opus-4-20250514)
+    Provider: anthropic (ANC)
+    Context: 200,000 tokens (max output: 32,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $15.00/1M input, $75.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-03-01
+    Extended thinking supported
+    Parameter Notes:
+      • temperature: Must be 1.0 when extended thinking (thinking_budget) is enabled
+      • max_tokens: Must be greater than thinking_budget when extended thinking is enabled
+      • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
+      • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
+      • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-05-14
+    Description: Highest level of intelligence and capability
+
+  [CO41] Claude Opus 4.1 (claude-opus-4-1-20250805)
+    Provider: anthropic (ANC)
+    Context: 200,000 tokens (max output: 32,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, research, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $15.00/1M input, $75.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-03-01
+    Extended thinking supported
+    Parameter Notes:
+      • temperature: Must be 1.0 when extended thinking (thinking_budget) is enabled. Cannot be used with top_p parameter.
+      • max_tokens: Must be greater than thinking_budget when extended thinking is enabled
+      • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled. Cannot be used with temperature parameter.
+      • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
+      • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-08-05
+    Description: Highest level of intelligence and capability with enhanced API form validation
+
+  [CS4] Claude Sonnet 4 (claude-sonnet-4-20250514)
+    Provider: anthropic (ANC)
+    Context: 200,000 tokens (max output: 64,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $3.00/1M input, $15.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-03-01
+    Extended thinking supported
+    Parameter Notes:
+      • temperature: Must be 1.0 when extended thinking (thinking_budget) is enabled
+      • max_tokens: Must be greater than thinking_budget when extended thinking is enabled
+      • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
+      • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
+      • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-05-14
+    Last Updated: 2025-08-10
+    Description: High intelligence and balanced performance
+%%> "\\model-catalog[search=coding]"
+Model Catalog - Search: 'coding' (5 models):
+Openai Models:
+
+  [G5C] GPT-5 Chat (gpt-5)
+    Provider: openai (OAC)
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.25/1M input, $10.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-09-30
+    Reasoning tokens supported
+    Snapshots: gpt-5, gpt-5-2025-08-07
+    Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via chat completions endpoint.
+
+  [G5R] GPT-5 Responses (gpt-5)
+    Provider: openai (OAR)
+    Context: 400,000 tokens (max output: 128,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning, agentic-tasks
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.25/1M input, $10.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, image-generation, code-interpreter
+    Knowledge cutoff: 2024-09-30
+    Reasoning tokens supported
+    Snapshots: gpt-5, gpt-5-2025-08-07
+    Description: The best model for coding and agentic tasks across domains. 400K context window with reasoning token support via responses endpoint.
+
+  [O3R] O3 Reasoning (o3)
+    Provider: openai (OAR)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, instruction-following, technical-writing
+    Modalities: text-input, text-output, image-input
+    Pricing: $2.00/1M input, $8.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Tools: web-search, file-search, image-generation, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Snapshots: o3, o3-2025-04-16
+    Description: Well-rounded and powerful model across domains. Sets a new standard for math, science, coding, and visual reasoning tasks. Also excels at technical writing and instruction-following. Use it to think through multi-step problems that involve analysis across text, code, and images.
+
+  [O4MC] O4-mini Chat (o4-mini)
+    Provider: openai (OAC)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.10/1M input, $4.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Snapshots: o4-mini, o4-mini-2025-04-16
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Chat endpoint version.
+
+  [O4MR] O4-mini Reasoning (o4-mini)
+    Provider: openai (OAR)
+    Context: 200,000 tokens (max output: 100,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, visual-reasoning
+    Modalities: text-input, text-output, image-input
+    Pricing: $1.10/1M input, $4.40/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision, fine-tuning
+    Tools: web-search, file-search, code-interpreter, mcp
+    Knowledge cutoff: 2024-05-31
+    Reasoning tokens supported
+    Snapshots: o4-mini, o4-mini-2025-04-16
+    Description: Faster, more affordable reasoning model optimized for fast, effective reasoning with exceptionally efficient performance in coding and visual tasks. Reasoning endpoint version.

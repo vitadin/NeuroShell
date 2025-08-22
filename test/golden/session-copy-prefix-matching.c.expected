@@ -1,0 +1,13 @@
+# Test session copy with prefix matching functionality
+Created session 'project_management_main' (ID: 00000001)
+Added user message to session 'project_management_main'
+Added assistant message to session 'project_management_main'
+# Test prefix matching by name (should match project_management_main)
+Copied session 'project_management_main' to 'pm_backup' (ID: 00000004) with 2 messages
+Copied from: project_management_main
+Copied to: pm_backup
+Message count: 2
+# Test with even shorter prefix
+Copied session 'project_management_main' to 'another_copy' (ID: 00000007) with 2 messages
+Second copy from: project_management_main
+Second copy to: another_copy

@@ -1,0 +1,41 @@
+Setting _echo_command = true
+%%> "\\session-new[system=\"You are a test assistant for format detection\"] format_test_session"
+Created session 'format_test_session' (ID: 00000001)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-usermsg Testing format auto-detection"
+Added user message to session 'format_test_session'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-export[file=/tmp/neuro_test_format_detection.json] format_test_session"
+%%> "\\session-json-export[file=/tmp/neuro_test_format_detection.json] format_test_session"
+Exported session 'format_test_session' (ID: 00000001) to /tmp/neuro_test_format_detection.json
+%%> "\\cat /tmp/neuro_test_format_detection.json"
+{
+  "id": "00000001-0000-4000-8000-000000000001",
+  "name": "format_test_session",
+  "system_prompt": "You are a test assistant for format detection",
+  "messages": [
+    {
+      "id": "00000002-0000-4000-8000-000000000002",
+      "role": "user",
+      "content": "Testing format auto-detection",
+      "timestamp": "2025-01-01T00:00:02Z"
+    }
+  ],
+  "created_at": "2025-01-01T00:00:01Z",
+  "updated_at": "2025-01-01T00:00:03Z",
+  "is_active": true
+}
+%%> "\\session-import[file=/tmp/neuro_test_format_detection.json]"
+%%> "\\session-json-import[file=/tmp/neuro_test_format_detection.json]"
+Imported session as 'Session 1' (ID: 00000003) from /tmp/neuro_test_format_detection.json (original: 'format_test_session')
+%%> "\\silent \\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
+%%> "\\get[_output]"
+_output = Activated session 'Session 1' (ID: 00000003, Messages: 1)
+%%> "\\get[#session_name]"
+#session_name = Session 1
+%%> "\\get[#session_original_name]"
+#session_original_name = format_test_session
+%%> "\\get[#message_count]"
+#message_count = 1
+%%> "\\try \\bash rm /tmp/neuro_test_format_detection.json"
+%%> "\\bash rm /tmp/neuro_test_format_detection.json"

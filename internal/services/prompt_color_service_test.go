@@ -555,3 +555,165 @@ func TestCommandHighlighter_Paint_ColorDisabled(t *testing.T) {
 	// verify the logic handles the case correctly
 	assert.NotNil(t, result)
 }
+
+func TestCommandHighlighter_parseCommandParts(t *testing.T) {
+	registry := NewRegistry()
+	SetGlobalRegistry(registry)
+
+	service := NewPromptColorService()
+	err := service.Initialize()
+	assert.NoError(t, err)
+
+	highlighter := service.CreateCommandHighlighter().(*CommandHighlighter)
+
+	tests := []struct {
+		name            string
+		input           string
+		expectedCommand string
+		expectedOptions string
+		expectedText    string
+	}{
+		{
+			name:            "simple_command",
+			input:           `\send hello world`,
+			expectedCommand: `\send`,
+			expectedOptions: ``,
+			expectedText:    ` hello world`,
+		},
+		{
+			name:            "command_with_options",
+			input:           `\set[var=value] some message`,
+			expectedCommand: `\set`,
+			expectedOptions: `[var=value]`,
+			expectedText:    ` some message`,
+		},
+		{
+			name:            "command_with_complex_options",
+			input:           `\session-new[name="test session"] Creating a test session`,
+			expectedCommand: `\session-new`,
+			expectedOptions: `[name="test session"]`,
+			expectedText:    ` Creating a test session`,
+		},
+		{
+			name:            "command_only",
+			input:           `\help`,
+			expectedCommand: `\help`,
+			expectedOptions: ``,
+			expectedText:    ``,
+		},
+		{
+			name:            "command_with_empty_options",
+			input:           `\get[]`,
+			expectedCommand: `\get`,
+			expectedOptions: `[]`,
+			expectedText:    ``,
+		},
+		{
+			name:            "no_command",
+			input:           `regular message`,
+			expectedCommand: ``,
+			expectedOptions: ``,
+			expectedText:    ``,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			commandName, options, remainingText := highlighter.parseCommandParts(tt.input)
+
+			assert.Equal(t, tt.expectedCommand, commandName, "Command name mismatch")
+			assert.Equal(t, tt.expectedOptions, options, "Options mismatch")
+			assert.Equal(t, tt.expectedText, remainingText, "Remaining text mismatch")
+		})
+	}
+}
+
+func TestCommandHighlighter_ThreePartHighlighting(t *testing.T) {
+	registry := NewRegistry()
+	SetGlobalRegistry(registry)
+
+	service := NewPromptColorService()
+	err := service.Initialize()
+	assert.NoError(t, err)
+
+	highlighter := service.CreateCommandHighlighter()
+
+	tests := []struct {
+		name                  string
+		input                 string
+		expectCommandColor    bool
+		expectOptionsColor    bool
+		expectDifferentColors bool
+		description           string
+	}{
+		{
+			name:                  "command_with_options_and_text",
+			input:                 `\set[var=value] hello world`,
+			expectCommandColor:    true,
+			expectOptionsColor:    true,
+			expectDifferentColors: true,
+			description:           "Command name and options should have different colors",
+		},
+		{
+			name:                  "command_with_options_only",
+			input:                 `\get[test_var]`,
+			expectCommandColor:    true,
+			expectOptionsColor:    true,
+			expectDifferentColors: true,
+			description:           "Command and options should be colored differently",
+		},
+		{
+			name:                  "command_without_options",
+			input:                 `\help command info`,
+			expectCommandColor:    true,
+			expectOptionsColor:    false,
+			expectDifferentColors: false,
+			description:           "Only command should be colored",
+		},
+		{
+			name:                  "hyphenated_command_with_options",
+			input:                 `\session-new[name="test"] start session`,
+			expectCommandColor:    true,
+			expectOptionsColor:    true,
+			expectDifferentColors: true,
+			description:           "Hyphenated commands should support three-part coloring",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if !service.IsColorSupported() {
+				t.Skip("Color support not available in test environment")
+			}
+
+			input := []rune(tt.input)
+			result := highlighter.Paint(input, 0)
+			resultStr := string(result)
+
+			// Verify highlighting was applied
+			assert.NotEqual(t, tt.input, resultStr, "Expected highlighting for: %s", tt.description)
+
+			// Should contain ANSI escape codes
+			assert.Contains(t, resultStr, "\x1b[", "Expected ANSI escape codes in output")
+
+			if tt.expectCommandColor {
+				// Should contain bright blue (\x1b[94m) for command name
+				assert.Contains(t, resultStr, "\x1b[94m", "Expected command color (bright blue)")
+			}
+
+			if tt.expectOptionsColor {
+				// Should contain bright green (\x1b[92m) for options
+				assert.Contains(t, resultStr, "\x1b[92m", "Expected options color (bright green)")
+			}
+
+			if tt.expectDifferentColors {
+				// Should contain both command and options colors
+				assert.Contains(t, resultStr, "\x1b[94m", "Expected command color")
+				assert.Contains(t, resultStr, "\x1b[92m", "Expected options color")
+			}
+
+			// Should contain reset sequences
+			assert.Contains(t, resultStr, "\x1b[0m", "Expected reset sequence")
+		})
+	}
+}

@@ -102,6 +102,54 @@ func (r *Runner) RunAllTests() error {
 	return nil
 }
 
+// RunCFlagTest runs a specific test case using -c flag and compares with expected output
+func (r *Runner) RunCFlagTest(testName string) error {
+	if r.config.Verbose {
+		fmt.Printf("Running -c flag test: %s\n", testName)
+	}
+
+	scriptPath, err := shared.FindScript(testName, r.config.TestDir)
+	if err != nil {
+		return fmt.Errorf("failed to find script: %w", err)
+	}
+
+	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
+		return fmt.Errorf("test script not found: %s", scriptPath)
+	}
+
+	output, err := shared.RunNeuroCFlag(scriptPath, r.config.NeuroCmd, r.config.TestTimeout)
+	if err != nil {
+		if r.config.Verbose {
+			fmt.Printf("Command failed with error: %v\nOutput: %s\n", err, output)
+		}
+	}
+
+	cleanedOutput := r.cleanOutput(output)
+
+	expectedPath := filepath.Join(r.config.TestDir, testName+".c.expected")
+	expectedContent, err := os.ReadFile(expectedPath)
+	if err != nil {
+		return fmt.Errorf("failed to read -c expected file %s: %w", expectedPath, err)
+	}
+
+	expectedOutput := strings.TrimRight(string(expectedContent), "\n")
+
+	if !r.normalizer.CompareWithPlaceholders(expectedOutput, cleanedOutput) {
+		// Show detailed comparison for failures
+		fmt.Printf("\n=== -C FLAG TEST FAILURE: %s ===\n", testName)
+		fmt.Printf("EXPECTED OUTPUT:\n%s\n", expectedOutput)
+		fmt.Printf("\nACTUAL OUTPUT:\n%s\n", cleanedOutput)
+		fmt.Printf("=== END FAILURE DETAILS ===\n\n")
+		return fmt.Errorf("-c flag test failed: output doesn't match expected")
+	}
+
+	if r.config.Verbose {
+		fmt.Printf("-c flag test passed: %s\n", testName)
+	}
+
+	return nil
+}
+
 // cleanOutput normalizes output for comparison
 func (r *Runner) cleanOutput(output string) string {
 	cleaned := shared.CleanOutput(output)

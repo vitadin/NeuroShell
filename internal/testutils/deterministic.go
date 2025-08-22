@@ -87,14 +87,40 @@ func getDeterministicTime() time.Time {
 	return baseTime.Add(time.Duration(timeCounter) * time.Second)
 }
 
+var (
+	// Thread-safe counter for deterministic temporary file names
+	tempFileCounter uint64
+	tempFileMutex   sync.Mutex
+)
+
+// GenerateTempFilePath generates a deterministic temporary file path for test mode.
+// In test mode, returns: /tmp/neuro-command-1.neuro, /tmp/neuro-command-2.neuro, etc.
+// In production mode, returns empty string to indicate caller should use standard temp file generation
+func GenerateTempFilePath(ctx neurotypes.Context) string {
+	if ctx.IsTestMode() {
+		tempFileMutex.Lock()
+		defer tempFileMutex.Unlock()
+
+		tempFileCounter++
+		// Use fixed path for deterministic test results across all platforms
+		// This ensures golden files are identical on macOS, Linux, Windows, etc.
+		return fmt.Sprintf("/tmp/neuro-command-%d.neuro", tempFileCounter)
+	}
+	// Return empty string to indicate caller should use standard temp file generation
+	return ""
+}
+
 // ResetTestCounters resets the deterministic counters for testing.
 // This should only be called from test code to ensure consistent test runs.
 func ResetTestCounters() {
 	idMutex.Lock()
 	timeMutex.Lock()
+	tempFileMutex.Lock()
 	defer idMutex.Unlock()
 	defer timeMutex.Unlock()
+	defer tempFileMutex.Unlock()
 
 	idCounter = 0
 	timeCounter = 0
+	tempFileCounter = 0
 }

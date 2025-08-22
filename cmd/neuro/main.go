@@ -19,6 +19,7 @@ import (
 	"neuroshell/internal/services"
 	"neuroshell/internal/shell"
 	"neuroshell/internal/statemachine"
+	"neuroshell/internal/testutils"
 	"neuroshell/internal/version"
 
 	"github.com/abiosoft/ishell/v2"
@@ -39,6 +40,8 @@ var (
 	noRC      bool
 	rcFile    string
 	confirmRC bool
+	// Command execution flag
+	commandString string
 	// Global shell instance for prompt updates
 	globalShell *ishell.Shell
 )
@@ -55,6 +58,15 @@ It bridges the gap between traditional command-line interfaces and modern AI ass
 			fmt.Println(version.GetFormattedVersion())
 			return
 		}
+
+		// Handle -c flag
+		if commandString != "" {
+			if err := runCommand(cmd, commandString); err != nil {
+				os.Exit(1)
+			}
+			return
+		}
+
 		// Default behavior is to run the interactive shell
 		runShell(cmd, args)
 	},
@@ -112,6 +124,9 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&noRC, "no-rc", false, "Skip .neurorc startup files")
 	rootCmd.PersistentFlags().StringVar(&rcFile, "rc-file", "", "Use specific startup script instead of .neurorc")
 	rootCmd.PersistentFlags().BoolVar(&confirmRC, "confirm-rc", false, "Prompt before executing .neurorc files")
+
+	// Add command execution flag
+	rootCmd.PersistentFlags().StringVarP(&commandString, "command", "c", "", "Execute command(s) and exit (use \\n for multiple commands)")
 
 	// Add version command flags
 	versionCmd.Flags().Bool("detailed", false, "Show detailed version information")
@@ -451,6 +466,80 @@ func runBatch(_ *cobra.Command, args []string) {
 	}
 
 	logger.Debug("Script executed successfully", "script", scriptPath)
+}
+
+func runCommand(_ *cobra.Command, cmdString string) error {
+	logger.Info("Executing command", "command", cmdString)
+
+	// Use the command string as-is (no escape processing needed since batch mode will handle it)
+	processedCmd := cmdString
+
+	// Initialize services first to get context for deterministic temp file generation
+	if err := shell.InitializeServices(testMode); err != nil {
+		logger.Fatal("Failed to initialize services", "error", err)
+	}
+
+	// Get the global context to check test mode
+	globalCtx := context.GetGlobalContext()
+
+	// Create a temporary file to hold the command string
+	var tempFile *os.File
+	var tempFilePath string
+	var err error
+
+	// Use deterministic temp file path in test mode
+	if deterministicPath := testutils.GenerateTempFilePath(globalCtx); deterministicPath != "" {
+		tempFilePath = deterministicPath
+		tempFile, err = os.Create(tempFilePath)
+		if err != nil {
+			logger.Fatal("Failed to create deterministic temporary file", "error", err, "path", tempFilePath)
+		}
+	} else {
+		// Use standard temp file generation in production mode
+		tempFile, err = os.CreateTemp("", "neuro-command-*.neuro")
+		if err != nil {
+			logger.Fatal("Failed to create temporary file", "error", err)
+		}
+		tempFilePath = tempFile.Name()
+	}
+
+	defer func() {
+		_ = tempFile.Close()
+		_ = os.Remove(tempFilePath) // Clean up the temporary file
+	}()
+
+	// Write the processed command string to the temporary file
+	if _, err := tempFile.WriteString(processedCmd); err != nil {
+		logger.Fatal("Failed to write to temporary file", "error", err)
+	}
+
+	// Close the file so it can be read by batch processing
+	if err := tempFile.Close(); err != nil {
+		logger.Fatal("Failed to close temporary file", "error", err)
+	}
+
+	logger.Info("Services initialized successfully")
+
+	// Execute system initialization script first (unless --no-rc)
+	if !noRC {
+		if err := executeSystemInit(); err != nil {
+			logger.Error("Failed to execute system initialization script", "error", err)
+			// Don't exit - just log the error and continue with command execution
+		}
+	}
+
+	// Get the global context singleton for command execution
+	ctx := shell.GetGlobalContext()
+	ctx.SetTestMode(testMode)
+
+	// Use the existing batch script execution path
+	if err := executeBatchScript(tempFilePath, ctx); err != nil {
+		logger.Error("Command execution failed", "error", err)
+		return err
+	}
+
+	logger.Debug("Command executed successfully")
+	return nil
 }
 
 func validateScriptFile(scriptPath string) error {

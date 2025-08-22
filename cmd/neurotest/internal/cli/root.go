@@ -39,6 +39,7 @@ verify expected behavior. It can record, run, and verify test cases.`,
 
 	// Add all subcommands
 	app.addGoldenFileCommands(rootCmd)
+	app.addCFlagCommands(rootCmd)
 	app.addExperimentCommands(rootCmd)
 	app.addNeuroRCCommands(rootCmd)
 	app.addVersionCommand(rootCmd)

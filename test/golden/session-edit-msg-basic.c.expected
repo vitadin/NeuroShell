@@ -1,0 +1,63 @@
+Setting _echo_command = true
+%%> "\\session-new[system=\"You are a test assistant\"] edit_basic"
+Created session 'edit_basic' (ID: 00000001)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-usermsg First user message"
+Added user message to session 'edit_basic'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-assistantmsg First assistant response"
+Added assistant message to session 'edit_basic'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-usermsg Second user message"
+Added user message to session 'edit_basic'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-assistantmsg Second assistant response"
+Added assistant message to session 'edit_basic'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-edit-msg[idx=1] Edited last message (was second assistant)"
+Edited message 1 (last message) in session 'edit_basic'
+%%> "\\get[#old_content]"
+#old_content = Second assistant response
+%%> "\\get[#new_content]"
+#new_content = Edited last message (was second assistant)
+%%> "\\get[#message_position]"
+#message_position = last message
+%%> "\\session-edit-msg[idx=2] Edited second-to-last message (was second user)"
+Edited message 2 (second-to-last message) in session 'edit_basic'
+%%> "\\get[#old_content]"
+#old_content = Second user message
+%%> "\\get[#new_content]"
+#new_content = Edited second-to-last message (was second user)
+%%> "\\get[#message_position]"
+#message_position = second-to-last message
+%%> "\\session-edit-msg[idx=.1] Edited first message (was first user)"
+Edited message .1 (first message) in session 'edit_basic'
+%%> "\\get[#old_content]"
+#old_content = First user message
+%%> "\\get[#new_content]"
+#new_content = Edited first message (was first user)
+%%> "\\get[#message_position]"
+#message_position = first message
+%%> "\\session-edit-msg[idx=.2] Edited second message (was first assistant)"
+Edited message .2 (second message) in session 'edit_basic'
+%%> "\\get[#old_content]"
+#old_content = First assistant response
+%%> "\\get[#new_content]"
+#new_content = Edited second message (was first assistant)
+%%> "\\get[#message_position]"
+#message_position = second message
+%%> "\\session-show edit_basic"
+Session: edit_basic (ID: 00000001)
+System: You are a test assistant
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:13
+Messages: 4 total
+
+[1] user (00:00:02): Edited first message (was first user)
+[2] assistant (00:00:04): Edited second message (was first assistant)
+[3] user (00:00:06): Edited second-to-last message (was second user)
+[4] assistant (00:00:08): Edited last message (was second assistant)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-delete edit_basic"
+Deleted session 'edit_basic' (ID: 00000001)
+%%> "\\silent \\session-activate"

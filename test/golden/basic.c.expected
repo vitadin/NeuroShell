@@ -1,0 +1,9 @@
+Setting _echo_command = true
+%%> "\\set[name=\"test\"]"
+Setting name = test
+%%> "\\set[status=\"working\"]"
+Setting status = working
+%%> "\\get[name]"
+name = test
+%%> "\\get[status]"
+status = working

@@ -1,0 +1,97 @@
+Setting _echo_command = true
+%%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash mkdir -p /tmp/neuroshell-test-config"
+%%> "\\config-path"
+Config Directory: /tmp/neuroshell-test-config (exists)
+Config .env: /tmp/neuroshell-test-config/.env (not found)
+Local .env: /tmp/neuroshell-test-workdir/.env (not found)
+%%> "\\echo === Testing empty session identifier ==="
+=== Testing empty session identifier ===
+%%> "\\try \\session-save \"\""
+%%> "\\session-save \"\""
+%%> "\\echo === Testing non-existent session ==="
+=== Testing non-existent session ===
+%%> "\\try \\session-save nonexistent_session_12345"
+%%> "\\session-save nonexistent_session_12345"
+%%> "\\echo === Testing ambiguous prefix matching ==="
+=== Testing ambiguous prefix matching ===
+%%> "\\session-new[system=\"First test session\"] test_session_one"
+Created session 'test_session_one' (ID: 00000001)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-new[system=\"Second test session\"] test_session_two"
+Created session 'test_session_two' (ID: 00000002)
+%%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\try \\session-save test_"
+%%> "\\session-save test_"
+%%> "\\echo === Testing valid session save ==="
+=== Testing valid session save ===
+%%> "\\session-save test_session_one"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/ | sort"
+00000001-0000-4000-8000-000000000001.json
+%%> "\\echo === Testing save by session ID ==="
+=== Testing save by session ID ===
+%%> "\\session-activate test_session_one"
+Activated session 'test_session_one' (ID: 00000001, Messages: 0)
+%%> "\\get[#session_id]"
+#session_id = 00000002-0000-4000-8000-000000000002
+%%> "\\session-save ${#session_id}"
+Session saved to sessions/00000002-0000-4000-8000-000000000002.json
+%%> "\\echo === Testing save by unique prefix ==="
+=== Testing save by unique prefix ===
+%%> "\\session-save test_session_t"
+Session saved to sessions/00000002-0000-4000-8000-000000000002.json
+%%> "\\echo === Testing directory creation ==="
+=== Testing directory creation ===
+%%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash ls /tmp/neuroshell-test-config/"
+%%> "\\session-save test_session_one"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\bash ls /tmp/neuroshell-test-config/"
+sessions
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/ | sort"
+00000001-0000-4000-8000-000000000001.json
+%%> "\\echo === Testing _output variable ==="
+=== Testing _output variable ===
+%%> "\\session-save test_session_two"
+Session saved to sessions/00000002-0000-4000-8000-000000000002.json
+%%> "\\get[_output]"
+_output = Session saved to sessions/00000002-0000-4000-8000-000000000002.json
+%%> "\\echo \"Output should contain session filename\""
+"Output should contain session filename"
+%%> "\\echo === Testing overwrite behavior ==="
+=== Testing overwrite behavior ===
+%%> "\\get[#session_id]"
+#session_id = 00000002-0000-4000-8000-000000000002
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/${#session_id}.json"
+/tmp/neuroshell-test-config/sessions/00000002-0000-4000-8000-000000000002.json
+%%> "\\session-save test_session_two"
+Session saved to sessions/00000002-0000-4000-8000-000000000002.json
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/${#session_id}.json"
+/tmp/neuroshell-test-config/sessions/00000002-0000-4000-8000-000000000002.json
+%%> "\\echo \"File should have been overwritten with newer timestamp\""
+"File should have been overwritten with newer timestamp"
+%%> "\\echo === Testing special characters ==="
+=== Testing special characters ===
+%%> "\\session-new[system=\"Session with special chars\"] test-session_with.special@chars"
+Created session 'test-session_with.special@chars' (ID: 00000003)
+%%> "\\silent \\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
+%%> "\\session-save test-session_with.special@chars"
+Session saved to sessions/00000003-0000-4000-8000-000000000003.json
+%%> "\\get[#session_id]"
+#session_id = 00000003-0000-4000-8000-000000000003
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/${#session_id}.json"
+/tmp/neuroshell-test-config/sessions/00000003-0000-4000-8000-000000000003.json
+%%> "\\echo === Session save error handling summary ==="
+=== Session save error handling summary ===
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/ | sort"
+00000001-0000-4000-8000-000000000001.json
+00000002-0000-4000-8000-000000000002.json
+00000003-0000-4000-8000-000000000003.json
+%%> "\\bash echo \"Total saved sessions:\""
+Total saved sessions:
+%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l | tr -d ' '"
+3
+%%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"

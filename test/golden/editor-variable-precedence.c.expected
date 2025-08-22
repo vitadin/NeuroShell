@@ -1,0 +1,31 @@
+Setting _editor = code --wait
+Setting EDITOR = vim
+_editor = code --wait
+EDITOR = vim
+Command: editor
+
+Description: Open external editor for composing input
+
+Usage: \editor [initial_text]
+
+Parse Mode: Key-Value (supports [key=value] syntax)
+
+Examples:
+  \editor
+%% Open empty editor for composing multi-line input
+  \editor Write a detailed analysis
+%% Open editor with initial text as starting content
+  \editor Draft email to customer
+%% Start editing with prompt text pre-filled
+  \set[_editor="code --wait"]
+%% Configure VS Code as your preferred editor
+  \set[myvar="${_output}"]
+%% Store editor content in a custom variable
+
+Notes:
+  If initial_text is provided, editor opens with that text as starting content
+  Without initial text, editor opens empty - use \editor ${_output} to edit existing content
+  Content is stored in ${_output} variable when editor is saved and closed
+  Editor preference: 1) ${_editor} variable, 2) $EDITOR env var, 3) auto-detect
+  Supports vim, nano, code, subl, atom, and other common editors
+  Use 'editor --wait' flag for GUI editors to wait for file closure

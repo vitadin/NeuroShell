@@ -1,0 +1,38 @@
+Setting _style = dark1
+Setting _echo_command = true
+%%> "\\echo === Try-Silent Model Activation Test ==="
+=== Try-Silent Model Activation Test ===
+%%> "\\echo Creating test model..."
+Creating test model...
+%%> "\\model-new[catalog_id=\"CS4\"] try-silent-test-model"
+Created model 'try-silent-test-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+%%> "\\try \\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\try \\silent \\anthropic-client-new"
+%%> "\\silent \\anthropic-client-new"
+%%> "\\echo Testing try-silent model-activate with ID..."
+Testing try-silent model-activate with ID...
+%%> "\\try \\silent \\model-activate[id=true] ${#model_id}"
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\echo After try-silent model-activate (should display)"
+After try-silent model-activate (should display)
+%%> "\\echo Active model: ${#active_model_name}"
+Active model: try-silent-test-model
+%%> "\\echo Active model ID: ${#active_model_id}"
+Active model ID: 00000001-0000-4000-8000-000000000001
+%%> "\\echo Testing try-silent with non-existent model..."
+Testing try-silent with non-existent model...
+%%> "\\try \\silent \\model-activate[id=true] nonexistent123"
+%%> "\\silent \\model-activate[id=true] nonexistent123"
+%%> "\\echo After try-silent with non-existent model (should display)"
+After try-silent with non-existent model (should display)
+%%> "\\echo Error status: ${@status}"
+Error status: 1
+%%> "\\echo Testing try-silent with model name..."
+Testing try-silent with model name...
+%%> "\\try \\silent \\model-activate try-silent-test-model"
+%%> "\\silent \\model-activate try-silent-test-model"
+%%> "\\echo After try-silent name activation"
+After try-silent name activation
+%%> "\\echo === Model activation test completed ==="
+=== Model activation test completed ===

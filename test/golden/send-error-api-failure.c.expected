@@ -1,0 +1,33 @@
+Setting _style = dark1
+=== Send API Error Test ===
+Testing \send command with API failure error
+Testing normal message first...
+<thinking id="2-1">
+Thinking about the user's message: "Hello, this is a normal message.". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 1 messages, last: Hello, this is a normal 
+  message.)                                                                   
+
+Testing message that triggers API error...
+Error (api_request_failed): Mock API request failed for testing purposes
+Testing recovery with normal message...
+<thinking id="5-1">
+Thinking about the user's message: "This should work normally again.". This helps verify the message flow in tests. The user sent 4 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 4 messages, last: This should work        
+  normally again.)                                                            
+
+Final session state:
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant.
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:12
+Messages: 5 total
+
+[1] user (00:00:02): Hello, this is a normal message.
+[2] assistant (00:00:05): This is a mocking reply (received 1 mess...st: Hello, this is a normal message.) (85 chars)
+[3] user (00:00:07): Please trigger api error for testing purposes.
+[4] user (00:00:09): This should work normally again.
+[5] assistant (00:00:11): This is a mocking reply (received 4 mess...st: This should work normally again.) (85 chars)

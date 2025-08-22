@@ -1,0 +1,6 @@
+%% Sample neuro script for cat rendering test
+%%> "Auto-generated comment with styling"
+\set[name="Test", value=42]
+\get[name]
+%% Regular comment
+\echo Hello ${name} with value ${value}

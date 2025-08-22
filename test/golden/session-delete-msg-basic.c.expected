@@ -1,0 +1,63 @@
+Auto-generated session name: 'Session 1'
+Created session 'Session 1' (ID: 00000001)
+Added user message to session 'Session 1'
+Added assistant message to session 'Session 1'
+Added user message to session 'Session 1'
+Added assistant message to session 'Session 1'
+Initial session state:
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:09
+Messages: 4 total
+
+[1] user (00:00:02): Message 1: This is the first user message
+[2] assistant (00:00:04): Message 2: This is the first assistant response
+[3] user (00:00:06): Message 3: This is the second user message
+[4] assistant (00:00:08): Message 4: This is the second assistant response
+=== Testing reverse order deletion ===
+Deleting last message (idx=1):
+Deleted message 1 (last message) from session 'Session 1'
+Session now has 3 messages remaining
+Remaining messages:
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:10
+Messages: 3 total
+
+[1] user (00:00:02): Message 1: This is the first user message
+[2] assistant (00:00:04): Message 2: This is the first assistant response
+[3] user (00:00:06): Message 3: This is the second user message
+=== Testing normal order deletion ===
+Deleting first message (idx=.1):
+Deleted message .1 (first message) from session 'Session 1'
+Session now has 2 messages remaining
+Remaining messages:
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:11
+Messages: 2 total
+
+[1] assistant (00:00:04): Message 2: This is the first assistant response
+[2] user (00:00:06): Message 3: This is the second user message
+=== Testing middle message deletion ===
+Deleting second-to-last message (idx=2):
+Deleted message 2 (second-to-last message) from session 'Session 1'
+Session now has 1 messages remaining
+Final state:
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:12
+Messages: 1 total
+
+[1] user (00:00:06): Message 3: This is the second user message
+=== Delete operation variables ===
+#deleted_message_id = 00000003-0000-4000-8000-000000000003
+#deleted_message_role = assistant
+#deleted_message_index = 2
+#deleted_message_position = second-to-last message
+#remaining_messages = 1
+_output = === Delete operation variables ===

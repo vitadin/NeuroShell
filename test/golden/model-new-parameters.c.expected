@@ -1,0 +1,20 @@
+Setting _echo_command = true
+%%> "\\model-new[catalog_id=\"O4MC\", temperature=\"1.0\", max_completion_tokens=\"2000\", description=\"Advanced model for creative tasks\"] creative-claude"
+Created model 'creative-claude' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\get[#model_id]"
+#model_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#model_name]"
+#model_name = creative-claude
+%%> "\\get[#model_provider]"
+#model_provider = openai
+%%> "\\get[#model_base]"
+#model_base = o4-mini
+%%> "\\get[#model_param_count]"
+#model_param_count = 2
+%%> "\\get[#model_description]"
+#model_description = Advanced model for creative tasks
+%%> "\\get[_output]"
+_output = Activated model 'creative-claude' (ID: 00000001, Provider: openai, Base: o4-mini)
