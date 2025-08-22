@@ -228,10 +228,11 @@ System Variables:
     _0                   = /tmp/neuro-command-1.neuro
     _1                   = 
     _@                   = 
+    _completion_mode     = tab
     _default_command     = echo
     _editor              = nano
     _prompt_line1        = neuro> 
     _prompt_lines_count  = 1
     _style               = 
 
-Total: 227 variables
+Total: 228 variables

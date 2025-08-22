@@ -24,7 +24,7 @@ func TestNew(t *testing.T) {
 	assert.NotEmpty(t, ctx.sessionID)
 	assert.Contains(t, ctx.sessionID, "session_")
 	assert.False(t, ctx.testMode)
-	assert.Equal(t, 2, len(ctx.variables)) // _style and _default_command are initialized by default
+	assert.Equal(t, 3, len(ctx.variables)) // _style, _default_command, and _completion_mode are initialized by default
 
 	// Verify that _style is initialized to empty string
 	styleValue, err := ctx.GetVariable("_style")
@@ -35,6 +35,11 @@ func TestNew(t *testing.T) {
 	defaultCmd, err := ctx.GetVariable("_default_command")
 	assert.NoError(t, err)
 	assert.Equal(t, "echo", defaultCmd)
+
+	// Verify that _completion_mode is initialized to "tab"
+	completionMode, err := ctx.GetVariable("_completion_mode")
+	assert.NoError(t, err)
+	assert.Equal(t, "tab", completionMode)
 	assert.Equal(t, 0, len(ctx.history))
 	assert.Equal(t, 0, len(ctx.scriptMetadata))
 }
