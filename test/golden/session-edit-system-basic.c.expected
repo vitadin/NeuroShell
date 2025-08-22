@@ -1,0 +1,53 @@
+Setting _echo_command = true
+%%> "\\session-new[system=\"You are a helpful assistant\"] test_system_edit"
+Created session 'test_system_edit' (ID: 00000001)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\get[#session_name]"
+#session_name = test_system_edit
+%%> "\\get[#system_prompt]"
+#system_prompt = You are a helpful assistant
+%%> "\\session-edit-system You are a specialized coding assistant"
+Updated system prompt for session 'test_system_edit'
+%%> "\\get[#session_id]"
+#session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#session_name]"
+#session_name = test_system_edit
+%%> "\\get[#old_system_prompt]"
+#old_system_prompt = You are a helpful assistant
+%%> "\\get[#new_system_prompt]"
+#new_system_prompt = You are a specialized coding assistant
+%%> "\\get[_output]"
+_output = Updated system prompt for session 'test_system_edit'
+%%> "\\session-new[system=\"Default prompt\"] another_session"
+Created session 'another_session' (ID: 00000002)
+%%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\session-edit-system[session=test_system_edit] You are an expert data analyst"
+Updated system prompt for session 'test_system_edit'
+%%> "\\get[#session_id]"
+#session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#session_name]"
+#session_name = test_system_edit
+%%> "\\get[#old_system_prompt]"
+#old_system_prompt = You are a specialized coding assistant
+%%> "\\get[#new_system_prompt]"
+#new_system_prompt = You are an expert data analyst
+%%> "\\get[_output]"
+_output = Updated system prompt for session 'test_system_edit'
+%%> "\\session-edit-system[session=test_system_edit] \"\""
+Updated system prompt for session 'test_system_edit'
+%%> "\\get[#session_id]"
+#session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#session_name]"
+#session_name = test_system_edit
+%%> "\\get[#old_system_prompt]"
+#old_system_prompt = You are an expert data analyst
+%%> "\\get[#new_system_prompt]"
+#new_system_prompt = ""
+%%> "\\get[_output]"
+_output = Updated system prompt for session 'test_system_edit'
+%%> "\\session-delete test_system_edit"
+Deleted session 'test_system_edit' (ID: 00000001)
+%%> "\\silent \\session-activate"
+%%> "\\session-delete another_session"
+Deleted session 'another_session' (ID: 00000002)
+%%> "\\silent \\session-activate"

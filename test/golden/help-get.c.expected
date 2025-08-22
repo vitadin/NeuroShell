@@ -1,0 +1,26 @@
+Setting _echo_command = true
+%%> "\\help[get]"
+Command: get
+
+Description: Get a variable
+
+Usage: \get[var] or \get var
+
+Parse Mode: Key-Value (supports [key=value] syntax)
+
+Options:
+  var - Variable name to retrieve (required)
+
+
+Examples:
+  \get[name]
+%% Get the value of variable 'name' using bracket syntax
+  \get name
+%% Get the value of variable 'name' using space syntax
+  \get @pwd
+%% Get system variable for current directory
+
+Notes:
+  Supports both bracket syntax (\get[var]) and space syntax (\get var)
+  System variables start with @ (e.g., @pwd, @user, @date)
+  Message history variables use numbers (e.g., ${1}, ${2})

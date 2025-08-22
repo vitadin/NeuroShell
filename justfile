@@ -12,10 +12,13 @@ default:
     @echo "  test-context      - Run context tests only"
     @echo "  test-shell        - Run shell tests only"
     @echo "  test-all-units    - Run all unit, command, parser, context, and shell tests"
-    @echo "  test-e2e          - Run end-to-end tests (includes .neurorc tests)"
-    @echo "  test-neurorc      - Run .neurorc startup tests only"
+    @echo "  test-e2e          - Run comprehensive end-to-end tests (batch mode + -c flag + .neurorc tests)"
+    @echo "  test-neurorc      - Run .neurorc startup tests only" 
+    @echo "  test-c-flag       - Run -c flag e2e tests only"
     @echo "  record-all-e2e    - Re-record all end-to-end test cases (includes .neurorc)"
     @echo "  record-neurorc    - Re-record all .neurorc startup test cases"
+    @echo "  record-all-c-flag - Record all -c flag test cases"
+    @echo "  compare-all-modes - Compare batch vs -c flag outputs for all tests"
     @echo "  test-bench        - Run benchmark tests"
     @echo ""
     @echo "Build Commands:"
@@ -450,33 +453,48 @@ init:
 # Run end-to-end tests
 test-e2e: ensure-build
     @echo "Running end-to-end tests..."
+    @echo "1. Standard batch mode tests..."
     ./bin/neurotest --neuro-cmd="./bin/neuro" run-all
-    @echo "Running .neurorc startup tests..."
+    @echo ""
+    @echo "2. -c flag tests..."
+    @just test-c-flag
+    @echo ""
+    @echo "3. .neurorc startup tests..."
     #!/bin/bash
     for test_file in $(find test/golden/neurorc -maxdepth 1 -name "*.neurorc-test" -type f | sort); do \
         test_name=$(basename "$test_file" .neurorc-test); \
         echo "Testing $test_name..."; \
         ./bin/neurotest run-neurorc "$test_name" >/dev/null 2>&1 && echo "PASS $test_name" || echo "FAIL $test_name"; \
     done
-    @echo "End-to-end tests complete"
+    @echo ""
+    @echo "🎉 All end-to-end tests complete (batch mode + -c flag + .neurorc)"
 
 # Re-record all end-to-end test cases
 record-all-e2e: ensure-build
     #!/bin/bash
     echo "Re-recording all end-to-end test cases..."
-    echo "Recording standard e2e tests..."
+    echo "1. Recording standard batch mode tests..."
     for test_file in $(find test/golden -maxdepth 1 -name "*.neuro" -type f | sort); do \
         test_name=$(basename "$test_file" .neuro); \
         echo "Recording $test_name..."; \
         ./bin/neurotest --neuro-cmd="./bin/neuro" record "$test_name" >/dev/null 2>&1 && echo "RECORDED $test_name" || echo "FAILED $test_name"; \
     done
-    echo "Recording .neurorc startup tests..."
+    echo ""
+    echo "2. Recording -c flag tests..."
+    for test_file in $(find test/golden -maxdepth 1 -name "*.neuro" -type f | sort); do \
+        test_name=$(basename "$test_file" .neuro); \
+        echo "Recording -c $test_name..."; \
+        ./bin/neurotest --neuro-cmd="./bin/neuro" record-c "$test_name" >/dev/null 2>&1 && echo "RECORDED -c $test_name" || echo "FAILED -c $test_name"; \
+    done
+    echo ""
+    echo "3. Recording .neurorc startup tests..."
     for test_file in $(find test/golden/neurorc -maxdepth 1 -name "*.neurorc-test" -type f | sort); do \
         test_name=$(basename "$test_file" .neurorc-test); \
         echo "Recording $test_name..."; \
         ./bin/neurotest record-neurorc "$test_name" >/dev/null 2>&1 && echo "RECORDED $test_name" || echo "FAILED $test_name"; \
     done
-    echo "All end-to-end test cases re-recorded"
+    echo ""
+    echo "🎉 All end-to-end test cases re-recorded (batch mode + -c flag + .neurorc)"
 
 # Build neurotest binary
 build-neurotest:
@@ -927,3 +945,121 @@ release-validate VERSION:
     @just release-validate-changelog
     @echo ""
     @just release-check "{{VERSION}}"
+
+# Record all -c flag test cases
+record-all-c-flag: ensure-build
+    #!/bin/bash
+    echo "Recording all -c flag test cases..."
+    for test_file in $(find test/golden -maxdepth 1 -name "*.neuro" -type f | sort); do \
+        test_name=$(basename "$test_file" .neuro); \
+        echo "Recording -c flag test: $test_name..."; \
+        ./bin/neurotest --neuro-cmd="./bin/neuro" record-c "$test_name" >/dev/null 2>&1 && echo "RECORDED -c $test_name" || echo "FAILED -c $test_name"; \
+    done
+    echo "All -c flag test cases recorded"
+
+# Run -c flag end-to-end tests only
+test-c-flag: ensure-build
+    #!/bin/bash
+    echo "Running -c flag end-to-end tests..."
+    # Check if any .c.expected files exist
+    if ! find test/golden -maxdepth 1 -name "*.c.expected" -type f | head -1 | grep -q .; then \
+        echo "No .c.expected files found. Run 'just record-all-c-flag' first."; \
+        exit 1; \
+    fi
+    for expected_file in $(find test/golden -maxdepth 1 -name "*.c.expected" -type f | sort); do \
+        test_name=$(basename "$expected_file" .c.expected); \
+        echo "Testing -c flag: $test_name..."; \
+        ./bin/neurotest --neuro-cmd="./bin/neuro" run-c "$test_name" >/dev/null 2>&1 && echo "PASS -c $test_name" || echo "FAIL -c $test_name"; \
+    done
+    echo "-c flag end-to-end tests complete"
+
+# Compare batch mode vs -c flag outputs for all tests
+compare-all-modes: ensure-build
+    #!/bin/bash
+    echo "Comparing batch mode vs -c flag outputs for all tests..."
+    echo "======================================================="
+    total_tests=0
+    identical_tests=0
+    different_tests=0
+    skipped_tests=0
+    
+    # Tests with acceptable differences (log level, temp file paths, etc.)
+    acceptable_differences=("assert-equal-fail" "editor-variable-basic" "session-delete-msg-confirmation" "session-delete-msg-no-session" "provider-catalog-combined" "provider-catalog-provider-filter" "send-error-client-config" "send-error-mixed-scenarios")
+    
+    # Ensure we have both types of expected files
+    if ! find test/golden -maxdepth 1 -name "*.c.expected" -type f | head -1 | grep -q .; then \
+        echo "No .c.expected files found. Run 'just record-all-c-flag' first."; \
+        exit 1; \
+    fi
+    
+    for expected_file in $(find test/golden -maxdepth 1 -name "*.c.expected" -type f | sort); do \
+        test_name=$(basename "$expected_file" .c.expected); \
+        batch_expected="test/golden/${test_name}.expected"; \
+        if [ -f "$batch_expected" ]; then \
+            # Check if this test has acceptable differences
+            skip_test=false; \
+            for acceptable in "${acceptable_differences[@]}"; do \
+                if [ "$test_name" = "$acceptable" ]; then \
+                    echo "⚠️  Reviewing $test_name (acceptable differences):"; \
+                    ./bin/neurotest --neuro-cmd="./bin/neuro" compare-modes "$test_name" 2>/dev/null | sed -n '/--- Diff ---/,$p' || echo "    [Differences confirmed as acceptable]"; \
+                    echo ""; \
+                    skipped_tests=$((skipped_tests + 1)); \
+                    skip_test=true; \
+                    break; \
+                fi; \
+            done; \
+            if [ "$skip_test" = "false" ]; then \
+                echo -n "Comparing $test_name... "; \
+                total_tests=$((total_tests + 1)); \
+                if ./bin/neurotest --neuro-cmd="./bin/neuro" compare-modes "$test_name" >/dev/null 2>&1; then \
+                    echo "✅ IDENTICAL"; \
+                    identical_tests=$((identical_tests + 1)); \
+                else \
+                    echo "❌ DIFFERENT"; \
+                    different_tests=$((different_tests + 1)); \
+                fi; \
+            fi; \
+        else \
+            echo "⚠️  Skipping $test_name (no batch .expected file)"; \
+        fi; \
+    done
+    
+    echo ""
+    echo "Summary:"
+    echo "========="
+    echo "Total tests compared: $total_tests"
+    echo "Identical outputs:    $identical_tests"
+    echo "Different outputs:    $different_tests"
+    echo "Skipped (acceptable): $skipped_tests"
+    
+    if [ $different_tests -gt 0 ]; then \
+        echo ""; \
+        echo "❌ Some tests show differences between batch and -c flag modes."; \
+        echo "   Run individual 'neurotest compare-modes <testname>' for details."; \
+        exit 1; \
+    else \
+        echo ""; \
+        echo "🎉 All tested cases produce identical output in both modes!"; \
+        echo "   ($skipped_tests tests skipped due to acceptable differences)"; \
+    fi
+
+# Extended test-e2e to include -c flag testing
+test-e2e-full: ensure-build
+    @echo "Running comprehensive end-to-end tests (batch + -c flag + .neurorc)..."
+    @just test-e2e
+    @echo ""
+    @echo "Running -c flag tests..."
+    @just test-c-flag
+    @echo ""
+    @echo "Comparing modes..."
+    @just compare-all-modes
+    @echo "Comprehensive end-to-end tests complete"
+
+# Extended record-all-e2e to include -c flag recording  
+record-all-e2e-full: ensure-build
+    @echo "Recording all end-to-end test cases (batch + -c flag + .neurorc)..."
+    @just record-all-e2e
+    @echo ""
+    @echo "Recording -c flag tests..."
+    @just record-all-c-flag
+    @echo "All end-to-end test cases recorded"

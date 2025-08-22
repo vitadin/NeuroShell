@@ -1,0 +1,40 @@
+@status = 1
+@error = failed to find model with catalog_id 'INVALID': model with ID 'INVALID' not found in catalog
+@status = 1
+@error = catalog_id 'CS4' is not a Gemini model (provider: anthropic). Use \gemini-model-new only for Gemini models
+@status = 1
+@error = model name is required. Usage: \gemini-model-new[catalog_id=<ID>, thinking_budget=<budget>, temperature=0.7, max_tokens=1000, ...] model_name
+                                                                                                                                                      
+Examples:                                                                                                                                             
+  \gemini-model-new[catalog_id=GM25F] my-flash                               %% Create Gemini Flash with defaults                                     
+  \gemini-model-new[catalog_id=GM25F, thinking_budget=2048] reasoning-flash  %% Create Flash with fixed thinking budget                               
+  \gemini-model-new[catalog_id=GM25F, thinking_budget=0] fast-flash          %% Create Flash with thinking disabled                                   
+  \gemini-model-new[catalog_id=GM25F, thinking_budget=-1] dynamic-flash      %% Create Flash with dynamic thinking                                    
+  \gemini-model-new[catalog_id=GM25P, thinking_budget=16384] thorough-pro    %% Create Pro with large thinking budget                                 
+  \gemini-model-new[catalog_id=GM25FL, temperature=0.9] creative-lite        %% Create Flash Lite with high temperature                               
+                                                                                                                                                      
+Options:                                                                                                                                              
+  catalog_id - Short model ID from catalog (GM25F, GM25P, GM25FL, etc.)                                                                               
+  thinking_budget - Thinking tokens budget (-1=dynamic, 0=disabled, positive=fixed token count)                                                       
+  temperature - Sampling temperature (0.0-2.0)                                                                                                        
+  max_tokens - Maximum completion tokens                                                                                                              
+  description - Human-readable description                                                                                                            
+                                                                                                                                                      
+Note: catalog_id is required.                                                                                                                         
+      thinking_budget ranges vary by model:                                                                                                           
+      - GM25F (Flash): 0-24576 tokens, can disable                                                                                                    
+      - GM25P (Pro): 128-32768 tokens, cannot disable                                                                                                 
+      - GM25FL (Flash Lite): varies by model                                                                                                          
+      Use \model-catalog[provider=gemini] to see available Gemini models.                                                                             
+@status = 1
+@error = catalog_id is required
+@status = 1
+@error = invalid thinking_budget: thinking cannot be disabled for model gemini-2.5-pro (thinking_budget=0 not allowed)
+@status = 1
+@error = failed to validate parameters: parameter 'thinking_budget': value 50000 is above maximum 24576
+@status = 1
+@error = invalid thinking_budget: thinking_budget 50 is outside valid range 128-32768 for model gemini-2.5-pro
+@status = 1
+@error = failed to validate parameters: parameter 'thinking_budget': invalid integer value 'invalid'
+Created model 'recovery-model' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
+#model_name = recovery-model

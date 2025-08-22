@@ -1,0 +1,101 @@
+Setting _echo_command = true
+%%> "\\model-new[catalog_id=\"O3R\"] zebra-model"
+Created model 'zebra-model' (ID: 00000001, Provider: openai, Base: o3)
+%%> "\\silent \\openai-client-new[client_type=OAR]"
+%%> "\\silent \\llm-client-activate OAR"
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\model-new[catalog_id=\"O4MC\"] alpha-model"
+Created model 'alpha-model' (ID: 00000002, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\model-new[catalog_id=\"G41C\"] middle-model"
+Created model 'middle-model' (ID: 00000003, Provider: openai, Base: gpt-4.1-2025-04-14)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
+%%> "\\model-status[sort=\"name\"]"
+Model Configurations (3 models):
+  alpha-model (00000002)
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
+    Created: 2025-01-01 00:00:02
+    Description: OpenAI O4-mini Chat model
+
+  middle-model (00000003)
+    Provider: openai
+    Base Model: gpt-4.1-2025-04-14
+    Catalog ID: G41C
+    Parameters: 1 (temperature=1)
+    Created: 2025-01-01 00:00:03
+    Description: OpenAI GPT-4.1 Chat model
+    Active: true
+
+  zebra-model (00000001)
+    Provider: openai
+    Base Model: o3
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
+    Created: 2025-01-01 00:00:01
+    Description: OpenAI O3 Reasoning model
+
+%%> "\\model-status[sort=\"provider\"]"
+Model Configurations (3 models):
+  alpha-model (00000002)
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
+    Created: 2025-01-01 00:00:02
+    Description: OpenAI O4-mini Chat model
+
+  middle-model (00000003)
+    Provider: openai
+    Base Model: gpt-4.1-2025-04-14
+    Catalog ID: G41C
+    Parameters: 1 (temperature=1)
+    Created: 2025-01-01 00:00:03
+    Description: OpenAI GPT-4.1 Chat model
+    Active: true
+
+  zebra-model (00000001)
+    Provider: openai
+    Base Model: o3
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
+    Created: 2025-01-01 00:00:01
+    Description: OpenAI O3 Reasoning model
+
+%%> "\\model-status[sort=\"created\"]"
+Model Configurations (3 models):
+  zebra-model (00000001)
+    Provider: openai
+    Base Model: o3
+    Catalog ID: O3R
+    Parameters: 2 (reasoning_effort=medium, reasoning_summary=auto)
+    Created: 2025-01-01 00:00:01
+    Description: OpenAI O3 Reasoning model
+
+  alpha-model (00000002)
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
+    Created: 2025-01-01 00:00:02
+    Description: OpenAI O4-mini Chat model
+
+  middle-model (00000003)
+    Provider: openai
+    Base Model: gpt-4.1-2025-04-14
+    Catalog ID: G41C
+    Parameters: 1 (temperature=1)
+    Created: 2025-01-01 00:00:03
+    Description: OpenAI GPT-4.1 Chat model
+    Active: true
+
+%%> "\\try \\model-status[sort=\"invalid\"]"
+%%> "\\model-status[sort=\"invalid\"]"
+%%> "\\get[#model_count]"
+#model_count = 3

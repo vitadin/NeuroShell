@@ -1,0 +1,54 @@
+Setting _echo_command = true
+%%> "\\set[test_json={\"users\": [{\"name\": \"Alice\", \"active\": true}, {\"name\": \"Bob\", \"active\": false}], \"count\": 2}]"
+Setting "count": 2} = 
+Setting test_json = {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
+%%> "\\echo Default 2-space indentation:"
+Default 2-space indentation:
+%%> "\\echo-json ${test_json}"
+Error: Invalid JSON - unexpected end of JSON input                                             
+Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
+%%> "\\echo 4-space indentation:"
+4-space indentation:
+%%> "\\echo-json[indent=4] ${test_json}"
+Error: Invalid JSON - unexpected end of JSON input                                             
+Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
+%%> "\\echo 1-space indentation:"
+1-space indentation:
+%%> "\\echo-json[indent=1] ${test_json}"
+Error: Invalid JSON - unexpected end of JSON input                                             
+Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
+%%> "\\echo Compact format:"
+Compact format:
+%%> "\\echo-json[indent=0] ${test_json}"
+Error: Invalid JSON - unexpected end of JSON input                                             
+Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
+%%> "\\echo 8-space indentation:"
+8-space indentation:
+%%> "\\echo-json[indent=8] {\"key\": \"value\"}"
+{
+        "key": "value"
+}
+%%> "\\echo Invalid indent falls back to default:"
+Invalid indent falls back to default:
+%%> "\\echo-json[indent=invalid] {\"fallback\": \"test\"}"
+{
+  "fallback": "test"
+}
+%%> "\\echo Negative indent falls back to default:"
+Negative indent falls back to default:
+%%> "\\echo-json[indent=-1] {\"negative\": \"test\"}"
+{
+  "negative": "test"
+}
+%%> "\\echo Complex structure in compact:"
+Complex structure in compact:
+%%> "\\echo-json[indent=0] {\"data\": {\"nested\": {\"deep\": \"value\"}}, \"array\": [1, 2, 3]}"
+{"array":[1,2,3],"data":{"nested":{"deep":"value"}}}
+%%> "\\echo-json[indent=4, to=custom_formatted] {\"stored\": \"with 4 spaces\"}"
+{
+    "stored": "with 4 spaces"
+}
+%%> "\\get[custom_formatted]"
+custom_formatted = {         
+    "stored": "with 4 spaces"
+}                            

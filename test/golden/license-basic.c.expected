@@ -1,0 +1,61 @@
+=== License Basic Test ===
+Testing \license command functionality
+NeuroShell - GNU Lesser General Public License v3.0
+=                                                            
+
+                   GNU LESSER GENERAL PUBLIC LICENSE                            
+                       Version 3, 29 June 2007                                  
+                                                                                
+ Copyright (C) 2025 NeuroShell Developers                                       
+                                                                                
+ This program is free software: you can redistribute it and/or modify           
+ it under the terms of the GNU Lesser General Public License as published       
+ by the Free Software Foundation, either version 3 of the License, or           
+ (at your option) any later version.                                            
+                                                                                
+ This program is distributed in the hope that it will be useful,                
+ but WITHOUT ANY WARRANTY; without even the implied warranty of                 
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                  
+ GNU Lesser General Public License for more details.                            
+                                                                                
+ You should have received a copy of the GNU Lesser General Public License       
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.         
+                                                                                
+--------------------------------------------------------------------------      
+                                                                                
+            How to apply these terms to your new library                        
+                                                                                
+  1. Place the full text of the LGPL-3.0 in a file named COPYING.LESSER         
+     in the root of your repository.                                            
+                                                                                
+  2. Attach the following notices to every source file you create or modify:    
+                                                                                
+     Copyright (C) 2025 NeuroShell Developers                                   
+     This file is part of NeuroShell.                                           
+     NeuroShell is free software: you can redistribute it and/or modify         
+     it under the terms of the GNU Lesser General Public License as             
+     published by the Free Software Foundation, either version 3 of the         
+     License, or (at your option) any later version.                            
+                                                                                
+  3. If your program has an interactive user interface, add an                  
+     “About” box or similar element that displays:                              
+                                                                                
+     NeuroShell                                                                 
+     Copyright (C) 2025 NeuroShell Developers                                   
+     License: LGPL-3.0-or-later <https://www.gnu.org/licenses/lgpl-3.0.html>    
+     This is free software; see the source for copying conditions.  There is NO 
+     warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+                                                                                
+  4. Provide clear instructions on how to obtain the complete corresponding     
+     source code (e.g., a link to your public repository).                      
+                                                                                
+--------------------------------------------------------------------------      
+                                                                                
+For the full LGPL-3.0 license text, visit:                                      
+https://www.gnu.org/licenses/lgpl-3.0.txt                                       
+                                                                                
+License system variables check:
+#license_name = GNU Lesser General Public License v3.0
+#license_short_name = LGPL-3.0
+#license_url = https://www.gnu.org/licenses/lgpl-3.0.html
+License summary: LGPL-3.0 - GNU Lesser General Public License v3.0

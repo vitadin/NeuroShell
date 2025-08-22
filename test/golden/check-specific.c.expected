@@ -1,0 +1,13 @@
+Setting _echo_command = true
+%%> "\\check[service=variable]"
+Service Status Check:
+====================
+  [OK] variable             - available/initialized
+
+Summary: 1/1 services healthy
+%%> "\\check[service=help]"
+Service Status Check:
+====================
+  [OK] help                 - available/initialized
+
+Summary: 1/1 services healthy

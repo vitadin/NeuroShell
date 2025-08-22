@@ -1,0 +1,15 @@
+Setting _echo_command = true
+%%> "\\try \\session-json-export nonexistent_session"
+%%> "\\session-json-export nonexistent_session"
+%%> "\\try \\session-json-export[file=/tmp/test.json] completely_nonexistent_session"
+%%> "\\session-json-export[file=/tmp/test.json] completely_nonexistent_session"
+%%> "\\try \\session-json-import"
+%%> "\\session-json-import"
+%%> "\\try \\session-json-import[file=/tmp/completely_nonexistent_file.json]"
+%%> "\\session-json-import[file=/tmp/completely_nonexistent_file.json]"
+%%> "\\try \\session-json-import[file=test/golden/session-export-import-error-handling/invalid.json]"
+%%> "\\session-json-import[file=test/golden/session-export-import-error-handling/invalid.json]"
+%%> "\\try \\session-import[file=/tmp/test.txt]"
+%%> "\\session-import[file=/tmp/test.txt]"
+%%> "\\get[_output]"
+_output = 

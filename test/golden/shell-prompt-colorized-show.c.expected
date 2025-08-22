@@ -1,0 +1,61 @@
+Setting _echo_command = true
+%%> "\\shell-prompt-preset[style=\"minimal-color\"]"
+Applied minimal-color prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 1
+
+Templates:
+  Line 1: {{color:info}}neuro{{/color}}{{color:success}}>{{/color}} 
+
+Preview:
+  neuro> 
+%%> "\\set[_prompt_line1={{color:red}}RED{{/color}} {{bold}}BOLD{{/bold}} {{color:blue}}BLUE{{/color}}> ]"
+Setting _prompt_line1 = {{color:red}}RED{{/color}} {{bold}}BOLD{{/bold}} {{color:blue}}BLUE{{/color}}>
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 1
+
+Templates:
+  Line 1: {{color:red}}RED{{/color}} {{bold}}BOLD{{/bold}} {{color:blue}}BLUE{{/color}}>
+
+Preview:
+  RED BOLD BLUE>
+%%> "\\shell-prompt-preset[style=\"developer-color\"]"
+Applied developer-color prompt preset
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 2
+
+Templates:
+  Line 1: {{color:cyan}}${@pwd}{{/color}} {{color:green}}${@status}{{/color}}
+  Line 2: {{color:magenta}}❯{{/color}} 
+
+Preview:
+  /test/pwd 0
+  ❯ 
+%%> "\\set[_prompt_line1={{color:bright-green}}┌─[{{/color}}{{color:yellow}}${@time}{{/color}}{{color:bright-green}}]{{/color}} ]"
+Setting _prompt_line1 = {{color:bright-green}}┌─[{{/color}}{{color:yellow}}12:00:00{{/color}}{{color:bright-green}}]{{/color}}
+%%> "\\set[_prompt_line2={{color:bright-green}}├─[{{/color}}{{color:cyan}}${@user}@${@pwd}{{/color}}{{color:bright-green}}]{{/color}} ]"
+Setting _prompt_line2 = {{color:bright-green}}├─[{{/color}}{{color:cyan}}testuser@/test/pwd{{/color}}{{color:bright-green}}]{{/color}}
+%%> "\\set[_prompt_line3={{color:bright-green}}└─{{/color}}{{color:bright-red}}❯{{/color}} ]"
+Setting _prompt_line3 = {{color:bright-green}}└─{{/color}}{{color:bright-red}}❯{{/color}}
+%%> "\\set[_prompt_lines_count=3]"
+Setting _prompt_lines_count = 3
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 3
+
+Templates:
+  Line 1: {{color:bright-green}}┌─[{{/color}}{{color:yellow}}12:00:00{{/color}}{{color:bright-green}}]{{/color}}
+  Line 2: {{color:bright-green}}├─[{{/color}}{{color:cyan}}testuser@/test/pwd{{/color}}{{color:bright-green}}]{{/color}}
+  Line 3: {{color:bright-green}}└─{{/color}}{{color:bright-red}}❯{{/color}}
+
+Preview:
+  ┌─[12:00:00]
+  ├─[testuser@/test/pwd]
+  └─❯

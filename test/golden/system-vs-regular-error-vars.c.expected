@@ -1,0 +1,75 @@
+Setting _echo_command = true
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[_status]"
+_status = 
+%%> "\\get[_error]"
+_error = 
+%%> "\\try \\bash ls /nonexistent_test_file"
+%%> "\\bash ls /nonexistent_test_file"
+Error: <ls_error_macos>
+<non_zero_exit_status>
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = <ls_error_macos>
+%%> "\\get[_status]"
+_status = 
+%%> "\\get[_error]"
+_error = 
+%%> "\\try \\set[@status=999]"
+%%> "\\set[@status=999]"
+%%> "\\try \\set[@error=manual error]"
+%%> "\\set[@error=manual error]"
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = failed to set variable @error: cannot set system variable: @error
+%%> "\\try \\set[_status=42]"
+%%> "\\set[_status=42]"
+%%> "\\try \\set[_error=custom error message]"
+%%> "\\set[_error=custom error message]"
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = failed to set variable _error: cannot set system variable: _error
+%%> "\\get[_status]"
+_status = 
+%%> "\\get[_error]"
+_error = 
+%%> "\\set[my_status=42]"
+Setting my_status = 42
+%%> "\\set[my_error=custom error message]"
+Setting my_error = custom error message
+%%> "\\get[my_status]"
+my_status = 42
+%%> "\\get[my_error]"
+my_error = custom error message
+%%> "\\bash echo \"success\""
+success
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[_status]"
+_status = 
+%%> "\\get[_error]"
+_error = 
+%%> "\\get[@status]  %% This should not change @last_status/@last_error"
+@status = 0
+%%> "\\get[@last_status]"
+@last_status = 0
+%%> "\\get[@last_error]"
+@last_error = 
+%%> "\\try \\unknown_command_test"
+%%> "\\unknown_command_test"
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = unknown command: unknown_command_test
+%%> "\\get[@last_status]"
+@last_status = 0
+%%> "\\get[@last_error]"
+@last_error = 

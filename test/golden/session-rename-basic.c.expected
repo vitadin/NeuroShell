@@ -1,0 +1,66 @@
+Setting _echo_command = true
+%%> "\\session-new[system=\"You are a helpful assistant\"] original_name"
+Created session 'original_name' (ID: 00000001)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-new[system=\"You are a code reviewer\"] session_two"
+Created session 'session_two' (ID: 00000002)
+%%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\get[#session_name]"
+#session_name = session_two
+%%> "\\session-rename My New Session Name"
+Renamed session from 'session_two' to 'My New Session Name'
+%%> "\\get[#session_id]"
+#session_id = 00000002-0000-4000-8000-000000000002
+%%> "\\get[#old_session_name]"
+#old_session_name = session_two
+%%> "\\get[#new_session_name]"
+#new_session_name = My New Session Name
+%%> "\\get[_output]"
+_output = Renamed session from 'session_two' to 'My New Session Name'
+%%> "\\session-rename[session=original_name] Renamed Original Session"
+Renamed session from 'original_name' to 'Renamed Original Session'
+%%> "\\get[#session_id]"
+#session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#old_session_name]"
+#old_session_name = original_name
+%%> "\\get[#new_session_name]"
+#new_session_name = Renamed Original Session
+%%> "\\get[_output]"
+_output = Renamed session from 'original_name' to 'Renamed Original Session'
+%%> "\\session-new test_id_rename"
+Created session 'test_id_rename' (ID: 00000003)
+%%> "\\silent \\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
+%%> "\\get[#session_id]"
+#session_id = 00000003-0000-4000-8000-000000000003
+%%> "\\session-rename[session=${#session_id}] Renamed By ID"
+Renamed session from 'test_id_rename' to 'Renamed By ID'
+%%> "\\get[#session_id]"
+#session_id = 00000003-0000-4000-8000-000000000003
+%%> "\\get[#old_session_name]"
+#old_session_name = test_id_rename
+%%> "\\get[#new_session_name]"
+#new_session_name = Renamed By ID
+%%> "\\get[_output]"
+_output = Renamed session from 'test_id_rename' to 'Renamed By ID'
+%%> "\\session-rename \"Final Test Session Name\""
+Renamed session from 'Renamed By ID' to 'Final Test Session Name'
+%%> "\\get[#old_session_name]"
+#old_session_name = Renamed By ID
+%%> "\\get[#new_session_name]"
+#new_session_name = Final Test Session Name
+%%> "\\get[_output]"
+_output = Renamed session from 'Renamed By ID' to 'Final Test Session Name'
+%%> "\\session-list"
+Sessions (3 total):
+  Final Test Session Name    (ID: 00000003, active, 0 messages, created: 2025-01-01)
+  My New Session Name    (ID: 00000002, 0 messages, created: 2025-01-01)
+  Renamed Original Session    (ID: 00000001, 0 messages, created: 2025-01-01)
+%%> "\\session-delete My New Session Name"
+Deleted session 'My New Session Name' (ID: 00000002)
+%%> "\\silent \\session-activate"
+%%> "\\session-delete Renamed Original Session"
+Deleted session 'Renamed Original Session' (ID: 00000001)
+%%> "\\silent \\session-activate"
+%%> "\\session-delete Final Test Session Name"
+Deleted session 'Final Test Session Name' (ID: 00000003)
+%%> "\\silent \\session-activate"

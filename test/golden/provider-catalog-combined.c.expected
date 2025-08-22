@@ -1,0 +1,45 @@
+Setting _echo_command = true
+%%> "\\provider-catalog[provider=openai,sort=name]"
+Provider Catalog (Openai) (1 providers):
+  [OAC] OpenAI Chat Completions (openai)
+    Base URL: https://api.openai.com/v1
+    Endpoint: /chat/completions
+    Client Type: openai
+    Description: OpenAI's chat completion API for GPT models
+    Implementation: Natively supported by NeuroShell
+%%> "\\provider-catalog[search=chat,sort=name]"
+Provider Catalog - Search: 'chat' (3 providers):
+  [ANC] Anthropic Claude Chat (openai-compatible)
+    Provider: anthropic
+    Base URL: https://api.anthropic.com/v1
+    Endpoint: /messages
+    Client Type: openai-compatible
+    Headers: anthropic-version: 2023-06-01
+    Description: Anthropic Claude chat completions API
+    Implementation: Natively supported by NeuroShell
+  [GMC] Google Gemini Chat (gemini)
+    Provider: gemini
+    Base URL: https://generativelanguage.googleapis.com/v1beta
+    Endpoint: /models/{model}:generateContent
+    Client Type: gemini
+    Headers: Content-Type: application/json, x-goog-api-key: {API_KEY}
+    Description: Google Gemini generative AI chat completions API
+    Implementation: Natively supported by NeuroShell
+  [OAC] OpenAI Chat Completions (openai)
+    Provider: openai
+    Base URL: https://api.openai.com/v1
+    Endpoint: /chat/completions
+    Client Type: openai
+    Description: OpenAI's chat completion API for GPT models
+    Implementation: Natively supported by NeuroShell
+%%> "\\provider-catalog[provider=anthropic,search=claude]"
+Provider Catalog (Anthropic) - Search: 'claude' (1 providers):
+  [ANC] Anthropic Claude Chat (openai-compatible)
+    Base URL: https://api.anthropic.com/v1
+    Endpoint: /messages
+    Client Type: openai-compatible
+    Headers: anthropic-version: 2023-06-01
+    Description: Anthropic Claude chat completions API
+    Implementation: Natively supported by NeuroShell
+%%> "\\provider-catalog[provider=openrouter,sort=name,search=unified]"
+ERRO Command execution failed error="command execution failed: invalid provider option 'openrouter'. Valid options: all, openai, anthropic, gemini"

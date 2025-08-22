@@ -1,0 +1,58 @@
+Setting _echo_command = true
+%%> "\\model-new[catalog_id=\"O4MC\"] my-claude-temp"
+Created model 'my-claude-temp' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\model-new[catalog_id=\"O3R\"] my-openai-model"
+Created model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\openai-client-new[client_type=OAR]"
+%%> "\\silent \\llm-client-activate OAR"
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\model-new[catalog_id=\"O4MC\"] permanent-model"
+Created model 'permanent-model' (ID: 00000003, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
+%%> "\\model-delete temp"
+Deleted model 'my-claude-temp' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\model-activate"
+%%> "\\get[#deleted_model_name]"
+#deleted_model_name = my-claude-temp
+%%> "\\get[_output]"
+_output = Current active model: 'permanent-model' (ID: 00000003, Provider: openai, Base: o4-mini)
+%%> "\\model-new[catalog_id=\"G41C\"] id-test-model"
+Created model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4.1-2025-04-14)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
+%%> "\\model-activate id-test-model"
+Activated model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4.1-2025-04-14)
+%%> "\\try \\silent \\llm-client-activate OAC"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\try \\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\get[#active_model_id]"
+#active_model_id = 00000004-0000-4000-8000-000000000004
+%%> "\\set[short_id=\"${#active_model_id}\"]"
+Setting short_id = 00000004-0000-4000-8000-000000000004
+%%> "\\model-delete[id=true] ${short_id}"
+Deleted model 'id-test-model' (ID: 00000004, Provider: openai, Base: gpt-4.1-2025-04-14)
+%%> "\\silent \\model-activate"
+%%> "\\get[#deleted_model_name]"
+#deleted_model_name = id-test-model
+%%> "\\model-delete OPENAI"
+Deleted model 'my-openai-model' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\model-activate"
+%%> "\\get[#deleted_model_name]"
+#deleted_model_name = my-openai-model
+%%> "\\model-status"
+Model Configurations (1 models):
+  permanent-model (00000003)
+    Provider: openai
+    Base Model: o4-mini
+    Catalog ID: O4MC
+    Parameters: 1 (temperature=1)
+    Created: 2025-01-01 00:00:03
+    Description: OpenAI O4-mini Chat model
+    Active: true

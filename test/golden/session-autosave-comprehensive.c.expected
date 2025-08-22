@@ -1,0 +1,134 @@
+Setting _echo_command = true
+%%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash mkdir -p /tmp/neuroshell-test-config"
+%%> "\\set[_session_autosave=\"true\"]"
+Setting _session_autosave = true
+%%> "\\config-path"
+Config Directory: /tmp/neuroshell-test-config (exists)
+Config .env: /tmp/neuroshell-test-config/.env (not found)
+Local .env: /tmp/neuroshell-test-workdir/.env (not found)
+%%> "\\session-new[system=\"You are a helpful test assistant for auto-save testing\"] autosave_test_session"
+Created session 'autosave_test_session' (ID: 00000001)
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/ | sort"
+00000001-0000-4000-8000-000000000001.json
+%%> "\\get[#session_id]"
+#session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/${#session_id}.json"
+/tmp/neuroshell-test-config/sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\session-new[system=\"Another test session\"] second_session"
+Created session 'second_session' (ID: 00000002)
+%%> "\\session-save 00000002-0000-4000-8000-000000000002"
+Session saved to sessions/00000002-0000-4000-8000-000000000002.json
+%%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\get[#session_id]"
+#session_id = 00000002-0000-4000-8000-000000000002
+%%> "\\set[second_session_id=\"${#session_id}\"]"
+Setting second_session_id = 00000002-0000-4000-8000-000000000002
+%%> "\\session-activate autosave_test_session"
+Activated session 'autosave_test_session' (ID: 00000001, Messages: 0)
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/ | sort"
+00000001-0000-4000-8000-000000000001.json
+00000002-0000-4000-8000-000000000002.json
+%%> "\\session-add-usermsg[session=\"autosave_test_session\"] This is a test user message to verify auto-save works"
+Added user message to session 'autosave_test_session'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/ | sort"
+00000001-0000-4000-8000-000000000001.json
+00000002-0000-4000-8000-000000000002.json
+%%> "\\session-add-assistantmsg[session=\"autosave_test_session\"] This is a test assistant response to verify auto-save functionality"
+Added assistant message to session 'autosave_test_session'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/ | sort"
+00000001-0000-4000-8000-000000000001.json
+00000002-0000-4000-8000-000000000002.json
+%%> "\\session-edit-system[session=\"autosave_test_session\"] You are a helpful assistant specializing in auto-save testing. Modified system prompt."
+Updated system prompt for session 'autosave_test_session'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\session-edit-msg[session=\"autosave_test_session\", idx=\"1\"] Modified user message to test auto-save on message editing"
+Edited message 1 (last message) in session 'autosave_test_session'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\session-delete-msg[session=\"autosave_test_session\", idx=\"2\", confirm=\"false\"]"
+Deleted message 2 (second-to-last message) from session 'autosave_test_session'
+Session now has 1 messages remaining
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\get[#session_id]"
+#session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\cat /tmp/neuroshell-test-config/sessions/${#session_id}.json"
+{
+  "id": "00000001-0000-4000-8000-000000000001",
+  "name": "autosave_test_session",
+  "system_prompt": "You are a helpful assistant specializing in auto-save testing. Modified system prompt.",
+  "messages": [
+    {
+      "id": "00000004-0000-4000-8000-000000000004",
+      "role": "assistant",
+      "content": "Modified user message to test auto-save on message editing",
+      "timestamp": "2025-01-01T00:00:05Z"
+    }
+  ],
+  "created_at": "2025-01-01T00:00:01Z",
+  "updated_at": "2025-01-01T00:00:09Z",
+  "is_active": true
+}
+%%> "\\session-save autosave_test_session"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\set[_session_autosave=\"false\"]"
+Setting _session_autosave = false
+%%> "\\session-new[system=\"Auto-save disabled session\"] no_autosave_session"
+Created session 'no_autosave_session' (ID: 00000005)
+%%> "\\silent \\session-activate[id=true] 00000005-0000-4000-8000-000000000005"
+%%> "\\get[#session_id]"
+#session_id = 00000005-0000-4000-8000-000000000005
+%%> "\\set[no_autosave_session_id=\"${#session_id}\"]"
+Setting no_autosave_session_id = 00000005-0000-4000-8000-000000000005
+%%> "\\session-add-usermsg[session=\"no_autosave_session\"] This message should not be auto-saved"
+Added user message to session 'no_autosave_session'
+%%> "\\silent \\session-activate[id=true] 00000005-0000-4000-8000-000000000005"
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/${no_autosave_session_id}.json 2>/dev/null || echo \"File not found (expected behavior)\""
+File not found (expected behavior)
+%%> "\\session-save no_autosave_session"
+Session saved to sessions/00000005-0000-4000-8000-000000000005.json
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/${no_autosave_session_id}.json"
+/tmp/neuroshell-test-config/sessions/00000005-0000-4000-8000-000000000005.json
+%%> "\\set[_session_autosave=\"true\"]"
+Setting _session_autosave = true
+%%> "\\session-new[system=\"Prefix test session\"] prefix_matching_test"
+Created session 'prefix_matching_test' (ID: 00000007)
+%%> "\\session-save 00000007-0000-4000-8000-000000000007"
+Session saved to sessions/00000007-0000-4000-8000-000000000007.json
+%%> "\\silent \\session-activate[id=true] 00000007-0000-4000-8000-000000000007"
+%%> "\\session-add-usermsg[session=\"prefix_matching_test\"] Test message using prefix matching"
+Added user message to session 'prefix_matching_test'
+%%> "\\session-save 00000007-0000-4000-8000-000000000007"
+Session saved to sessions/00000007-0000-4000-8000-000000000007.json
+%%> "\\silent \\session-activate[id=true] 00000007-0000-4000-8000-000000000007"
+%%> "\\get[#session_id]"
+#session_id = 00000007-0000-4000-8000-000000000007
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/${#session_id}.json"
+/tmp/neuroshell-test-config/sessions/00000007-0000-4000-8000-000000000007.json
+%%> "\\bash echo \"=== Auto-save test summary ===\""
+=== Auto-save test summary ===
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/ | sort"
+00000001-0000-4000-8000-000000000001.json
+00000002-0000-4000-8000-000000000002.json
+00000005-0000-4000-8000-000000000005.json
+00000007-0000-4000-8000-000000000007.json
+%%> "\\bash echo \"Total auto-saved sessions:\""
+Total auto-saved sessions:
+%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json 2>/dev/null | wc -l | tr -d ' '"
+4
+%%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"

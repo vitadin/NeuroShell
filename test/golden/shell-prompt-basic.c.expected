@@ -1,0 +1,28 @@
+Setting _echo_command = true
+%%> "\\shell-prompt[lines=1, line1=\"neuro> \"]"
+Prompt lines set to 1
+Prompt line 1 set to: neuro> 
+%%> "\\shell-prompt[lines=2, line1=\"${@pwd}\", line2=\"❯ \"]"
+Prompt lines set to 2
+Prompt line 1 set to: /test/pwd
+Prompt line 2 set to: ❯ 
+%%> "\\shell-prompt[lines=3, line1=\"┌─[${@time}]\", line2=\"├─[${@pwd}]\", line3=\"└➤ \"]"
+Prompt lines set to 3
+Prompt line 1 set to: ┌─[12:00:00]
+Prompt line 2 set to: ├─[/test/pwd]
+Prompt line 3 set to: └➤ 
+%%> "\\shell-prompt"
+Current shell prompt configuration:
+  Lines: 3
+  Line 1: ┌─[12:00:00]
+  Line 2: ├─[/test/pwd]
+  Line 3: └➤ 
+%%> "\\shell-prompt[lines=2]"
+Prompt lines set to 2
+%%> "\\shell-prompt[line1=\"modified> \"]"
+Prompt line 1 set to: modified> 
+%%> "\\shell-prompt"
+Current shell prompt configuration:
+  Lines: 2
+  Line 1: modified> 
+  Line 2: ├─[/test/pwd]

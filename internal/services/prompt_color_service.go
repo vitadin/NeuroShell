@@ -293,55 +293,76 @@ func (h *CommandHighlighter) Paint(line []rune, _ int) []rune {
 		return line
 	}
 
-	// Find command prefix match
-	matches := h.commandRegex.FindStringSubmatch(input)
-	if len(matches) < 2 {
-		// No command prefix found, return original line
+	// Parse command into three parts: command name, options, and remaining text
+	commandName, options, remainingText := h.parseCommandParts(input)
+	if commandName == "" {
+		// No command found, return original line
 		return line
 	}
 
-	// Get the full match (command prefix including brackets)
-	commandPrefix := matches[0]
-
-	// Apply safe highlighting using direct ANSI codes to avoid terminal detection sequences
-	highlightedPrefix := h.applySafeHighlighting(commandPrefix)
-
-	// Replace the command prefix in the original input
-	remainingInput := input[len(commandPrefix):]
-	highlighted := highlightedPrefix + remainingInput
+	// Apply three-part highlighting
+	highlighted := h.applyThreePartHighlighting(commandName, options, remainingText)
 
 	// Convert back to runes
 	return []rune(highlighted)
 }
 
-// applySafeHighlighting applies color highlighting using direct ANSI codes
-// to avoid terminal detection sequences that can leak into input
-func (h *CommandHighlighter) applySafeHighlighting(text string) string {
-	// Use simple, safe ANSI color codes for command highlighting
-	// These are basic colors that don't trigger terminal capability detection
+// parseCommandParts parses input into three parts: command name, options, and remaining text
+func (h *CommandHighlighter) parseCommandParts(input string) (commandName, options, remainingText string) {
+	// Regex to match command name and optional options: \command[options]
+	commandRegex := regexp.MustCompile(`^\\([a-zA-Z][a-zA-Z0-9-]*)(\[[^\]]*\])?(.*)$`)
+	matches := commandRegex.FindStringSubmatch(input)
 
+	if len(matches) < 2 {
+		// No command found
+		return "", "", ""
+	}
+
+	// Extract parts
+	commandName = "\\" + matches[1] // Include the backslash prefix
+	options = matches[2]            // Options in brackets (could be empty)
+	remainingText = matches[3]      // Everything after the command and options
+
+	return commandName, options, remainingText
+}
+
+// applyThreePartHighlighting applies different colors to command name, options, and remaining text
+func (h *CommandHighlighter) applyThreePartHighlighting(commandName, options, remainingText string) string {
 	const (
 		// Basic ANSI color codes - safe and widely supported
-		ansiBrightBlue = "\033[94m" // Bright blue for commands
-		ansiCyan       = "\033[36m" // Cyan as fallback
-		ansiReset      = "\033[0m"  // Reset formatting
+		ansiBrightBlue  = "\033[94m" // Bright blue for command names
+		ansiBrightGreen = "\033[92m" // Bright green for options
+		ansiYellow      = "\033[33m" // Yellow as fallback for options
+		ansiCyan        = "\033[36m" // Cyan as fallback for commands
+		ansiReset       = "\033[0m"  // Reset formatting
 	)
 
-	// Choose color based on theme if available, otherwise use default
-	colorCode := ansiBrightBlue
+	// Choose colors based on theme if available, otherwise use defaults
+	commandColor := ansiBrightBlue
+	optionsColor := ansiBrightGreen
+
 	if h.colorService.themeService != nil {
-		// Try to get semantic color from theme
+		// Try to get semantic colors from theme
 		if theme, exists := h.colorService.themeService.GetTheme("default"); exists {
-			// Use theme command color if it has a foreground set
+			// Use theme command color if available
 			if theme.Command.GetForeground() != lipgloss.Color("") {
-				// Extract basic color from theme - simplified approach
-				colorCode = ansiCyan // Use cyan for themed environments
+				commandColor = ansiCyan
+			}
+			// Use theme variable color for options if available
+			if theme.Variable.GetForeground() != lipgloss.Color("") {
+				optionsColor = ansiYellow
 			}
 		}
 	}
 
-	// Apply safe highlighting
-	return colorCode + text + ansiReset
+	// Build highlighted string
+	result := commandColor + commandName + ansiReset
+	if options != "" {
+		result += optionsColor + options + ansiReset
+	}
+	result += remainingText
+
+	return result
 }
 
 // Interface compliance check

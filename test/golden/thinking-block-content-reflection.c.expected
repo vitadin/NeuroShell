@@ -1,0 +1,17 @@
+Setting test_topic = machine learning
+Setting test_number = 42
+Anthropic client ready: ANC:da1c321d (configured: true, extended thinking: supported)
+_client_id = ANC:da1c321d
+Created model 'content-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Activated model 'content-model' (ID: 00000001, Provider: anthropic, Base: claude-sonnet-4-20250514)
+Created session 'content-test-session' (ID: 00000002)
+Testing basic message content reflection
+Added user message to session 'content-test-session'
+Testing variable interpolation in thinking content
+Added user message to session 'content-test-session'
+Testing messages with numbers and special characters
+Added user message to session 'content-test-session'
+Testing complex message reflection
+Added user message to session 'content-test-session'
+Testing message count progression
+Added user message to session 'content-test-session'

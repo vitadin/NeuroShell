@@ -1,0 +1,50 @@
+Setting _echo_command = true
+%%> "\\set[_prompt_line1={{color:invalidcolor}}TEXT{{/color}} {{color:red}}VALID{{/color}} ]"
+Setting _prompt_line1 = {{color:invalidcolor}}TEXT{{/color}} {{color:red}}VALID{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+TEXT VALID
+█
+%%> "\\set[_prompt_line1={{color:}}EMPTY{{/color}} {{color:blue}}BLUE{{/color}} ]"
+Setting _prompt_line1 = {{color:}}EMPTY{{/color}} {{color:blue}}BLUE{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+{{color:}}EMPTY{{/color}} BLUE
+█
+%%> "\\set[_prompt_line1={{color:red}}UNCLOSED {{color:blue}}BLUE{{/color}} ]"
+Setting _prompt_line1 = {{color:red}}UNCLOSED {{color:blue}}BLUE{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+UNCLOSED {{color:blue}}BLUE
+█
+%%> "\\set[_prompt_line1={{bold}}VALID-BOLD{{/bold}} {{unknownstyle}}UNKNOWN{{/unknownstyle}} {{color:green}}VALID-GREEN{{/color}} ]"
+Setting _prompt_line1 = {{bold}}VALID-BOLD{{/bold}} {{unknownstyle}}UNKNOWN{{/unknownstyle}} {{color:green}}VALID-GREEN{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+VALID-BOLD {{unknownstyle}}UNKNOWN{{/unknownstyle}} VALID-GREEN
+█
+%%> "\\set[_prompt_line1={{color:bright-red}}BRIGHT-RED{{/color}} {{color:bright-blue}}BRIGHT-BLUE{{/color}} {{color:bright-white}}BRIGHT-WHITE{{/color}} ]"
+Setting _prompt_line1 = {{color:bright-red}}BRIGHT-RED{{/color}} {{color:bright-blue}}BRIGHT-BLUE{{/color}} {{color:bright-white}}BRIGHT-WHITE{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+BRIGHT-RED BRIGHT-BLUE BRIGHT-WHITE
+█
+%%> "\\set[_prompt_line1={{color:cyan}}[{{/color}}{{color:yellow}}特殊字符 Unicode 🎨{{/color}}{{color:cyan}}]{{/color}} ]"
+Setting _prompt_line1 = {{color:cyan}}[{{/color}}{{color:yellow}}特殊字符 Unicode 🎨{{/color}}{{color:cyan}}]{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+[特殊字符 Unicode 🎨]
+█
+%%> "\\set[_prompt_line1={{color:red}}This is a very long line with {{/color}}{{color:blue}}multiple{{/color}} {{bold}}{{color:green}}nested{{/color}}{{/bold}} {{color:yellow}}color{{/color}} {{color:magenta}}segments{{/color}} {{color:cyan}}to test{{/color}} {{color:white}}performance{{/color}} ]"
+Setting _prompt_line1 = {{color:red}}This is a very long line with {{/color}}{{color:blue}}multiple{{/color}} {{bold}}{{color:green}}nested{{/color}}{{/bold}} {{color:yellow}}color{{/color}} {{color:magenta}}segments{{/color}} {{color:cyan}}to test{{/color}} {{color:white}}performance{{/color}}
+%%> "\\shell-prompt-preview"
+Prompt Preview:
+===============
+This is a very long line with multiple nested color segments to test performance
+█

@@ -1,0 +1,27 @@
+Auto-generated session name: 'Session 1'
+Created session 'Session 1' (ID: 00000001)
+Added user message to session 'Session 1'
+Created reference session with 1 message
+=== Testing non-existent session by name ===
+Testing completely non-existent session name:
+Status: 1
+Error: failed to find session 'does_not_exist': session 'does_not_exist' not found (tried both name and ID)
+Testing partial match that doesn't exist:
+Status: 1
+Error: failed to find session 'nonexist': session 'nonexist' not found (tried both name and ID)
+Testing empty session name:
+Deleted message 1 (last message) from session 'Session 1'
+Session now has 0 messages remaining
+Status: 0
+Error:
+=== Testing non-existent session by ID ===
+Testing fake UUID session ID:
+Status: 1
+Error: failed to find session '550e8400-e29b-41d4-a716-446655440000': session '550e8400-e29b-41d4-a716-446655440000' not found (tried both name and ID)
+Testing short fake ID:
+Status: 1
+Error: failed to find session 'fake123': session 'fake123' not found (tried both name and ID)
+=== Testing no active session scenario ===
+Auto-generated session name: 'Session 2'
+Created session 'Session 2' (ID: 00000003)
+ERRO Command execution failed error="command execution failed: no session found for 'temp_to_delete' (tried exact name, exact ID, prefix match)"

@@ -1,0 +1,31 @@
+Setting _echo_command = true
+%%> "\\if[condition=true] \\echo \"True condition executed\""
+%%> "\\echo \"True condition executed\""
+"True condition executed"
+%%> "\\if[condition=false] \\echo \"This should not appear\""
+%%> "\\if[condition=true] \\set[result=\"success\"]"
+%%> "\\set[result=\"success\"]"
+Setting result = success
+%%> "\\get[result]"
+result = success
+%%> "\\if[condition=false] \\set[should_not_exist=\"value\"]"
+%%> "\\get[should_not_exist]"
+should_not_exist = 
+%%> "\\if[condition=\"yes\"] \\echo \"Yes is truthy\""
+%%> "\\echo \"Yes is truthy\""
+"Yes is truthy"
+%%> "\\if[condition=\"1\"] \\echo \"1 is truthy\""
+%%> "\\echo \"1 is truthy\""
+"1 is truthy"
+%%> "\\if[condition=\"no\"] \\echo \"This should not appear\""
+%%> "\\if[condition=\"0\"] \\echo \"This should not appear\""
+%%> "\\if[condition=true]"
+%%> "\\if[condition=true]"
+%%> "\\if[condition=true] \\set[dummy=\"test\"]"
+%%> "\\set[dummy=\"test\"]"
+Setting dummy = test
+%%> "\\get[#if_result]"
+#if_result = true
+%%> "\\if[condition=false] \\set[dummy2=\"test\"]"
+%%> "\\get[#if_result]"
+#if_result = false
