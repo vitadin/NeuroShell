@@ -8,9 +8,6 @@ import (
 	"strings"
 
 	"neuroshell/internal/context"
-
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 // CompletionItem represents a single completion suggestion with optional description.
@@ -100,12 +97,13 @@ func (a *AutoCompleteService) formatCompletions(items []CompletionItem, currentW
 
 	switch mode {
 	case "enhanced":
-		// Enhanced mode: show descriptions and better formatting
+		// Enhanced mode: provides smart context-aware completions (files, sessions, models)
+		// Currently uses same display format as basic mode due to readline limitations
 		suggestions = a.formatEnhancedCompletions(items, currentWord)
 	case "tab":
 		fallthrough
 	default:
-		// Traditional TAB mode: just the completion text
+		// Traditional TAB mode: basic completion logic and display
 		suggestions = a.formatBasicCompletions(items, currentWord)
 	}
 
@@ -125,46 +123,14 @@ func (a *AutoCompleteService) formatBasicCompletions(items []CompletionItem, cur
 	return suggestions
 }
 
-// formatEnhancedCompletions formats completions for enhanced mode with descriptions.
+// formatEnhancedCompletions formats completions for enhanced mode.
+// Currently simplified to avoid readline display issues with descriptions and category headers.
+// Future enhancement: integrate with a custom display system for richer completion information.
 func (a *AutoCompleteService) formatEnhancedCompletions(items []CompletionItem, currentWord string) [][]rune {
-	var suggestions [][]rune
-
-	// Group items by category for better organization
-	categories := make(map[string][]CompletionItem)
-	for _, item := range items {
-		if strings.HasPrefix(item.Text, currentWord) {
-			category := item.Category
-			if category == "" {
-				category = "other"
-			}
-			categories[category] = append(categories[category], item)
-		}
-	}
-
-	// Format suggestions with category headers and descriptions
-	categoryOrder := []string{"commands", "variables", "options", "other"}
-	for _, category := range categoryOrder {
-		if items, exists := categories[category]; exists && len(items) > 0 {
-			// Add category header (if more than one category)
-			if len(categories) > 1 {
-				caser := cases.Title(language.English)
-				suggestions = append(suggestions, []rune(fmt.Sprintf("--- %s ---", caser.String(category))))
-			}
-
-			for _, item := range items {
-				suffix := strings.TrimPrefix(item.Text, currentWord)
-				if item.Description != "" {
-					// Format with description
-					formatted := fmt.Sprintf("%s  # %s", suffix, item.Description)
-					suggestions = append(suggestions, []rune(formatted))
-				} else {
-					suggestions = append(suggestions, []rune(suffix))
-				}
-			}
-		}
-	}
-
-	return suggestions
+	// For now, enhanced mode provides the same clean completions as basic mode
+	// The main benefit is the enhanced completion logic (smart file/session/model completions)
+	// rather than display formatting which has readline library limitations
+	return a.formatBasicCompletions(items, currentWord)
 }
 
 // findWordStart finds the start position of the word being completed.
