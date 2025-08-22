@@ -677,6 +677,12 @@ func (s *Shell) ProgressBar() ProgressBar {
 	return s.progressBar
 }
 
+// GetReadlineInstance returns the underlying readline instance for advanced configuration.
+// This method is added to support enhanced completion features.
+func (s *Shell) GetReadlineInstance() *readline.Instance {
+	return s.reader.scanner
+}
+
 func newContext(s *Shell, cmd *Cmd, args []string) *Context {
 	if cmd == nil {
 		cmd = &Cmd{}

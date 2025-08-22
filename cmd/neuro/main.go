@@ -373,7 +373,53 @@ func setupAutoComplete(sh *ishell.Shell) error {
 	// Set up custom completer
 	sh.CustomCompleter(autoCompleter)
 
+	// Set up enhanced completion listener for automatic suggestions
+	if err := setupEnhancedListener(sh, autoCompleter); err != nil {
+		logger.Error("Failed to setup enhanced completion listener", "error", err)
+		// Don't fail startup, just log the error
+	}
+
 	logger.Debug("Autocomplete service configured successfully")
+	return nil
+}
+
+// setupEnhancedListener configures the enhanced completion listener for automatic suggestions.
+func setupEnhancedListener(sh *ishell.Shell, autoCompleter *services.AutoCompleteService) error {
+	// Access the readline instance through the shell
+	readlineInstance := sh.GetReadlineInstance()
+
+	// Get current config from the readline instance
+	currentConfig := readlineInstance.Config.Clone()
+
+	// Create the enhanced completion listener
+	enhancedListener := services.NewEnhancedCompletionListener(autoCompleter)
+
+	// Get the existing listener (contains Ctrl+E handler)
+	existingListener := currentConfig.Listener
+
+	// Create a combined listener that chains both listeners
+	combinedListener := readline.FuncListener(func(line []rune, pos int, key rune) (newLine []rune, newPos int, ok bool) {
+		// First, let the enhanced listener handle the keystroke for automatic suggestions
+		// It should not modify the input, just display suggestions
+		enhancedListener.OnChange(line, pos, key)
+
+		// Then, let the existing listener handle it (Ctrl+E, etc.)
+		// This one might modify the input
+		if existingListener != nil {
+			return existingListener.OnChange(line, pos, key)
+		}
+
+		// If no existing listener or it didn't handle the key, return unchanged
+		return line, pos, false
+	})
+
+	// Set the combined listener in the config
+	currentConfig.Listener = combinedListener
+
+	// Apply the modified config back to the readline instance
+	readlineInstance.SetConfig(currentConfig)
+
+	logger.Debug("Enhanced completion listener configured successfully")
 	return nil
 }
 
