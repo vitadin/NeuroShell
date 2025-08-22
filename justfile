@@ -12,7 +12,7 @@ default:
     @echo "  test-context      - Run context tests only"
     @echo "  test-shell        - Run shell tests only"
     @echo "  test-all-units    - Run all unit, command, parser, context, and shell tests"
-    @echo "  test-e2e          - Run end-to-end tests (includes .neurorc tests)"
+    @echo "  test-e2e          - Run comprehensive end-to-end tests (batch mode + -c flag + .neurorc tests)"
     @echo "  test-neurorc      - Run .neurorc startup tests only" 
     @echo "  test-c-flag       - Run -c flag e2e tests only"
     @echo "  record-all-e2e    - Re-record all end-to-end test cases (includes .neurorc)"
@@ -453,33 +453,48 @@ init:
 # Run end-to-end tests
 test-e2e: ensure-build
     @echo "Running end-to-end tests..."
+    @echo "1. Standard batch mode tests..."
     ./bin/neurotest --neuro-cmd="./bin/neuro" run-all
-    @echo "Running .neurorc startup tests..."
+    @echo ""
+    @echo "2. -c flag tests..."
+    @just test-c-flag
+    @echo ""
+    @echo "3. .neurorc startup tests..."
     #!/bin/bash
     for test_file in $(find test/golden/neurorc -maxdepth 1 -name "*.neurorc-test" -type f | sort); do \
         test_name=$(basename "$test_file" .neurorc-test); \
         echo "Testing $test_name..."; \
         ./bin/neurotest run-neurorc "$test_name" >/dev/null 2>&1 && echo "PASS $test_name" || echo "FAIL $test_name"; \
     done
-    @echo "End-to-end tests complete"
+    @echo ""
+    @echo "🎉 All end-to-end tests complete (batch mode + -c flag + .neurorc)"
 
 # Re-record all end-to-end test cases
 record-all-e2e: ensure-build
     #!/bin/bash
     echo "Re-recording all end-to-end test cases..."
-    echo "Recording standard e2e tests..."
+    echo "1. Recording standard batch mode tests..."
     for test_file in $(find test/golden -maxdepth 1 -name "*.neuro" -type f | sort); do \
         test_name=$(basename "$test_file" .neuro); \
         echo "Recording $test_name..."; \
         ./bin/neurotest --neuro-cmd="./bin/neuro" record "$test_name" >/dev/null 2>&1 && echo "RECORDED $test_name" || echo "FAILED $test_name"; \
     done
-    echo "Recording .neurorc startup tests..."
+    echo ""
+    echo "2. Recording -c flag tests..."
+    for test_file in $(find test/golden -maxdepth 1 -name "*.neuro" -type f | sort); do \
+        test_name=$(basename "$test_file" .neuro); \
+        echo "Recording -c $test_name..."; \
+        ./bin/neurotest --neuro-cmd="./bin/neuro" record-c "$test_name" >/dev/null 2>&1 && echo "RECORDED -c $test_name" || echo "FAILED -c $test_name"; \
+    done
+    echo ""
+    echo "3. Recording .neurorc startup tests..."
     for test_file in $(find test/golden/neurorc -maxdepth 1 -name "*.neurorc-test" -type f | sort); do \
         test_name=$(basename "$test_file" .neurorc-test); \
         echo "Recording $test_name..."; \
         ./bin/neurotest record-neurorc "$test_name" >/dev/null 2>&1 && echo "RECORDED $test_name" || echo "FAILED $test_name"; \
     done
-    echo "All end-to-end test cases re-recorded"
+    echo ""
+    echo "🎉 All end-to-end test cases re-recorded (batch mode + -c flag + .neurorc)"
 
 # Build neurotest binary
 build-neurotest:
