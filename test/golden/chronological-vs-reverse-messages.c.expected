@@ -1,0 +1,39 @@
+# Test chronological vs reverse message order access
+# Tests  (chronological) vs  (reverse) message access patterns
+# Start a new session
+Created session 'message_order_test' (ID: 00000001)
+# Add a series of messages to test ordering
+Added user message to session 'message_order_test'
+Added assistant message to session 'message_order_test'
+Added user message to session 'message_order_test'
+Added assistant message to session 'message_order_test'
+Added user message to session 'message_order_test'
+# Test reverse order access () - most recent first
+"=== REVERSE ORDER ACCESS () - Most Recent First ==="
+"Latest message (1): "Message E: Third user message""
+"Previous message (2): "Message D: Second assistant response""
+"Third latest (3): "Message C: Second user message""
+"Fourth latest (4): "Message B: First assistant response""
+"Fifth latest (5): "Message A: First user message""
+""
+# Test chronological order access () - first message first
+"=== CHRONOLOGICAL ORDER ACCESS () - First Message First ==="
+"First message (.1): "Message A: First user message""
+"Second message (.2): "Message B: First assistant response""
+"Third message (.3): "Message C: Second user message""
+"Fourth message (.4): "Message D: Second assistant response""
+"Fifth message (.5): "Message E: Third user message""
+""
+# Test edge cases
+"=== EDGE CASES ==="
+"Non-existent reverse (6): "
+"Non-existent chronological (.6): "
+"Invalid reverse (0): "
+"Invalid chronological (.0): "
+""
+# Demonstrate practical usage patterns
+"=== PRACTICAL USAGE EXAMPLES ==="
+"Conversation opener: "Message A: First user message""
+"Latest response: "Message E: Third user message""
+"Comparing first vs latest: '"Message A: First user message"' vs '"Message E: Third user message"'"
+"Building context from start: Starting with '"Message A: First user message"', then '"Message B: First assistant response"', leading to '"Message E: Third user message"'"

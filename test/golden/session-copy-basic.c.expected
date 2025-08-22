@@ -1,0 +1,10 @@
+# Test session copy basic functionality with auto-generated target name
+Created session 'source_session' (ID: 00000001)
+Added user message to session 'source_session'
+Added assistant message to session 'source_session'
+Copied session 'source_session' to 'Session 1' (ID: 00000004) with 2 messages
+Target session name: Session 1
+Target session ID: 00000004-0000-4000-8000-000000000004
+Source session name: source_session
+Message count: 2
+System prompt: You are a test assistant

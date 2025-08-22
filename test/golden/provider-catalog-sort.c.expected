@@ -1,0 +1,72 @@
+Setting _echo_command = true
+%%> "\\provider-catalog[sort=name]"
+Provider Catalog (4 providers):
+  [ANC] Anthropic Claude Chat (openai-compatible)
+    Provider: anthropic
+    Base URL: https://api.anthropic.com/v1
+    Endpoint: /messages
+    Client Type: openai-compatible
+    Headers: anthropic-version: 2023-06-01
+    Description: Anthropic Claude chat completions API
+    Implementation: Natively supported by NeuroShell
+  [GMC] Google Gemini Chat (gemini)
+    Provider: gemini
+    Base URL: https://generativelanguage.googleapis.com/v1beta
+    Endpoint: /models/{model}:generateContent
+    Client Type: gemini
+    Headers: Content-Type: application/json, x-goog-api-key: {API_KEY}
+    Description: Google Gemini generative AI chat completions API
+    Implementation: Natively supported by NeuroShell
+  [OAC] OpenAI Chat Completions (openai)
+    Provider: openai
+    Base URL: https://api.openai.com/v1
+    Endpoint: /chat/completions
+    Client Type: openai
+    Description: OpenAI's chat completion API for GPT models
+    Implementation: Natively supported by NeuroShell
+  [OAR] OpenAI Responses API (openai_reasoning)
+    Provider: openai-reasoning
+    Base URL: https://api.openai.com/v1
+    Endpoint: /responses
+    Client Type: openai_reasoning
+    Description: OpenAI's responses API for reasoning models (o3, o4-mini, o1, etc.)
+    Implementation: Used for models with reasoning_tokens: true
+%%> "\\provider-catalog[sort=provider]"
+Provider Catalog (4 providers):
+Anthropic Providers:
+  [ANC] Anthropic Claude Chat (openai-compatible)
+    Provider: anthropic
+    Base URL: https://api.anthropic.com/v1
+    Endpoint: /messages
+    Client Type: openai-compatible
+    Headers: anthropic-version: 2023-06-01
+    Description: Anthropic Claude chat completions API
+    Implementation: Natively supported by NeuroShell
+
+Gemini Providers:
+  [GMC] Google Gemini Chat (gemini)
+    Provider: gemini
+    Base URL: https://generativelanguage.googleapis.com/v1beta
+    Endpoint: /models/{model}:generateContent
+    Client Type: gemini
+    Headers: Content-Type: application/json, x-goog-api-key: {API_KEY}
+    Description: Google Gemini generative AI chat completions API
+    Implementation: Natively supported by NeuroShell
+
+Openai Providers:
+  [OAC] OpenAI Chat Completions (openai)
+    Provider: openai
+    Base URL: https://api.openai.com/v1
+    Endpoint: /chat/completions
+    Client Type: openai
+    Description: OpenAI's chat completion API for GPT models
+    Implementation: Natively supported by NeuroShell
+
+Openai-reasoning Providers:
+  [OAR] OpenAI Responses API (openai_reasoning)
+    Provider: openai-reasoning
+    Base URL: https://api.openai.com/v1
+    Endpoint: /responses
+    Client Type: openai_reasoning
+    Description: OpenAI's responses API for reasoning models (o3, o4-mini, o1, etc.)
+    Implementation: Used for models with reasoning_tokens: true

@@ -1,0 +1,53 @@
+Setting _echo_command = true
+%%> "\\try \\session-rename New Name"
+%%> "\\session-rename New Name"
+%%> "\\get[@error]"
+@error = no session specified and no active session found: no active session. Usage: \session-rename[session=session_id] new_session_name
+\session-rename new_session_name                                                                                                         
+                                                                                                                                         
+Examples:                                                                                                                                
+  \session-rename My New Session                                                  %% Rename active session                               
+  \session-rename[session=work] Development Session                              %% Rename specific session                              
+  \session-rename[session=old_name] "Project Alpha"                              %% Name with spaces (quoted)                            
+  \session-rename[session=temp] ${project_name}                                  %% Using variable                                       
+                                                                                                                                         
+Options:                                                                                                                                 
+  session - Session name or ID (optional, defaults to active session)                                                                    
+                                                                                                                                         
+Input: New session name (must be valid and unique)                                                                                       
+                                                                                                                                         
+Note: Session names must be unique and follow naming conventions.                                                                        
+      Names are automatically validated and processed for consistency.                                                                   
+      The session retains all its content and history after renaming.                                                                    
+%%> "\\session-new test_session_one"
+Created session 'test_session_one' (ID: 00000001)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-new test_session_two"
+Created session 'test_session_two' (ID: 00000002)
+%%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\try \\session-rename \"\""
+%%> "\\session-rename \"\""
+%%> "\\get[@error]"
+@error = failed to rename session: invalid new session name: session name cannot be empty
+%%> "\\try \\session-rename \"   \""
+%%> "\\session-rename \"   \""
+%%> "\\get[@error]"
+@error = failed to rename session: invalid new session name: session name cannot be empty
+%%> "\\try \\session-rename[session=nonexistent_session] New Name"
+%%> "\\session-rename[session=nonexistent_session] New Name"
+%%> "\\get[@error]"
+@error = failed to find session 'nonexistent_session': session 'nonexistent_session' not found (tried both name and ID)
+%%> "\\try \\session-rename[session=test_session_one] test_session_two"
+%%> "\\session-rename[session=test_session_one] test_session_two"
+%%> "\\get[@error]"
+@error = failed to rename session: session name 'test_session_two' is already in use
+%%> "\\session-rename[session=test_session_one] valid_new_name"
+Renamed session from 'test_session_one' to 'valid_new_name'
+%%> "\\get[_output]"
+_output = Renamed session from 'test_session_one' to 'valid_new_name'
+%%> "\\session-delete valid_new_name"
+Deleted session 'valid_new_name' (ID: 00000001)
+%%> "\\silent \\session-activate"
+%%> "\\session-delete test_session_two"
+Deleted session 'test_session_two' (ID: 00000002)
+%%> "\\silent \\session-activate"

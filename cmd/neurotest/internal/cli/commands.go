@@ -256,3 +256,86 @@ func (app *App) diffNeuroRCTest(testName string) error {
 
 	return nil
 }
+
+// addCFlagCommands adds -c flag testing commands
+func (app *App) addCFlagCommands(rootCmd *cobra.Command) {
+	// Record -c flag test command
+	recordCCmd := &cobra.Command{
+		Use:   "record-c <testname>",
+		Short: "Record a test case using -c flag",
+		Long:  `Record a test case by running neuro with -c flag and save output as .c.expected file`,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(_ *cobra.Command, args []string) error {
+			recorder := golden.NewRecorder(app.Config)
+			return recorder.RecordCFlagTest(args[0])
+		},
+	}
+
+	// Run -c flag test command
+	runCCmd := &cobra.Command{
+		Use:   "run-c <testname>",
+		Short: "Run a test case using -c flag",
+		Long:  `Run a test case using -c flag and compare with .c.expected file`,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(_ *cobra.Command, args []string) error {
+			runner := golden.NewRunner(app.Config)
+			return runner.RunCFlagTest(args[0])
+		},
+	}
+
+	// Compare modes command
+	compareModesCmd := &cobra.Command{
+		Use:   "compare-modes <testname>",
+		Short: "Compare batch mode vs -c flag output",
+		Long:  `Compare the output of batch mode (.expected) with -c flag mode (.c.expected)`,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(_ *cobra.Command, args []string) error {
+			return app.compareModes(args[0])
+		},
+	}
+
+	rootCmd.AddCommand(recordCCmd, runCCmd, compareModesCmd)
+}
+
+// compareModes compares batch mode output (.expected) with -c flag output (.c.expected)
+func (app *App) compareModes(testName string) error {
+	if app.Config.Verbose {
+		fmt.Printf("Comparing modes for test: %s\n", testName)
+	}
+
+	// Read batch mode expected output
+	batchExpectedPath := fmt.Sprintf("%s/%s.expected", app.Config.TestDir, testName)
+	batchExpected, err := os.ReadFile(batchExpectedPath)
+	if err != nil {
+		return fmt.Errorf("failed to read batch expected file %s: %w", batchExpectedPath, err)
+	}
+
+	// Read -c flag expected output
+	cExpectedPath := fmt.Sprintf("%s/%s.c.expected", app.Config.TestDir, testName)
+	cExpected, err := os.ReadFile(cExpectedPath)
+	if err != nil {
+		return fmt.Errorf("failed to read -c expected file %s: %w", cExpectedPath, err)
+	}
+
+	batchOutput := string(batchExpected)
+	cOutput := string(cExpected)
+
+	// Simple comparison - exact match required
+	if batchOutput == cOutput {
+		fmt.Printf("✅ IDENTICAL: batch mode and -c flag produce identical output for %s\n", testName)
+		return nil
+	}
+
+	// Show differences using the golden differ
+	fmt.Printf("❌ DIFFERENT: batch mode and -c flag produce different output for %s\n", testName)
+	fmt.Println("\n=== Batch Mode Output (.expected) ===")
+	fmt.Print(batchOutput)
+	fmt.Println("\n=== -c Flag Output (.c.expected) ===")
+	fmt.Print(cOutput)
+	fmt.Println("\n=== Detailed Differences ===")
+
+	differ := golden.NewDiffer(app.Config)
+	differ.ShowDetailedDiff(batchOutput, cOutput, testName)
+
+	return fmt.Errorf("outputs differ between batch mode and -c flag")
+}

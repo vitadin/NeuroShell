@@ -1,0 +1,111 @@
+Setting _echo_command = true
+%%> "\\try \\if \\echo \"This should fail\""
+%%> "\\if \\echo \"This should fail\""
+%%> "\\get[_status]"
+_status = 
+%%> "\\get[_error]"
+_error = 
+%%> "\\try \\if[] \\echo \"This should also fail\""
+%%> "\\if[] \\echo \"This should also fail\""
+%%> "\\get[_status]"
+_status = 
+%%> "\\get[_error]"
+_error = 
+%%> "\\if[condition=\"\"] \\echo \"This should not appear - empty condition\""
+%%> "\\if[condition=\"   \"] \\echo \"This should not appear - whitespace condition\""
+%%> "\\set[very_long=\"This is an extremely long condition string that goes on and on and contains many characters to test the limits of condition processing and ensure that very long strings are handled correctly by the if command implementation\"]"
+Setting very_long = This is an extremely long condition string that goes on and on and contains many characters to test the limits of condition processing and ensure that very long strings are handled correctly by the if command implementation
+%%> "\\if[condition=${very_long}] \\echo \"Long condition worked: ${very_long}\""
+%%> "\\echo \"Long condition worked: This is an extremely long condition string that goes on and on and contains many characters to test the limits of condition processing and ensure that very long strings are handled correctly by the if command implementation\""
+"Long condition worked: This is an extremely long condition string that goes on and on and contains many characters to test the limits of condition processing and ensure that very long strings are handled correctly by the if command implementation"
+%%> "\\if[condition=\"special!@#$%^&*()\"] \\echo \"Special characters in condition work\""
+%%> "\\echo \"Special characters in condition work\""
+"Special characters in condition work"
+%%> "\\if[condition=\"🌟✨\"] \\echo \"Unicode condition works: 🌟✨\""
+%%> "\\echo \"Unicode condition works: 🌟✨\""
+"Unicode condition works: 🌟✨"
+%%> "\\set[multiline=\"line1\\\\nline2\\\\nline3\"]"
+Setting multiline = line1\\nline2\\nline3
+%%> "\\if[condition=${multiline}] \\echo \"Multiline condition is truthy\""
+%%> "\\echo \"Multiline condition is truthy\""
+"Multiline condition is truthy"
+%%> "\\if[condition=true] \\echo \"This is a very long command that tests whether the if statement can handle commands that are extremely verbose and contain lots of text to ensure proper queue handling with extensive content\""
+%%> "\\echo \"This is a very long command that tests whether the if statement can handle commands that are extremely verbose and contain lots of text to ensure proper queue handling with extensive content\""
+"This is a very long command that tests whether the if statement can handle commands that are extremely verbose and contain lots of text to ensure proper queue handling with extensive content"
+%%> "\\set[complex_var=\"value with \\\"quotes\\\" and special chars\"]"
+Setting complex_var = value with \"quotes\" and special chars
+%%> "\\if[condition=true] \\set[result=\"${complex_var}\"]"
+%%> "\\set[result=\"value with \\\"quotes\\\" and special chars\"]"
+Setting result = value with \"quotes\" and special chars
+%%> "\\get[result]"
+result = value with \"quotes\" and special chars
+%%> "\\if[condition=true] \\set[test1=\"pass\"]"
+%%> "\\set[test1=\"pass\"]"
+Setting test1 = pass
+%%> "\\if[condition=false] \\set[test2=\"fail\"]"
+%%> "\\if[condition=true] \\set[test3=\"pass\"]"
+%%> "\\set[test3=\"pass\"]"
+Setting test3 = pass
+%%> "\\if[condition=false] \\set[test4=\"fail\"]"
+%%> "\\get[test1]"
+test1 = pass
+%%> "\\get[test2]"
+test2 = 
+%%> "\\get[test3]"
+test3 = pass
+%%> "\\get[test4]"
+test4 = 
+%%> "\\if[condition=\"null\"] \\echo \"null string is truthy\""
+%%> "\\echo \"null string is truthy\""
+"null string is truthy"
+%%> "\\if[condition=\"undefined\"] \\echo \"undefined string is truthy\""
+%%> "\\echo \"undefined string is truthy\""
+"undefined string is truthy"
+%%> "\\if[condition=\"NaN\"] \\echo \"NaN string is truthy\""
+%%> "\\echo \"NaN string is truthy\""
+"NaN string is truthy"
+%%> "\\if[condition=true]"
+%%> "\\if[condition=false]"
+%%> "\\try \\if[condition=true] \\set[malformed]"
+%%> "\\if[condition=true] \\set[malformed]"
+%%> "\\set[malformed]"
+Setting malformed = 
+%%> "\\get[_status]"
+_status = 
+%%> "\\get[_error]"
+_error = 
+%%> "\\set[level1=\"true\"]"
+Setting level1 = true
+%%> "\\if[condition=${level1}] \\echo \"Variable interpolation works\""
+%%> "\\echo \"Variable interpolation works\""
+"Variable interpolation works"
+%%> "\\if[condition=\"/usr/bin/test\"] \\echo \"Path-like condition is truthy\""
+%%> "\\echo \"Path-like condition is truthy\""
+"Path-like condition is truthy"
+%%> "\\if[condition=\"./relative/path\"] \\echo \"Relative path condition is truthy\""
+%%> "\\echo \"Relative path condition is truthy\""
+"Relative path condition is truthy"
+%%> "\\if[condition=\"123\"] \\echo \"Numeric string 123 is truthy\""
+%%> "\\echo \"Numeric string 123 is truthy\""
+"Numeric string 123 is truthy"
+%%> "\\if[condition=\"-456\"] \\echo \"Negative numeric string is truthy\""
+%%> "\\echo \"Negative numeric string is truthy\""
+"Negative numeric string is truthy"
+%%> "\\if[condition=\"0.0\"] \\echo \"Zero decimal is truthy\""
+%%> "\\echo \"Zero decimal is truthy\""
+"Zero decimal is truthy"
+%%> "\\if[condition=\"True \"] \\echo \"True with trailing space is truthy\""
+%%> "\\echo \"True with trailing space is truthy\""
+"True with trailing space is truthy"
+%%> "\\if[condition=\" false\"] \\echo \"false with leading space should not appear\""
+%%> "\\if[condition=\"TRUE!\"] \\echo \"TRUE with exclamation is truthy\""
+%%> "\\echo \"TRUE with exclamation is truthy\""
+"TRUE with exclamation is truthy"
+%%> "\\if[condition=\"edge_case\"] \\set[dummy=\"test\"]"
+%%> "\\set[dummy=\"test\"]"
+Setting dummy = test
+%%> "\\get[#if_result]"
+#if_result = true
+%%> "\\if[condition=\"\"] \\set[dummy2=\"test\"]"
+%%> "\\get[#if_result]"
+#if_result = false

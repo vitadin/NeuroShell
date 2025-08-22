@@ -1,0 +1,20 @@
+# Test creating multiple copies from the same source session
+Created session 'master_template' (ID: 00000001)
+Added user message to session 'master_template'
+Added assistant message to session 'master_template'
+# Create first copy
+Copied session 'master_template' to 'project_alpha' (ID: 00000004) with 2 messages
+First copy: project_alpha (ID: 00000004-0000-4000-8000-000000000004)
+# Create second copy
+Copied session 'master_template' to 'project_beta' (ID: 00000007) with 2 messages
+Second copy: project_beta (ID: 00000007-0000-4000-8000-000000000007)
+# Create third copy with auto-generated name
+Copied session 'master_template' to 'Session 1' (ID: 0000000a) with 2 messages
+Third copy: Session 1 (ID: 0000000a-0000-4000-8000-00000000000a)
+# Verify all sessions exist
+Sessions (4 total):
+  Session 1    (ID: 0000000a, 2 messages, created: 2025-01-01)
+  project_beta    (ID: 00000007, 2 messages, created: 2025-01-01)
+  project_alpha    (ID: 00000004, 2 messages, created: 2025-01-01)
+  master_template    (ID: 00000001, active, 2 messages, created: 2025-01-01)
+All copies have message count: 2

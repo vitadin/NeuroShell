@@ -65,6 +65,42 @@ func (r *Recorder) AcceptTest(testName string) error {
 	return r.RecordTest(testName) // Same implementation
 }
 
+// RecordCFlagTest records a test case using the -c flag
+func (r *Recorder) RecordCFlagTest(testName string) error {
+	if r.config.Verbose {
+		fmt.Printf("Recording -c flag test: %s\n", testName)
+	}
+
+	scriptPath, err := shared.FindScript(testName, r.config.TestDir)
+	if err != nil {
+		return fmt.Errorf("failed to find script: %w", err)
+	}
+
+	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
+		return fmt.Errorf("test script not found: %s", scriptPath)
+	}
+
+	output, err := shared.RunNeuroCFlag(scriptPath, r.config.NeuroCmd, r.config.TestTimeout)
+	if err != nil {
+		if r.config.Verbose {
+			fmt.Printf("Command failed with error: %v\nOutput: %s\n", err, output)
+		}
+	}
+
+	cleanedOutput := r.cleanOutput(output)
+
+	expectedPath := filepath.Join(r.config.TestDir, testName+".c.expected")
+	if err := os.WriteFile(expectedPath, []byte(cleanedOutput), 0644); err != nil {
+		return fmt.Errorf("failed to write -c expected file: %w", err)
+	}
+
+	if r.config.Verbose {
+		fmt.Printf("Recorded -c flag expected output for test: %s\n", testName)
+	}
+
+	return nil
+}
+
 // cleanOutput normalizes output for recording
 func (r *Recorder) cleanOutput(output string) string {
 	cleaned := shared.CleanOutput(output)

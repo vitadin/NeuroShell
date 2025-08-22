@@ -1,0 +1,77 @@
+Setting _echo_command = true
+%%> "\\model-new[catalog_id=\"GM25F\"] delegated-flash"
+Created model 'delegated-flash' (ID: 00000001, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\get[#model_name]"
+#model_name = delegated-flash
+%%> "\\get[#model_provider]"
+#model_provider = gemini
+%%> "\\get[#model_base]"
+#model_base = gemini-2.5-flash
+%%> "\\model-new[catalog_id=\"GM25P\", thinking_budget=\"8192\"] delegated-pro"
+Created model 'delegated-pro' (ID: 00000002, Provider: gemini, Base: gemini-2.5-pro)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\get[#model_name]"
+#model_name = delegated-pro
+%%> "\\get[#model_provider]"
+#model_provider = gemini
+%%> "\\get[#model_param_count]"
+#model_param_count = 2
+%%> "\\model-new[catalog_id=\"GM25FL\", temperature=\"0.7\", description=\"Delegated Flash Lite model\"] delegated-lite"
+Created model 'delegated-lite' (ID: 00000003, Provider: gemini, Base: gemini-2.5-flash-lite)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
+%%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
+%%> "\\get[#model_name]"
+#model_name = delegated-lite
+%%> "\\get[#model_provider]"
+#model_provider = gemini
+%%> "\\get[#model_description]"
+#model_description = Delegated Flash Lite model
+%%> "\\model-new[catalog_id=\"GM25F\", temperature=\"0.9\", thinking_budget=\"1024\", max_tokens=\"1500\"] delegated-full"
+Created model 'delegated-full' (ID: 00000004, Provider: gemini, Base: gemini-2.5-flash)
+%%> "\\silent \\gemini-client-new"
+%%> "\\silent \\llm-client-activate GMC"
+%%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
+%%> "\\get[#model_name]"
+#model_name = delegated-full
+%%> "\\get[#model_param_count]"
+#model_param_count = 3
+%%> "\\model-status"
+Model Configurations (4 models):
+  delegated-flash (00000001)
+    Provider: gemini
+    Base Model: gemini-2.5-flash
+    Catalog ID: GM25F
+    Parameters: 1 (temperature=1)
+    Created: 2025-01-01 00:00:01
+    Description: Gemini Gemini 2.5 Flash model
+
+  delegated-full (00000004)
+    Provider: gemini
+    Base Model: gemini-2.5-flash
+    Catalog ID: GM25F
+    Parameters: 3 (max_tokens=1500, temperature=0.9, thinking_budget=1024)
+    Created: 2025-01-01 00:00:04
+    Description: Gemini Gemini 2.5 Flash model
+    Active: true
+
+  delegated-lite (00000003)
+    Provider: gemini
+    Base Model: gemini-2.5-flash-lite
+    Catalog ID: GM25FL
+    Parameters: 1 (temperature=0.7)
+    Created: 2025-01-01 00:00:03
+    Description: Delegated Flash Lite model
+
+  delegated-pro (00000002)
+    Provider: gemini
+    Base Model: gemini-2.5-pro
+    Catalog ID: GM25P
+    Parameters: 2 (temperature=1, thinking_budget=8192)
+    Created: 2025-01-01 00:00:02
+    Description: Gemini Gemini 2.5 Pro model

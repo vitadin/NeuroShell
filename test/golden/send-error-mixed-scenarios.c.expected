@@ -1,0 +1,31 @@
+Setting _style = dark1
+=== Send Mixed Error Scenarios Test ===
+Testing \send command with multiple error types and recovery
+Step 1: Successful message
+<thinking id="2-1">
+Thinking about the user's message: "Hello, starting our conversation!". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 1 messages, last: Hello, starting our     
+  conversation!)                                                              
+
+Step 2: API error scenario
+Error (api_request_failed): Mock API request failed for testing purposes
+Step 3: Recovery after API error
+<thinking id="5-1">
+Thinking about the user's message: "This message should work after the API error.". This helps verify the message flow in tests. The user sent 4 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 4 messages, last: This message should work
+  after the API error.)                                                       
+
+Step 4: Rate limit with partial content
+<thinking id="7-1">
+I was thinking about this request, but then encountered a rate limit...
+</thinking>
+
+  This is a partial response before hitting rate limit                        
+
+Error (rate_limit_exceeded): Mock rate limit exceeded - please try again later
+Step 5: Client configuration error
+ERRO Command execution failed error="command execution failed: LLM call failed: Mock client configuration error for testing"

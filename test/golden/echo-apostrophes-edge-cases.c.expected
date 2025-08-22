@@ -1,0 +1,65 @@
+Setting _echo_command = true
+%%> "\\echo ' single quote at start"
+' single quote at start
+%%> "\\echo single quote at end '"
+single quote at end '
+%%> "\\echo 'single word'"
+'single word'
+%%> "\\echo ''empty single quotes''"
+''empty single quotes''
+%%> "\\echo I''m using double apostrophes"
+I''m using double apostrophes
+%%> "\\echo They'''re using triple apostrophes"
+They'''re using triple apostrophes
+%%> "\\echo Don''''t use quadruple apostrophes"
+Don''''t use quadruple apostrophes
+%%> "\\echo It's 9:30 o'clock"
+It's 9:30 o'clock
+%%> "\\echo The '90s music won't play"
+The '90s music won't play
+%%> "\\echo 100% sure it's working @ 3:45 PM"
+100% sure it's working @ 3:45 PM
+%%> "\\echo \"He said 'I can't go' but didn't mean it\""
+"He said 'I can't go' but didn't mean it"
+%%> "\\echo 'She replied \"You won't help\" with anger'"
+'She replied "You won't help" with anger'
+%%> "\\echo \"The quote 'Don't worry' wasn't helpful\""
+"The quote 'Don't worry' wasn't helpful"
+%%> "\\echo File path: /Users/john's folder/can't access/it's locked"
+File path: /Users/john's folder/can't access/it's locked
+%%> "\\echo Command: git commit -m \"Fix: can't parse John's input\""
+Command: git commit -m "Fix: can't parse John's input"
+%%> "\\echo Regex: match('s|'t|'re|'ll|'ve|'d)"
+Regex: match('s|'t|'re|'ll|'ve|'d)
+%%> "\\set[name=\"John's Computer\"]"
+Setting name = John's Computer
+%%> "\\echo The device ${name} won't start"
+The device John's Computer won't start
+%%> "\\echo I'm using ${name} but it's not working"
+I'm using John's Computer but it's not working
+%%> "\\echo[to=apos_test] Mary's computer isn't responding"
+Mary's computer isn't responding
+%%> "\\echo[silent=true] This won't show: it's John's secret"
+%%> "\\echo[raw=true] Don't interpret \\n but keep John's apostrophes"
+Don't interpret \n but keep John's apostrophes
+%%> "\\echo[raw=false] Do interpret \\n and keep Mary's apostrophes"
+Do interpret 
+ and keep Mary's apostrophes
+%%> "\\echo '"
+'
+%%> "\\echo ''"
+''
+%%> "\\echo '''"
+'''
+%%> "\\echo ''''"
+''''
+%%> "\\echo Smart quotes: \"I'm here\" and 'You're there'"
+Smart quotes: "I'm here" and 'You're there'
+%%> "\\echo Backticks: `echo \"I'm in a subshell\"` won't work"
+Backticks: `echo "I'm in a subshell"` won't work
+%%> "\\echo Mixed: \"It's `complex` but 'doable'\""
+Mixed: "It's `complex` but 'doable'"
+%%> "\\echo \"John said 'I can't believe Mary's computer won't run the command `echo \\\"It's working\\\"` properly'\""
+"John said 'I can't believe Mary's computer won't run the command `echo \"It's working\"` properly'"
+%%> "\\echo 'The error message was \"Cannot parse: I\\'m confused by John\\'s syntax\" which wasn\\'t helpful'"
+'The error message was "Cannot parse: I\'m confused by John\'s syntax" which wasn\'t helpful'

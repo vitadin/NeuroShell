@@ -1,0 +1,65 @@
+Setting _echo_command = true
+%%> "\\echo If I swap the contents of the two most valuable boxes, then move the least valuable to the first position, what's the final order?"
+If I swap the contents of the two most valuable boxes, then move the least valuable to the first position, what's the final order?
+%%> "\\echo I can't believe Mary's computer won't run John's script that's supposed to work with Sarah's database"
+I can't believe Mary's computer won't run John's script that's supposed to work with Sarah's database
+%%> "\\echo The system's administrator said \"We're experiencing issues with users' accounts that won't synchronize\""
+The system's administrator said "We're experiencing issues with users' accounts that won't synchronize"
+%%> "\\echo Here's what happened: Tom's server couldn't connect to Jane's API because it's configured incorrectly"
+Here's what happened: Tom's server couldn't connect to Jane's API because it's configured incorrectly
+%%> "\\echo \"John said 'I can't access Mary's files because they're in Sarah's directory and won't open'\""
+"John said 'I can't access Mary's files because they're in Sarah's directory and won't open'"
+%%> "\\echo 'The error message was \"Cannot find user\\'s home directory at /Users/john\\'s folder\" which wasn\\'t helpful'"
+'The error message was "Cannot find user\'s home directory at /Users/john\'s folder" which wasn\'t helpful'
+%%> "\\echo \"The command 'grep \\\"can\\'t find\\\" /var/log/system.log' didn\\'t return any results\""
+"The command 'grep \"can\'t find\" /var/log/system.log' didn\'t return any results"
+%%> "\\echo[raw=true] Raw mode: I'm here\\nYou're there\\tIt's working with John's data\\\\Won't interpret escapes"
+Raw mode: I'm here\nYou're there\tIt's working with John's data\\Won't interpret escapes
+%%> "\\echo[raw=false] Normal mode: I'm here\\nYou're there\\tIt's working with Mary's data\\\\Will interpret escapes"
+Normal mode: I'm here
+You're there    It's working with Mary's data\Will interpret escapes
+%%> "\\echo[silent=true] Silent: This won't show but Sarah's data is stored"
+%%> "\\echo[to=stress_var] Custom var: Tom's computer isn't responding to Jane's requests"
+Custom var: Tom's computer isn't responding to Jane's requests
+%%> "\\set[complex_name=\"John's & Mary's Computer\"]"
+Setting complex_name = John's & Mary's Computer
+%%> "\\set[status_msg=\"won't start because it's broken\"]"
+Setting status_msg = won't start because it's broken
+%%> "\\set[user_complaint=\"I can't believe ${complex_name} ${status_msg}\"]"
+Setting user_complaint = I can't believe John's & Mary's Computer won't start because it's broken
+%%> "\\echo Problem: ${user_complaint}"
+Problem: I can't believe John's & Mary's Computer won't start because it's broken
+%%> "\\echo[to=final_msg] Resolution: We're fixing ${complex_name} so it's working again"
+Resolution: We're fixing John's & Mary's Computer so it's working again
+%%> "\\get[stress_var]"
+stress_var = Custom var: Tom's computer isn't responding to Jane's requests
+%%> "\\get[final_msg]"
+final_msg = Resolution: We're fixing John's & Mary's Computer so it's working again
+%%> "\\echo \"\"\"I'm in triple double quotes\"\"\""
+"""I'm in triple double quotes"""
+%%> "\\echo '''You're in triple single quotes'''"
+'''You're in triple single quotes'''
+%%> "\\echo \"'\"'\"Mixed quote patterns that won't break\"'\"'\""
+"'"'"Mixed quote patterns that won't break"'"'"
+%%> "\\echo '\"'\"Double-single-double that's complex\"'\"'"
+'"'"Double-single-double that's complex"'"'
+%%> "\\echo José's résumé won't upload to François's système because it's configured incorrectly"
+José's résumé won't upload to François's système because it's configured incorrectly
+%%> "\\echo The naïve user's café receipt shows €50 but the system's database won't accept it"
+The naïve user's café receipt shows €50 but the system's database won't accept it
+%%> "\\echo Here's the issue: María's piñata order can't be processed in the système's workflow"
+Here's the issue: María's piñata order can't be processed in the système's workflow
+%%> "\\echo This is an extremely long sentence that contains numerous contractions like I'm, you're, it's, we're, they're, won't, can't, shouldn't, wouldn't, couldn't, and possessives like John's, Mary's, Tom's, Sarah's, users', students', teachers', administrators' to thoroughly test the robustness of our apostrophe handling system when dealing with complex natural language input that would have previously caused \"unterminated single-quoted string\" errors"
+This is an extremely long sentence that contains numerous contractions like I'm, you're, it's, we're, they're, won't, can't, shouldn't, wouldn't, couldn't, and possessives like John's, Mary's, Tom's, Sarah's, users', students', teachers', administrators' to thoroughly test the robustness of our apostrophe handling system when dealing with complex natural language input that would have previously caused "unterminated single-quoted string" errors
+%%> "\\echo ''''Multiple consecutive apostrophes won't break this''''"
+''''Multiple consecutive apostrophes won't break this''''
+%%> "\\echo I'm testing 'mixed quotes' and \"double quotes\" with more 'single quotes' in one message that's complex"
+I'm testing 'mixed quotes' and "double quotes" with more 'single quotes' in one message that's complex
+%%> "\\echo Path: /Users/john's files/can't access/it's locked/won't open/system's fault"
+Path: /Users/john's files/can't access/it's locked/won't open/system's fault
+%%> "\\echo Pattern: /I'm|you're|it's|won't|can't/ matches contractions in John's text"
+Pattern: /I'm|you're|it's|won't|can't/ matches contractions in John's text
+%%> "\\echo Replacement: s/can't/cannot/g won't work on Mary's system that's configured differently"
+Replacement: s/can't/cannot/g won't work on Mary's system that's configured differently
+%%> "\\echo \"The administrator said 'I can\\'t believe the system won\\'t handle users\\' apostrophes correctly' but we\\'re fixing it\" - that's the status update from Tom's team"
+"The administrator said 'I can\'t believe the system won\'t handle users\' apostrophes correctly' but we\'re fixing it" - that's the status update from Tom's team

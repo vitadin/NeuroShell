@@ -1,0 +1,66 @@
+Setting _style = dark1
+=== Send Command Help Information Test ===
+Testing \help send command to verify complete documentation
+Command: send
+
+Description: Send message to LLM agent
+
+Usage: \send[include_thinking=false] message
+
+Parse Mode: Key-Value (supports [key=value] syntax)
+
+Options:
+  include_thinking - Include thinking blocks in session message (default: false)
+
+
+Examples:
+  \send Hello, how are you?
+%% Send a simple message to the LLM agent
+  \send[include_thinking=true] Explain quantum computing
+%% Send message and include thinking blocks in session history
+  \send Analyze this data: ${data_variable}
+%% Send message with variable interpolation
+  \send ${_output}
+%% Send content from editor or previous command output
+  \send Please review this code:\n${code_content}
+%% Send multi-line message with embedded content
+  \set[_reply_way=stream]
+\send Tell me a story
+%% Send message with streaming response mode
+  \set[_reply_way=sync]
+\send What is 2+2?
+%% Send message with synchronous response mode
+
+Stored Variables:
+  ${1} - Latest agent response message (reverse order) (message_history)
+
+    Example: Hello! I'm Claude, an AI assistant...
+  ${2} - Previous agent response (2nd most recent, reverse order) (message_history)
+
+    Example: I can help you with that...
+  ${.1} - First message in session (chronological order) (message_history)
+
+    Example: Hello, can you help me?
+  ${.2} - Second message in session (chronological order) (message_history)
+
+    Example: Sure! I can help you with that.
+  ${#message_count} - Total number of messages in current session (system_metadata)
+
+    Example: 5
+
+Notes:
+  Automatically creates chat session if none exists
+  Uses active model configuration (use \model-activate to set)
+  Variables are interpolated before sending (${var} syntax)
+  include_thinking option controls session message content:
+    • include_thinking=false: Store only text content (default)
+    • include_thinking=true: Include thinking blocks in session
+  Message history access patterns:
+    • ${1}, ${2}, ${3}: Reverse order (most recent first)
+    • ${.1}, ${.2}, ${.3}: Chronological order (first message first)
+  Set _reply_way variable to control response mode:
+    • _reply_way=sync: Complete response at once (default)
+    • _reply_way=stream: Real-time streaming response
+  Requires API key: OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.
+  Multi-line messages supported with \n escape sequences
+  Error messages preserved on stderr for debugging

@@ -1,0 +1,54 @@
+Setting _echo_command = true
+%%> "\\echo-json {\"key\": \"value\", \"number\": 42}"
+{
+  "key": "value",
+  "number": 42
+}
+%%> "\\echo-json [\"item1\", \"item2\", 123, true]"
+[
+  "item1",
+  "item2",
+  123,
+  true
+]
+%%> "\\echo-json {\"users\": [{\"name\": \"John\", \"age\": 30}, {\"name\": \"Jane\", \"age\": 25}], \"total\": 2}"
+{
+  "total": 2,
+  "users": [
+    {
+      "age": 30,
+      "name": "John"
+    },
+    {
+      "age": 25,
+      "name": "Jane"
+    }
+  ]
+}
+%%> "\\echo-json[to=formatted_json] {\"stored\": \"in variable\", \"success\": true}"
+{
+  "stored": "in variable",
+  "success": true
+}
+%%> "\\get[formatted_json]"
+formatted_json = {        
+  "stored": "in variable",
+  "success": true         
+}                         
+%%> "\\echo-json {\"default\": \"behavior\"}"
+{
+  "default": "behavior"
+}
+%%> "\\get[_output]"
+_output = {            
+  "default": "behavior"
+}                      
+%%> "\\echo-json   {\"whitespace\": \"trimmed\"}"
+{
+  "whitespace": "trimmed"
+}
+%%> "\\echo-json {invalid json}"
+Error: Invalid JSON - invalid character 'i' looking for beginning of object key string
+Original input: {invalid json}                                                        
+%%> "\\echo-json"
+Error: No JSON data provided

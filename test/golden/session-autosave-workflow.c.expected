@@ -1,0 +1,198 @@
+Setting _echo_command = true
+%%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash mkdir -p /tmp/neuroshell-test-config"
+%%> "\\set[_session_autosave=\"true\"]"
+Setting _session_autosave = true
+%%> "\\config-path"
+Config Directory: /tmp/neuroshell-test-config (exists)
+Config .env: /tmp/neuroshell-test-config/.env (not found)
+Local .env: /tmp/neuroshell-test-workdir/.env (not found)
+%%> "\\echo === Creating initial session ==="
+=== Creating initial session ===
+%%> "\\session-new[system=\"You are a helpful assistant for testing the complete session auto-save workflow\"] workflow_test"
+Created session 'workflow_test' (ID: 00000001)
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\get[#session_id]"
+#session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#session_name]"
+#session_name = workflow_test
+%%> "\\set[original_session_id=\"${#session_id}\"]"
+Setting original_session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${original_session_id}.json && echo \"✓ Auto-save triggered for session-new\" || echo \"✗ Auto-save failed for session-new\""
+✓ Auto-save triggered for session-new
+%%> "\\echo === Building conversation ==="
+=== Building conversation ===
+%%> "\\session-add-usermsg Can you help me test the auto-save functionality?"
+Added user message to session 'workflow_test'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-assistantmsg Absolutely! I'll help you test the auto-save feature. Each message should trigger an automatic save."
+Added assistant message to session 'workflow_test'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-usermsg Great! Let's also test editing messages."
+Added user message to session 'workflow_test'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-show workflow_test"
+Session: workflow_test (ID: 00000001)
+System: You are a helpful assistant for testing the complete session auto-save workflow
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:07
+Messages: 3 total
+
+[1] user (00:00:02): Can you help me test the auto-save functionality?
+[2] assistant (00:00:04): Absolutely! I'll help you test the auto-...age should trigger an automatic save. (100 chars)
+[3] user (00:00:06): Great! Let's also test editing messages.
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\echo === Testing session editing ==="
+=== Testing session editing ===
+%%> "\\session-edit-system[session=\"workflow_test\"] You are a helpful assistant specializing in auto-save testing. Your responses should be thorough and helpful."
+Updated system prompt for session 'workflow_test'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\session-edit-msg[session=\"workflow_test\", idx=\"1\"] Can you help me test the auto-save functionality? This message has been edited."
+Edited message 1 (last message) in session 'workflow_test'
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\echo === Testing message deletion ==="
+=== Testing message deletion ===
+%%> "\\session-delete-msg[session=\"workflow_test\", idx=\"3\", confirm=\"false\"]"
+Deleted message 3 (third-to-last message) from session 'workflow_test'
+Session now has 2 messages remaining
+%%> "\\session-save 00000001-0000-4000-8000-000000000001"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\session-show workflow_test"
+Session: workflow_test (ID: 00000001)
+System: You are a helpful assistant specializing in auto-s... Your responses should be thorough and helpful. (109 chars)
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:10
+Messages: 2 total
+
+[1] assistant (00:00:04): Absolutely! I'll help you test the auto-...age should trigger an automatic save. (100 chars)
+[2] user (00:00:06): Can you help me test the auto-save functionality? This message has been edited.
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\echo === Testing session copy ==="
+=== Testing session copy ===
+%%> "\\session-copy[source_session_name=\"workflow_test\", target_session_name=\"workflow_test_copy\"]"
+Copied session 'workflow_test' to 'workflow_test_copy' (ID: 00000005) with 2 messages
+%%> "\\get[#session_id]"
+#session_id = 00000005-0000-4000-8000-000000000005
+%%> "\\set[copy_session_id=\"${#session_id}\"]"
+Setting copy_session_id = 00000005-0000-4000-8000-000000000005
+%%> "\\session-save workflow_test_copy"
+Session saved to sessions/00000005-0000-4000-8000-000000000005.json
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${original_session_id}.json && echo \"✓ Original session auto-saved\" || echo \"✗ Original session auto-save failed\""
+✓ Original session auto-saved
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${copy_session_id}.json && echo \"✓ Copied session auto-saved\" || echo \"✗ Copied session auto-save failed\""
+✓ Copied session auto-saved
+%%> "\\echo === Testing session activation switching ==="
+=== Testing session activation switching ===
+%%> "\\session-new[system=\"Another test session\"] second_workflow_session"
+Created session 'second_workflow_session' (ID: 00000008)
+%%> "\\session-save 00000008-0000-4000-8000-000000000008"
+Session saved to sessions/00000008-0000-4000-8000-000000000008.json
+%%> "\\silent \\session-activate[id=true] 00000008-0000-4000-8000-000000000008"
+%%> "\\get[#session_id]"
+#session_id = 00000008-0000-4000-8000-000000000008
+%%> "\\set[second_session_id=\"${#session_id}\"]"
+Setting second_session_id = 00000008-0000-4000-8000-000000000008
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/ | sort"
+00000001-0000-4000-8000-000000000001.json
+00000005-0000-4000-8000-000000000005.json
+00000008-0000-4000-8000-000000000008.json
+%%> "\\echo \"All sessions should be auto-saved\""
+"All sessions should be auto-saved"
+%%> "\\echo === Testing session renaming ==="
+=== Testing session renaming ===
+%%> "\\session-rename[session=\"second_workflow_session\"] renamed_workflow_session"
+Renamed session from 'second_workflow_session' to 'renamed_workflow_session'
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${second_session_id}.json && echo \"✓ Renamed session auto-saved\" || echo \"✗ Renamed session auto-save failed\""
+✓ Renamed session auto-saved
+%%> "\\echo === Testing export/import with auto-save ==="
+=== Testing export/import with auto-save ===
+%%> "\\session-export[file=\"/tmp/neuro_workflow_export.json\"] workflow_test"
+%%> "\\session-json-export[file=/tmp/neuro_workflow_export.json] workflow_test"
+Exported session 'workflow_test' (ID: 00000001) to /tmp/neuro_workflow_export.json
+%%> "\\session-import[file=\"/tmp/neuro_workflow_export.json\"]"
+%%> "\\session-json-import[file=/tmp/neuro_workflow_export.json]"
+Imported session as 'Session 1' (ID: 00000009) from /tmp/neuro_workflow_export.json (original: 'workflow_test')
+%%> "\\silent \\session-activate[id=true] 00000009-0000-4000-8000-000000000009"
+%%> "\\get[#session_id]"
+#session_id = 00000009-0000-4000-8000-000000000009
+%%> "\\set[imported_session_id=\"${#session_id}\"]"
+Setting imported_session_id = 00000009-0000-4000-8000-000000000009
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${imported_session_id}.json && echo \"✓ Imported session auto-saved\" || echo \"✗ Imported session auto-save failed\""
+✓ Imported session auto-saved
+%%> "\\echo === Testing manual vs auto-save ==="
+=== Testing manual vs auto-save ===
+%%> "\\session-save workflow_test"
+Session saved to sessions/00000001-0000-4000-8000-000000000001.json
+%%> "\\echo \"Manual save completed - should overwrite auto-save file\""
+"Manual save completed - should overwrite auto-save file"
+%%> "\\echo === Testing with auto-save disabled ==="
+=== Testing with auto-save disabled ===
+%%> "\\set[_session_autosave=\"false\"]"
+Setting _session_autosave = false
+%%> "\\session-new[system=\"Session with auto-save disabled\"] manual_save_only"
+Created session 'manual_save_only' (ID: 0000000a)
+%%> "\\silent \\session-activate[id=true] 0000000a-0000-4000-8000-00000000000a"
+%%> "\\get[#session_id]"
+#session_id = 0000000a-0000-4000-8000-00000000000a
+%%> "\\set[manual_session_id=\"${#session_id}\"]"
+Setting manual_session_id = 0000000a-0000-4000-8000-00000000000a
+%%> "\\session-add-usermsg This should not trigger auto-save"
+Added user message to session 'manual_save_only'
+%%> "\\silent \\session-activate[id=true] 0000000a-0000-4000-8000-00000000000a"
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${manual_session_id}.json && echo \"✗ Auto-save unexpectedly triggered\" || echo \"✓ Auto-save correctly disabled\""
+✓ Auto-save correctly disabled
+%%> "\\session-save manual_save_only"
+Session saved to sessions/0000000a-0000-4000-8000-00000000000a.json
+%%> "\\bash test -f /tmp/neuroshell-test-config/sessions/${manual_session_id}.json && echo \"✓ Manual save works when auto-save disabled\" || echo \"✗ Manual save failed\""
+✓ Manual save works when auto-save disabled
+%%> "\\echo === Workflow test summary ==="
+=== Workflow test summary ===
+%%> "\\bash ls /tmp/neuroshell-test-config/sessions/ | sort"
+00000001-0000-4000-8000-000000000001.json
+00000005-0000-4000-8000-000000000005.json
+00000008-0000-4000-8000-000000000008.json
+00000009-0000-4000-8000-000000000009.json
+0000000a-0000-4000-8000-00000000000a.json
+%%> "\\bash echo \"Total sessions in auto-save directory:\""
+Total sessions in auto-save directory:
+%%> "\\bash ls -1 /tmp/neuroshell-test-config/sessions/*.json | wc -l | tr -d ' '"
+5
+%%> "\\echo === Sample auto-saved session content ==="
+=== Sample auto-saved session content ===
+%%> "\\cat /tmp/neuroshell-test-config/sessions/${original_session_id}.json"
+{
+  "id": "00000001-0000-4000-8000-000000000001",
+  "name": "workflow_test",
+  "system_prompt": "You are a helpful assistant specializing in auto-save testing. Your responses should be thorough and helpful.",
+  "messages": [
+    {
+      "id": "00000003-0000-4000-8000-000000000003",
+      "role": "assistant",
+      "content": "Absolutely! I'll help you test the auto-save feature. Each message should trigger an automatic save.",
+      "timestamp": "2025-01-01T00:00:04Z"
+    },
+    {
+      "id": "00000004-0000-4000-8000-000000000004",
+      "role": "user",
+      "content": "Can you help me test the auto-save functionality? This message has been edited.",
+      "timestamp": "2025-01-01T00:00:06Z"
+    }
+  ],
+  "created_at": "2025-01-01T00:00:01Z",
+  "updated_at": "2025-01-01T00:00:10Z",
+  "is_active": false
+}
+%%> "\\bash rm -f /tmp/neuro_workflow_export.json"
+%%> "\\try \\bash rm -rf /tmp/neuroshell-test-config/sessions"
+%%> "\\bash rm -rf /tmp/neuroshell-test-config/sessions"

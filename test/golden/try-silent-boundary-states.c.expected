@@ -1,0 +1,32 @@
+Setting _style = dark1
+Setting _echo_command = true
+%%> "\\echo === Try-Silent Boundary States Test ==="
+=== Try-Silent Boundary States Test ===
+%%> "\\echo Testing silent-try combination..."
+Testing silent-try combination...
+%%> "\\silent \\try \\echo This should be silent"
+%%> "\\echo After silent-try (should display)"
+After silent-try (should display)
+%%> "\\echo Testing nested try-silent-try..."
+Testing nested try-silent-try...
+%%> "\\try \\silent \\try \\echo Nested silent in try"
+%%> "\\silent \\try \\echo Nested silent in try"
+%%> "\\echo After nested combination"
+After nested combination
+%%> "\\echo Testing error in nested silent-try..."
+Testing error in nested silent-try...
+%%> "\\silent \\try \\unknown-nested-error"
+%%> "\\echo After nested error (should display)"
+After nested error (should display)
+%%> "\\echo Testing complex nesting with variables..."
+Testing complex nesting with variables...
+%%> "\\set[before=initial]"
+Setting before = initial
+%%> "\\try \\silent \\set[during=modified]"
+%%> "\\silent \\set[during=modified]"
+%%> "\\set[after=final]"
+Setting after = final
+%%> "\\echo Before: ${before}, During: ${during}, After: ${after}"
+Before: initial, During: modified, After: final
+%%> "\\echo === Boundary states test completed ==="
+=== Boundary states test completed ===

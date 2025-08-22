@@ -1,0 +1,42 @@
+Setting _echo_command = true
+%%> "\\try \\try \\bash echo \"nested success\""
+%%> "\\try \\bash echo \"nested success\""
+%%> "\\bash echo \"nested success\""
+nested success
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\get[_output]"
+_output = nested success
+%%> "\\try \\try \\bash ls /nonexistent_nested"
+%%> "\\try \\bash ls /nonexistent_nested"
+%%> "\\bash ls /nonexistent_nested"
+Error: <ls_error_macos>
+<non_zero_exit_status>
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\try \\try \\unknown_nested_command"
+%%> "\\try \\unknown_nested_command"
+%%> "\\unknown_nested_command"
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[@error]"
+@error = 
+%%> "\\try \\try \\try \\set[nested_var=deep]"
+%%> "\\try \\try \\set[nested_var=deep]"
+%%> "\\try \\set[nested_var=deep]"
+%%> "\\set[nested_var=deep]"
+Setting nested_var = deep
+%%> "\\get[@status]"
+@status = 0
+%%> "\\get[nested_var]"
+nested_var = deep
+%%> "\\try \\unknown_outer_command \\try \\bash echo \"never executed\""
+%%> "\\unknown_outer_command \\try \\bash echo \"never executed\""
+%%> "\\get[@status]"
+@status = 1
+%%> "\\get[@error]"
+@error = unknown command: unknown_outer_command

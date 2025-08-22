@@ -1,0 +1,36 @@
+Setting _echo_command = true
+%%> "\\cat test/fixtures/simple.txt"
+This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\get[_output]"
+_output = This is a simple text file.
+It has multiple lines for testing.   
+Line 3 contains some content.        
+Final line of the file.              
+%%> "\\cat[path=test/fixtures/simple.txt]"
+This is a simple text file.
+It has multiple lines for testing.
+Line 3 contains some content.
+Final line of the file.
+%%> "\\get[_output]"
+_output = This is a simple text file.
+It has multiple lines for testing.   
+Line 3 contains some content.        
+Final line of the file.              
+%%> "\\cat test/fixtures/empty.txt"
+%%> "\\get[_output]"
+_output = 
+%%> "\\cat test/fixtures/special-chars.txt"
+Special characters: !@#$%^&*()_+-=
+Unicode: 🚀 ✨ 🌟 💫 ⭐
+Quotes: "double" and 'single'
+Backslashes: \n \t \r \\
+Tab separated    values    here
+%%> "\\get[_output]"
+_output = Special characters: !@#$%^&*()_+-=
+Unicode: 🚀 ✨ 🌟 💫 ⭐                     
+Quotes: "double" and 'single'               
+Backslashes: \n \t \r \\                    
+Tab separated    values    here             

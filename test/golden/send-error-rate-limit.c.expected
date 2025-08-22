@@ -1,0 +1,40 @@
+Setting _style = dark1
+=== Send Rate Limit Error Test ===
+Testing \send command with rate limit error that includes partial content
+Testing normal message first...
+<thinking id="2-1">
+Thinking about the user's message: "Hello, let me start a conversation.". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 1 messages, last: Hello, let me start a   
+  conversation.)                                                              
+
+Testing rate limit error with partial content...
+<thinking id="4-1">
+I was thinking about this request, but then encountered a rate limit...
+</thinking>
+
+  This is a partial response before hitting rate limit                        
+
+Error (rate_limit_exceeded): Mock rate limit exceeded - please try again later
+Testing follow-up after rate limit...
+<thinking id="6-1">
+Thinking about the user's message: "Can you continue our conversation now?". This helps verify the message flow in tests. The user sent 5 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 5 messages, last: Can you continue our    
+  conversation now?)                                                          
+
+Session content verification:
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant.
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:14
+Messages: 6 total
+
+[1] user (00:00:02): Hello, let me start a conversation.
+[2] assistant (00:00:05): This is a mocking reply (received 1 mess... Hello, let me start a conversation.) (88 chars)
+[3] user (00:00:07): Please trigger rate limit to test partial response handling.
+[4] assistant (00:00:09): This is a partial response before hitting rate limit
+[5] user (00:00:11): Can you continue our conversation now?
+[6] assistant (00:00:13): This is a mocking reply (received 5 mess...n you continue our conversation now?) (91 chars)

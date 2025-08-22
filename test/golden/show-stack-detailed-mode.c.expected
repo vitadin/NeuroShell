@@ -1,0 +1,104 @@
+Setting _echo_command = true
+%%> "\\echo === Show-Stack Detailed Mode Demo ==="
+=== Show-Stack Detailed Mode Demo ===
+%%> "\\echo Step 1: Basic mode vs detailed mode comparison"
+Step 1: Basic mode vs detailed mode comparison
+%%> "\\echo \"Basic mode:\""
+"Basic mode:"
+%%> "\\show-stack"
+Execution Stack:
+🔝 \echo
+   \echo "Detailed mode:"
+   \show-stack[detailed=true]
+   \echo
+   \echo Step 2: Detailed mode with commands in stack
+   \if[condition="true"] \echo "Command 1"
+   \if[condition="true"] \echo "Command 2"
+   \if[condition="true"] \echo "Command 3"
+   \echo "Basic view of populated stack:"
+   \show-stack
+   \echo
+   \echo "Detailed view of populated stack:"
+   \show-stack[detailed=true]
+   \echo
+   \echo Step 3: Detailed mode showing context blocks
+   \try \if[condition="true"] \show-stack[detailed=true]
+   \echo
+🔻 \echo === Detailed Mode Demo Complete ===
+%%> "\\echo"
+%%> "\\echo \"Detailed mode:\""
+"Detailed mode:"
+%%> "\\show-stack[detailed=true]"
+Execution Stack (Size: 15)
+[TOP] \echo
+[   1] \echo Step 2: Detailed mode with commands in stack
+[   2] \if[condition="true"] \echo "Command 1"
+[   3] \if[condition="true"] \echo "Command 2"
+[   4] \if[condition="true"] \echo "Command 3"
+[   5] \echo "Basic view of populated stack:"
+[   6] \show-stack
+[   7] \echo
+[   8] \echo "Detailed view of populated stack:"
+[   9] \show-stack[detailed=true]
+[   10] \echo
+[   11] \echo Step 3: Detailed mode showing context blocks
+[   12] \try \if[condition="true"] \show-stack[detailed=true]
+[   13] \echo
+[BOTTOM] \echo === Detailed Mode Demo Complete ===
+                                           
+Stack operations: LIFO (Last In, First Out)
+Next command to execute: \echo
+%%> "\\echo"
+%%> "\\echo Step 2: Detailed mode with commands in stack"
+Step 2: Detailed mode with commands in stack
+%%> "\\if[condition=\"true\"] \\echo \"Command 1\""
+%%> "\\echo \"Command 1\""
+"Command 1"
+%%> "\\if[condition=\"true\"] \\echo \"Command 2\""
+%%> "\\echo \"Command 2\""
+"Command 2"
+%%> "\\if[condition=\"true\"] \\echo \"Command 3\""
+%%> "\\echo \"Command 3\""
+"Command 3"
+%%> "\\echo \"Basic view of populated stack:\""
+"Basic view of populated stack:"
+%%> "\\show-stack"
+Execution Stack:
+🔝 \echo
+   \echo "Detailed view of populated stack:"
+   \show-stack[detailed=true]
+   \echo
+   \echo Step 3: Detailed mode showing context blocks
+   \try \if[condition="true"] \show-stack[detailed=true]
+   \echo
+🔻 \echo === Detailed Mode Demo Complete ===
+%%> "\\echo"
+%%> "\\echo \"Detailed view of populated stack:\""
+"Detailed view of populated stack:"
+%%> "\\show-stack[detailed=true]"
+Execution Stack (Size: 5)
+[TOP] \echo
+[   1] \echo Step 3: Detailed mode showing context blocks
+[   2] \try \if[condition="true"] \show-stack[detailed=true]
+[   3] \echo
+[BOTTOM] \echo === Detailed Mode Demo Complete ===
+                                           
+Stack operations: LIFO (Last In, First Out)
+Next command to execute: \echo
+%%> "\\echo"
+%%> "\\echo Step 3: Detailed mode showing context blocks"
+Step 3: Detailed mode showing context blocks
+%%> "\\try \\if[condition=\"true\"] \\show-stack[detailed=true]"
+%%> "\\if[condition=\"true\"] \\show-stack[detailed=true]"
+%%> "\\show-stack[detailed=true]"
+Execution Stack (Size: 3)
+[TOP] ERROR_BOUNDARY_END:try_id_0
+[   1] \echo
+[BOTTOM] \echo === Detailed Mode Demo Complete ===
+                                           
+Stack operations: LIFO (Last In, First Out)
+Next command to execute: ERROR_BOUNDARY_END:try_id_0
+Currently in try block: try_id_0 (depth: 1)
+%%> "\\echo"
+%%> "\\echo === Detailed Mode Demo Complete ==="
+=== Detailed Mode Demo Complete ===

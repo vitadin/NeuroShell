@@ -1,0 +1,45 @@
+Setting _style = dark1
+=== Send Thinking Content Verification ===
+Test 1: Send WITHOUT thinking inclusion
+<thinking id="2-1">
+Thinking about the user's message: "Short message for test.". This helps verify the message flow in tests. The user sent 1 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 1 messages, last: Short message for test.)
+
+1 = This is a mocking reply (received 1 messages, last: Short message for test.)
+First assistant message (should NOT have thinking): "This is a mocking reply (received 1 messages, last: Short message for test.)"
+Test 2: Send WITH thinking inclusion
+<thinking id="4-1">
+Thinking about the user's message: "Another short test message.". This helps verify the message flow in tests. The user sent 3 messages total, and I need to provide a helpful response.
+</thinking>
+
+  This is a mocking reply (received 3 messages, last: Another short test      
+  message.)                                                                   
+
+1 = <thinking id="4-1">                                                                                                                                                                 
+Thinking about the user's message: "Another short test message.". This helps verify the message flow in tests. The user sent 3 messages total, and I need to provide a helpful response.
+</thinking>                                                                                                                                                                             
+                                                                                                                                                                                        
+This is a mocking reply (received 3 messages, last: Another short test message.)                                                                                                        
+Second assistant message (should have thinking): "<thinking id="4-1">
+Thinking about the user's message: "Another short test message.". This helps verify the message flow in tests. The user sent 3 messages total, and I need to provide a helpful response.
+</thinking>
+
+This is a mocking reply (received 3 messages, last: Another short test message.)"
+3 = This is a mocking reply (received 1 messages, last: Short message for test.)
+Comparison - First assistant message again: "This is a mocking reply (received 1 messages, last: Short message for test.)"
+=== Content Length Comparison ===
+First message length (no thinking):  characters
+Second message length (with thinking):  characters
+=== Raw Session Messages ===
+Session: Session 1 (ID: 00000001)
+System: You are a helpful assistant.
+Created: 2025-01-01 00:00:01
+Updated: 2025-01-01 00:00:10
+Messages: 4 total
+
+[1] user (00:00:02): Short message for test.
+[2] assistant (00:00:05): This is a mocking reply (received 1 messages, last: Short message for test.)
+[3] user (00:00:07): Another short test message.
+[4] assistant (00:00:09): <thinking id=\"4-1\">\nThinking about th...s, last: Another short test message.) (298 chars)

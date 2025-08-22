@@ -1,0 +1,61 @@
+Setting _echo_command = true
+%%> "\\echo === Show-Stack in Try/Silent Context ==="
+=== Show-Stack in Try/Silent Context ===
+%%> "\\echo Step 1: Basic stack state"
+Step 1: Basic stack state
+%%> "\\show-stack"
+Execution Stack:
+🔝 \echo
+   \echo Step 2: Inside try block context
+   \try \show-stack[detailed=true]
+   \echo
+   \echo Step 3: Inside silent block context
+   \silent \show-stack[detailed=true]
+   \echo
+   \echo Step 4: Nested try-silent with detailed context
+   \try \silent \show-stack[detailed=true]
+   \echo
+   \echo Step 5: Complex nesting showing block depths
+   \try \try \silent \show-stack[detailed=true]
+   \echo
+🔻 \echo === Context Demo Complete ===
+%%> "\\echo"
+%%> "\\echo Step 2: Inside try block context"
+Step 2: Inside try block context
+%%> "\\try \\show-stack[detailed=true]"
+%%> "\\show-stack[detailed=true]"
+Execution Stack (Size: 12)
+[TOP] ERROR_BOUNDARY_END:try_id_0
+[   1] \echo
+[   2] \echo Step 3: Inside silent block context
+[   3] \silent \show-stack[detailed=true]
+[   4] \echo
+[   5] \echo Step 4: Nested try-silent with detailed context
+[   6] \try \silent \show-stack[detailed=true]
+[   7] \echo
+[   8] \echo Step 5: Complex nesting showing block depths
+[   9] \try \try \silent \show-stack[detailed=true]
+[   10] \echo
+[BOTTOM] \echo === Context Demo Complete ===
+                                           
+Stack operations: LIFO (Last In, First Out)
+Next command to execute: ERROR_BOUNDARY_END:try_id_0
+Currently in try block: try_id_0 (depth: 1)
+%%> "\\echo"
+%%> "\\echo Step 3: Inside silent block context"
+Step 3: Inside silent block context
+%%> "\\silent \\show-stack[detailed=true]"
+%%> "\\echo"
+%%> "\\echo Step 4: Nested try-silent with detailed context"
+Step 4: Nested try-silent with detailed context
+%%> "\\try \\silent \\show-stack[detailed=true]"
+%%> "\\silent \\show-stack[detailed=true]"
+%%> "\\echo"
+%%> "\\echo Step 5: Complex nesting showing block depths"
+Step 5: Complex nesting showing block depths
+%%> "\\try \\try \\silent \\show-stack[detailed=true]"
+%%> "\\try \\silent \\show-stack[detailed=true]"
+%%> "\\silent \\show-stack[detailed=true]"
+%%> "\\echo"
+%%> "\\echo === Context Demo Complete ==="
+=== Context Demo Complete ===

@@ -1,0 +1,14 @@
+Setting _editor = test/fixtures/mock-editor.sh
+_editor = test/fixtures/mock-editor.sh
+Editor content stored in ${_output} (285 characters)
+Use \send ${_output} to send the content
+_output = %% === TOP MARKER: Mock editor started ===
+%% Editor: mock-editor.sh                           
+%% Timestamp: 2025-01-01-12:00:00                   
+%% Original content follows:                        
+                                                    
+Write a test message for the editor                 
+                                                    
+%% Original content ends above                      
+%% Editor test completed successfully               
+%% === BOTTOM MARKER: Mock editor finished ===      

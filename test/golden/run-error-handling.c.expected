@@ -1,0 +1,4 @@
+ ERROR  CommandResolver : Path resolution failed path=test/fixtures/nonexistent-script.neuro error="file not found: <project_path>/test/fixtures/nonexistent-script.neuro"
+Starting failing script
+<non_zero_exit_status>
+#last_error = 

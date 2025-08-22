@@ -1,0 +1,82 @@
+Setting _echo_command = true
+%%> "\\session-new[system=\"You are a test assistant for round-trip testing\"] roundtrip_original"
+Created session 'roundtrip_original' (ID: 00000001)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-usermsg Can you help me test the export-import workflow?"
+Added user message to session 'roundtrip_original'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-assistantmsg Absolutely! I'll help you verify that the round-trip export-import process preserves all session data correctly."
+Added assistant message to session 'roundtrip_original'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-add-usermsg Perfect! Let's make sure all messages are preserved."
+Added user message to session 'roundtrip_original'
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\get[#session_id]"
+#session_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#session_name]"
+#session_name = roundtrip_original
+%%> "\\get[#message_count]"
+#message_count = 0
+%%> "\\get[#system_prompt]"
+#system_prompt = You are a test assistant for round-trip testing
+%%> "\\session-export[file=/tmp/neuro_test_roundtrip.json] roundtrip_original"
+%%> "\\session-json-export[file=/tmp/neuro_test_roundtrip.json] roundtrip_original"
+Exported session 'roundtrip_original' (ID: 00000001) to /tmp/neuro_test_roundtrip.json
+%%> "\\cat /tmp/neuro_test_roundtrip.json"
+{
+  "id": "00000001-0000-4000-8000-000000000001",
+  "name": "roundtrip_original",
+  "system_prompt": "You are a test assistant for round-trip testing",
+  "messages": [
+    {
+      "id": "00000002-0000-4000-8000-000000000002",
+      "role": "user",
+      "content": "Can you help me test the export-import workflow?",
+      "timestamp": "2025-01-01T00:00:02Z"
+    },
+    {
+      "id": "00000003-0000-4000-8000-000000000003",
+      "role": "assistant",
+      "content": "Absolutely! I'll help you verify that the round-trip export-import process preserves all session data correctly.",
+      "timestamp": "2025-01-01T00:00:04Z"
+    },
+    {
+      "id": "00000004-0000-4000-8000-000000000004",
+      "role": "user",
+      "content": "Perfect! Let's make sure all messages are preserved.",
+      "timestamp": "2025-01-01T00:00:06Z"
+    }
+  ],
+  "created_at": "2025-01-01T00:00:01Z",
+  "updated_at": "2025-01-01T00:00:07Z",
+  "is_active": true
+}
+%%> "\\session-import[file=/tmp/neuro_test_roundtrip.json]"
+%%> "\\session-json-import[file=/tmp/neuro_test_roundtrip.json]"
+Imported session as 'Session 1' (ID: 00000005) from /tmp/neuro_test_roundtrip.json (original: 'roundtrip_original')
+%%> "\\silent \\session-activate[id=true] 00000005-0000-4000-8000-000000000005"
+%%> "\\get[#session_id]"
+#session_id = 00000005-0000-4000-8000-000000000005
+%%> "\\get[#session_name]"
+#session_name = Session 1
+%%> "\\get[#session_original_id]"
+#session_original_id = 00000001-0000-4000-8000-000000000001
+%%> "\\get[#session_original_name]"
+#session_original_name = roundtrip_original
+%%> "\\get[#message_count]"
+#message_count = 3
+%%> "\\get[#system_prompt]"
+#system_prompt = You are a test assistant for round-trip testing
+%%> "\\session-show"
+Session: Session 1 (ID: 00000005)
+System: You are a test assistant for round-trip testing
+Created: 2025-01-01 00:00:08
+Updated: 2025-01-01 00:00:08
+Messages: 3 total
+
+[1] user (00:00:02): Can you help me test the export-import workflow?
+[2] assistant (00:00:04): Absolutely! I'll help you verify that th...preserves all session data correctly. (112 chars)
+[3] user (00:00:06): Perfect! Let's make sure all messages are preserved.
+%%> "\\silent \\session-activate[id=true] 00000005-0000-4000-8000-000000000005"
+%%> "\\try \\bash rm /tmp/neuro_test_roundtrip.json"
+%%> "\\bash rm /tmp/neuro_test_roundtrip.json"

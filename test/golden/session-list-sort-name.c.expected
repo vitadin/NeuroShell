@@ -1,0 +1,15 @@
+Setting _echo_command = true
+%%> "\\session-new zebra_session"
+Created session 'zebra_session' (ID: 00000001)
+%%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\session-new alpha_session"
+Created session 'alpha_session' (ID: 00000002)
+%%> "\\silent \\session-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\session-new beta_session"
+Created session 'beta_session' (ID: 00000003)
+%%> "\\silent \\session-activate[id=true] 00000003-0000-4000-8000-000000000003"
+%%> "\\session-list[sort=name]"
+Sessions (3 total):
+  alpha_session    (ID: 00000002, 0 messages, created: 2025-01-01)
+  beta_session    (ID: 00000003, active, 0 messages, created: 2025-01-01)
+  zebra_session    (ID: 00000001, 0 messages, created: 2025-01-01)

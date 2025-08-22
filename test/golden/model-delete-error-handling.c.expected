@@ -1,0 +1,43 @@
+Setting _echo_command = true
+%%> "\\model-new[catalog_id=\"O4MC\"] test-model-1"
+Created model 'test-model-1' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\model-activate[id=true] 00000001-0000-4000-8000-000000000001"
+%%> "\\model-new[catalog_id=\"O3R\"] test-model-2"
+Created model 'test-model-2' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\openai-client-new[client_type=OAR]"
+%%> "\\silent \\llm-client-activate OAR"
+%%> "\\silent \\model-activate[id=true] 00000002-0000-4000-8000-000000000002"
+%%> "\\try \\model-delete nonexistent-model"
+%%> "\\model-delete nonexistent-model"
+%%> "\\model-new[catalog_id=\"O4MC\"] test-similar"
+Created model 'test-similar' (ID: 00000003, Provider: openai, Base: o4-mini)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\model-activate[id=true] 00000003-0000-4000-8000-000000000003"
+%%> "\\model-new[catalog_id=\"G41C\"] test-different"
+Created model 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4.1-2025-04-14)
+%%> "\\silent \\openai-client-new[client_type=OAC]"
+%%> "\\silent \\llm-client-activate OAC"
+%%> "\\silent \\model-activate[id=true] 00000004-0000-4000-8000-000000000004"
+%%> "\\try \\model-delete test"
+%%> "\\model-delete test"
+%%> "\\try \\model-delete"
+%%> "\\model-delete"
+%%> "\\try \\model-delete[id=true] xyz123"
+%%> "\\model-delete[id=true] xyz123"
+%%> "\\model-delete test-model-1"
+Deleted model 'test-model-1' (ID: 00000001, Provider: openai, Base: o4-mini)
+%%> "\\silent \\model-activate"
+%%> "\\model-delete test-model-2"
+Deleted model 'test-model-2' (ID: 00000002, Provider: openai, Base: o3)
+%%> "\\silent \\model-activate"
+%%> "\\model-delete test-similar"
+Deleted model 'test-similar' (ID: 00000003, Provider: openai, Base: o4-mini)
+%%> "\\silent \\model-activate"
+%%> "\\model-delete test-different"
+Deleted model 'test-different' (ID: 00000004, Provider: openai, Base: gpt-4.1-2025-04-14)
+%%> "\\silent \\model-activate"
+%%> "\\try \\model-delete anything"
+%%> "\\model-delete anything"

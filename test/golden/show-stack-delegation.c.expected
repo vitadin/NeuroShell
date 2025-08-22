@@ -1,0 +1,34 @@
+Setting _echo_command = true
+%%> "\\echo === Show-Stack with Command Delegation ==="
+=== Show-Stack with Command Delegation ===
+%%> "\\echo Step 1: Empty stack initially"
+Step 1: Empty stack initially
+%%> "\\show-stack"
+Execution Stack:
+🔝 \echo
+   \echo Step 2: Using if command (which delegates via stack)
+   \set[condition="true"]
+   \if[condition="${condition}"] \echo "Condition was true"
+   \echo
+   \echo Step 3: Using silent command (which uses stack delegation)
+   \silent \echo "This message is silenced"
+   \echo
+   \echo Step 4: Nested delegation with show-stack visibility
+🔻 \try \silent \echo "Nested try-silent execution"
+%%> "\\echo"
+%%> "\\echo Step 2: Using if command (which delegates via stack)"
+Step 2: Using if command (which delegates via stack)
+%%> "\\set[condition=\"true\"]"
+Setting condition = true
+%%> "\\if[condition=\"${condition}\"] \\echo \"Condition was true\""
+%%> "\\echo \"Condition was true\""
+"Condition was true"
+%%> "\\echo"
+%%> "\\echo Step 3: Using silent command (which uses stack delegation)"
+Step 3: Using silent command (which uses stack delegation)
+%%> "\\silent \\echo \"This message is silenced\""
+%%> "\\echo"
+%%> "\\echo Step 4: Nested delegation with show-stack visibility"
+Step 4: Nested delegation with show-stack visibility
+%%> "\\try \\silent \\echo \"Nested try-silent execution\""
+%%> "\\silent \\echo \"Nested try-silent execution\""

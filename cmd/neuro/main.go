@@ -60,7 +60,9 @@ It bridges the gap between traditional command-line interfaces and modern AI ass
 
 		// Handle -c flag
 		if commandString != "" {
-			runCommand(cmd, commandString)
+			if err := runCommand(cmd, commandString); err != nil {
+				os.Exit(1)
+			}
 			return
 		}
 
@@ -465,8 +467,31 @@ func runBatch(_ *cobra.Command, args []string) {
 	logger.Debug("Script executed successfully", "script", scriptPath)
 }
 
-func runCommand(_ *cobra.Command, cmdString string) {
+func runCommand(_ *cobra.Command, cmdString string) error {
 	logger.Info("Executing command", "command", cmdString)
+
+	// Use the command string as-is (no escape processing needed since batch mode will handle it)
+	processedCmd := cmdString
+
+	// Create a temporary file to hold the command string
+	tempFile, err := os.CreateTemp("", "neuro-command-*.neuro")
+	if err != nil {
+		logger.Fatal("Failed to create temporary file", "error", err)
+	}
+	defer func() {
+		_ = tempFile.Close()
+		_ = os.Remove(tempFile.Name()) // Clean up the temporary file
+	}()
+
+	// Write the processed command string to the temporary file
+	if _, err := tempFile.WriteString(processedCmd); err != nil {
+		logger.Fatal("Failed to write to temporary file", "error", err)
+	}
+
+	// Close the file so it can be read by batch processing
+	if err := tempFile.Close(); err != nil {
+		logger.Fatal("Failed to close temporary file", "error", err)
+	}
 
 	// Initialize services before running command
 	if err := shell.InitializeServices(testMode); err != nil {
@@ -487,66 +512,14 @@ func runCommand(_ *cobra.Command, cmdString string) {
 	ctx := shell.GetGlobalContext()
 	ctx.SetTestMode(testMode)
 
-	// Process escape sequences (\n → newline, but preserve \\n as literal)
-	processedCmd := processEscapeSequences(cmdString)
-
-	// Split into lines (same as script processing)
-	lines := strings.Split(processedCmd, "\n")
-	commandLines := make([]string, 0)
-
-	for _, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		// Skip empty lines and comments
-		if trimmed != "" && !strings.HasPrefix(trimmed, "%%") {
-			commandLines = append(commandLines, trimmed)
-		}
-	}
-
-	if len(commandLines) == 0 {
-		// No commands to execute
-		logger.Debug("No commands to execute")
-		return
-	}
-
-	// Get stack service to push commands
-	registry := services.GetGlobalRegistry()
-	stackServiceInterface, err := registry.GetService("stack")
-	if err != nil {
-		logger.Fatal("Stack service not available", "error", err)
-	}
-	stackService := stackServiceInterface.(*services.StackService)
-
-	// Push commands in reverse order (LIFO - last in, first out)
-	for i := len(commandLines) - 1; i >= 0; i-- {
-		stackService.PushCommand(commandLines[i])
-	}
-
-	// Create state machine and execute
-	sm := statemachine.NewStateMachineWithDefaults(ctx)
-
-	// Execute all commands from the stack
-	// The state machine will automatically pop and execute commands from the stack
-	if err := sm.Execute(""); err != nil {
+	// Use the existing batch script execution path
+	if err := executeBatchScript(tempFile.Name(), ctx); err != nil {
 		logger.Error("Command execution failed", "error", err)
-		os.Exit(1)
+		return err
 	}
 
 	logger.Debug("Command executed successfully")
-}
-
-// processEscapeSequences converts \n to actual newlines while preserving \\n as literal \n
-// This allows users to separate commands with \n while still being able to use \\n in command arguments
-func processEscapeSequences(input string) string {
-	// Replace \\n with a temporary placeholder to protect it
-	protected := strings.ReplaceAll(input, "\\\\n", "\x00PROTECTED_NEWLINE\x00")
-
-	// Replace \n with actual newlines
-	processed := strings.ReplaceAll(protected, "\\n", "\n")
-
-	// Restore \\n as literal \n
-	result := strings.ReplaceAll(processed, "\x00PROTECTED_NEWLINE\x00", "\\n")
-
-	return result
+	return nil
 }
 
 func validateScriptFile(scriptPath string) error {

@@ -1,0 +1,52 @@
+Setting _echo_command = true
+%%> "\\shell-prompt[lines=2, line1=\"${@user}@${@pwd}\", line2=\"neuro❯ \"]"
+Prompt lines set to 2
+Prompt line 1 set to: testuser@/test/pwd
+Prompt line 2 set to: neuro❯ 
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 2
+
+Templates:
+  Line 1: testuser@/test/pwd
+  Line 2: neuro❯ 
+
+Preview:
+  testuser@/test/pwd
+  neuro❯ 
+%%> "\\shell-prompt[lines=1, line1=\"simple> \"]"
+Prompt lines set to 1
+Prompt line 1 set to: simple> 
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 1
+
+Templates:
+  Line 1: simple> 
+
+Preview:
+  simple> 
+%%> "\\shell-prompt[lines=4, line1=\"┌─[${@time}] Session: ${#session_name:-none}\", line2=\"├─[${@user}@${@pwd}]\", line3=\"├─Model: ${#active_model:-none}\", line4=\"└❯ \"]"
+Prompt lines set to 4
+Prompt line 1 set to: ┌─[12:00:00] Session: 
+Prompt line 2 set to: ├─[testuser@/test/pwd]
+Prompt line 3 set to: ├─Model: 
+Prompt line 4 set to: └❯ 
+%%> "\\shell-prompt-show"
+Shell Prompt Configuration:
+==========================
+Number of lines: 4
+
+Templates:
+  Line 1: ┌─[12:00:00] Session: 
+  Line 2: ├─[testuser@/test/pwd]
+  Line 3: ├─Model: 
+  Line 4: └❯ 
+
+Preview:
+  ┌─[12:00:00] Session: 
+  ├─[testuser@/test/pwd]
+  ├─Model: 
+  └❯ 
