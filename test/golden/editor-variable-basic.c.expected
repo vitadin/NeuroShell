@@ -225,7 +225,7 @@ System Variables:
     #test_mode           = true
   Command Outputs (_):
     _*                   = 
-    _0                   = /var/folders/jn/2sp3_lcd70n7cnd2_v669d940000gn/T/neuro-command-3242135977.neuro
+    _0                   = /tmp/neuro-command-1.neuro
     _1                   = 
     _@                   = 
     _default_command     = echo

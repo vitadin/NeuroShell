@@ -19,6 +19,7 @@ import (
 	"neuroshell/internal/services"
 	"neuroshell/internal/shell"
 	"neuroshell/internal/statemachine"
+	"neuroshell/internal/testutils"
 	"neuroshell/internal/version"
 
 	"github.com/abiosoft/ishell/v2"
@@ -473,14 +474,38 @@ func runCommand(_ *cobra.Command, cmdString string) error {
 	// Use the command string as-is (no escape processing needed since batch mode will handle it)
 	processedCmd := cmdString
 
-	// Create a temporary file to hold the command string
-	tempFile, err := os.CreateTemp("", "neuro-command-*.neuro")
-	if err != nil {
-		logger.Fatal("Failed to create temporary file", "error", err)
+	// Initialize services first to get context for deterministic temp file generation
+	if err := shell.InitializeServices(testMode); err != nil {
+		logger.Fatal("Failed to initialize services", "error", err)
 	}
+
+	// Get the global context to check test mode
+	globalCtx := context.GetGlobalContext()
+
+	// Create a temporary file to hold the command string
+	var tempFile *os.File
+	var tempFilePath string
+	var err error
+
+	// Use deterministic temp file path in test mode
+	if deterministicPath := testutils.GenerateTempFilePath(globalCtx); deterministicPath != "" {
+		tempFilePath = deterministicPath
+		tempFile, err = os.Create(tempFilePath)
+		if err != nil {
+			logger.Fatal("Failed to create deterministic temporary file", "error", err, "path", tempFilePath)
+		}
+	} else {
+		// Use standard temp file generation in production mode
+		tempFile, err = os.CreateTemp("", "neuro-command-*.neuro")
+		if err != nil {
+			logger.Fatal("Failed to create temporary file", "error", err)
+		}
+		tempFilePath = tempFile.Name()
+	}
+
 	defer func() {
 		_ = tempFile.Close()
-		_ = os.Remove(tempFile.Name()) // Clean up the temporary file
+		_ = os.Remove(tempFilePath) // Clean up the temporary file
 	}()
 
 	// Write the processed command string to the temporary file
@@ -491,11 +516,6 @@ func runCommand(_ *cobra.Command, cmdString string) error {
 	// Close the file so it can be read by batch processing
 	if err := tempFile.Close(); err != nil {
 		logger.Fatal("Failed to close temporary file", "error", err)
-	}
-
-	// Initialize services before running command
-	if err := shell.InitializeServices(testMode); err != nil {
-		logger.Fatal("Failed to initialize services", "error", err)
 	}
 
 	logger.Info("Services initialized successfully")
@@ -513,7 +533,7 @@ func runCommand(_ *cobra.Command, cmdString string) error {
 	ctx.SetTestMode(testMode)
 
 	// Use the existing batch script execution path
-	if err := executeBatchScript(tempFile.Name(), ctx); err != nil {
+	if err := executeBatchScript(tempFilePath, ctx); err != nil {
 		logger.Error("Command execution failed", "error", err)
 		return err
 	}
