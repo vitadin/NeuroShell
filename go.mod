@@ -25,6 +25,8 @@ require (
 
 replace github.com/abiosoft/ishell/v2 => ./local-libs/ishell
 
+replace github.com/chzyer/readline => ./local-libs/readline
+
 require (
 	cloud.google.com/go v0.116.0 // indirect
 	cloud.google.com/go/auth v0.13.0 // indirect
