@@ -366,7 +366,11 @@ func TestAutoCompleteService_GetCommandCompletions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := service.getCommandCompletions(tt.prefix)
+			items := service.getCommandCompletionItems(tt.prefix)
+			result := make([]string, len(items))
+			for i, item := range items {
+				result[i] = item.Text
+			}
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -428,7 +432,11 @@ func TestAutoCompleteService_GetHelpCommandCompletions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := service.getHelpCommandCompletions(tt.prefix)
+			items := service.getHelpCommandCompletionItems(tt.prefix)
+			result := make([]string, len(items))
+			for i, item := range items {
+				result[i] = item.Text
+			}
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -492,7 +500,11 @@ func TestAutoCompleteService_GetOptionCompletions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := service.getOptionCompletions(tt.line, tt.pos, tt.currentWord)
+			items := service.getOptionCompletionItems(tt.line, tt.pos, tt.currentWord)
+			result := make([]string, len(items))
+			for i, item := range items {
+				result[i] = item.Text
+			}
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -594,7 +606,11 @@ func TestAutoCompleteService_GetVariableCompletions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := service.getVariableCompletions(tt.prefix)
+			items := service.getVariableCompletionItems(tt.prefix)
+			result := make([]string, len(items))
+			for i, item := range items {
+				result[i] = item.Text
+			}
 			if tt.expectedCount >= 0 {
 				assert.Equal(t, tt.expectedCount, len(result))
 			}

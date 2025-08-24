@@ -8,7 +8,7 @@ Neuro is a specialized shell environment designed for seamless interaction with 
 Create a shell that treats LLM interactions as first-class operations, similar to how traditional shells handle file operations and process management.
 
 ### Target Users
-- Data scientists and statisticians familiar with Stata-like environments
+- Data scientists and statisticians familiar with shell-like environments
 - Software engineers working with AI tools like Claude Code
 - Researchers who need reproducible AI-assisted workflows
 - Professionals automating complex analytical tasks
@@ -75,7 +75,7 @@ ${user_variable}        → User-defined (no special prefix)
 - No pipelines or complex chaining initially
 - Session-scoped variables only
 
-### 2. **Stata-Inspired**
+### 2. **Shell-Inspired**
 - Commands operate on implicit state
 - Return values in predictable variables
 - Line-by-line script execution
@@ -318,3 +318,36 @@ just imports   # Organize Go imports only
 # Run all e2e tests
 just test-e2e
 ```
+
+
+
+# Linus Torvalds will personally review this code.
+#
+# Expectations (non-negotiable):
+# 1. Design for the next 10 years, not the next 10 minutes.
+#    - Layers are thin, interfaces are minimal and version-proof.
+#    - Every public symbol answers “Will this still make sense after
+#      100 M lines of dependent code exist?”
+# 2. Maintainability > micro-optimisations.
+#    - Self-explaining names, no surprises, zero magic.
+#    - If a future maintainer has to ask “why?” the code is wrong.
+# 3. Extensibility without breakage.
+#    - Extension points are explicit; default behaviours are frozen.
+#    - New features fit the existing mental model, not bolted on.
+# 4. No NIH, but no cargo-cult either.
+#    - Re-use robust libraries, but wrap them so they can be swapped
+#      without touching call sites.
+# 5. Tests are architecture documentation, not afterthoughts.
+#    - Unit tests stay green for decades.
+#    - Integration tests prove the public contract, not the internals.
+#
+# Style rules:
+# - Follow the strictest existing style guide for the language.
+# - Tabs for indentation, spaces for alignment where required.
+# - 80-column hard limit, unless a longer line is *demonstrably* clearer.
+# - Comments explain *why*, never *what*.
+#
+# Failure mode:
+# If any of the above is violated, the patch will be rejected with the
+# phrase “This is unmaintainable crap.” Make sure that never happens.
+

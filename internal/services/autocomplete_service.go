@@ -1,11 +1,21 @@
 package services
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
 	"neuroshell/internal/context"
 )
+
+// CompletionItem represents a single completion suggestion with optional description.
+type CompletionItem struct {
+	Text        string // The completion text
+	Description string // Optional description for enhanced modes
+	Category    string // Category for grouping (commands, variables, files, etc.)
+}
 
 // AutoCompleteService provides intelligent tab completion for NeuroShell commands and syntax.
 // It implements the readline.AutoCompleter interface to integrate with ishell.
@@ -29,6 +39,19 @@ func (a *AutoCompleteService) Name() string {
 func (a *AutoCompleteService) Initialize() error {
 	a.initialized = true
 	return nil
+}
+
+// getCompletionMode retrieves the current completion mode from the global context.
+func (a *AutoCompleteService) getCompletionMode() string {
+	globalCtx := context.GetGlobalContext()
+	if globalCtx == nil {
+		return "tab"
+	}
+
+	if mode, err := globalCtx.GetVariable("_completion_mode"); err == nil {
+		return mode
+	}
+	return "tab"
 }
 
 // Do implements the readline.AutoCompleter interface.
@@ -56,20 +79,58 @@ func (a *AutoCompleteService) Do(line []rune, pos int) (newLine [][]rune, offset
 		currentWord = lineStr[wordStart:wordEnd]
 	}
 
-	// Get completions based on context
-	completions := a.getCompletions(lineStr, pos, currentWord)
+	// Get completion mode
+	completionMode := a.getCompletionMode()
 
-	// Convert completions to readline format
+	// Get completions based on context
+	completionItems := a.getCompletionItems(lineStr, pos, currentWord)
+
+	// Format completions based on mode
+	suggestions := a.formatCompletions(completionItems, currentWord, completionMode)
+
+	return suggestions, len(currentWord)
+}
+
+// formatCompletions converts CompletionItems to readline format based on the completion mode.
+func (a *AutoCompleteService) formatCompletions(items []CompletionItem, currentWord, mode string) [][]rune {
 	var suggestions [][]rune
-	for _, completion := range completions {
-		if strings.HasPrefix(completion, currentWord) {
+
+	switch mode {
+	case "enhanced":
+		// Enhanced mode: provides smart context-aware completions (files, sessions, models)
+		// Currently uses same display format as basic mode due to readline limitations
+		suggestions = a.formatEnhancedCompletions(items, currentWord)
+	case "tab":
+		fallthrough
+	default:
+		// Traditional TAB mode: basic completion logic and display
+		suggestions = a.formatBasicCompletions(items, currentWord)
+	}
+
+	return suggestions
+}
+
+// formatBasicCompletions formats completions for traditional TAB mode.
+func (a *AutoCompleteService) formatBasicCompletions(items []CompletionItem, currentWord string) [][]rune {
+	var suggestions [][]rune
+	for _, item := range items {
+		if strings.HasPrefix(item.Text, currentWord) {
 			// Return the part that should be added to complete the word
-			suffix := strings.TrimPrefix(completion, currentWord)
+			suffix := strings.TrimPrefix(item.Text, currentWord)
 			suggestions = append(suggestions, []rune(suffix))
 		}
 	}
+	return suggestions
+}
 
-	return suggestions, len(currentWord)
+// formatEnhancedCompletions formats completions for enhanced mode.
+// Currently simplified to avoid readline display issues with descriptions and category headers.
+// Future enhancement: integrate with a custom display system for richer completion information.
+func (a *AutoCompleteService) formatEnhancedCompletions(items []CompletionItem, currentWord string) [][]rune {
+	// For now, enhanced mode provides the same clean completions as basic mode
+	// The main benefit is the enhanced completion logic (smart file/session/model completions)
+	// rather than display formatting which has readline library limitations
+	return a.formatBasicCompletions(items, currentWord)
 }
 
 // findWordStart finds the start position of the word being completed.
@@ -119,113 +180,311 @@ func (a *AutoCompleteService) isInVariableReference(line string, pos int) bool {
 	return lastDollarBrace > lastCloseBrace
 }
 
-// getCompletions analyzes the input context and returns appropriate completions.
-func (a *AutoCompleteService) getCompletions(line string, pos int, currentWord string) []string {
+// getCompletionItems analyzes the input context and returns appropriate completion items.
+func (a *AutoCompleteService) getCompletionItems(line string, pos int, currentWord string) []CompletionItem {
 	// Analyze the context to determine what kind of completion is needed
 
 	// Priority 1: Check if we're in a variable reference context
 	if a.isInVariableReference(line, pos) || strings.HasPrefix(currentWord, "${") {
-		return a.getVariableCompletions(currentWord)
+		return a.getVariableCompletionItems(currentWord)
 	}
 
 	// Priority 2: Check if we're after \help command for command name completion
 	if a.isAfterHelpCommand(line, pos) {
-		return a.getHelpCommandCompletions(currentWord)
+		return a.getHelpCommandCompletionItems(currentWord)
 	}
 
 	// Priority 3: Check if we're completing a command name (starts with \)
 	if strings.HasPrefix(currentWord, "\\") {
-		return a.getCommandCompletions(currentWord)
+		return a.getCommandCompletionItems(currentWord)
 	}
 
 	// Priority 4: Check if we're inside brackets for option completion
 	if a.isInsideBrackets(line, pos) {
-		return a.getOptionCompletions(line, pos, currentWord)
+		return a.getOptionCompletionItems(line, pos, currentWord)
 	}
 
-	// Priority 5: Check if we're at the beginning of input (no \ prefix)
+	// Priority 5: Check for command-specific smart completions
+	commandName := a.extractCommandNameFromLine(line)
+	if commandName != "" {
+		if smartCompletions := a.getSmartCompletions(commandName, line, pos, currentWord); len(smartCompletions) > 0 {
+			return smartCompletions
+		}
+	}
+
+	// Priority 6: Check if we're at the beginning of input (no \ prefix)
 	if pos == 0 || (pos > 0 && line[0] != '\\') {
 		// Complete with common commands
-		return a.getCommandCompletions("\\" + currentWord)
+		return a.getCommandCompletionItems("\\" + currentWord)
 	}
 
-	return make([]string, 0)
+	return make([]CompletionItem, 0)
 }
 
-// getCommandCompletions returns completions for command names.
-func (a *AutoCompleteService) getCommandCompletions(prefix string) []string {
+// getSmartCompletions provides context-aware completions for specific commands.
+func (a *AutoCompleteService) getSmartCompletions(commandName, _ string, _ int, currentWord string) []CompletionItem {
+	switch commandName {
+	case "cat", "write":
+		// File path completion for file-related commands
+		return a.getFilePathCompletions(currentWord)
+	case "session-activate", "session-delete", "session-show", "session-copy":
+		// Session name completion for session commands
+		return a.getSessionNameCompletions(currentWord)
+	case "model-activate", "model-delete":
+		// Model name completion for model commands
+		return a.getModelNameCompletions(currentWord)
+	}
+	return []CompletionItem{}
+}
+
+// getFilePathCompletions returns file and directory completions.
+func (a *AutoCompleteService) getFilePathCompletions(currentWord string) []CompletionItem {
+	var completions []CompletionItem
+
+	// Handle absolute vs relative paths
+	var basePath string
+	var searchPattern string
+
+	if strings.HasPrefix(currentWord, "/") {
+		// Absolute path
+		basePath = filepath.Dir(currentWord)
+		searchPattern = filepath.Base(currentWord)
+		if basePath == "." {
+			basePath = "/"
+		}
+	} else {
+		// Relative path - use current working directory
+		cwd, err := os.Getwd()
+		if err != nil {
+			return completions
+		}
+
+		if strings.Contains(currentWord, "/") {
+			basePath = filepath.Join(cwd, filepath.Dir(currentWord))
+			searchPattern = filepath.Base(currentWord)
+		} else {
+			basePath = cwd
+			searchPattern = currentWord
+		}
+	}
+
+	// Read directory contents
+	entries, err := os.ReadDir(basePath)
+	if err != nil {
+		return completions
+	}
+
+	// Filter entries that match the pattern
+	for _, entry := range entries {
+		name := entry.Name()
+
+		// Skip hidden files unless explicitly requested
+		if strings.HasPrefix(name, ".") && !strings.HasPrefix(searchPattern, ".") {
+			continue
+		}
+
+		if strings.HasPrefix(name, searchPattern) {
+			var completion string
+			switch {
+			case strings.HasPrefix(currentWord, "/"):
+				completion = filepath.Join(basePath, name)
+			case strings.Contains(currentWord, "/"):
+				completion = filepath.Join(filepath.Dir(currentWord), name)
+			default:
+				completion = name
+			}
+
+			// Add trailing slash for directories
+			description := "file"
+			if entry.IsDir() {
+				completion += "/"
+				description = "directory"
+			}
+
+			completions = append(completions, CompletionItem{
+				Text:        completion,
+				Description: description,
+				Category:    "files",
+			})
+		}
+	}
+
+	// Sort by name
+	sort.Slice(completions, func(i, j int) bool {
+		return completions[i].Text < completions[j].Text
+	})
+
+	return completions
+}
+
+// getSessionNameCompletions returns available session names for completion.
+func (a *AutoCompleteService) getSessionNameCompletions(currentWord string) []CompletionItem {
+	var completions []CompletionItem
+
+	// Get chat session service
+	sessionService, err := GetGlobalRegistry().GetService("chatsession")
+	if err != nil {
+		return completions
+	}
+
+	chatSession, ok := sessionService.(*ChatSessionService)
+	if !ok {
+		return completions
+	}
+
+	// Get list of available sessions
+	sessions := chatSession.ListSessions()
+
+	// Filter sessions that match the current word
+	for _, session := range sessions {
+		if strings.HasPrefix(session.Name, currentWord) {
+			completions = append(completions, CompletionItem{
+				Text:        session.Name,
+				Description: "chat session",
+				Category:    "sessions",
+			})
+		}
+	}
+
+	// Sort alphabetically
+	sort.Slice(completions, func(i, j int) bool {
+		return completions[i].Text < completions[j].Text
+	})
+
+	return completions
+}
+
+// getModelNameCompletions returns available model names for completion.
+func (a *AutoCompleteService) getModelNameCompletions(currentWord string) []CompletionItem {
+	var completions []CompletionItem
+
+	// Get model service
+	modelService, err := GetGlobalRegistry().GetService("model")
+	if err != nil {
+		return completions
+	}
+
+	modelSvc, ok := modelService.(*ModelService)
+	if !ok {
+		return completions
+	}
+
+	// Get list of available models
+	models, err := modelSvc.ListModelsWithGlobalContext()
+	if err != nil {
+		return completions
+	}
+
+	// Filter models that match the current word
+	for modelName, modelConfig := range models {
+		if strings.HasPrefix(modelName, currentWord) {
+			description := fmt.Sprintf("model: %s", modelConfig.CatalogID)
+			completions = append(completions, CompletionItem{
+				Text:        modelName,
+				Description: description,
+				Category:    "models",
+			})
+		}
+	}
+
+	// Sort alphabetically
+	sort.Slice(completions, func(i, j int) bool {
+		return completions[i].Text < completions[j].Text
+	})
+
+	return completions
+}
+
+// getCommandCompletionItems returns completion items for command names with descriptions.
+func (a *AutoCompleteService) getCommandCompletionItems(prefix string) []CompletionItem {
 	// Remove the \ prefix for matching
 	commandPrefix := strings.TrimPrefix(prefix, "\\")
 
 	// Get all registered commands from global context
 	globalCtx := context.GetGlobalContext()
 	if globalCtx == nil {
-		return []string{}
+		return []CompletionItem{}
 	}
 
 	neuroCtx, ok := globalCtx.(*context.NeuroContext)
 	if !ok {
-		return []string{}
+		return []CompletionItem{}
 	}
 
 	commandList := neuroCtx.GetRegisteredCommands()
 
-	var completions []string
+	var completions []CompletionItem
 	for _, cmdName := range commandList {
 		if strings.HasPrefix(cmdName, commandPrefix) {
-			completions = append(completions, "\\"+cmdName)
+			// Get command description from help info
+			description := ""
+			if helpInfo, exists := neuroCtx.GetCommandHelpInfo(cmdName); exists {
+				description = helpInfo.Description
+			}
+
+			completions = append(completions, CompletionItem{
+				Text:        "\\" + cmdName,
+				Description: description,
+				Category:    "commands",
+			})
 		}
 	}
 
-	// Sort completions alphabetically
-	sort.Strings(completions)
+	// Sort completions alphabetically by text
+	sort.Slice(completions, func(i, j int) bool {
+		return completions[i].Text < completions[j].Text
+	})
 
-	// Ensure we return an empty slice instead of nil
-	if completions == nil {
-		return make([]string, 0)
-	}
 	return completions
 }
 
-// getHelpCommandCompletions returns command name completions for use after \help.
-// Unlike getCommandCompletions, this returns command names without the backslash prefix.
-func (a *AutoCompleteService) getHelpCommandCompletions(prefix string) []string {
+// getHelpCommandCompletionItems returns command name completion items for use after \help.
+// Unlike getCommandCompletionItems, this returns command names without the backslash prefix.
+func (a *AutoCompleteService) getHelpCommandCompletionItems(prefix string) []CompletionItem {
 	// Get all registered commands from global context
 	globalCtx := context.GetGlobalContext()
 	if globalCtx == nil {
-		return []string{}
+		return []CompletionItem{}
 	}
 
 	neuroCtx, ok := globalCtx.(*context.NeuroContext)
 	if !ok {
-		return []string{}
+		return []CompletionItem{}
 	}
 
 	commandList := neuroCtx.GetRegisteredCommands()
 
-	var completions []string
+	var completions []CompletionItem
 	for _, cmdName := range commandList {
 		if strings.HasPrefix(cmdName, prefix) {
-			completions = append(completions, cmdName) // No backslash prefix for help context
+			// Get command description from help info
+			description := ""
+			if helpInfo, exists := neuroCtx.GetCommandHelpInfo(cmdName); exists {
+				description = helpInfo.Description
+			}
+
+			completions = append(completions, CompletionItem{
+				Text:        cmdName, // No backslash prefix for help context
+				Description: description,
+				Category:    "commands",
+			})
 		}
 	}
 
-	// Sort completions alphabetically
-	sort.Strings(completions)
+	// Sort completions alphabetically by text
+	sort.Slice(completions, func(i, j int) bool {
+		return completions[i].Text < completions[j].Text
+	})
 
-	// Ensure we return an empty slice instead of nil
-	if completions == nil {
-		return make([]string, 0)
-	}
 	return completions
 }
 
-// getVariableCompletions returns completions for variable references.
-func (a *AutoCompleteService) getVariableCompletions(prefix string) []string {
+// getVariableCompletionItems returns completion items for variable references.
+func (a *AutoCompleteService) getVariableCompletionItems(prefix string) []CompletionItem {
 	// Extract the variable name being completed
 	varStart := strings.LastIndex(prefix, "${")
 	if varStart == -1 {
-		return make([]string, 0)
+		return make([]CompletionItem, 0)
 	}
 
 	// Extract the partial variable name after ${
@@ -239,82 +498,143 @@ func (a *AutoCompleteService) getVariableCompletions(prefix string) []string {
 	// Get all variables from context
 	globalCtx := context.GetGlobalContext()
 	if globalCtx == nil {
-		return make([]string, 0)
+		return make([]CompletionItem, 0)
 	}
 
 	_, ok := globalCtx.(*context.NeuroContext)
 	if !ok {
-		return make([]string, 0)
+		return make([]CompletionItem, 0)
 	}
 
 	// Get variable service to access all variables
 	variableService, err := GetGlobalVariableService()
 	if err != nil {
-		return make([]string, 0)
+		return make([]CompletionItem, 0)
 	}
 
 	allVars, err := variableService.GetAllVariables()
 	if err != nil {
-		return make([]string, 0)
+		return make([]CompletionItem, 0)
 	}
 
-	var completions []string
-	for varName := range allVars {
+	var completions []CompletionItem
+	for varName, varValue := range allVars {
 		if strings.HasPrefix(varName, varPrefix) {
 			// Build the complete variable reference with proper formatting
 			completion := prefix[:varStart] + "${" + varName + "}"
-			completions = append(completions, completion)
+
+			// Create a brief description based on variable type and value
+			description := a.getVariableDescription(varName, varValue)
+
+			completions = append(completions, CompletionItem{
+				Text:        completion,
+				Description: description,
+				Category:    "variables",
+			})
 		}
 	}
 
-	// Sort completions alphabetically for consistent ordering
-	sort.Strings(completions)
+	// Sort completions alphabetically by variable name
+	sort.Slice(completions, func(i, j int) bool {
+		return completions[i].Text < completions[j].Text
+	})
 	return completions
 }
 
-// getOptionCompletions returns completions for command options inside brackets.
-func (a *AutoCompleteService) getOptionCompletions(line string, _ int, currentWord string) []string {
+// getVariableDescription creates a brief description for a variable based on its name and value.
+func (a *AutoCompleteService) getVariableDescription(name, value string) string {
+	// System variables (start with @)
+	if strings.HasPrefix(name, "@") {
+		return "system variable"
+	}
+
+	// Global configuration variables (start with _)
+	if strings.HasPrefix(name, "_") {
+		return "config variable"
+	}
+
+	// Command output variables (start with _)
+	if strings.HasPrefix(name, "_output") || strings.HasPrefix(name, "_error") || strings.HasPrefix(name, "_status") {
+		return "command output"
+	}
+
+	// Metadata variables (start with #)
+	if strings.HasPrefix(name, "#") {
+		return "metadata"
+	}
+
+	// Message history variables (numeric)
+	if len(name) > 0 && name[0] >= '1' && name[0] <= '9' {
+		return "message history"
+	}
+
+	// Truncate long values for description
+	if len(value) > 30 {
+		return fmt.Sprintf("%.30s...", value)
+	} else if value != "" {
+		return value
+	}
+
+	return "user variable"
+}
+
+// getOptionCompletionItems returns completion items for command options inside brackets.
+func (a *AutoCompleteService) getOptionCompletionItems(line string, _ int, currentWord string) []CompletionItem {
 	// Parse the command name from incomplete input
 	commandName := a.extractCommandNameFromLine(line)
 	if commandName == "" {
-		return make([]string, 0)
+		return make([]CompletionItem, 0)
 	}
 
 	// Check if the command exists in the global context
 	globalCtx := context.GetGlobalContext()
 	if globalCtx == nil {
-		return make([]string, 0)
+		return make([]CompletionItem, 0)
 	}
 
 	neuroCtx, ok := globalCtx.(*context.NeuroContext)
 	if !ok {
-		return make([]string, 0)
+		return make([]CompletionItem, 0)
 	}
 
 	// Get command help info from context
 	commandHelpInfo, exists := neuroCtx.GetCommandHelpInfo(commandName)
 	if !exists {
-		return make([]string, 0)
+		return make([]CompletionItem, 0)
 	}
 
 	// Get completions based on command options
-	var completions []string
+	var completions []CompletionItem
 	for _, option := range commandHelpInfo.Options {
 		optionName := option.Name
 
 		// Check if this option matches the current word prefix
 		if strings.HasPrefix(optionName, currentWord) {
+			var completion string
+			var description string
+
 			// For boolean options, add just the name
 			if option.Type == "bool" {
-				completions = append(completions, optionName)
+				completion = optionName
+				description = fmt.Sprintf("boolean option: %s", option.Description)
 			} else {
 				// For other types, add name with = suffix
-				completions = append(completions, optionName+"=")
+				completion = optionName + "="
+				description = fmt.Sprintf("%s option: %s", option.Type, option.Description)
 			}
+
+			completions = append(completions, CompletionItem{
+				Text:        completion,
+				Description: description,
+				Category:    "options",
+			})
 		}
 	}
 
-	sort.Strings(completions)
+	// Sort completions alphabetically by text
+	sort.Slice(completions, func(i, j int) bool {
+		return completions[i].Text < completions[j].Text
+	})
 	return completions
 }
 

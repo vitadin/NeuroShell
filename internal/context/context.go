@@ -27,6 +27,7 @@ var allowedGlobalVariables = []string{
 	"_stream",
 	"_editor",
 	"_session_autosave",
+	"_completion_mode",
 	// Shell prompt configuration variables
 	"_prompt_lines_count",
 	"_prompt_line1",
@@ -174,6 +175,7 @@ func New() *NeuroContext {
 	// Initialize whitelisted global variables with default values
 	_ = ctx.SetSystemVariable("_style", "")
 	_ = ctx.SetSystemVariable("_default_command", "echo")
+	_ = ctx.SetSystemVariable("_completion_mode", "tab")
 
 	return ctx
 }

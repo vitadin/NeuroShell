@@ -373,7 +373,61 @@ func setupAutoComplete(sh *ishell.Shell) error {
 	// Set up custom completer
 	sh.CustomCompleter(autoCompleter)
 
+	// Set up enhanced completion listener for automatic suggestions
+	if err := setupEnhancedListener(sh, autoCompleter); err != nil {
+		logger.Error("Failed to setup enhanced completion listener", "error", err)
+		// Don't fail startup, just log the error
+	}
+
 	logger.Debug("Autocomplete service configured successfully")
+	return nil
+}
+
+// setupEnhancedListener configures the enhanced completion listener for automatic suggestions.
+func setupEnhancedListener(sh *ishell.Shell, autoCompleter *services.AutoCompleteService) error {
+	// Access the readline instance through the shell
+	readlineInstance := sh.GetReadlineInstance()
+
+	// Get current config from the readline instance
+	currentConfig := readlineInstance.Config.Clone()
+
+	// Create the enhanced completion listener
+	enhancedListener := services.NewEnhancedCompletionListener(autoCompleter)
+
+	// Get the existing listener (contains Ctrl+E handler)
+	existingListener := currentConfig.Listener
+
+	// Create a combined listener that chains all listeners
+	combinedListener := readline.FuncListener(func(line []rune, pos int, key rune) (newLine []rune, newPos int, ok bool) {
+		// First, let the enhanced listener handle the keystroke for automatic suggestions
+		// It should not modify the input, just display suggestions
+		enhancedListener.OnChange(line, pos, key)
+
+		// Check for shortcuts (like Ctrl+S) before other handlers
+		if shortcutService, err := services.GetGlobalShortcutService(); err == nil {
+			if shortcutService.ExecuteShortcut(key) {
+				// Shortcut was handled, return original line unchanged
+				return line, pos, true
+			}
+		}
+
+		// Then, let the existing listener handle it (Ctrl+E, etc.)
+		// This one might modify the input
+		if existingListener != nil {
+			return existingListener.OnChange(line, pos, key)
+		}
+
+		// If no existing listener or it didn't handle the key, return unchanged
+		return line, pos, false
+	})
+
+	// Set the combined listener in the config
+	currentConfig.Listener = combinedListener
+
+	// Apply the modified config back to the readline instance
+	readlineInstance.SetConfig(currentConfig)
+
+	logger.Debug("Enhanced completion listener configured successfully")
 	return nil
 }
 
@@ -426,7 +480,7 @@ func runShell(_ *cobra.Command, _ []string) {
 
 	sh.Println(fmt.Sprintf("Neuro Shell v%s - LLM-integrated shell environment", version.GetVersion()))
 	sh.Println("Licensed under LGPL v3 (\\license for details)")
-	sh.Println("Type '\\help' for Neuro commands, Ctrl+E for editor, or '\\exit' to quit.")
+	sh.Println("Type '\\help' for Neuro commands, Ctrl+E for editor, Ctrl+S to save sessions, or '\\exit' to quit.")
 
 	sh.NotFound(shell.ProcessInput)
 

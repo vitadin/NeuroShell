@@ -1081,3 +1081,67 @@ func (c *ChatSessionService) RenameSessionWithContext(nameOrID string, newName s
 	logger.Debug("Renamed session", "session_id", session.ID, "old_name", oldName, "new_name", processedName)
 	return nil
 }
+
+// SaveAllSessions saves all active sessions to their auto-save locations.
+// This method iterates through all sessions and exports each one to the standard sessions directory.
+// It returns the number of sessions saved and any error encountered.
+func (c *ChatSessionService) SaveAllSessions() (int, error) {
+	if !c.initialized {
+		return 0, fmt.Errorf("service not initialized")
+	}
+
+	// Get all sessions
+	sessions := c.ListSessions()
+	if len(sessions) == 0 {
+		return 0, nil // No sessions to save
+	}
+
+	// Get user config directory for sessions path
+	ctx := neuroshellcontext.GetGlobalContext()
+	configDir, err := ctx.GetUserConfigDir()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get config directory: %w", err)
+	}
+
+	// Construct sessions directory path
+	sessionsDir := filepath.Join(configDir, "sessions")
+
+	// Create sessions directory if it doesn't exist
+	if err := os.MkdirAll(sessionsDir, 0755); err != nil {
+		return 0, fmt.Errorf("failed to create sessions directory: %w", err)
+	}
+
+	// Save each session
+	savedCount := 0
+	var lastError error
+
+	for _, session := range sessions {
+		// Construct filename using session ID
+		filename := fmt.Sprintf("%s.json", session.ID)
+		filePath := filepath.Join(sessionsDir, filename)
+
+		// Export session to the auto-save location
+		if err := c.ExportSessionToJSON(session.ID, filePath); err != nil {
+			lastError = fmt.Errorf("failed to save session %s (%s): %w", session.Name, session.ID, err)
+			logger.Error("Failed to save session during bulk save", "session_id", session.ID, "session_name", session.Name, "error", err)
+			continue // Continue with other sessions
+		}
+
+		savedCount++
+		logger.Debug("Session saved during bulk save", "session_id", session.ID, "session_name", session.Name, "path", filePath)
+	}
+
+	// If we saved some but not all, return partial success with the last error
+	if savedCount > 0 && lastError != nil {
+		logger.Warn("Bulk save completed with errors", "saved_count", savedCount, "total_count", len(sessions), "last_error", lastError)
+		return savedCount, fmt.Errorf("saved %d of %d sessions, last error: %w", savedCount, len(sessions), lastError)
+	}
+
+	// If we saved nothing and there was an error, return the error
+	if savedCount == 0 && lastError != nil {
+		return 0, lastError
+	}
+
+	// Success case
+	return savedCount, nil
+}
