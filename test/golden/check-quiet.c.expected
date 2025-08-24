@@ -3,6 +3,6 @@ Setting _echo_command = true
 %%> "\\echo Status: ${_check_status}"
 Status: success
 %%> "\\echo Total services: ${_check_total_services}"
-Total services: 23
+Total services: 24
 %%> "\\echo Failed count: ${_check_failed_count}"
 Failed count: 0

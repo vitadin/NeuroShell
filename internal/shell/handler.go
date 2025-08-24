@@ -159,6 +159,13 @@ func InitializeServices(testMode bool) error {
 		}
 	}
 
+	// Register ShortcutService if not already registered
+	if !services.GetGlobalRegistry().HasService("shortcut") {
+		if err := services.GetGlobalRegistry().RegisterService(services.NewShortcutService()); err != nil {
+			return err
+		}
+	}
+
 	// Enhanced command resolution will be implemented later
 
 	// Initialize all services

@@ -21,6 +21,7 @@ Output: [OK] autocomplete - available/initialized
 [OK] prompt_color - available/initialized
 [OK] provider_catalog - available/initialized
 [OK] shell_prompt - available/initialized
+[OK] shortcut - available/initialized
 [OK] stack - available/initialized
 [OK] temporal-display - available/initialized
 [OK] theme - available/initialized
@@ -29,7 +30,7 @@ Output: [OK] autocomplete - available/initialized
 %%> "\\echo Failed services: ${_check_failed_services}"
 Failed services:
 %%> "\\echo Total services: ${_check_total_services}"
-Total services: 23
+Total services: 24
 %%> "\\echo Failed count: ${_check_failed_count}"
 Failed count: 0
 %%> "\\check[service=bash, quiet=true]"

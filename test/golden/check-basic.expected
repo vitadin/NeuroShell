@@ -20,10 +20,11 @@ Service Status Check:
   [OK] prompt_color         - available/initialized
   [OK] provider_catalog     - available/initialized
   [OK] shell_prompt         - available/initialized
+  [OK] shortcut             - available/initialized
   [OK] stack                - available/initialized
   [OK] temporal-display     - available/initialized
   [OK] theme                - available/initialized
   [OK] thinking-renderer    - available/initialized
   [OK] variable             - available/initialized
 
-Summary: 23/23 services healthy
+Summary: 24/24 services healthy
