@@ -178,11 +178,7 @@ func (sp *StateProcessor) executeBuiltinCommand(resolved *neurotypes.StateMachin
 // executeScriptCommand handles execution of script commands (stdlib and user).
 // This preserves the existing script execution logic.
 func (sp *StateProcessor) executeScriptCommand(resolved *neurotypes.StateMachineResolvedCommand, parsedCmd *parser.Command) error {
-	if resolved.ScriptContent == "" {
-		return fmt.Errorf("no script content to execute")
-	}
-
-	// Set up parameter variables before script execution
+	// Set up parameter variables before script execution (even for empty scripts)
 	variableService, err := services.GetGlobalVariableService()
 	if err != nil {
 		sp.logger.Error("Failed to get variable service", "error", err)
@@ -199,15 +195,18 @@ func (sp *StateProcessor) executeScriptCommand(resolved *neurotypes.StateMachine
 		}
 	}
 
-	// Parse script lines
-	lines := strings.Split(resolved.ScriptContent, "\n")
-	scriptLines := make([]string, 0)
+	// Parse script lines (handle empty content gracefully)
+	var scriptLines []string
+	if resolved.ScriptContent != "" {
+		lines := strings.Split(resolved.ScriptContent, "\n")
+		scriptLines = make([]string, 0)
 
-	for _, line := range lines {
-		trimmed := strings.TrimSpace(line)
-		// Skip empty lines and comments (%% for neuro-style comments)
-		if trimmed != "" && !strings.HasPrefix(trimmed, "%%") {
-			scriptLines = append(scriptLines, trimmed)
+		for _, line := range lines {
+			trimmed := strings.TrimSpace(line)
+			// Skip empty lines and comments (%% for neuro-style comments)
+			if trimmed != "" && !strings.HasPrefix(trimmed, "%%") {
+				scriptLines = append(scriptLines, trimmed)
+			}
 		}
 	}
 
