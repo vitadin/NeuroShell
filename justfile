@@ -217,7 +217,8 @@ test-all-units:
         ./internal/commands/model/... \
         ./internal/commands/provider/... \
         ./internal/commands/llm/... \
-        ./internal/commands/shell/...
+        ./internal/commands/shell/... \
+        ./pkg/...
     # ./internal/commands/... # Commented out during state machine transition (except specific integrated commands)
     @echo "All unit, command, parser, context, execution, and shell tests complete"
 
