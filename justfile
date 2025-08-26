@@ -5,7 +5,7 @@ default:
     @just --list
     @echo ""
     @echo "Test Commands:"
-    @echo "  test              - Run all tests with coverage"
+    @echo "  test              - Run all tests with per-folder coverage report"
     @echo "  test-unit         - Run service/utils unit tests only"
     @echo "  test-commands     - Run command tests only"
     @echo "  test-parser       - Run parser tests only"
@@ -116,14 +116,17 @@ run: build
     NEURO_LOG_LEVEL=debug ./bin/neuro
 
 
-# Run tests with coverage
+# Run tests with coverage and show per-folder coverage
 test: ensure-build test-all-units
-    @echo "Running tests..."
+    @echo "Running tests with coverage..."
     EDITOR=echo go test -v -coverprofile=coverage.out \
         ./internal/... \
         ./cmd/...
     go tool cover -html=coverage.out -o coverage.html
     @echo "Coverage report generated: coverage.html"
+    @echo ""
+    @echo ""
+    @./scripts/coverage-report.sh
 
 # Run unit tests only
 test-unit:
@@ -214,7 +217,8 @@ test-all-units:
         ./internal/commands/model/... \
         ./internal/commands/provider/... \
         ./internal/commands/llm/... \
-        ./internal/commands/shell/...
+        ./internal/commands/shell/... \
+        ./pkg/...
     # ./internal/commands/... # Commented out during state machine transition (except specific integrated commands)
     @echo "All unit, command, parser, context, execution, and shell tests complete"
 
