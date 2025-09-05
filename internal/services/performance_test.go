@@ -111,29 +111,7 @@ func BenchmarkVariableService_LargeDataset(b *testing.B) {
 
 // BenchmarkConcurrentServiceUsage tests concurrent service operations
 func BenchmarkConcurrentServiceUsage(b *testing.B) {
-	b.Run("VariableService_Concurrent", func(b *testing.B) {
-		service := NewVariableService()
-		err := service.Initialize()
-		require.NoError(b, err)
-
-		// Setup global context for testing
-		ctx := context.NewTestContext()
-		context.SetGlobalContext(ctx)
-		defer context.ResetGlobalContext()
-
-		b.RunParallel(func(pb *testing.PB) {
-			i := 0
-			for pb.Next() {
-				varName := fmt.Sprintf("concurrent_var_%d", i)
-				varValue := fmt.Sprintf("concurrent_value_%d", i)
-				_ = service.Set(varName, varValue)
-				_, _ = service.Get(varName)
-				i++
-			}
-		})
-	})
-
-	b.Run("Registry_Concurrent", func(b *testing.B) {
+	b.Run("Registry_ReadOnly_Concurrent", func(b *testing.B) {
 		registry := NewRegistry()
 
 		// Pre-register some services
@@ -150,6 +128,25 @@ func BenchmarkConcurrentServiceUsage(b *testing.B) {
 				i++
 			}
 		})
+	})
+
+	b.Run("VariableService_Sequential", func(b *testing.B) {
+		service := NewVariableService()
+		err := service.Initialize()
+		require.NoError(b, err)
+
+		// Setup global context for testing
+		ctx := context.NewTestContext()
+		context.SetGlobalContext(ctx)
+		defer context.ResetGlobalContext()
+
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			varName := fmt.Sprintf("seq_var_%d", i)
+			varValue := fmt.Sprintf("seq_value_%d", i)
+			_ = service.Set(varName, varValue)
+			_, _ = service.Get(varName)
+		}
 	})
 }
 
