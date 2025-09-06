@@ -115,7 +115,7 @@ func (c *PromptPresetCommand) Execute(options map[string]string, _ string) error
 		if err := ctx.SetVariable("_prompt_lines_count", "2"); err != nil {
 			return fmt.Errorf("failed to set lines count: %w", err)
 		}
-		if err := ctx.SetVariable("_prompt_line1", "${@pwd} [${#session_name:-no-session}]"); err != nil {
+		if err := ctx.SetVariable("_prompt_line1", "${@pwd}${#session_display:-}"); err != nil {
 			return fmt.Errorf("failed to set prompt line 1: %w", err)
 		}
 		if err := ctx.SetVariable("_prompt_line2", "neuro> "); err != nil {
@@ -163,7 +163,7 @@ func (c *PromptPresetCommand) Execute(options map[string]string, _ string) error
 		if err := ctx.SetVariable("_prompt_lines_count", "2"); err != nil {
 			return fmt.Errorf("failed to set lines count: %w", err)
 		}
-		if err := ctx.SetVariable("_prompt_line1", "{{color:blue}}${@pwd}{{/color}} [{{color:yellow}}${#session_name:-no-session}{{/color}}]"); err != nil {
+		if err := ctx.SetVariable("_prompt_line1", "{{color:blue}}${@pwd}{{/color}}${#session_display_color:-}"); err != nil {
 			return fmt.Errorf("failed to set prompt line 1: %w", err)
 		}
 		if err := ctx.SetVariable("_prompt_line2", "{{color:success}}neuro>{{/color}} "); err != nil {

@@ -374,6 +374,20 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 			return value, true
 		}
 		return "", false
+	case "#session_display":
+		// Return formatted session display for prompts
+		sessionName, ok := ctx.variables["#session_name"]
+		if ok && sessionName != "" {
+			return " [" + sessionName + "]", true
+		}
+		return "", false
+	case "#session_display_color":
+		// Return formatted session display for colored prompts
+		sessionName, ok := ctx.variables["#session_name"]
+		if ok && sessionName != "" {
+			return " [{{color:yellow}}" + sessionName + "{{/color}}]", true
+		}
+		return "", false
 	case "#system_prompt":
 		// Look for stored system prompt variable
 		value, ok := ctx.variables["#system_prompt"]
@@ -479,9 +493,25 @@ func (ctx *NeuroContext) interpolateOnce(text string) string {
 			if varName == "" {
 				stack = append(stack, "${}")
 			} else {
+				// Check for default value syntax: varname:-default
+				var actualVarName, defaultValue string
+				if strings.Contains(varName, ":-") {
+					parts := strings.SplitN(varName, ":-", 2)
+					actualVarName = parts[0]
+					defaultValue = parts[1]
+				} else {
+					actualVarName = varName
+					defaultValue = ""
+				}
+
 				// Get variable value and push to stack
-				value, _ := ctx.GetVariable(varName)
-				stack = append(stack, value)
+				value, err := ctx.GetVariable(actualVarName)
+				if err != nil || value == "" {
+					// Use default value if variable doesn't exist or is empty
+					stack = append(stack, defaultValue)
+				} else {
+					stack = append(stack, value)
+				}
 			}
 			pending = false
 		default:

@@ -35,7 +35,7 @@ Applied powerline prompt preset
 %%> "\\shell-prompt-preview"
 Prompt Preview:
 ===============
-┌─[testuser@]-[12:00:00]
-├─[:]-[]
+┌─[testuser@local]-[12:00:00]
+├─[no-session:0]-[none]
 └─➤ 
 █

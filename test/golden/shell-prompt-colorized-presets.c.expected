@@ -19,11 +19,11 @@ Shell Prompt Configuration:
 Number of lines: 2
 
 Templates:
-  Line 1: {{color:blue}}${@pwd}{{/color}} [{{color:yellow}}${#session_name:-no-session}{{/color}}]
+  Line 1: {{color:blue}}${@pwd}{{/color}}${#session_display_color:-}
   Line 2: {{color:success}}neuro>{{/color}} 
 
 Preview:
-  /test/pwd []
+  /test/pwd
   neuro> 
 %%> "\\shell-prompt-preset[style=\"developer-color\"]"
 Applied developer-color prompt preset
@@ -52,8 +52,8 @@ Templates:
   Line 3: {{color:bright-blue}}└─{{/color}}{{color:bright-red}}➤{{/color}} 
 
 Preview:
-  ┌─[testuser@]-[12:00:00]
-  ├─[:]-[]
+  ┌─[testuser@local]-[12:00:00]
+  ├─[no-session:0]-[none]
   └─➤ 
 %%> "\\get[_prompt_lines_count]"
 _prompt_lines_count = 3
