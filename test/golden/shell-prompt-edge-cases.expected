@@ -40,12 +40,12 @@ This is a very long prompt line that contains a lot of text to test how the syst
 █
 %%> "\\shell-prompt[lines=2, line1=\"[${@user}] ${@pwd} \\\"quotes\\\"\", line2=\"$ \"]"
 Prompt lines set to 2
-Prompt line 1 set to: [testuser] /test/pwd \"quotes\"
+Prompt line 1 set to: [testuser] /test/pwd "quotes"
 Prompt line 2 set to: $ 
 %%> "\\shell-prompt-preview"
 Prompt Preview:
 ===============
-[testuser] /test/pwd \"quotes\"
+[testuser] /test/pwd "quotes"
 $ 
 █
 %%> "\\shell-prompt[lines=1]"
@@ -53,6 +53,6 @@ Prompt lines set to 1
 %%> "\\shell-prompt"
 Current shell prompt configuration:
   Lines: 1
-  Line 1: [testuser] /test/pwd \"quotes\"
+  Line 1: [testuser] /test/pwd "quotes"
 %%> "\\shell-prompt-preset[style=\"default\"]"
 Applied default prompt preset

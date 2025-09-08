@@ -713,7 +713,7 @@ func TestUnquote(t *testing.T) {
 		{
 			name:     "escaped quotes inside",
 			input:    "\"hello \\\"world\\\"\"",
-			expected: "hello \\\"world\\\"",
+			expected: "hello \"world\"",
 		},
 		{
 			name:     "just quotes",

@@ -378,6 +378,10 @@ func TestCallCommand_Execute_DefaultResolution(t *testing.T) {
 }
 
 func TestCallCommand_Execute_MissingComponents(t *testing.T) {
+	// Reset global context to ensure completely clean state
+	context.ResetGlobalContext()
+	defer context.ResetGlobalContext()
+
 	// Create fresh test context and services for isolation
 	ctx := context.New()
 	ctx.SetTestMode(true)

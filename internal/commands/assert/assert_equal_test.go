@@ -37,6 +37,12 @@ func setupAssertTestRegistry(t *testing.T, ctx *context.NeuroContext) func() {
 	originalRegistry := services.GetGlobalRegistry()
 	originalContext := context.GetGlobalContext()
 
+	// Reset global context to ensure clean state
+	context.ResetGlobalContext()
+
+	// Set the test context as global
+	context.SetGlobalContext(ctx)
+
 	// Create new test registry
 	testRegistry := services.NewRegistry()
 
@@ -45,18 +51,18 @@ func setupAssertTestRegistry(t *testing.T, ctx *context.NeuroContext) func() {
 	err := testRegistry.RegisterService(variableService)
 	require.NoError(t, err)
 
-	// Initialize all services
+	// Initialize all services (this will use the test context)
 	err = testRegistry.InitializeAll()
 	require.NoError(t, err)
 
-	// Set global registry and context for testing
+	// Set global registry for testing
 	services.SetGlobalRegistry(testRegistry)
-	context.SetGlobalContext(ctx)
 
 	// Return cleanup function
 	return func() {
 		services.SetGlobalRegistry(originalRegistry)
 		context.SetGlobalContext(originalContext)
+		context.ResetGlobalContext()
 	}
 }
 

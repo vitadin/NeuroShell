@@ -1,27 +1,58 @@
 Setting _echo_command = true
 %%> "\\set[test_json={\"users\": [{\"name\": \"Alice\", \"active\": true}, {\"name\": \"Bob\", \"active\": false}], \"count\": 2}]"
-Setting "count": 2} = 
-Setting test_json = {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
+Setting test_json = {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}], "count": 2}
 %%> "\\echo Default 2-space indentation:"
 Default 2-space indentation:
 %%> "\\echo-json ${test_json}"
-Error: Invalid JSON - unexpected end of JSON input                                             
-Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
+{
+  "count": 2,
+  "users": [
+    {
+      "active": true,
+      "name": "Alice"
+    },
+    {
+      "active": false,
+      "name": "Bob"
+    }
+  ]
+}
 %%> "\\echo 4-space indentation:"
 4-space indentation:
 %%> "\\echo-json[indent=4] ${test_json}"
-Error: Invalid JSON - unexpected end of JSON input                                             
-Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
+{
+    "count": 2,
+    "users": [
+        {
+            "active": true,
+            "name": "Alice"
+        },
+        {
+            "active": false,
+            "name": "Bob"
+        }
+    ]
+}
 %%> "\\echo 1-space indentation:"
 1-space indentation:
 %%> "\\echo-json[indent=1] ${test_json}"
-Error: Invalid JSON - unexpected end of JSON input                                             
-Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
+{
+ "count": 2,
+ "users": [
+  {
+   "active": true,
+   "name": "Alice"
+  },
+  {
+   "active": false,
+   "name": "Bob"
+  }
+ ]
+}
 %%> "\\echo Compact format:"
 Compact format:
 %%> "\\echo-json[indent=0] ${test_json}"
-Error: Invalid JSON - unexpected end of JSON input                                             
-Original input: {"users": [{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]
+{"count":2,"users":[{"active":true,"name":"Alice"},{"active":false,"name":"Bob"}]}
 %%> "\\echo 8-space indentation:"
 8-space indentation:
 %%> "\\echo-json[indent=8] {\"key\": \"value\"}"

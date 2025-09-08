@@ -44,7 +44,7 @@ Current user's home: testuser's directory
 %%> "\\echo Today's date: ${@date} - it's ${@os} system"
 Today's date: 2024-01-01 - it's test-os system
 %%> "\\set[command_with_apos=\"echo \\\"I'm in a backtick\\\"\"]"
-Setting command_with_apos = echo \"I'm in a backtick\"
+Setting command_with_apos = echo "I'm in a backtick"
 %%> "\\echo The command ${command_with_apos} won't execute here"
 The command echo "I'm in a backtick" won't execute here
 %%> "\\echo Missing var: ${doesnt_exist} won't cause John's system to fail"

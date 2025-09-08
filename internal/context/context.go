@@ -67,6 +67,7 @@ type NeuroContext struct {
 	silentBlocks       []SilentBlockContext // Silent block management
 	currentSilentDepth int                  // Current silent block depth
 	stackMutex         sync.RWMutex         // Protects executionStack, tryBlocks, and silentBlocks
+	variablesMutex     sync.RWMutex         // Protects variables map
 
 	// Chat session storage
 	chatSessions    map[string]*neurotypes.ChatSession // Session storage by ID
@@ -201,7 +202,10 @@ func (ctx *NeuroContext) GetVariable(name string) (string, error) {
 		return value, nil
 	}
 
-	// Handle user variables
+	// Handle user variables with mutex protection
+	ctx.variablesMutex.RLock()
+	defer ctx.variablesMutex.RUnlock()
+
 	value, ok := ctx.variables[name]
 
 	if ok {
@@ -233,6 +237,10 @@ func (ctx *NeuroContext) SetVariable(name string, value string) error {
 		}
 	}
 
+	// Set variable with mutex protection
+	ctx.variablesMutex.Lock()
+	defer ctx.variablesMutex.Unlock()
+
 	ctx.variables[name] = value
 	return nil
 }
@@ -249,6 +257,10 @@ func (ctx *NeuroContext) SetSystemVariable(name string, value string) error {
 	if !strings.HasPrefix(name, "@") && !strings.HasPrefix(name, "#") && !strings.HasPrefix(name, "_") {
 		return fmt.Errorf("SetSystemVariable can only set system variables (prefixed with @, #, or _), got: %s", name)
 	}
+
+	// Set variable with mutex protection
+	ctx.variablesMutex.Lock()
+	defer ctx.variablesMutex.Unlock()
 
 	ctx.variables[name] = value
 	return nil
@@ -277,6 +289,9 @@ func (ctx *NeuroContext) GetSessionState() neurotypes.SessionState {
 }
 
 func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
+	// Acquire read lock for variables access
+	ctx.variablesMutex.RLock()
+	defer ctx.variablesMutex.RUnlock()
 	// In test mode, return fixed values for consistency
 	if ctx.testMode {
 		switch name {
@@ -597,7 +612,10 @@ func (ctx *NeuroContext) getTestEnvValue(key string) string {
 func (ctx *NeuroContext) GetAllVariables() map[string]string {
 	result := make(map[string]string)
 
-	// Add all stored variables (both user and system variables)
+	// Add all stored variables (both user and system variables) with mutex protection
+	ctx.variablesMutex.RLock()
+	defer ctx.variablesMutex.RUnlock()
+
 	for name, value := range ctx.variables {
 		result[name] = value
 	}

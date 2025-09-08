@@ -26,11 +26,11 @@ Thinking about the user's message: "Hello! Can you help me understand these symb
 
 Testing with code content...
 <thinking id="6-1">
-Thinking about the user's message: "Here's a Python function: def hello_world(): print("Hello, World!") return True. Can you explain how this works?". This helps verify the message flow in tests. The user sent 5 messages total, and I need to provide a helpful response.
+Thinking about the user's message: "Here's a Python function: def hello_world(): print(\"Hello, World!\") return True. Can you explain how this works?". This helps verify the message flow in tests. The user sent 5 messages total, and I need to provide a helpful response.
 </thinking>
 
   This is a mocking reply (received 5 messages, last: Here's a Python         
-  function: def hello_world(): print("Hello, World!") return True. Can you    
+  function: def hello_world(): print(\"Hello, World!\") return True. Can you  
   explain how this works?)                                                    
 
 Testing with math expressions...
@@ -75,8 +75,8 @@ Messages: 14 total
 [1] user (00:00:02): This is a very long message that contain...block rendering or conversation flow. (508 chars)
 [2] assistant (00:00:05): This is a mocking reply (received 1 mess...lock rendering or conversation flow.) (561 chars)
 [3] user (00:00:07): Hello! Can you help me understand these ...émojis like café, résumé, naïve? (121 chars)
-[4] assistant (00:00:09): This is a mocking reply (received 3 mess...hese symbols: @#$%^&*()_+-=[]{}|;':\\ (123 chars)
-[5] user (00:00:11): Here's a Python function: def hello_worl...True. Can you explain how this works? (112 chars)
+[4] assistant (00:00:09): This is a mocking reply (received 3 mess...�mojis like café, résumé, naïve?) (173 chars)
+[5] user (00:00:11): Here's a Python function: def hello_worl...True. Can you explain how this works? (114 chars)
 ... (4 more messages) ...
 [10] assistant (00:00:21): This is a mocking reply (received 9 mess...\nHow do you process this structure?) (185 chars)
 [11] user (00:00:23): Hello 世界! Bonjour le monde! ¿Hóla ...an you respond in multiple languages? (106 chars)

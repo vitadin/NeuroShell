@@ -8,7 +8,7 @@ Setting with_newlines = `code\nwith\nnewlines`
 %%> "\\set[with_tabs=\"`code\\twith\\ttabs`\"]"
 Setting with_tabs = `code\twith\ttabs`
 %%> "\\set[with_quotes=\"`code 'with' \\\"quotes\\\"`\"]"
-Setting with_quotes = `code 'with' \"quotes\"`
+Setting with_quotes = `code 'with' "quotes"`
 %%> "\\set[long_code=\"`function veryLongFunctionNameThatGoesOnAndOnAndEventuallyEnds() { return 'this is a very long string with backticks'; }`\"]"
 Setting long_code = `function veryLongFunctionNameThatGoesOnAndOnAndEventuallyEnds() { return 'this is a very long string with backticks'; }`
 %%> "\\set[unicode_code=\"`console.log('Hello 世界! 🌍');`\"]"
@@ -26,11 +26,11 @@ Setting end_backtick = ends with backtick`
 %%> "\\set[only_backticks=\"`\"]"
 Setting only_backticks = `
 %%> "\\set[complex_nesting=\"'Use `code` in \\\"quotes\\\"' and `'quote' in code`\"]"
-Setting complex_nesting = 'Use `code` in \"quotes\"' and `'quote' in code`
+Setting complex_nesting = 'Use `code` in "quotes"' and `'quote' in code`
 %%> "\\set[with_escapes=\"`console.log('Hello\\\\nWorld');`\"]"
-Setting with_escapes = `console.log('Hello\\nWorld');`
+Setting with_escapes = `console.log('Hello\nWorld');`
 %%> "\\set[deeply_nested=\"```\\n`inner code`\\n\\\"with 'quotes'\\\"\\n```\"]"
-Setting deeply_nested = ```\n`inner code`\n\"with 'quotes'\"\n```
+Setting deeply_nested = ```\n`inner code`\n"with 'quotes'"\n```
 %%> "\\get[multiple_backticks]"
 multiple_backticks = Use `` for empty code or ``` for blocks
 %%> "\\get[many_backticks]"
@@ -40,7 +40,7 @@ with_newlines = `code\nwith\nnewlines`
 %%> "\\get[with_tabs]"
 with_tabs = `code\twith\ttabs`
 %%> "\\get[with_quotes]"
-with_quotes = `code 'with' \"quotes\"`
+with_quotes = `code 'with' "quotes"`
 %%> "\\get[long_code]"
 long_code = `function veryLongFunctionNameThatGoesOnAndOnAndEventuallyEnds() { return 'this is a very long string with backticks'; }`
 %%> "\\get[unicode_code]"
@@ -58,8 +58,8 @@ end_backtick = ends with backtick`
 %%> "\\get[only_backticks]"
 only_backticks = `
 %%> "\\get[complex_nesting]"
-complex_nesting = 'Use `code` in \"quotes\"' and `'quote' in code`
+complex_nesting = 'Use `code` in "quotes"' and `'quote' in code`
 %%> "\\get[with_escapes]"
-with_escapes = `console.log('Hello\\nWorld');`
+with_escapes = `console.log('Hello\nWorld');`
 %%> "\\get[deeply_nested]"
-deeply_nested = ```\n`inner code`\n\"with 'quotes'\"\n```
+deeply_nested = ```\n`inner code`\n"with 'quotes'"\n```

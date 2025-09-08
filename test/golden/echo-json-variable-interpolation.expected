@@ -10,63 +10,108 @@ Setting response_text = I'm doing well, thank you!
 %%> "\\set[status_code=\"200\"]"
 Setting status_code = 200
 %%> "\\set[simple_json={\"model\": \"${model_name}\", \"status\": ${status_code}}]"
-Setting "status": 200} = 
-Setting simple_json = {"model": "gpt-4"
+Setting simple_json = {"model": "gpt-4", "status": 200}
 %%> "\\echo Simple JSON with variables:"
 Simple JSON with variables:
 %%> "\\echo-json ${simple_json}"
-Error: Invalid JSON - unexpected end of JSON input
-Original input: {"model": "gpt-4"                 
+{
+  "model": "gpt-4",
+  "status": 200
+}
 %%> "\\set[api_request={\"model\": \"${model_name}\", \"messages\": [{\"role\": \"user\", \"content\": \"${user_message}\"}], \"temperature\": 0.7}]"
-Setting "messages": [{"role": "user", "content": "Hello, how are you?"}] = 
-Setting "temperature": 0.7} = 
-Setting api_request = {"model": "gpt-4"
+Setting api_request = {"model": "gpt-4", "messages": [{"role": "user", "content": "Hello, how are you?"}], "temperature": 0.7}
 %%> "\\echo API Request JSON:"
 API Request JSON:
 %%> "\\echo-json ${api_request}"
-Error: Invalid JSON - unexpected end of JSON input
-Original input: {"model": "gpt-4"                 
+{
+  "messages": [
+    {
+      "content": "Hello, how are you?",
+      "role": "user"
+    }
+  ],
+  "model": "gpt-4",
+  "temperature": 0.7
+}
 %%> "\\set[api_response={\"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"${response_text}\"}}], \"usage\": {\"total_tokens\": 25}}]"
-Setting "usage": {"total_tokens": 25}} = 
-Setting api_response = {"choices": [{"message": {"role": "assistant", "content": "I'm doing well, thank you!"}}]
+Setting api_response = {"choices": [{"message": {"role": "assistant", "content": "I'm doing well, thank you!"}}], "usage": {"total_tokens": 25}}
 %%> "\\echo API Response JSON:"
 API Response JSON:
 %%> "\\echo-json ${api_response}"
-Error: Invalid JSON - unexpected end of JSON input                                                       
-Original input: {"choices": [{"message": {"role": "assistant", "content": "I'm doing well, thank you!"}}]
+{
+  "choices": [
+    {
+      "message": {
+        "content": "I'm doing well, thank you!",
+        "role": "assistant"
+      }
+    }
+  ],
+  "usage": {
+    "total_tokens": 25
+  }
+}
 %%> "\\set[system_info={\"test_mode\": \"${#test_mode}\", \"user\": \"${@user}\", \"timestamp\": \"{{TIMESTAMP}}\"}]"
-Setting "timestamp": "{{TIMESTAMP}}"} = 
-Setting "user": "testuser" = 
-Setting system_info = {"test_mode": "true"
+Setting system_info = {"test_mode": "true", "user": "testuser", "timestamp": "{{TIMESTAMP}}"}
 %%> "\\echo System Info JSON:"
 System Info JSON:
 %%> "\\echo-json ${system_info}"
-Error: Invalid JSON - unexpected end of JSON input
-Original input: {"test_mode": "true"              
+{
+  "test_mode": "true",
+  "timestamp": "{{TIMESTAMP}}",
+  "user": "testuser"
+}
 %%> "\\echo-json[to=stored_request] ${api_request}"
-Error: Invalid JSON - unexpected end of JSON input
-Original input: {"model": "gpt-4"                 
+{
+  "messages": [
+    {
+      "content": "Hello, how are you?",
+      "role": "user"
+    }
+  ],
+  "model": "gpt-4",
+  "temperature": 0.7
+}
 %%> "\\echo Stored API request:"
 Stored API request:
 %%> "\\get[stored_request]"
-stored_request = Error: Invalid JSON - unexpected end of JSON input
-Original input: {"model": "gpt-4"                                  
+stored_request = {                     
+  "messages": [                        
+    {                                  
+      "content": "Hello, how are you?",
+      "role": "user"                   
+    }                                  
+  ],                                   
+  "model": "gpt-4",                    
+  "temperature": 0.7                   
+}                                      
 %%> "\\set[with_undefined={\"defined\": \"${model_name}\", \"undefined\": \"${not_defined}\", \"empty\": \"\"}]"
-Setting "empty": ""} = 
-Setting "undefined": "" = 
-Setting with_undefined = {"defined": "gpt-4"
+Setting with_undefined = {"defined": "gpt-4", "undefined": "", "empty": ""}
 %%> "\\echo JSON with undefined variables:"
 JSON with undefined variables:
 %%> "\\echo-json ${with_undefined}"
-Error: Invalid JSON - unexpected end of JSON input
-Original input: {"defined": "gpt-4"               
+{
+  "defined": "gpt-4",
+  "empty": "",
+  "undefined": ""
+}
 %%> "\\echo Compact JSON with variables:"
 Compact JSON with variables:
 %%> "\\echo-json[indent=0] ${api_request}"
-Error: Invalid JSON - unexpected end of JSON input
-Original input: {"model": "gpt-4"                 
+{"messages":[{"content":"Hello, how are you?","role":"user"}],"model":"gpt-4","temperature":0.7}
 %%> "\\echo 4-space JSON with variables:"
 4-space JSON with variables:
 %%> "\\echo-json[indent=4] ${api_response}"
-Error: Invalid JSON - unexpected end of JSON input                                                       
-Original input: {"choices": [{"message": {"role": "assistant", "content": "I'm doing well, thank you!"}}]
+{
+    "choices": [
+        {
+            "message": {
+                "content": "I'm doing well, thank you!",
+                "role": "assistant"
+            }
+        }
+    ],
+    "usage": {
+        "total_tokens": 25
+    }
+}

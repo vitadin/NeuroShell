@@ -28,7 +28,7 @@ testvar = hello
 %%> "\\get[@status]"
 @status = 1
 %%> "\\get[@error]"
-@error = failed to set variable _invalid_global: cannot set system variable: _invalid_global
+@error = failed to set variable _invalid_global: variable name cannot start with _ unless whitelisted
 %%> "\\try \\unknown_command_xyz"
 %%> "\\unknown_command_xyz"
 %%> "\\get[@status]"

@@ -1,12 +1,12 @@
 Setting _echo_command = true
 %%> "\\set[cmd1=\"\\\\session-new\"]"
-Setting cmd1 = \\session-new
+Setting cmd1 = \session-new
 %%> "\\set[cmd2=\"\\\\session-list\"]"
-Setting cmd2 = \\session-list
+Setting cmd2 = \session-list
 %%> "\\render[keywords=[${cmd1}, ${cmd2}, \\\\help], theme=dark, style=bold, to=styled_output] Commands: ${cmd1}, ${cmd2}, and \\\\help are essential for session management"
-Commands: \\session-new, \\session-list, and \\help are essential for session management
+Commands: \session-new, \session-list, and \\help are essential for session management
 %%> "\\get[styled_output]"
-styled_output = Commands: \\session-new, \\session-list, and \\help are essential for session management
+styled_output = Commands: \session-new, \session-list, and \\help are essential for session management
 %%> "\\render[keywords=[ \\\\get , \\\\set ], style=highlight] Spaces in array: \\\\get and \\\\set"
 Spaces in array: \\get and \\set
 %%> "\\get[_output]"

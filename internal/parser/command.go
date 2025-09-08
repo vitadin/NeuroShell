@@ -203,6 +203,7 @@ func splitByComma(s string) []string {
 	inBrackets := false
 	quoteChar := byte(0)
 	bracketDepth := 0
+	braceDepth := 0 // Track JSON object braces
 
 	for i := 0; i < len(s); i++ {
 		c := s[i]
@@ -212,6 +213,11 @@ func splitByComma(s string) []string {
 			inQuotes = true
 			quoteChar = c
 			current.WriteByte(c)
+		case inQuotes && c == '\\' && i+1 < len(s) && (s[i+1] == '"' || s[i+1] == '\''):
+			// Handle escaped quotes - don't treat them as closing quotes
+			current.WriteByte(c)
+			current.WriteByte(s[i+1])
+			i++ // Skip the next character
 		case inQuotes && c == quoteChar:
 			inQuotes = false
 			quoteChar = 0
@@ -227,7 +233,13 @@ func splitByComma(s string) []string {
 				bracketDepth = 0
 			}
 			current.WriteByte(c)
-		case !inQuotes && !inBrackets && c == ',':
+		case !inQuotes && c == '{':
+			braceDepth++
+			current.WriteByte(c)
+		case !inQuotes && c == '}':
+			braceDepth--
+			current.WriteByte(c)
+		case !inQuotes && !inBrackets && braceDepth == 0 && c == ',':
 			parts = append(parts, current.String())
 			current.Reset()
 		default:
@@ -245,7 +257,28 @@ func splitByComma(s string) []string {
 func unquote(s string) string {
 	if len(s) >= 2 {
 		if (s[0] == '"' && s[len(s)-1] == '"') || (s[0] == '\'' && s[len(s)-1] == '\'') {
-			return s[1 : len(s)-1]
+			// Extract the content between quotes
+			content := s[1 : len(s)-1]
+
+			// Handle escape sequences
+			var result strings.Builder
+			for i := 0; i < len(content); i++ {
+				c := content[i]
+				if c == '\\' && i+1 < len(content) {
+					// Handle escape sequences
+					next := content[i+1]
+					switch next {
+					case '"', '\'', '\\':
+						result.WriteByte(next)
+						i++ // Skip the next character
+					default:
+						result.WriteByte(c)
+					}
+				} else {
+					result.WriteByte(c)
+				}
+			}
+			return result.String()
 		}
 	}
 	return s

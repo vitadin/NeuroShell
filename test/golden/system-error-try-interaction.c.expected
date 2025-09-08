@@ -83,7 +83,7 @@ testvar =
 %%> "\\get[@status]"
 @status = 1
 %%> "\\get[@error]"
-@error = failed to set variable _protected_var: cannot set system variable: _protected_var
+@error = failed to set variable _protected_var: variable name cannot start with _ unless whitelisted
 %%> "\\get[@last_status]"
 @last_status = 0
 %%> "\\get[@last_error]"

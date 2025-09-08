@@ -230,10 +230,8 @@ func TestMarkdownService_GetCurrentTheme(t *testing.T) {
 	theme = service.getCurrentTheme()
 	assert.Equal(t, "default", theme)
 
-	// Set a theme variable
-	ctx := context.New()
-	context.SetGlobalContext(ctx)
-
+	// Set a theme variable using the current global context (already created by setup)
+	ctx := context.GetGlobalContext().(*context.NeuroContext)
 	err := ctx.SetSystemVariable("_style", "dark")
 	require.NoError(t, err)
 

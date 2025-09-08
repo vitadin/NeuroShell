@@ -17,7 +17,7 @@
 
 %% Test 3: Code snippets in message
 \echo Testing with code content...
-\send Here's a Python function: def hello_world(): print("Hello, World!") return True. Can you explain how this works?
+\send Here's a Python function: def hello_world(): print(\"Hello, World!\") return True. Can you explain how this works?
 
 %% Test 4: Mathematical expressions
 \echo Testing with math expressions...

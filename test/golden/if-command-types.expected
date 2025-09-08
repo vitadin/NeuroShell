@@ -34,9 +34,9 @@ Setting special = Hello, World! @#$%
 special = Hello, World! @#$%
 %%> "\\if[condition=true] \\set[quoted=\"She said \\\"Hello\\\"\"]"
 %%> "\\set[quoted=\"She said \\\"Hello\\\"\"]"
-Setting quoted = She said \"Hello\"
+Setting quoted = She said "Hello"
 %%> "\\get[quoted]"
-quoted = She said \"Hello\"
+quoted = She said "Hello"
 %%> "\\if[condition=true] \\set[long_value=\"This is a very long string that contains many words and should test the command queuing with longer content to ensure everything works correctly\"]"
 %%> "\\set[long_value=\"This is a very long string that contains many words and should test the command queuing with longer content to ensure everything works correctly\"]"
 Setting long_value = This is a very long string that contains many words and should test the command queuing with longer content to ensure everything works correctly
