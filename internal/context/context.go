@@ -665,70 +665,16 @@ func (ctx *NeuroContext) SetActiveSessionID(sessionID string) {
 // N=1 is the most recent message, N=2 is the previous message, etc.
 // Returns the message content and an error if the message cannot be retrieved.
 func (ctx *NeuroContext) GetNthRecentMessage(n int) (string, error) {
-	// Handle invalid input
-	if n < 1 {
-		return "", fmt.Errorf("invalid message index %d: must be >= 1", n)
-	}
-
-	// Check if there's an active session
-	if ctx.activeSessionID == "" {
-		return "", fmt.Errorf("no active session")
-	}
-
-	// Get the active session
-	session, exists := ctx.chatSessions[ctx.activeSessionID]
-	if !exists {
-		return "", fmt.Errorf("active session %s not found", ctx.activeSessionID)
-	}
-
-	// Check if we have enough messages
-	messageCount := len(session.Messages)
-	if messageCount == 0 {
-		return "", fmt.Errorf("session has no messages")
-	}
-	if n > messageCount {
-		return "", fmt.Errorf("message index %d out of bounds: session has only %d messages", n, messageCount)
-	}
-
-	// Get the Nth most recent message (1-based indexing)
-	// messages[len-1] is most recent, messages[len-2] is 2nd most recent, etc.
-	messageIndex := messageCount - n
-	return session.Messages[messageIndex].Content, nil
+	// Delegate to session subcontext
+	return NewSessionSubcontext(ctx).GetNthRecentMessage(n)
 }
 
 // GetNthChronologicalMessage returns the Nth message from the active session in chronological order.
 // N=1 is the first message, N=2 is the second message, etc.
 // Returns the message content and an error if the message cannot be retrieved.
 func (ctx *NeuroContext) GetNthChronologicalMessage(n int) (string, error) {
-	// Handle invalid input
-	if n < 1 {
-		return "", fmt.Errorf("invalid message index %d: must be >= 1", n)
-	}
-
-	// Check if there's an active session
-	if ctx.activeSessionID == "" {
-		return "", fmt.Errorf("no active session")
-	}
-
-	// Get the active session
-	session, exists := ctx.chatSessions[ctx.activeSessionID]
-	if !exists {
-		return "", fmt.Errorf("active session %s not found", ctx.activeSessionID)
-	}
-
-	// Check if we have enough messages
-	messageCount := len(session.Messages)
-	if messageCount == 0 {
-		return "", fmt.Errorf("session has no messages")
-	}
-	if n > messageCount {
-		return "", fmt.Errorf("message index %d out of bounds: session has only %d messages", n, messageCount)
-	}
-
-	// Get the Nth chronological message (1-based indexing)
-	// messages[0] is first, messages[1] is second, etc.
-	messageIndex := n - 1
-	return session.Messages[messageIndex].Content, nil
+	// Delegate to session subcontext
+	return NewSessionSubcontext(ctx).GetNthChronologicalMessage(n)
 }
 
 // GetActiveModelID returns the currently active model ID.
