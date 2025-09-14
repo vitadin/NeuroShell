@@ -88,6 +88,11 @@ func TestConfigPathCommand_Execute_Success(t *testing.T) {
 	err = os.WriteFile(tempWorkDir+"/.env", []byte(localEnvContent), 0644)
 	require.NoError(t, err)
 
+	// Set test working directory to point to our temporary directory
+	neuroCtx := ctx.(*context.NeuroContext)
+	configSubctx := context.NewConfigurationSubcontextFromContext(neuroCtx)
+	configSubctx.SetTestWorkingDir(tempWorkDir)
+
 	// Register required services
 	err = registry.RegisterService(services.NewVariableService())
 	require.NoError(t, err)
@@ -169,6 +174,11 @@ func TestConfigPathCommand_Execute_NoConfigFiles(t *testing.T) {
 	_ = os.RemoveAll("/tmp/neuroshell-test-config")
 	_ = os.RemoveAll("/tmp/neuroshell-test-workdir")
 
+	// Set test working directory to point to our temporary directory
+	neuroCtx := ctx.(*context.NeuroContext)
+	configSubctx := context.NewConfigurationSubcontextFromContext(neuroCtx)
+	configSubctx.SetTestWorkingDir("/tmp/neuroshell-test-workdir")
+
 	// Register required services
 	err := registry.RegisterService(services.NewVariableService())
 	require.NoError(t, err)
@@ -220,6 +230,11 @@ func TestConfigPathCommand_Execute_PartialConfigFiles(t *testing.T) {
 	configEnvContent := "NEURO_TEST_KEY=config-value\n"
 	err = os.WriteFile(tempConfigDir+"/.env", []byte(configEnvContent), 0644)
 	require.NoError(t, err)
+
+	// Set test working directory to point to our temporary directory
+	neuroCtx := ctx.(*context.NeuroContext)
+	configSubctx := context.NewConfigurationSubcontextFromContext(neuroCtx)
+	configSubctx.SetTestWorkingDir("/tmp/neuroshell-test-workdir")
 
 	// Register required services
 	err = registry.RegisterService(services.NewVariableService())

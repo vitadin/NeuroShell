@@ -11,8 +11,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/joho/godotenv"
-
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
@@ -40,12 +38,11 @@ var allowedGlobalVariables = []string{
 // NeuroContext implements the neurotypes.Context interface providing session state management.
 // It maintains variables, message history, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
-	variables        map[string]string
-	history          []neurotypes.Message
-	sessionID        string
-	scriptMetadata   map[string]interface{}
-	testMode         bool
-	testEnvOverrides map[string]string // Test-specific environment variable overrides
+	variables      map[string]string
+	history        []neurotypes.Message
+	sessionID      string
+	scriptMetadata map[string]interface{}
+	testMode       bool
 
 	// Stack-based execution support
 	stackCtx       StackSubcontext // Delegated stack management
@@ -77,8 +74,7 @@ type NeuroContext struct {
 	defaultCommand string // Command to use when input doesn't start with \\
 
 	// Configuration management
-	configMap   map[string]string // Configuration key-value store
-	configMutex sync.RWMutex      // Protects configMap
+	configurationCtx ConfigurationSubcontext // Delegated configuration management
 
 	// Script metadata protection
 	scriptMutex sync.RWMutex // Protects scriptMetadata map
@@ -94,12 +90,11 @@ type NeuroContext struct {
 // New creates a new NeuroContext with initialized maps and a unique session ID.
 func New() *NeuroContext {
 	ctx := &NeuroContext{
-		variables:        make(map[string]string),
-		history:          make([]neurotypes.Message, 0),
-		sessionID:        "", // Will be set after we know test mode
-		scriptMetadata:   make(map[string]interface{}),
-		testMode:         false,
-		testEnvOverrides: make(map[string]string),
+		variables:      make(map[string]string),
+		history:        make([]neurotypes.Message, 0),
+		sessionID:      "", // Will be set after we know test mode
+		scriptMetadata: make(map[string]interface{}),
+		testMode:       false,
 
 		// Initialize stack-based execution support
 		stackCtx: NewStackSubcontext(),
@@ -124,7 +119,7 @@ func New() *NeuroContext {
 		commandRegistryCtx: NewCommandRegistrySubcontext(),
 
 		// Initialize configuration management
-		configMap: make(map[string]string),
+		configurationCtx: NewConfigurationSubcontext(), // Parent context will be set after construction
 
 		// Initialize read-only command management
 		readOnlyOverrides: make(map[string]bool),
@@ -143,6 +138,9 @@ func New() *NeuroContext {
 	_ = ctx.SetSystemVariable("_style", "")
 	_ = ctx.SetSystemVariable("_default_command", "echo")
 	_ = ctx.SetSystemVariable("_completion_mode", "tab")
+
+	// Set up parent context reference for subcontexts
+	ctx.configurationCtx.SetParentContext(ctx)
 
 	return ctx
 }
@@ -534,36 +532,7 @@ func (ctx *NeuroContext) IsTestMode() bool {
 // GetEnv retrieves environment variables, providing test mode appropriate values.
 // In test mode, returns predefined test values. In normal mode, returns os.Getenv().
 func (ctx *NeuroContext) GetEnv(key string) string {
-	if ctx.IsTestMode() {
-		return ctx.getTestEnvValue(key)
-	}
-	return os.Getenv(key)
-}
-
-// getTestEnvValue returns test mode appropriate values for environment variables.
-func (ctx *NeuroContext) getTestEnvValue(key string) string {
-	// Check for test-specific overrides first
-	if value, exists := ctx.testEnvOverrides[key]; exists {
-		return value
-	}
-
-	// Default test values
-	switch key {
-	case "OPENAI_API_KEY":
-		return "test-openai-key"
-	case "ANTHROPIC_API_KEY":
-		return "test-anthropic-key"
-	case "GOOGLE_API_KEY":
-		return "test-google-key"
-	case "EDITOR":
-		return "test-editor"
-	case "GOOS":
-		return "test-os"
-	case "GOARCH":
-		return "test-arch"
-	default:
-		return ""
-	}
+	return ctx.configurationCtx.GetEnv(key)
 }
 
 // GetAllVariables returns all variables including both user variables and computed system variables.
@@ -875,46 +844,35 @@ func (ctx *NeuroContext) SetDefaultCommand(command string) {
 // SetTestEnvOverride sets a test-specific environment variable override.
 // This allows tests to control what GetEnv returns for specific keys without affecting the OS environment.
 func (ctx *NeuroContext) SetTestEnvOverride(key, value string) {
-	ctx.testEnvOverrides[key] = value
+	ctx.configurationCtx.SetTestEnvOverride(key, value)
 }
 
 // SetEnvVariable sets an environment variable, respecting test mode.
 // In test mode, this sets a test environment override.
 // In production mode, this sets an actual OS environment variable.
 func (ctx *NeuroContext) SetEnvVariable(key, value string) error {
-	if ctx.IsTestMode() {
-		// In test mode, set test environment override
-		ctx.SetTestEnvOverride(key, value)
-		return nil
-	}
-
-	// In production mode, set actual OS environment variable
-	return os.Setenv(key, value)
+	return ctx.configurationCtx.SetEnvVariable(key, value)
 }
 
 // GetEnvVariable retrieves an environment variable value, respecting test mode.
 // This is a pure function that only gets the environment variable without side effects.
 func (ctx *NeuroContext) GetEnvVariable(key string) string {
-	return ctx.GetEnv(key)
+	return ctx.configurationCtx.GetEnvVariable(key)
 }
 
 // ClearTestEnvOverride removes a test-specific environment variable override.
 func (ctx *NeuroContext) ClearTestEnvOverride(key string) {
-	delete(ctx.testEnvOverrides, key)
+	ctx.configurationCtx.ClearTestEnvOverride(key)
 }
 
 // ClearAllTestEnvOverrides removes all test-specific environment variable overrides.
 func (ctx *NeuroContext) ClearAllTestEnvOverrides() {
-	ctx.testEnvOverrides = make(map[string]string)
+	ctx.configurationCtx.ClearAllTestEnvOverrides()
 }
 
 // GetTestEnvOverrides returns a copy of all test environment variable overrides.
 func (ctx *NeuroContext) GetTestEnvOverrides() map[string]string {
-	overrides := make(map[string]string)
-	for k, v := range ctx.testEnvOverrides {
-		overrides[k] = v
-	}
-	return overrides
+	return ctx.configurationCtx.GetTestEnvOverrides()
 }
 
 // File system operations for configuration service
@@ -973,234 +931,60 @@ func (ctx *NeuroContext) MkdirAll(path string, perm os.FileMode) error {
 
 // GetConfigMap returns a copy of the configuration map.
 func (ctx *NeuroContext) GetConfigMap() map[string]string {
-	ctx.configMutex.RLock()
-	defer ctx.configMutex.RUnlock()
-
-	result := make(map[string]string)
-	for key, value := range ctx.configMap {
-		result[key] = value
-	}
-	return result
+	return ctx.configurationCtx.GetConfigMap()
 }
 
 // SetConfigMap replaces the entire configuration map.
 func (ctx *NeuroContext) SetConfigMap(configMap map[string]string) {
-	ctx.configMutex.Lock()
-	defer ctx.configMutex.Unlock()
-
-	ctx.configMap = make(map[string]string)
-	for key, value := range configMap {
-		ctx.configMap[key] = value
-	}
+	ctx.configurationCtx.SetConfigMap(configMap)
 }
 
 // GetConfigValue retrieves a configuration value by key.
 func (ctx *NeuroContext) GetConfigValue(key string) (string, bool) {
-	ctx.configMutex.RLock()
-	defer ctx.configMutex.RUnlock()
-
-	value, exists := ctx.configMap[key]
-	return value, exists
+	return ctx.configurationCtx.GetConfigValue(key)
 }
 
 // SetConfigValue sets a configuration value.
 func (ctx *NeuroContext) SetConfigValue(key, value string) {
-	ctx.configMutex.Lock()
-	defer ctx.configMutex.Unlock()
-
-	ctx.configMap[key] = value
+	ctx.configurationCtx.SetConfigValue(key, value)
 }
 
 // Configuration loading methods (Context layer responsibilities)
 
 // LoadDefaults sets up default configuration values.
 func (ctx *NeuroContext) LoadDefaults() error {
-	defaults := map[string]string{
-		"NEURO_LOG_LEVEL": "info",
-		"NEURO_TIMEOUT":   "30s",
-	}
-
-	for key, value := range defaults {
-		ctx.SetConfigValue(key, value)
-	}
-
-	return nil
+	return ctx.configurationCtx.LoadDefaults()
 }
 
 // LoadConfigDotEnv loads .env file from the user's config directory (~/.config/neuroshell/.env).
 func (ctx *NeuroContext) LoadConfigDotEnv() error {
-	configDir, err := ctx.GetUserConfigDir()
-	if err != nil {
-		// Config directory access failure is not fatal
-		return nil
-	}
-
-	envPath := filepath.Join(configDir, ".env")
-	if !ctx.FileExists(envPath) {
-		// Missing config .env file is not an error
-		return nil
-	}
-
-	return ctx.loadDotEnvFile(envPath)
+	return ctx.configurationCtx.LoadConfigDotEnv()
 }
 
 // LoadLocalDotEnv loads .env file from the current working directory.
 func (ctx *NeuroContext) LoadLocalDotEnv() error {
-	workDir, err := ctx.GetWorkingDir()
-	if err != nil {
-		// Working directory access failure is not fatal
-		return nil
-	}
-
-	envPath := filepath.Join(workDir, ".env")
-	if !ctx.FileExists(envPath) {
-		// Missing local .env file is not an error
-		return nil
-	}
-
-	return ctx.loadDotEnvFile(envPath)
+	return ctx.configurationCtx.LoadLocalDotEnv()
 }
 
 // LoadEnvironmentVariables loads specific prefixed environment variables into context configuration map.
 // This has the highest priority and will override all file-based configuration.
 func (ctx *NeuroContext) LoadEnvironmentVariables(prefixes []string) error {
-	// In test mode, check test environment overrides first
-	if ctx.IsTestMode() {
-		testOverrides := ctx.GetTestEnvOverrides()
-		for key, value := range testOverrides {
-			for _, prefix := range prefixes {
-				if strings.HasPrefix(key, prefix) {
-					ctx.SetConfigValue(key, value)
-					break
-				}
-			}
-		}
-	}
-
-	// Then check actual OS environment variables
-	environ := os.Environ()
-	for _, env := range environ {
-		for _, prefix := range prefixes {
-			if strings.HasPrefix(env, prefix) {
-				parts := strings.SplitN(env, "=", 2)
-				if len(parts) == 2 {
-					key := parts[0]
-					// Use context.GetEnv to respect test mode overrides
-					value := ctx.GetEnv(key)
-
-					// Store in configuration map (highest priority)
-					ctx.SetConfigValue(key, value)
-				}
-				break // Found matching prefix, no need to check others
-			}
-		}
-	}
-
-	return nil
-}
-
-// loadDotEnvFile loads a specific .env file and stores all values in context configuration map.
-// This is a private helper method used by LoadConfigDotEnv and LoadLocalDotEnv.
-func (ctx *NeuroContext) loadDotEnvFile(envPath string) error {
-	data, err := ctx.ReadFile(envPath)
-	if err != nil {
-		return fmt.Errorf("failed to read .env file %s: %w", envPath, err)
-	}
-
-	// Parse .env file
-	envMap, err := godotenv.Unmarshal(string(data))
-	if err != nil {
-		return fmt.Errorf("failed to parse .env file %s: %w", envPath, err)
-	}
-
-	// Store all values in context configuration map
-	for key, value := range envMap {
-		ctx.SetConfigValue(key, value)
-	}
-
-	return nil
+	return ctx.configurationCtx.LoadEnvironmentVariables(prefixes)
 }
 
 // LoadEnvironmentVariablesWithPrefix loads OS environment variables with a source prefix.
-// Used by Configuration Service for multi-source API key collection.
 func (ctx *NeuroContext) LoadEnvironmentVariablesWithPrefix(sourcePrefix string) error {
-	// In test mode, only load test environment overrides for clean testing
-	if ctx.IsTestMode() {
-		testOverrides := ctx.GetTestEnvOverrides()
-		for key, value := range testOverrides {
-			prefixedKey := sourcePrefix + key
-			ctx.SetConfigValue(prefixedKey, value)
-		}
-		return nil // Don't load OS environment variables in test mode
-	}
-
-	// Load actual OS environment variables with prefix (production mode only)
-	environ := os.Environ()
-	for _, env := range environ {
-		parts := strings.SplitN(env, "=", 2)
-		if len(parts) == 2 {
-			key := parts[0]
-			value := ctx.GetEnv(key) // Respect test mode overrides
-			prefixedKey := sourcePrefix + key
-			ctx.SetConfigValue(prefixedKey, value)
-		}
-	}
-
-	return nil
+	return ctx.configurationCtx.LoadEnvironmentVariablesWithPrefix(sourcePrefix)
 }
 
 // LoadConfigDotEnvWithPrefix loads config .env file with a source prefix.
-// Used by Configuration Service for multi-source API key collection.
 func (ctx *NeuroContext) LoadConfigDotEnvWithPrefix(sourcePrefix string) error {
-	configDir, err := ctx.GetUserConfigDir()
-	if err != nil {
-		return nil // Config directory access failure is not fatal
-	}
-
-	envPath := filepath.Join(configDir, ".env")
-	if !ctx.FileExists(envPath) {
-		return nil // Missing config .env file is not an error
-	}
-
-	return ctx.loadDotEnvFileWithPrefix(envPath, sourcePrefix)
+	return ctx.configurationCtx.LoadConfigDotEnvWithPrefix(sourcePrefix)
 }
 
 // LoadLocalDotEnvWithPrefix loads local .env file with a source prefix.
-// Used by Configuration Service for multi-source API key collection.
 func (ctx *NeuroContext) LoadLocalDotEnvWithPrefix(sourcePrefix string) error {
-	workDir, err := ctx.GetWorkingDir()
-	if err != nil {
-		return nil // Working directory access failure is not fatal
-	}
-
-	envPath := filepath.Join(workDir, ".env")
-	if !ctx.FileExists(envPath) {
-		return nil // Missing local .env file is not an error
-	}
-
-	return ctx.loadDotEnvFileWithPrefix(envPath, sourcePrefix)
-}
-
-// loadDotEnvFileWithPrefix loads a .env file and stores values with a source prefix.
-func (ctx *NeuroContext) loadDotEnvFileWithPrefix(envPath, sourcePrefix string) error {
-	data, err := ctx.ReadFile(envPath)
-	if err != nil {
-		return fmt.Errorf("failed to read .env file %s: %w", envPath, err)
-	}
-
-	// Parse .env file
-	envMap, err := godotenv.Unmarshal(string(data))
-	if err != nil {
-		return fmt.Errorf("failed to parse .env file %s: %w", envPath, err)
-	}
-
-	// Store all values with source prefix in context configuration map
-	for key, value := range envMap {
-		prefixedKey := sourcePrefix + key
-		ctx.SetConfigValue(prefixedKey, value)
-	}
-
-	return nil
+	return ctx.configurationCtx.LoadLocalDotEnvWithPrefix(sourcePrefix)
 }
 
 // Provider Registry Methods

@@ -36,6 +36,7 @@ type ConfigPaths struct {
 type ConfigurationService struct {
 	initialized         bool
 	providerRegistryCtx neuroshellcontext.ProviderRegistrySubcontext
+	configurationCtx    neuroshellcontext.ConfigurationSubcontext
 }
 
 // NewConfigurationService creates a new ConfigurationService instance.
@@ -64,25 +65,26 @@ func (c *ConfigurationService) Initialize() error {
 		return fmt.Errorf("global context is not a NeuroContext")
 	}
 	c.providerRegistryCtx = neuroshellcontext.NewProviderRegistrySubcontextFromContext(neuroCtx)
+	c.configurationCtx = neuroshellcontext.NewConfigurationSubcontextFromContext(neuroCtx)
 
 	// Initialize empty configuration map
-	ctx.SetConfigMap(make(map[string]string))
+	c.configurationCtx.SetConfigMap(make(map[string]string))
 
 	// Orchestrate configuration loading in priority order (lowest to highest)
 	// Each method is implemented in the Context layer
-	if err := ctx.LoadDefaults(); err != nil {
+	if err := c.configurationCtx.LoadDefaults(); err != nil {
 		return fmt.Errorf("failed to load defaults: %w", err)
 	}
 
-	if err := ctx.LoadConfigDotEnv(); err != nil {
+	if err := c.configurationCtx.LoadConfigDotEnv(); err != nil {
 		return fmt.Errorf("failed to load config .env: %w", err)
 	}
 
-	if err := ctx.LoadLocalDotEnv(); err != nil {
+	if err := c.configurationCtx.LoadLocalDotEnv(); err != nil {
 		return fmt.Errorf("failed to load local .env: %w", err)
 	}
 
-	if err := ctx.LoadEnvironmentVariables(c.providerRegistryCtx.GetProviderEnvPrefixes()); err != nil {
+	if err := c.configurationCtx.LoadEnvironmentVariables(c.providerRegistryCtx.GetProviderEnvPrefixes()); err != nil {
 		return fmt.Errorf("failed to load environment variables: %w", err)
 	}
 
@@ -97,22 +99,20 @@ func (c *ConfigurationService) GetAPIKey(provider string) (string, error) {
 		return "", fmt.Errorf("configuration service not initialized")
 	}
 
-	ctx := neuroshellcontext.GetGlobalContext()
-
 	// Try provider-specific key first
 	providerKey := fmt.Sprintf("NEURO_%s_API_KEY", strings.ToUpper(provider))
-	if apiKey, exists := ctx.GetConfigValue(providerKey); exists && apiKey != "" {
+	if apiKey, exists := c.configurationCtx.GetConfigValue(providerKey); exists && apiKey != "" {
 		return apiKey, nil
 	}
 
 	// Try legacy provider-specific key (without NEURO_ prefix)
 	legacyKey := fmt.Sprintf("%s_API_KEY", strings.ToUpper(provider))
-	if apiKey, exists := ctx.GetConfigValue(legacyKey); exists && apiKey != "" {
+	if apiKey, exists := c.configurationCtx.GetConfigValue(legacyKey); exists && apiKey != "" {
 		return apiKey, nil
 	}
 
 	// Try generic key for backward compatibility
-	if apiKey, exists := ctx.GetConfigValue("NEURO_API_KEY"); exists && apiKey != "" {
+	if apiKey, exists := c.configurationCtx.GetConfigValue("NEURO_API_KEY"); exists && apiKey != "" {
 		return apiKey, nil
 	}
 
@@ -126,8 +126,7 @@ func (c *ConfigurationService) GetConfigValue(key string) (string, error) {
 		return "", fmt.Errorf("configuration service not initialized")
 	}
 
-	ctx := neuroshellcontext.GetGlobalContext()
-	value, _ := ctx.GetConfigValue(key)
+	value, _ := c.configurationCtx.GetConfigValue(key)
 	return value, nil
 }
 
@@ -138,8 +137,7 @@ func (c *ConfigurationService) SetConfigValue(key, value string) error {
 		return fmt.Errorf("configuration service not initialized")
 	}
 
-	ctx := neuroshellcontext.GetGlobalContext()
-	ctx.SetConfigValue(key, value)
+	c.configurationCtx.SetConfigValue(key, value)
 	return nil
 }
 
@@ -162,8 +160,7 @@ func (c *ConfigurationService) ValidateConfiguration() error {
 		return fmt.Errorf("configuration service not initialized")
 	}
 
-	ctx := neuroshellcontext.GetGlobalContext()
-	configMap := ctx.GetConfigMap()
+	configMap := c.configurationCtx.GetConfigMap()
 
 	// Check for common API key patterns using context's provider list
 	contextProviders := c.providerRegistryCtx.GetSupportedProviders()
@@ -216,8 +213,7 @@ func (c *ConfigurationService) GetAllConfigValues() (map[string]string, error) {
 		return nil, fmt.Errorf("configuration service not initialized")
 	}
 
-	ctx := neuroshellcontext.GetGlobalContext()
-	return ctx.GetConfigMap(), nil
+	return c.configurationCtx.GetConfigMap(), nil
 }
 
 // GetAllAPIKeys scans multiple sources and collects all configuration variables.
@@ -229,16 +225,14 @@ func (c *ConfigurationService) GetAllAPIKeys() ([]APIKeySource, error) {
 		return nil, fmt.Errorf("configuration service not initialized")
 	}
 
-	ctx := neuroshellcontext.GetGlobalContext()
-
 	// Load all sources with prefixes into context configuration map
-	if err := ctx.LoadEnvironmentVariablesWithPrefix("os."); err != nil {
+	if err := c.configurationCtx.LoadEnvironmentVariablesWithPrefix("os."); err != nil {
 		return nil, fmt.Errorf("failed to load environment variables: %w", err)
 	}
-	if err := ctx.LoadConfigDotEnvWithPrefix("config."); err != nil {
+	if err := c.configurationCtx.LoadConfigDotEnvWithPrefix("config."); err != nil {
 		return nil, fmt.Errorf("failed to load config .env: %w", err)
 	}
-	if err := ctx.LoadLocalDotEnvWithPrefix("local."); err != nil {
+	if err := c.configurationCtx.LoadLocalDotEnvWithPrefix("local."); err != nil {
 		return nil, fmt.Errorf("failed to load local .env: %w", err)
 	}
 
@@ -304,10 +298,8 @@ func (c *ConfigurationService) GetConfigurationPaths() (*ConfigPaths, error) {
 		return nil, fmt.Errorf("configuration service not initialized")
 	}
 
-	ctx := neuroshellcontext.GetGlobalContext()
-
 	// Get configuration directory
-	configDir, err := ctx.GetUserConfigDir()
+	configDir, err := c.configurationCtx.GetUserConfigDir()
 	if err != nil {
 		configDir = "" // Default to empty if cannot get
 	}
@@ -315,7 +307,7 @@ func (c *ConfigurationService) GetConfigurationPaths() (*ConfigPaths, error) {
 	// Check if config directory exists
 	configDirExists := false
 	if configDir != "" {
-		configDirExists = ctx.FileExists(configDir)
+		configDirExists = c.configurationCtx.FileExists(configDir)
 	}
 
 	// Check config .env file
@@ -323,16 +315,16 @@ func (c *ConfigurationService) GetConfigurationPaths() (*ConfigPaths, error) {
 	configEnvLoaded := false
 	if configDir != "" {
 		configEnvPath = configDir + "/.env"
-		configEnvLoaded = ctx.FileExists(configEnvPath)
+		configEnvLoaded = c.configurationCtx.FileExists(configEnvPath)
 	}
 
 	// Check local .env file
 	localEnvPath := ""
 	localEnvLoaded := false
-	workDir, err := ctx.GetWorkingDir()
+	workDir, err := c.configurationCtx.GetWorkingDir()
 	if err == nil {
 		localEnvPath = workDir + "/.env"
-		localEnvLoaded = ctx.FileExists(localEnvPath)
+		localEnvLoaded = c.configurationCtx.FileExists(localEnvPath)
 	}
 
 	return &ConfigPaths{
@@ -392,7 +384,7 @@ func (c *ConfigurationService) LoadReadOnlyOverrides() error {
 	ctx := neuroshellcontext.GetGlobalContext()
 
 	// Get read-only configuration from config map
-	if readOnlyConfig, exists := ctx.GetConfigValue("NEURO_READONLY_COMMANDS"); exists && readOnlyConfig != "" {
+	if readOnlyConfig, exists := c.configurationCtx.GetConfigValue("NEURO_READONLY_COMMANDS"); exists && readOnlyConfig != "" {
 		// Parse configuration string: "command1:true,command2:false"
 		pairs := strings.Split(readOnlyConfig, ",")
 		for _, pair := range pairs {
