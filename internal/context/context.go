@@ -37,19 +37,6 @@ var allowedGlobalVariables = []string{
 	"_prompt_line5",
 }
 
-// TryBlockContext represents the context for a try block with error boundaries
-type TryBlockContext struct {
-	ID            string // Unique identifier for this try block
-	StartDepth    int    // Stack depth when try block started
-	ErrorCaptured bool   // Whether an error has been captured
-}
-
-// SilentBlockContext represents the context for a silent block with output suppression
-type SilentBlockContext struct {
-	ID         string // Unique identifier for this silent block
-	StartDepth int    // Stack depth when silent block started
-}
-
 // NeuroContext implements the neurotypes.Context interface providing session state management.
 // It maintains variables, message history, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
@@ -61,13 +48,8 @@ type NeuroContext struct {
 	testEnvOverrides map[string]string // Test-specific environment variable overrides
 
 	// Stack-based execution support
-	executionStack     []string             // Execution stack (LIFO order)
-	tryBlocks          []TryBlockContext    // Try block management
-	currentTryDepth    int                  // Current try block depth
-	silentBlocks       []SilentBlockContext // Silent block management
-	currentSilentDepth int                  // Current silent block depth
-	stackMutex         sync.RWMutex         // Protects executionStack, tryBlocks, and silentBlocks
-	variablesMutex     sync.RWMutex         // Protects variables map
+	stackCtx       StackSubcontext // Delegated stack management
+	variablesMutex sync.RWMutex    // Protects variables map
 
 	// Chat session storage
 	chatSessions    map[string]*neurotypes.ChatSession // Session storage by ID
@@ -127,11 +109,7 @@ func New() *NeuroContext {
 		testEnvOverrides: make(map[string]string),
 
 		// Initialize stack-based execution support
-		executionStack:     make([]string, 0),
-		tryBlocks:          make([]TryBlockContext, 0),
-		currentTryDepth:    0,
-		silentBlocks:       make([]SilentBlockContext, 0),
-		currentSilentDepth: 0,
+		stackCtx: NewStackSubcontext(),
 
 		// Initialize chat session storage
 		chatSessions:    make(map[string]*neurotypes.ChatSession),
@@ -843,207 +821,105 @@ func (ctx *NeuroContext) GetAllCommandHelpInfo() map[string]*neurotypes.HelpInfo
 
 // PushCommand adds a single command to the execution stack
 func (ctx *NeuroContext) PushCommand(command string) {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-	ctx.executionStack = append(ctx.executionStack, command)
+	ctx.stackCtx.PushCommand(command)
 }
 
 // PushCommands adds multiple commands to the execution stack
 func (ctx *NeuroContext) PushCommands(commands []string) {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-	ctx.executionStack = append(ctx.executionStack, commands...)
+	ctx.stackCtx.PushCommands(commands)
 }
 
 // PopCommand removes and returns the last command from the stack (LIFO)
 func (ctx *NeuroContext) PopCommand() (string, bool) {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	if len(ctx.executionStack) == 0 {
-		return "", false
-	}
-
-	lastIndex := len(ctx.executionStack) - 1
-	command := ctx.executionStack[lastIndex]
-	ctx.executionStack = ctx.executionStack[:lastIndex]
-	return command, true
+	return ctx.stackCtx.PopCommand()
 }
 
 // PeekCommand returns the next command without removing it from the stack
 func (ctx *NeuroContext) PeekCommand() (string, bool) {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-
-	if len(ctx.executionStack) == 0 {
-		return "", false
-	}
-
-	return ctx.executionStack[len(ctx.executionStack)-1], true
+	return ctx.stackCtx.PeekCommand()
 }
 
 // ClearStack removes all commands from the execution stack
 func (ctx *NeuroContext) ClearStack() {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-	ctx.executionStack = make([]string, 0)
+	ctx.stackCtx.ClearStack()
 }
 
 // GetStackSize returns the number of commands in the execution stack
 func (ctx *NeuroContext) GetStackSize() int {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return len(ctx.executionStack)
+	return ctx.stackCtx.GetStackSize()
 }
 
 // IsStackEmpty returns true if the stack is empty
 func (ctx *NeuroContext) IsStackEmpty() bool {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return len(ctx.executionStack) == 0
+	return ctx.stackCtx.IsStackEmpty()
 }
 
 // PeekStack returns a copy of the execution stack without modifying it
 // Returns the stack in reverse order (top to bottom, LIFO order)
 func (ctx *NeuroContext) PeekStack() []string {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-
-	result := make([]string, len(ctx.executionStack))
-	// Copy in reverse order to show stack from top to bottom
-	for i, cmd := range ctx.executionStack {
-		result[len(ctx.executionStack)-1-i] = cmd
-	}
-	return result
+	return ctx.stackCtx.PeekStack()
 }
 
 // Try block support methods
 
 // PushErrorBoundary pushes error boundary markers for try blocks
 func (ctx *NeuroContext) PushErrorBoundary(tryID string) {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	// Create try block context
-	tryBlock := TryBlockContext{
-		ID:            tryID,
-		StartDepth:    len(ctx.executionStack),
-		ErrorCaptured: false,
-	}
-
-	ctx.tryBlocks = append(ctx.tryBlocks, tryBlock)
-	ctx.currentTryDepth++
+	ctx.stackCtx.PushErrorBoundary(tryID)
 }
 
 // PopErrorBoundary removes the most recent try block context
 func (ctx *NeuroContext) PopErrorBoundary() {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	if len(ctx.tryBlocks) > 0 {
-		ctx.tryBlocks = ctx.tryBlocks[:len(ctx.tryBlocks)-1]
-		ctx.currentTryDepth--
-	}
+	ctx.stackCtx.PopErrorBoundary()
 }
 
 // IsInTryBlock returns true if currently inside a try block
 func (ctx *NeuroContext) IsInTryBlock() bool {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return len(ctx.tryBlocks) > 0
+	return ctx.stackCtx.IsInTryBlock()
 }
 
 // GetCurrentTryID returns the ID of the current try block
 func (ctx *NeuroContext) GetCurrentTryID() string {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-
-	if len(ctx.tryBlocks) == 0 {
-		return ""
-	}
-
-	return ctx.tryBlocks[len(ctx.tryBlocks)-1].ID
+	return ctx.stackCtx.GetCurrentTryID()
 }
 
 // GetCurrentTryDepth returns the current try block depth
 func (ctx *NeuroContext) GetCurrentTryDepth() int {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return ctx.currentTryDepth
+	return ctx.stackCtx.GetCurrentTryDepth()
 }
 
 // SetTryErrorCaptured marks the current try block as having captured an error
 func (ctx *NeuroContext) SetTryErrorCaptured() {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	if len(ctx.tryBlocks) > 0 {
-		ctx.tryBlocks[len(ctx.tryBlocks)-1].ErrorCaptured = true
-	}
+	ctx.stackCtx.SetTryErrorCaptured()
 }
 
 // IsTryErrorCaptured returns true if the current try block has captured an error
 func (ctx *NeuroContext) IsTryErrorCaptured() bool {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-
-	if len(ctx.tryBlocks) == 0 {
-		return false
-	}
-
-	return ctx.tryBlocks[len(ctx.tryBlocks)-1].ErrorCaptured
+	return ctx.stackCtx.IsTryErrorCaptured()
 }
 
 // PushSilentBoundary pushes silent boundary markers for silent blocks
 func (ctx *NeuroContext) PushSilentBoundary(silentID string) {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	// Create silent block context
-	silentBlock := SilentBlockContext{
-		ID:         silentID,
-		StartDepth: len(ctx.executionStack),
-	}
-
-	ctx.silentBlocks = append(ctx.silentBlocks, silentBlock)
-	ctx.currentSilentDepth++
+	ctx.stackCtx.PushSilentBoundary(silentID)
 }
 
 // PopSilentBoundary removes the most recent silent block context
 func (ctx *NeuroContext) PopSilentBoundary() {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	if len(ctx.silentBlocks) > 0 {
-		ctx.silentBlocks = ctx.silentBlocks[:len(ctx.silentBlocks)-1]
-		ctx.currentSilentDepth--
-	}
+	ctx.stackCtx.PopSilentBoundary()
 }
 
 // IsInSilentBlock returns true if currently inside a silent block
 func (ctx *NeuroContext) IsInSilentBlock() bool {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return len(ctx.silentBlocks) > 0
+	return ctx.stackCtx.IsInSilentBlock()
 }
 
 // GetCurrentSilentID returns the ID of the current silent block
 func (ctx *NeuroContext) GetCurrentSilentID() string {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-
-	if len(ctx.silentBlocks) == 0 {
-		return ""
-	}
-
-	return ctx.silentBlocks[len(ctx.silentBlocks)-1].ID
+	return ctx.stackCtx.GetCurrentSilentID()
 }
 
 // GetCurrentSilentDepth returns the current silent block depth
 func (ctx *NeuroContext) GetCurrentSilentDepth() int {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return ctx.currentSilentDepth
+	return ctx.stackCtx.GetCurrentSilentDepth()
 }
 
 // GetDefaultCommand returns the default command to use when input doesn't start with \\
