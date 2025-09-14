@@ -14,7 +14,8 @@ import (
 // ClientFactoryService implements the ClientFactory interface.
 // It manages the creation of LLM clients, using the context layer for stateless caching.
 type ClientFactoryService struct {
-	initialized bool
+	initialized  bool
+	llmClientCtx neuroshellcontext.LLMClientSubcontext
 }
 
 // NewClientFactoryService creates a new ClientFactoryService instance.
@@ -32,6 +33,14 @@ func (f *ClientFactoryService) Name() string {
 // Initialize sets up the ClientFactoryService for operation.
 func (f *ClientFactoryService) Initialize() error {
 	logger.ServiceOperation("client_factory", "initialize", "starting")
+
+	ctx := neuroshellcontext.GetGlobalContext()
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
+	if !ok {
+		return fmt.Errorf("global context is not a NeuroContext")
+	}
+	f.llmClientCtx = neuroshellcontext.NewLLMClientSubcontextFromContext(neuroCtx)
+
 	f.initialized = true
 	logger.ServiceOperation("client_factory", "initialize", "completed")
 	return nil
@@ -54,10 +63,9 @@ func (f *ClientFactoryService) GetClientForProvider(providerCatalogID, apiKey st
 
 	// Generate client ID for caching
 	clientID := f.generateClientID(providerCatalogID, apiKey)
-	ctx := neuroshellcontext.GetGlobalContext()
 
 	// Check if client exists in context cache
-	if client, exists := ctx.GetLLMClient(clientID); exists {
+	if client, exists := f.llmClientCtx.GetClient(clientID); exists {
 		logger.Debug("Returning cached provider client", "provider_catalog_id", providerCatalogID, "clientID", clientID)
 		return client, nil
 	}
@@ -78,7 +86,7 @@ func (f *ClientFactoryService) GetClientForProvider(providerCatalogID, apiKey st
 	}
 
 	// Store client in context cache
-	ctx.SetLLMClient(clientID, client)
+	f.llmClientCtx.StoreClient(clientID, client)
 
 	logger.Debug("Created new provider client", "provider_catalog_id", providerCatalogID, "clientID", clientID)
 	return client, nil
@@ -118,10 +126,9 @@ func (f *ClientFactoryService) GetClientWithID(providerCatalogID, apiKey string)
 
 	// Generate client ID for external use (also serves as cache key)
 	clientID := f.generateClientID(providerCatalogID, apiKey)
-	ctx := neuroshellcontext.GetGlobalContext()
 
 	// Check if client exists in context cache
-	if client, exists := ctx.GetLLMClient(clientID); exists {
+	if client, exists := f.llmClientCtx.GetClient(clientID); exists {
 		logger.Debug("Returning cached provider client with ID", "provider_catalog_id", providerCatalogID, "clientID", clientID)
 		return client, clientID, nil
 	}
@@ -142,7 +149,7 @@ func (f *ClientFactoryService) GetClientWithID(providerCatalogID, apiKey string)
 	}
 
 	// Store client in context cache
-	ctx.SetLLMClient(clientID, client)
+	f.llmClientCtx.StoreClient(clientID, client)
 
 	logger.Debug("Created new provider client with ID", "provider_catalog_id", providerCatalogID, "clientID", clientID)
 	return client, clientID, nil
@@ -172,8 +179,7 @@ func (f *ClientFactoryService) GetClientByID(clientID string) (neurotypes.LLMCli
 	}
 
 	// Direct lookup using client ID from context
-	ctx := neuroshellcontext.GetGlobalContext()
-	if client, exists := ctx.GetLLMClient(clientID); exists {
+	if client, exists := f.llmClientCtx.GetClient(clientID); exists {
 		logger.Debug("Retrieved cached client by ID", "clientID", clientID)
 		return client, nil
 	}
@@ -194,8 +200,7 @@ func (f *ClientFactoryService) FindClientByProviderCatalogID(providerCatalogID s
 	}
 
 	// Get all cached clients from context
-	ctx := neuroshellcontext.GetGlobalContext()
-	allClients := ctx.GetAllLLMClients()
+	allClients := f.llmClientCtx.GetAllClients()
 
 	// Search for any client with matching provider catalog ID prefix
 	expectedPrefix := providerCatalogID + ":"
@@ -211,13 +216,11 @@ func (f *ClientFactoryService) FindClientByProviderCatalogID(providerCatalogID s
 
 // GetCachedClientCount returns the number of cached clients (for testing/debugging).
 func (f *ClientFactoryService) GetCachedClientCount() int {
-	ctx := neuroshellcontext.GetGlobalContext()
-	return ctx.GetLLMClientCount()
+	return len(f.llmClientCtx.GetAllClients())
 }
 
 // ClearCache removes all cached clients (for testing/debugging).
 func (f *ClientFactoryService) ClearCache() {
-	ctx := neuroshellcontext.GetGlobalContext()
-	ctx.ClearLLMClients()
+	f.llmClientCtx.ClearAllClients()
 	logger.Debug("Client cache cleared")
 }

@@ -34,7 +34,8 @@ type ConfigPaths struct {
 // All configuration values are loaded and stored in the context's configuration map.
 // This service contains only business logic and orchestrates loading via context methods.
 type ConfigurationService struct {
-	initialized bool
+	initialized         bool
+	providerRegistryCtx neuroshellcontext.ProviderRegistrySubcontext
 }
 
 // NewConfigurationService creates a new ConfigurationService instance.
@@ -58,6 +59,11 @@ func (c *ConfigurationService) Initialize() error {
 	}
 
 	ctx := neuroshellcontext.GetGlobalContext()
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
+	if !ok {
+		return fmt.Errorf("global context is not a NeuroContext")
+	}
+	c.providerRegistryCtx = neuroshellcontext.NewProviderRegistrySubcontextFromContext(neuroCtx)
 
 	// Initialize empty configuration map
 	ctx.SetConfigMap(make(map[string]string))
@@ -76,7 +82,7 @@ func (c *ConfigurationService) Initialize() error {
 		return fmt.Errorf("failed to load local .env: %w", err)
 	}
 
-	if err := ctx.LoadEnvironmentVariables(ctx.GetProviderEnvPrefixes()); err != nil {
+	if err := ctx.LoadEnvironmentVariables(c.providerRegistryCtx.GetProviderEnvPrefixes()); err != nil {
 		return fmt.Errorf("failed to load environment variables: %w", err)
 	}
 
@@ -160,7 +166,7 @@ func (c *ConfigurationService) ValidateConfiguration() error {
 	configMap := ctx.GetConfigMap()
 
 	// Check for common API key patterns using context's provider list
-	contextProviders := ctx.GetSupportedProviders()
+	contextProviders := c.providerRegistryCtx.GetSupportedProviders()
 	providers := make([]string, len(contextProviders))
 	for i, provider := range contextProviders {
 		providers[i] = strings.ToUpper(provider)
@@ -288,8 +294,7 @@ func (c *ConfigurationService) GetSupportedProviders() []string {
 		return []string{}
 	}
 
-	ctx := neuroshellcontext.GetGlobalContext()
-	return ctx.GetSupportedProviders()
+	return c.providerRegistryCtx.GetSupportedProviders()
 }
 
 // GetConfigurationPaths returns configuration file paths and their loading status.

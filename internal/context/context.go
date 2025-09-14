@@ -63,13 +63,12 @@ type NeuroContext struct {
 	models        map[string]*neurotypes.ModelConfig // Model storage by ID
 	modelNameToID map[string]string                  // Name to ID mapping
 
-	// Provider registry - central source of truth for supported providers
-	supportedProviders  []string          // Supported LLM provider names (lowercase)
-	providerEnvPrefixes []string          // Environment variable prefixes for provider detection
-	modelIDToName       map[string]string // ID to name mapping
+	// Provider registry management
+	providerRegistryCtx ProviderRegistrySubcontext // Delegated provider registry management
+	modelIDToName       map[string]string          // ID to name mapping
 
-	// LLM client storage
-	llmClients map[string]neurotypes.LLMClient // LLM client storage by client ID (provider:hash format)
+	// LLM client management
+	llmClientCtx LLMClientSubcontext // Delegated LLM client management
 
 	// Command registry management
 	commandRegistryCtx CommandRegistrySubcontext // Delegated command registry management
@@ -115,12 +114,11 @@ func New() *NeuroContext {
 		modelNameToID: make(map[string]string),
 		modelIDToName: make(map[string]string),
 
-		// Initialize LLM client storage
-		llmClients: make(map[string]neurotypes.LLMClient),
+		// Initialize LLM client management
+		llmClientCtx: NewLLMClientSubcontext(),
 
-		// Initialize provider registry
-		supportedProviders:  []string{"openai", "anthropic", "openrouter", "moonshot", "gemini"},
-		providerEnvPrefixes: []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_", "GOOGLE_"},
+		// Initialize provider registry management
+		providerRegistryCtx: NewProviderRegistrySubcontext(),
 
 		// Initialize command registry management
 		commandRegistryCtx: NewCommandRegistrySubcontext(),
@@ -691,32 +689,27 @@ func (ctx *NeuroContext) ModelIDExists(id string) bool {
 
 // GetLLMClient retrieves an LLM client by client ID (provider:hash format)
 func (ctx *NeuroContext) GetLLMClient(clientID string) (neurotypes.LLMClient, bool) {
-	client, exists := ctx.llmClients[clientID]
-	return client, exists
+	return ctx.llmClientCtx.GetClient(clientID)
 }
 
 // SetLLMClient stores an LLM client by client ID (provider:hash format)
 func (ctx *NeuroContext) SetLLMClient(clientID string, client neurotypes.LLMClient) {
-	ctx.llmClients[clientID] = client
+	ctx.llmClientCtx.StoreClient(clientID, client)
 }
 
 // GetLLMClientCount returns the number of cached LLM clients (for testing/debugging)
 func (ctx *NeuroContext) GetLLMClientCount() int {
-	return len(ctx.llmClients)
+	return len(ctx.llmClientCtx.GetAllClients())
 }
 
 // GetAllLLMClients returns a copy of all cached LLM clients (for client lookup)
 func (ctx *NeuroContext) GetAllLLMClients() map[string]neurotypes.LLMClient {
-	clients := make(map[string]neurotypes.LLMClient)
-	for id, client := range ctx.llmClients {
-		clients[id] = client
-	}
-	return clients
+	return ctx.llmClientCtx.GetAllClients()
 }
 
 // ClearLLMClients removes all cached LLM clients (for testing/debugging)
 func (ctx *NeuroContext) ClearLLMClients() {
-	ctx.llmClients = make(map[string]neurotypes.LLMClient)
+	ctx.llmClientCtx.ClearAllClients()
 }
 
 // RegisterCommand registers a command name for autocomplete functionality.
@@ -1215,31 +1208,19 @@ func (ctx *NeuroContext) loadDotEnvFileWithPrefix(envPath, sourcePrefix string) 
 // GetSupportedProviders returns the list of supported LLM provider names.
 // This is the central source of truth for all provider-related functionality.
 func (ctx *NeuroContext) GetSupportedProviders() []string {
-	// Return a copy to prevent external modification
-	result := make([]string, len(ctx.supportedProviders))
-	copy(result, ctx.supportedProviders)
-	return result
+	return ctx.providerRegistryCtx.GetSupportedProviders()
 }
 
 // GetProviderEnvPrefixes returns the list of environment variable prefixes
 // used for loading provider-specific configuration from the environment.
 func (ctx *NeuroContext) GetProviderEnvPrefixes() []string {
-	// Return a copy to prevent external modification
-	result := make([]string, len(ctx.providerEnvPrefixes))
-	copy(result, ctx.providerEnvPrefixes)
-	return result
+	return ctx.providerRegistryCtx.GetProviderEnvPrefixes()
 }
 
 // IsValidProvider checks if a given provider name is supported.
 // Provider comparison is case-insensitive.
 func (ctx *NeuroContext) IsValidProvider(provider string) bool {
-	providerLower := strings.ToLower(provider)
-	for _, supportedProvider := range ctx.supportedProviders {
-		if providerLower == supportedProvider {
-			return true
-		}
-	}
-	return false
+	return ctx.providerRegistryCtx.IsProviderSupported(provider)
 }
 
 // Error state management methods
