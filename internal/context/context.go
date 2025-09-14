@@ -71,10 +71,8 @@ type NeuroContext struct {
 	// LLM client storage
 	llmClients map[string]neurotypes.LLMClient // LLM client storage by client ID (provider:hash format)
 
-	// Command registry information
-	registeredCommands map[string]bool                 // Track registered command names for autocomplete
-	commandHelpInfo    map[string]*neurotypes.HelpInfo // Store detailed help info for autocomplete and help system
-	commandMutex       sync.RWMutex                    // Protects registeredCommands and commandHelpInfo maps
+	// Command registry management
+	commandRegistryCtx CommandRegistrySubcontext // Delegated command registry management
 
 	// Default command configuration
 	defaultCommand string // Command to use when input doesn't start with \\
@@ -128,9 +126,8 @@ func New() *NeuroContext {
 		supportedProviders:  []string{"openai", "anthropic", "openrouter", "moonshot", "gemini"},
 		providerEnvPrefixes: []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_", "GOOGLE_"},
 
-		// Initialize command registry information
-		registeredCommands: make(map[string]bool),
-		commandHelpInfo:    make(map[string]*neurotypes.HelpInfo),
+		// Initialize command registry management
+		commandRegistryCtx: NewCommandRegistrySubcontext(),
 
 		// Initialize configuration management
 		configMap: make(map[string]string),
@@ -739,82 +736,42 @@ func (ctx *NeuroContext) ClearLLMClients() {
 
 // RegisterCommand registers a command name for autocomplete functionality.
 func (ctx *NeuroContext) RegisterCommand(commandName string) {
-	ctx.commandMutex.Lock()
-	defer ctx.commandMutex.Unlock()
-	ctx.registeredCommands[commandName] = true
+	ctx.commandRegistryCtx.RegisterCommand(commandName)
 }
 
 // RegisterCommandWithInfo registers a command with its metadata for help and autocomplete.
 func (ctx *NeuroContext) RegisterCommandWithInfo(cmd neurotypes.Command) {
-	ctx.commandMutex.Lock()
-	defer ctx.commandMutex.Unlock()
-
-	commandName := cmd.Name()
-	ctx.registeredCommands[commandName] = true
-
-	// Store command help information
-	helpInfo := cmd.HelpInfo()
-	ctx.commandHelpInfo[commandName] = &helpInfo
+	ctx.commandRegistryCtx.RegisterCommandWithInfo(cmd)
 }
 
 // RegisterCommandWithInfoAndType registers a command with its metadata and type.
-func (ctx *NeuroContext) RegisterCommandWithInfoAndType(cmd neurotypes.Command, _ neurotypes.CommandType) {
-	ctx.commandMutex.Lock()
-	defer ctx.commandMutex.Unlock()
-
-	commandName := cmd.Name()
-	ctx.registeredCommands[commandName] = true
-
-	// Store command help information
-	helpInfo := cmd.HelpInfo()
-	ctx.commandHelpInfo[commandName] = &helpInfo
+func (ctx *NeuroContext) RegisterCommandWithInfoAndType(cmd neurotypes.Command, cmdType neurotypes.CommandType) {
+	ctx.commandRegistryCtx.RegisterCommandWithInfoAndType(cmd, cmdType)
 }
 
 // UnregisterCommand removes a command name from the autocomplete registry.
 func (ctx *NeuroContext) UnregisterCommand(commandName string) {
-	ctx.commandMutex.Lock()
-	defer ctx.commandMutex.Unlock()
-	delete(ctx.registeredCommands, commandName)
-	delete(ctx.commandHelpInfo, commandName)
+	ctx.commandRegistryCtx.UnregisterCommand(commandName)
 }
 
 // GetRegisteredCommands returns a list of all registered command names.
 func (ctx *NeuroContext) GetRegisteredCommands() []string {
-	ctx.commandMutex.RLock()
-	defer ctx.commandMutex.RUnlock()
-
-	commands := make([]string, 0, len(ctx.registeredCommands))
-	for commandName := range ctx.registeredCommands {
-		commands = append(commands, commandName)
-	}
-	return commands
+	return ctx.commandRegistryCtx.GetRegisteredCommands()
 }
 
 // IsCommandRegistered checks if a command name is registered.
 func (ctx *NeuroContext) IsCommandRegistered(commandName string) bool {
-	ctx.commandMutex.RLock()
-	defer ctx.commandMutex.RUnlock()
-	return ctx.registeredCommands[commandName]
+	return ctx.commandRegistryCtx.IsCommandRegistered(commandName)
 }
 
 // GetCommandHelpInfo returns the help information for a specific command.
 func (ctx *NeuroContext) GetCommandHelpInfo(commandName string) (*neurotypes.HelpInfo, bool) {
-	ctx.commandMutex.RLock()
-	defer ctx.commandMutex.RUnlock()
-	info, exists := ctx.commandHelpInfo[commandName]
-	return info, exists
+	return ctx.commandRegistryCtx.GetCommandHelpInfo(commandName)
 }
 
 // GetAllCommandHelpInfo returns all registered command help information.
 func (ctx *NeuroContext) GetAllCommandHelpInfo() map[string]*neurotypes.HelpInfo {
-	ctx.commandMutex.RLock()
-	defer ctx.commandMutex.RUnlock()
-
-	result := make(map[string]*neurotypes.HelpInfo)
-	for name, info := range ctx.commandHelpInfo {
-		result[name] = info
-	}
-	return result
+	return ctx.commandRegistryCtx.GetAllCommandHelpInfo()
 }
 
 // Stack operations for stack-based execution engine
