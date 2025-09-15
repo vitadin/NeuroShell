@@ -51,6 +51,21 @@ type ConfigurationSubcontext interface {
 	ReadFile(path string) ([]byte, error)
 	WriteFile(path string, data []byte, perm os.FileMode) error
 	MkdirAll(path string, perm os.FileMode) error
+
+	// Allowed global variables management
+	IsAllowedGlobalVariable(name string) bool
+	GetAllowedGlobalVariables() []string
+
+	// Default command configuration
+	GetDefaultCommand() string
+	SetDefaultCommand(command string)
+
+	// Read-only command overrides
+	SetCommandReadOnly(commandName string, readOnly bool)
+	RemoveCommandReadOnlyOverride(commandName string)
+	IsCommandReadOnlyOverride(commandName string) (bool, bool)
+	GetReadOnlyOverrides() map[string]bool
+	ClearAllReadOnlyOverrides()
 }
 
 // TestModeProvider interface allows subcontexts to check test mode from parent context
@@ -69,6 +84,16 @@ type configurationSubcontext struct {
 	testEnvOverrides map[string]string // Test-specific environment variable overrides
 	testWorkingDir   string            // Test working directory override
 	testMutex        sync.RWMutex      // Protects test environment overrides
+
+	// Allowed global variables configuration
+	allowedGlobalVariables []string // Defines which global variables (starting with _) can be set by users
+
+	// Default command configuration
+	defaultCommand string // Command to use when input doesn't start with \\
+
+	// Read-only command overrides
+	readOnlyOverrides map[string]bool // Dynamic overrides: true=readonly, false=writable
+	readOnlyMutex     sync.RWMutex    // Protects readOnlyOverrides
 }
 
 // NewConfigurationSubcontext creates a new ConfigurationSubcontext instance.
@@ -77,6 +102,26 @@ func NewConfigurationSubcontext() ConfigurationSubcontext {
 		configMap:        make(map[string]string),
 		parentContext:    nil, // Will be set when attached to a parent context
 		testEnvOverrides: make(map[string]string),
+		allowedGlobalVariables: []string{
+			"_style",
+			"_reply_way",
+			"_echo_command",
+			"_render_markdown",
+			"_default_command",
+			"_stream",
+			"_editor",
+			"_session_autosave",
+			"_completion_mode",
+			// Shell prompt configuration variables
+			"_prompt_lines_count",
+			"_prompt_line1",
+			"_prompt_line2",
+			"_prompt_line3",
+			"_prompt_line4",
+			"_prompt_line5",
+		},
+		defaultCommand:    "echo", // Default to echo for development convenience
+		readOnlyOverrides: make(map[string]bool),
 	}
 }
 
@@ -498,4 +543,88 @@ func (c *configurationSubcontext) WriteFile(path string, data []byte, perm os.Fi
 // MkdirAll creates a directory path with the specified permissions, including any necessary parents.
 func (c *configurationSubcontext) MkdirAll(path string, perm os.FileMode) error {
 	return os.MkdirAll(path, perm)
+}
+
+// Allowed global variables management
+
+// IsAllowedGlobalVariable checks if a variable name is in the allowed global variables list.
+func (c *configurationSubcontext) IsAllowedGlobalVariable(name string) bool {
+	for _, allowedVar := range c.allowedGlobalVariables {
+		if name == allowedVar {
+			return true
+		}
+	}
+	return false
+}
+
+// GetAllowedGlobalVariables returns a copy of the allowed global variables list.
+func (c *configurationSubcontext) GetAllowedGlobalVariables() []string {
+	result := make([]string, len(c.allowedGlobalVariables))
+	copy(result, c.allowedGlobalVariables)
+	return result
+}
+
+// Default command configuration
+
+// GetDefaultCommand returns the default command to use when input doesn't start with \\
+func (c *configurationSubcontext) GetDefaultCommand() string {
+	return c.defaultCommand
+}
+
+// SetDefaultCommand sets the default command to use when input doesn't start with \\
+func (c *configurationSubcontext) SetDefaultCommand(command string) {
+	c.defaultCommand = command
+}
+
+// Read-only command overrides
+
+// SetCommandReadOnly sets or removes a read-only override for a specific command.
+// This allows dynamic configuration of read-only status at runtime.
+func (c *configurationSubcontext) SetCommandReadOnly(commandName string, readOnly bool) {
+	c.readOnlyMutex.Lock()
+	defer c.readOnlyMutex.Unlock()
+
+	c.readOnlyOverrides[commandName] = readOnly
+}
+
+// RemoveCommandReadOnlyOverride removes any read-only override for a command,
+// reverting to the command's self-declared IsReadOnly() status.
+func (c *configurationSubcontext) RemoveCommandReadOnlyOverride(commandName string) {
+	c.readOnlyMutex.Lock()
+	defer c.readOnlyMutex.Unlock()
+
+	delete(c.readOnlyOverrides, commandName)
+}
+
+// IsCommandReadOnlyOverride checks if there is a read-only override for a command.
+// Returns (override_value, has_override).
+func (c *configurationSubcontext) IsCommandReadOnlyOverride(commandName string) (bool, bool) {
+	c.readOnlyMutex.RLock()
+	defer c.readOnlyMutex.RUnlock()
+
+	override, exists := c.readOnlyOverrides[commandName]
+	return override, exists
+}
+
+// GetReadOnlyOverrides returns a copy of all current read-only overrides.
+// This is useful for configuration services and debugging.
+func (c *configurationSubcontext) GetReadOnlyOverrides() map[string]bool {
+	c.readOnlyMutex.RLock()
+	defer c.readOnlyMutex.RUnlock()
+
+	// Return a copy to prevent external modification
+	overrides := make(map[string]bool)
+	for name, readOnly := range c.readOnlyOverrides {
+		overrides[name] = readOnly
+	}
+	return overrides
+}
+
+// ClearAllReadOnlyOverrides removes all read-only overrides.
+// This is useful for testing purposes.
+func (c *configurationSubcontext) ClearAllReadOnlyOverrides() {
+	c.readOnlyMutex.Lock()
+	defer c.readOnlyMutex.Unlock()
+
+	c.readOnlyOverrides = make(map[string]bool)
 }

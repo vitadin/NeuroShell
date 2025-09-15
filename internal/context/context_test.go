@@ -1041,7 +1041,7 @@ func TestNeuroContext_IsCommandReadOnly_WithOverrides(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Clear previous overrides
-			ctx.readOnlyOverrides = make(map[string]bool)
+			ctx.ClearAllReadOnlyOverrides()
 
 			// Set override if specified
 			if tt.override != nil {

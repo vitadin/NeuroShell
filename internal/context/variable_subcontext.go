@@ -99,15 +99,11 @@ func ValidateVariableName(name string) error {
 	}
 
 	if strings.HasPrefix(name, "_") {
-		// Check if it's a whitelisted global variable
-		allowed := false
-		for _, allowedVar := range allowedGlobalVariables {
-			if name == allowedVar {
-				allowed = true
-				break
-			}
-		}
-		if !allowed {
+		// Check if it's a whitelisted global variable using a default context
+		// Note: This function is used in validation contexts where we may not have a specific context
+		// We use a temporary configuration subcontext to get the allowed variables list
+		tempConfig := NewConfigurationSubcontext()
+		if !tempConfig.IsAllowedGlobalVariable(name) {
 			return fmt.Errorf("variable name cannot start with _ unless whitelisted")
 		}
 	}
@@ -165,13 +161,9 @@ func AnalyzeVariable(name string) VariableInfo {
 		info.Type = TypeCommand
 		info.Description = "Command output or configuration variable"
 		// Check if it's read-only based on whitelist
-		info.IsReadOnly = true
-		for _, allowedVar := range allowedGlobalVariables {
-			if name == allowedVar {
-				info.IsReadOnly = false
-				break
-			}
-		}
+		// Use a temporary configuration subcontext to check allowed variables
+		tempConfig := NewConfigurationSubcontext()
+		info.IsReadOnly = !tempConfig.IsAllowedGlobalVariable(name)
 	default:
 		info.Type = TypeUser
 		info.Description = "User-defined variable"

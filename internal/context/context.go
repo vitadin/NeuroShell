@@ -14,26 +14,6 @@ import (
 	"neuroshell/pkg/neurotypes"
 )
 
-// allowedGlobalVariables defines which global variables (starting with _) can be set by users
-var allowedGlobalVariables = []string{
-	"_style",
-	"_reply_way",
-	"_echo_command",
-	"_render_markdown",
-	"_default_command",
-	"_stream",
-	"_editor",
-	"_session_autosave",
-	"_completion_mode",
-	// Shell prompt configuration variables
-	"_prompt_lines_count",
-	"_prompt_line1",
-	"_prompt_line2",
-	"_prompt_line3",
-	"_prompt_line4",
-	"_prompt_line5",
-}
-
 // NeuroContext implements the neurotypes.Context interface providing session state management.
 // It maintains variables, message history, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
@@ -69,9 +49,6 @@ type NeuroContext struct {
 	// Command registry management
 	commandRegistryCtx CommandRegistrySubcontext // Delegated command registry management
 
-	// Default command configuration
-	defaultCommand string // Command to use when input doesn't start with \\
-
 	// Configuration management
 	configurationCtx ConfigurationSubcontext // Delegated configuration management
 
@@ -80,10 +57,6 @@ type NeuroContext struct {
 
 	// Error state management
 	errorStateCtx ErrorStateSubcontext // Delegated error state management
-
-	// Read-only command management
-	readOnlyOverrides map[string]bool // Dynamic overrides: true=readonly, false=writable
-	readOnlyMutex     sync.RWMutex    // Protects readOnlyOverrides
 }
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
@@ -119,12 +92,6 @@ func New() *NeuroContext {
 
 		// Initialize configuration management
 		configurationCtx: NewConfigurationSubcontext(), // Parent context will be set after construction
-
-		// Initialize read-only command management
-		readOnlyOverrides: make(map[string]bool),
-
-		// Initialize default command
-		defaultCommand: "echo", // Default to echo for development convenience
 
 		// Initialize error state management
 		errorStateCtx: NewErrorStateSubcontext(),
@@ -188,14 +155,7 @@ func (ctx *NeuroContext) SetVariable(name string, value string) error {
 
 	// For variables with _ prefix, check whitelist
 	if strings.HasPrefix(name, "_") {
-		allowed := false
-		for _, allowedVar := range allowedGlobalVariables {
-			if name == allowedVar {
-				allowed = true
-				break
-			}
-		}
-		if !allowed {
+		if !ctx.configurationCtx.IsAllowedGlobalVariable(name) {
 			return fmt.Errorf("cannot set system variable: %s", name)
 		}
 	}
@@ -831,12 +791,12 @@ func (ctx *NeuroContext) GetDefaultCommand() string {
 	if override, exists := ctx.getSystemVariable("_default_command"); exists && override != "" {
 		return override
 	}
-	return ctx.defaultCommand
+	return ctx.configurationCtx.GetDefaultCommand()
 }
 
 // SetDefaultCommand sets the default command to use when input doesn't start with \\
 func (ctx *NeuroContext) SetDefaultCommand(command string) {
-	ctx.defaultCommand = command
+	ctx.configurationCtx.SetDefaultCommand(command)
 	_ = ctx.SetSystemVariable("_default_command", command)
 }
 
@@ -1014,30 +974,21 @@ func (ctx *NeuroContext) GetLastErrorState() (status string, errorMsg string) {
 // SetCommandReadOnly sets or removes a read-only override for a specific command.
 // This allows dynamic configuration of read-only status at runtime.
 func (ctx *NeuroContext) SetCommandReadOnly(commandName string, readOnly bool) {
-	ctx.readOnlyMutex.Lock()
-	defer ctx.readOnlyMutex.Unlock()
-
-	ctx.readOnlyOverrides[commandName] = readOnly
+	ctx.configurationCtx.SetCommandReadOnly(commandName, readOnly)
 }
 
 // RemoveCommandReadOnlyOverride removes any read-only override for a command,
 // reverting to the command's self-declared IsReadOnly() status.
 func (ctx *NeuroContext) RemoveCommandReadOnlyOverride(commandName string) {
-	ctx.readOnlyMutex.Lock()
-	defer ctx.readOnlyMutex.Unlock()
-
-	delete(ctx.readOnlyOverrides, commandName)
+	ctx.configurationCtx.RemoveCommandReadOnlyOverride(commandName)
 }
 
 // IsCommandReadOnly checks if a command is read-only by considering both
 // the command's self-declared status and any dynamic overrides.
 // Dynamic overrides take precedence over self-declared status.
 func (ctx *NeuroContext) IsCommandReadOnly(cmd neurotypes.Command) bool {
-	ctx.readOnlyMutex.RLock()
-	defer ctx.readOnlyMutex.RUnlock()
-
 	// Check for dynamic override first
-	if override, exists := ctx.readOnlyOverrides[cmd.Name()]; exists {
+	if override, exists := ctx.configurationCtx.IsCommandReadOnlyOverride(cmd.Name()); exists {
 		return override
 	}
 
@@ -1048,13 +999,11 @@ func (ctx *NeuroContext) IsCommandReadOnly(cmd neurotypes.Command) bool {
 // GetReadOnlyOverrides returns a copy of all current read-only overrides.
 // This is useful for configuration services and debugging.
 func (ctx *NeuroContext) GetReadOnlyOverrides() map[string]bool {
-	ctx.readOnlyMutex.RLock()
-	defer ctx.readOnlyMutex.RUnlock()
+	return ctx.configurationCtx.GetReadOnlyOverrides()
+}
 
-	// Return a copy to prevent external modification
-	overrides := make(map[string]bool)
-	for name, readOnly := range ctx.readOnlyOverrides {
-		overrides[name] = readOnly
-	}
-	return overrides
+// ClearAllReadOnlyOverrides removes all read-only overrides.
+// This is useful for testing purposes.
+func (ctx *NeuroContext) ClearAllReadOnlyOverrides() {
+	ctx.configurationCtx.ClearAllReadOnlyOverrides()
 }
