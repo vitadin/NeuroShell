@@ -32,6 +32,7 @@ var versionCodenames = map[string]string{
 	"0.2.3": "Planaria", // Simple brain, basic learning ability (continued)
 	"0.2.4": "Planaria", // Simple brain, basic learning ability (continued)
 	"0.2.5": "Dendro",   // Branching neural connections emerge
+	"0.2.6": "Synaptic", // Formation of neural synapses and connections
 	// Future codenames (commented out for upcoming releases)
 	// "0.3.0": "Tentara",  // Distributed multi-core intelligence
 	// "0.4.0": "Corvex",   // Advanced spatial reasoning and cognition

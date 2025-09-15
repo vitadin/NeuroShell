@@ -3,6 +3,39 @@
 # Each entry represents a significant change, bug fix, or feature addition
 
 entries:
+  - id: "CL6"
+    version: "0.2.6"
+    date: "2025-09-14"
+    type: "refactor"
+    title: "Context Layer Refactoring, Enhanced Autocompletion, and Shell Prompt System"
+    description: "Implemented massive architectural refactoring with complete context layer restructuring into focused subcontexts for improved separation of concerns and maintainability. Extracted variable, session, model, stack, command registry, error state, LLM client, and configuration management into dedicated subcontexts with proper delegation patterns. Enhanced autocompletion system with improved functionality, description display fixes, and localized readline library integration. Added comprehensive shell prompt system with color themes, multi-line support, and customizable prompt configuration. Implemented robust test mode isolation ensuring clean testing environments without configuration pollution. Fixed critical issues including path handling, shell prompt rendering, and configuration management bugs."
+    impact: "Developers benefit from significantly improved code maintainability with clean separation of concerns and focused interfaces following the three-layer architecture. The context layer refactoring enables easier testing, debugging, and future feature development. Users experience enhanced autocompletion with better suggestions and descriptions, customizable shell prompts with color themes and multi-line support, and more reliable configuration management. The robust test mode isolation ensures consistent behavior across development and production environments. These architectural improvements lay the foundation for scalable future development while maintaining backward compatibility."
+    files_changed: [
+      "internal/context/variable_subcontext.go",
+      "internal/context/session_subcontext.go",
+      "internal/context/model_subcontext.go",
+      "internal/context/stack_subcontext.go",
+      "internal/context/command_registry_subcontext.go",
+      "internal/context/error_state_subcontext.go",
+      "internal/context/llm_client_subcontext.go",
+      "internal/context/configuration_subcontext.go",
+      "internal/context/context.go",
+      "internal/context/context_test.go",
+      "internal/services/autocomplete_service.go",
+      "internal/services/configuration_service.go",
+      "internal/services/configuration_service_test.go",
+      "internal/commands/builtin/shell_prompt.go",
+      "internal/commands/builtin/shell_prompt_test.go",
+      "internal/commands/builtin/config_path_test.go",
+      "internal/services/shell_prompt_service.go",
+      "internal/services/shell_prompt_service_test.go",
+      "internal/services/prompt_color_service.go",
+      "scripts/version.sh",
+      "internal/version/version.go",
+      "test/golden/llm-api-error-handling.c.expected",
+      "test/golden/session-save-*.expected",
+      "justfile"
+    ]
   - id: "CL5"
     version: "0.2.5"
     date: "2025-08-20"
