@@ -25,7 +25,7 @@ Setting very_long = This is an extremely long condition string that goes on and 
 %%> "\\echo \"Unicode condition works: 🌟✨\""
 "Unicode condition works: 🌟✨"
 %%> "\\set[multiline=\"line1\\\\nline2\\\\nline3\"]"
-Setting multiline = line1\\nline2\\nline3
+Setting multiline = line1\nline2\nline3
 %%> "\\if[condition=${multiline}] \\echo \"Multiline condition is truthy\""
 %%> "\\echo \"Multiline condition is truthy\""
 "Multiline condition is truthy"
@@ -33,12 +33,12 @@ Setting multiline = line1\\nline2\\nline3
 %%> "\\echo \"This is a very long command that tests whether the if statement can handle commands that are extremely verbose and contain lots of text to ensure proper queue handling with extensive content\""
 "This is a very long command that tests whether the if statement can handle commands that are extremely verbose and contain lots of text to ensure proper queue handling with extensive content"
 %%> "\\set[complex_var=\"value with \\\"quotes\\\" and special chars\"]"
-Setting complex_var = value with \"quotes\" and special chars
+Setting complex_var = value with "quotes" and special chars
 %%> "\\if[condition=true] \\set[result=\"${complex_var}\"]"
-%%> "\\set[result=\"value with \\\"quotes\\\" and special chars\"]"
-Setting result = value with \"quotes\" and special chars
+%%> "\\set[result=\"value with \"quotes\" and special chars\"]"
+Setting result = value with "quotes" and special chars
 %%> "\\get[result]"
-result = value with \"quotes\" and special chars
+result = value with "quotes" and special chars
 %%> "\\if[condition=true] \\set[test1=\"pass\"]"
 %%> "\\set[test1=\"pass\"]"
 Setting test1 = pass

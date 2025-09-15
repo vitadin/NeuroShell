@@ -249,17 +249,23 @@ func TestActivateCommand_Execute_MultipleMatches(t *testing.T) {
 }
 
 func TestActivateCommand_Execute_EmptyInput(t *testing.T) {
-	// Create test context
+	// Reset global context to ensure completely clean state
+	context.ResetGlobalContext()
+	defer context.ResetGlobalContext()
+
+	// Create a completely fresh test context
 	ctx := context.New()
 	ctx.SetTestMode(true)
 
-	// Initialize services
+	// Initialize services with a fresh registry
 	registry := services.NewRegistry()
-	_ = registry.RegisterService(services.NewModelService())
-	_ = registry.RegisterService(services.NewVariableService())
+	modelService := services.NewModelService()
+	variableService := services.NewVariableService()
+	_ = registry.RegisterService(modelService)
+	_ = registry.RegisterService(variableService)
 	_ = registry.InitializeAll()
 
-	// Set global registry and context
+	// Set global registry and context to our fresh ones
 	oldRegistry := services.GetGlobalRegistry()
 	services.SetGlobalRegistry(registry)
 	defer services.SetGlobalRegistry(oldRegistry)
@@ -274,7 +280,6 @@ func TestActivateCommand_Execute_EmptyInput(t *testing.T) {
 	require.NoError(t, err)
 
 	// Check that the appropriate message is stored in _output
-	variableService, _ := services.GetGlobalVariableService()
 	output, _ := variableService.Get("_output")
 	assert.Contains(t, output, "No models available. Use \\model-new to create one.")
 }

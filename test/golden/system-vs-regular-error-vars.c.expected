@@ -26,7 +26,7 @@ _error =
 %%> "\\get[@status]"
 @status = 1
 %%> "\\get[@error]"
-@error = failed to set variable @error: cannot set system variable: @error
+@error = failed to set variable @error: variable name cannot start with system prefixes @ or #
 %%> "\\try \\set[_status=42]"
 %%> "\\set[_status=42]"
 %%> "\\try \\set[_error=custom error message]"
@@ -34,7 +34,7 @@ _error =
 %%> "\\get[@status]"
 @status = 1
 %%> "\\get[@error]"
-@error = failed to set variable _error: cannot set system variable: _error
+@error = failed to set variable _error: variable name cannot start with _ unless whitelisted
 %%> "\\get[_status]"
 _status = 
 %%> "\\get[_error]"

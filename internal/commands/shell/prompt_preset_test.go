@@ -54,7 +54,7 @@ func TestPromptPresetCommand_Execute_Default(t *testing.T) {
 
 	line1, err := ctx.GetVariable("_prompt_line1")
 	assert.NoError(t, err)
-	assert.Equal(t, "${@pwd} [${#session_name:-no-session}]", line1)
+	assert.Equal(t, "${@pwd}${#session_display:-}", line1)
 
 	line2, err := ctx.GetVariable("_prompt_line2")
 	assert.NoError(t, err)
@@ -169,7 +169,7 @@ func TestPromptPresetCommand_Execute_ColorizedPresets(t *testing.T) {
 			style: "default-color",
 			expected: map[string]string{
 				"_prompt_lines_count": "2",
-				"_prompt_line1":       "{{color:blue}}${@pwd}{{/color}} [{{color:yellow}}${#session_name:-no-session}{{/color}}]",
+				"_prompt_line1":       "{{color:blue}}${@pwd}{{/color}}${#session_display_color:-}",
 				"_prompt_line2":       "{{color:success}}neuro>{{/color}} ",
 			},
 		},

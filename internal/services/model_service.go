@@ -2,10 +2,8 @@ package services
 
 import (
 	"fmt"
-	"strings"
 
 	neuroshellcontext "neuroshell/internal/context"
-	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
@@ -42,61 +40,19 @@ func (m *ModelService) CreateModel(name, provider, baseModel string, parameters 
 		return nil, fmt.Errorf("model service not initialized")
 	}
 
-	// Validate model name
-	if err := m.validateModelName(name); err != nil {
-		return nil, err
-	}
-
-	// Check if model name already exists
-	if ctx.ModelNameExists(name) {
-		return nil, fmt.Errorf("model name '%s' already exists", name)
-	}
-
-	// Validate required fields
-	if provider == "" {
-		return nil, fmt.Errorf("provider is required")
-	}
-	if baseModel == "" {
-		return nil, fmt.Errorf("base_model is required")
-	}
-
-	// Generate unique model ID (deterministic in test mode)
-	modelID := testutils.GenerateUUID(ctx)
-
-	// Ensure parameters map is not nil
-	if parameters == nil {
-		parameters = make(map[string]any)
-	}
-
-	// Create model configuration (deterministic time in test mode)
-	now := testutils.GetCurrentTime(ctx)
-	model := &neurotypes.ModelConfig{
-		ID:          modelID,
-		Name:        name,
-		Provider:    provider,
-		BaseModel:   baseModel,
-		Parameters:  parameters,
-		Description: description,
-		CatalogID:   catalogID,
-		CreatedAt:   now,
-		UpdatedAt:   now,
-	}
-
-	// Store model in context with bidirectional mapping
-	if err := m.storeModel(model, ctx); err != nil {
-		return nil, fmt.Errorf("failed to store model: %w", err)
-	}
-
-	// Auto-activate the newly created model (following session pattern)
-	ctx.SetActiveModelID(modelID)
-
-	return model, nil
+	// Use the model subcontext instead of direct context access
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.CreateModel(name, provider, baseModel, parameters, description, catalogID)
 }
 
 // CreateModelWithGlobalContext creates a new model configuration using the global context singleton.
 func (m *ModelService) CreateModelWithGlobalContext(name, provider, baseModel string, parameters map[string]any, description, catalogID string) (*neurotypes.ModelConfig, error) {
+	if !m.initialized {
+		return nil, fmt.Errorf("model service not initialized")
+	}
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.CreateModel(name, provider, baseModel, parameters, description, catalogID, ctx)
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.CreateModel(name, provider, baseModel, parameters, description, catalogID)
 }
 
 // GetModel retrieves a model configuration by ID.
@@ -105,19 +61,19 @@ func (m *ModelService) GetModel(id string, ctx neurotypes.Context) (*neurotypes.
 		return nil, fmt.Errorf("model service not initialized")
 	}
 
-	models := ctx.GetModels()
-	model, exists := models[id]
-	if !exists {
-		return nil, fmt.Errorf("model with ID '%s' not found", id)
-	}
-
-	return model, nil
+	// Use the model subcontext instead of direct context access
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.GetModel(id)
 }
 
 // GetModelWithGlobalContext retrieves a model configuration by ID using the global context singleton.
 func (m *ModelService) GetModelWithGlobalContext(id string) (*neurotypes.ModelConfig, error) {
+	if !m.initialized {
+		return nil, fmt.Errorf("model service not initialized")
+	}
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.GetModel(id, ctx)
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.GetModel(id)
 }
 
 // GetModelByName retrieves a model configuration by name.
@@ -126,21 +82,19 @@ func (m *ModelService) GetModelByName(name string, ctx neurotypes.Context) (*neu
 		return nil, fmt.Errorf("model service not initialized")
 	}
 
-	// Get ID from name mapping
-	nameToID := ctx.GetModelNameToID()
-	modelID, exists := nameToID[name]
-	if !exists {
-		return nil, fmt.Errorf("model with name '%s' not found", name)
-	}
-
-	// Get model by ID
-	return m.GetModel(modelID, ctx)
+	// Use the model subcontext instead of direct context access
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.GetModelByName(name)
 }
 
 // GetModelByNameWithGlobalContext retrieves a model configuration by name using the global context singleton.
 func (m *ModelService) GetModelByNameWithGlobalContext(name string) (*neurotypes.ModelConfig, error) {
+	if !m.initialized {
+		return nil, fmt.Errorf("model service not initialized")
+	}
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.GetModelByName(name, ctx)
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.GetModelByName(name)
 }
 
 // ListModels returns all model configurations.
@@ -149,13 +103,19 @@ func (m *ModelService) ListModels(ctx neurotypes.Context) (map[string]*neurotype
 		return nil, fmt.Errorf("model service not initialized")
 	}
 
-	return ctx.GetModels(), nil
+	// Use the model subcontext instead of direct context access
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.ListModels()
 }
 
 // ListModelsWithGlobalContext returns all model configurations using the global context singleton.
 func (m *ModelService) ListModelsWithGlobalContext() (map[string]*neurotypes.ModelConfig, error) {
+	if !m.initialized {
+		return nil, fmt.Errorf("model service not initialized")
+	}
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.ListModels(ctx)
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.ListModels()
 }
 
 // DeleteModel removes a model configuration by ID.
@@ -165,41 +125,19 @@ func (m *ModelService) DeleteModel(id string, ctx neurotypes.Context) error {
 		return fmt.Errorf("model service not initialized")
 	}
 
-	// Check if model exists
-	models := ctx.GetModels()
-	model, exists := models[id]
-	if !exists {
-		return fmt.Errorf("model with ID '%s' not found", id)
-	}
-
-	// Remove from bidirectional mappings
-	nameToID := ctx.GetModelNameToID()
-	idToName := ctx.GetModelIDToName()
-
-	// Remove name->ID mapping
-	delete(nameToID, model.Name)
-	ctx.SetModelNameToID(nameToID)
-
-	// Remove ID->name mapping
-	delete(idToName, id)
-	ctx.SetModelIDToName(idToName)
-
-	// Remove model from storage
-	delete(models, id)
-	ctx.SetModels(models)
-
-	// Clear active model if it was the deleted one
-	if ctx.GetActiveModelID() == id {
-		ctx.SetActiveModelID("")
-	}
-
-	return nil
+	// Use the model subcontext instead of direct context access
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.DeleteModel(id)
 }
 
 // DeleteModelWithGlobalContext removes a model configuration by ID using the global context singleton.
 func (m *ModelService) DeleteModelWithGlobalContext(id string) error {
+	if !m.initialized {
+		return fmt.Errorf("model service not initialized")
+	}
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.DeleteModel(id, ctx)
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.DeleteModel(id)
 }
 
 // DeleteModelByName removes a model configuration by name.
@@ -208,67 +146,19 @@ func (m *ModelService) DeleteModelByName(name string, ctx neurotypes.Context) er
 		return fmt.Errorf("model service not initialized")
 	}
 
-	// Get ID from name mapping
-	nameToID := ctx.GetModelNameToID()
-	modelID, exists := nameToID[name]
-	if !exists {
-		return fmt.Errorf("model with name '%s' not found", name)
-	}
-
-	// Delete by ID
-	return m.DeleteModel(modelID, ctx)
+	// Use the model subcontext instead of direct context access
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.DeleteModelByName(name)
 }
 
 // DeleteModelByNameWithGlobalContext removes a model configuration by name using the global context singleton.
 func (m *ModelService) DeleteModelByNameWithGlobalContext(name string) error {
+	if !m.initialized {
+		return fmt.Errorf("model service not initialized")
+	}
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.DeleteModelByName(name, ctx)
-}
-
-// validateModelName validates that a model name meets requirements:
-// - Not empty
-// - No spaces
-// - Reasonable length
-func (m *ModelService) validateModelName(name string) error {
-	if name == "" {
-		return fmt.Errorf("model name cannot be empty")
-	}
-
-	if strings.Contains(name, " ") {
-		return fmt.Errorf("model name cannot contain spaces")
-	}
-
-	if len(name) > 100 {
-		return fmt.Errorf("model name cannot exceed 100 characters")
-	}
-
-	// Check for invalid characters (basic validation)
-	if strings.ContainsAny(name, "\n\t\r") {
-		return fmt.Errorf("model name cannot contain newlines or tabs")
-	}
-
-	return nil
-}
-
-// storeModel stores a model configuration in the context with bidirectional mapping.
-func (m *ModelService) storeModel(model *neurotypes.ModelConfig, ctx neurotypes.Context) error {
-	// Get current mappings
-	models := ctx.GetModels()
-	nameToID := ctx.GetModelNameToID()
-	idToName := ctx.GetModelIDToName()
-
-	// Store model
-	models[model.ID] = model
-	ctx.SetModels(models)
-
-	// Update bidirectional mappings
-	nameToID[model.Name] = model.ID
-	ctx.SetModelNameToID(nameToID)
-
-	idToName[model.ID] = model.Name
-	ctx.SetModelIDToName(idToName)
-
-	return nil
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.DeleteModelByName(name)
 }
 
 // ValidateModelParameters validates model parameters against standard constraints.
@@ -298,62 +188,19 @@ func (m *ModelService) GetActiveModelConfig(ctx neurotypes.Context) (*neurotypes
 		return nil, fmt.Errorf("model service not initialized")
 	}
 
-	// 1. Try to get active model ID from context (single source of truth)
-	activeID := ctx.GetActiveModelID()
-	if activeID != "" {
-		if model, err := m.GetModel(activeID, ctx); err == nil {
-			return model, nil
-		}
-		// If active ID points to deleted model, clear it
-		ctx.SetActiveModelID("")
-	}
-
-	// 2. If no active model, find latest created/updated model
-	models := ctx.GetModels()
-	if len(models) > 0 {
-		latest := m.findLatestModelByTimestamp(models)
-		ctx.SetActiveModelID(latest.ID) // Auto-set as active
-		return latest, nil
-	}
-
-	// 3. Final fallback: synthetic default (no models exist)
-	return m.createSyntheticDefault(ctx), nil
+	// Use the model subcontext instead of direct context access
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.GetActiveModelConfig()
 }
 
 // GetActiveModelConfigWithGlobalContext returns the active model configuration using the global context singleton.
 func (m *ModelService) GetActiveModelConfigWithGlobalContext() (*neurotypes.ModelConfig, error) {
+	if !m.initialized {
+		return nil, fmt.Errorf("model service not initialized")
+	}
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.GetActiveModelConfig(ctx)
-}
-
-// findLatestModelByTimestamp finds the most recently updated model for auto-activation.
-// Uses UpdatedAt timestamp to determine the latest model.
-func (m *ModelService) findLatestModelByTimestamp(models map[string]*neurotypes.ModelConfig) *neurotypes.ModelConfig {
-	var latest *neurotypes.ModelConfig
-	for _, model := range models {
-		if latest == nil || model.UpdatedAt.After(latest.UpdatedAt) {
-			latest = model
-		}
-	}
-	return latest
-}
-
-// createSyntheticDefault creates a synthetic default GPT-4 configuration as fallback.
-// This is used when no models exist in the system.
-func (m *ModelService) createSyntheticDefault(ctx neurotypes.Context) *neurotypes.ModelConfig {
-	return &neurotypes.ModelConfig{
-		ID:        "default-gpt-4",
-		Name:      "default-gpt-4",
-		Provider:  "openai",
-		BaseModel: "gpt-4",
-		Parameters: map[string]any{
-			"temperature": 0.7,
-			"max_tokens":  1000,
-		},
-		Description: "Default GPT-4 configuration (synthetic)",
-		CreatedAt:   testutils.GetCurrentTime(ctx),
-		UpdatedAt:   testutils.GetCurrentTime(ctx),
-	}
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.GetActiveModelConfig()
 }
 
 // SetActiveModel sets the specified model as active by ID.
@@ -362,37 +209,40 @@ func (m *ModelService) SetActiveModel(modelID string, ctx neurotypes.Context) er
 		return fmt.Errorf("model service not initialized")
 	}
 
-	// Validate that the model exists
-	_, err := m.GetModel(modelID, ctx)
-	if err != nil {
-		return fmt.Errorf("cannot set active model: %w", err)
-	}
-
-	// Set as active in context
-	ctx.SetActiveModelID(modelID)
-	return nil
+	// Use the model subcontext instead of direct context access
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.SetActiveModel(modelID)
 }
 
 // SetActiveModelWithGlobalContext sets the specified model as active by ID using the global context singleton.
 func (m *ModelService) SetActiveModelWithGlobalContext(modelID string) error {
+	if !m.initialized {
+		return fmt.Errorf("model service not initialized")
+	}
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.SetActiveModel(modelID, ctx)
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.SetActiveModel(modelID)
 }
 
 // SetActiveModelByName sets the specified model as active by name.
 func (m *ModelService) SetActiveModelByName(name string, ctx neurotypes.Context) error {
-	model, err := m.GetModelByName(name, ctx)
-	if err != nil {
-		return fmt.Errorf("cannot set active model: %w", err)
+	if !m.initialized {
+		return fmt.Errorf("model service not initialized")
 	}
 
-	return m.SetActiveModel(model.ID, ctx)
+	// Use the model subcontext instead of direct context access
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.SetActiveModelByName(name)
 }
 
 // SetActiveModelByNameWithGlobalContext sets the specified model as active by name using the global context singleton.
 func (m *ModelService) SetActiveModelByNameWithGlobalContext(name string) error {
+	if !m.initialized {
+		return fmt.Errorf("model service not initialized")
+	}
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.SetActiveModelByName(name, ctx)
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.SetActiveModelByName(name)
 }
 
 // ClearActiveModel clears the active model setting.
@@ -401,12 +251,17 @@ func (m *ModelService) ClearActiveModel(ctx neurotypes.Context) error {
 		return fmt.Errorf("model service not initialized")
 	}
 
-	ctx.SetActiveModelID("")
-	return nil
+	// Use the model subcontext instead of direct context access
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.ClearActiveModel()
 }
 
 // ClearActiveModelWithGlobalContext clears the active model setting using the global context singleton.
 func (m *ModelService) ClearActiveModelWithGlobalContext() error {
+	if !m.initialized {
+		return fmt.Errorf("model service not initialized")
+	}
 	ctx := neuroshellcontext.GetGlobalContext()
-	return m.ClearActiveModel(ctx)
+	modelCtx := neuroshellcontext.NewModelSubcontext(ctx.(*neuroshellcontext.NeuroContext))
+	return modelCtx.ClearActiveModel()
 }

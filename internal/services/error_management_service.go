@@ -10,7 +10,8 @@ import (
 // It manages the @status/@error system variables and provides a clean interface
 // for error state operations across the entire application.
 type ErrorManagementService struct {
-	initialized bool
+	initialized   bool
+	errorStateCtx neuroshellcontext.ErrorStateSubcontext
 }
 
 // NewErrorManagementService creates a new ErrorManagementService instance.
@@ -27,6 +28,12 @@ func (e *ErrorManagementService) Name() string {
 
 // Initialize sets up the ErrorManagementService for operation.
 func (e *ErrorManagementService) Initialize() error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
+	if !ok {
+		return fmt.Errorf("global context is not a NeuroContext")
+	}
+	e.errorStateCtx = neuroshellcontext.NewErrorStateSubcontextFromContext(neuroCtx)
 	e.initialized = true
 	return nil
 }
@@ -47,13 +54,8 @@ func (e *ErrorManagementService) ResetErrorState() error {
 		return fmt.Errorf("error service not initialized")
 	}
 
-	globalCtx := neuroshellcontext.GetGlobalContext()
-	if neuroCtx, ok := globalCtx.(*neuroshellcontext.NeuroContext); ok {
-		neuroCtx.ResetErrorState()
-		return nil
-	}
-
-	return fmt.Errorf("unable to access NeuroContext for error state management")
+	e.errorStateCtx.ResetErrorState()
+	return nil
 }
 
 // SetErrorState sets the current error state based on command execution results.
@@ -63,13 +65,8 @@ func (e *ErrorManagementService) SetErrorState(status string, errorMsg string) e
 		return fmt.Errorf("error service not initialized")
 	}
 
-	globalCtx := neuroshellcontext.GetGlobalContext()
-	if neuroCtx, ok := globalCtx.(*neuroshellcontext.NeuroContext); ok {
-		neuroCtx.SetErrorState(status, errorMsg)
-		return nil
-	}
-
-	return fmt.Errorf("unable to access NeuroContext for error state management")
+	e.errorStateCtx.SetErrorState(status, errorMsg)
+	return nil
 }
 
 // GetCurrentErrorState returns the current error state (thread-safe read).
@@ -78,13 +75,8 @@ func (e *ErrorManagementService) GetCurrentErrorState() (status string, errorMsg
 		return "", "", fmt.Errorf("error service not initialized")
 	}
 
-	globalCtx := neuroshellcontext.GetGlobalContext()
-	if neuroCtx, ok := globalCtx.(*neuroshellcontext.NeuroContext); ok {
-		status, errorMsg := neuroCtx.GetCurrentErrorState()
-		return status, errorMsg, nil
-	}
-
-	return "", "", fmt.Errorf("unable to access NeuroContext for error state management")
+	status, errorMsg = e.errorStateCtx.GetCurrentErrorState()
+	return status, errorMsg, nil
 }
 
 // GetLastErrorState returns the last error state (thread-safe read).
@@ -93,13 +85,8 @@ func (e *ErrorManagementService) GetLastErrorState() (status string, errorMsg st
 		return "", "", fmt.Errorf("error service not initialized")
 	}
 
-	globalCtx := neuroshellcontext.GetGlobalContext()
-	if neuroCtx, ok := globalCtx.(*neuroshellcontext.NeuroContext); ok {
-		status, errorMsg := neuroCtx.GetLastErrorState()
-		return status, errorMsg, nil
-	}
-
-	return "", "", fmt.Errorf("unable to access NeuroContext for error state management")
+	status, errorMsg = e.errorStateCtx.GetLastErrorState()
+	return status, errorMsg, nil
 }
 
 // SetErrorStateFromCommandResult is a convenience method that sets error state based on command execution results.

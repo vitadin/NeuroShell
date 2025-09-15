@@ -589,28 +589,28 @@ func TestSetCommand_Execute_WhitelistedGlobalVariables(t *testing.T) {
 			args:    map[string]string{"_secret": "value"},
 			input:   "",
 			wantErr: true,
-			errMsg:  "cannot set system variable: _secret",
+			errMsg:  "variable name cannot start with _ unless whitelisted",
 		},
 		{
 			name:    "try to set non-whitelisted _config variable",
 			args:    map[string]string{"_config": "value"},
 			input:   "",
 			wantErr: true,
-			errMsg:  "cannot set system variable: _config",
+			errMsg:  "variable name cannot start with _ unless whitelisted",
 		},
 		{
 			name:    "try to set @pwd system variable",
 			args:    map[string]string{"@pwd": "/tmp"},
 			input:   "",
 			wantErr: true,
-			errMsg:  "cannot set system variable: @pwd",
+			errMsg:  "variable name cannot start with system prefixes @ or #",
 		},
 		{
 			name:    "try to set #session_id system variable",
 			args:    map[string]string{"#session_id": "fake"},
 			input:   "",
 			wantErr: true,
-			errMsg:  "cannot set system variable: #session_id",
+			errMsg:  "variable name cannot start with system prefixes @ or #",
 		},
 	}
 

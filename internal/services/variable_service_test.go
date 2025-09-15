@@ -499,3 +499,131 @@ func TestVariableService_SetSystemVariable_WrongContextType(t *testing.T) {
 
 	assert.NoError(t, err)
 }
+
+// TestVariableService_ValidateVariableName tests variable name validation
+func TestVariableService_ValidateVariableName(t *testing.T) {
+	service := &VariableService{initialized: true} // Just for validation functions
+
+	tests := []struct {
+		name        string
+		varName     string
+		expectError bool
+	}{
+		{"Valid user variable", "myvar", false},
+		{"Valid underscore variable", "_style", false},
+		{"Invalid system prefix @", "@system", true},
+		{"Invalid system prefix #", "#meta", true},
+		{"Invalid whitespace", "my var", true},
+		{"Empty name", "", true},
+		{"Invalid underscore", "_invalid", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := service.ValidateVariableName(tt.varName)
+			if tt.expectError && err == nil {
+				t.Errorf("Expected error for variable name '%s', got nil", tt.varName)
+			}
+			if !tt.expectError && err != nil {
+				t.Errorf("Expected no error for variable name '%s', got: %v", tt.varName, err)
+			}
+		})
+	}
+}
+
+// TestVariableService_AnalyzeVariable tests the variable analysis function
+func TestVariableService_AnalyzeVariable(t *testing.T) {
+	service := &VariableService{initialized: true}
+
+	tests := []struct {
+		name         string
+		varName      string
+		expectedType context.VariableType
+		isSystem     bool
+		isReadOnly   bool
+	}{
+		{"User variable", "myvar", context.TypeUser, false, false},
+		{"System variable @", "@pwd", context.TypeSystem, true, true},
+		{"Metadata variable #", "#session_id", context.TypeMetadata, true, true},
+		{"Command variable _", "_output", context.TypeCommand, true, true},
+		{"Allowed command variable", "_style", context.TypeCommand, true, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			info := service.AnalyzeVariable(tt.varName)
+
+			if info.Type != tt.expectedType {
+				t.Errorf("Expected type %v, got %v", tt.expectedType, info.Type)
+			}
+			if info.IsSystem != tt.isSystem {
+				t.Errorf("Expected IsSystem=%v, got %v", tt.isSystem, info.IsSystem)
+			}
+			if info.IsReadOnly != tt.isReadOnly {
+				t.Errorf("Expected IsReadOnly=%v, got %v", tt.isReadOnly, info.IsReadOnly)
+			}
+		})
+	}
+}
+
+// TestVariableService_GetEnvVariable tests environment variable operations
+func TestVariableService_GetEnvVariable(t *testing.T) {
+	service := NewVariableService()
+	ctx := context.New()
+
+	// Initialize service
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	// Test getting environment variable (using the context's mock env)
+	value := service.GetEnv("NONEXISTENT_VAR")
+	// Should return empty string for non-existent variable
+	assert.Empty(t, value)
+}
+
+// TestVariableService_SetEnvVariable tests setting environment variables
+func TestVariableService_SetEnvVariable(t *testing.T) {
+	service := NewVariableService()
+	ctx := context.New()
+
+	// Initialize service
+	err := service.Initialize()
+	require.NoError(t, err)
+
+	// Setup global context for testing
+	context.SetGlobalContext(ctx)
+	defer context.ResetGlobalContext()
+
+	// Test setting environment variable
+	err = service.SetEnvVariable("TEST_ENV", "test_value")
+	assert.NoError(t, err)
+
+	// Verify it was set
+	value := service.GetEnv("TEST_ENV")
+	assert.Equal(t, "test_value", value)
+}
+
+// TestVariableService_ErrorHandling tests comprehensive error handling
+func TestVariableService_ErrorHandling(t *testing.T) {
+	t.Run("Uninitialized service", func(t *testing.T) {
+		service := NewVariableService()
+
+		_, err := service.Get("test")
+		if err == nil || err.Error() != "variable service not initialized" {
+			t.Errorf("Expected 'variable service not initialized' error, got: %v", err)
+		}
+	})
+
+	t.Run("Service with nil subcontext", func(t *testing.T) {
+		service := &VariableService{initialized: true, varCtx: nil}
+
+		_, err := service.Get("test")
+		if err == nil || err.Error() != "variable subcontext not available" {
+			t.Errorf("Expected 'variable subcontext not available' error, got: %v", err)
+		}
+	})
+}

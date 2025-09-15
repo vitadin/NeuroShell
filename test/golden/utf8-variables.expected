@@ -44,9 +44,9 @@ Setting multiline = Line 1: café\nLine 2: 日本語\nLine 3: 🚀 rocket
 %%> "\\get[multiline]"
 multiline = Line 1: café\nLine 2: 日本語\nLine 3: 🚀 rocket
 %%> "\\set[escaped=\"Escaped: \\\"café\\\" and 'naïve' with — dash\"]"
-Setting escaped = Escaped: \"café\" and 'naïve' with — dash
+Setting escaped = Escaped: "café" and 'naïve' with — dash
 %%> "\\get[escaped]"
-escaped = Escaped: \"café\" and 'naïve' with — dash
+escaped = Escaped: "café" and 'naïve' with — dash
 %%> "\\set[empty=\"\"]"
 Setting empty = 
 %%> "\\get[empty]"

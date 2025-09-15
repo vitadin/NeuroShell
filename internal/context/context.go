@@ -5,68 +5,27 @@ import (
 	"fmt"
 	"os"
 	"os/user"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/joho/godotenv"
-
 	"neuroshell/internal/testutils"
 	"neuroshell/pkg/neurotypes"
 )
 
-// allowedGlobalVariables defines which global variables (starting with _) can be set by users
-var allowedGlobalVariables = []string{
-	"_style",
-	"_reply_way",
-	"_echo_command",
-	"_render_markdown",
-	"_default_command",
-	"_stream",
-	"_editor",
-	"_session_autosave",
-	"_completion_mode",
-	// Shell prompt configuration variables
-	"_prompt_lines_count",
-	"_prompt_line1",
-	"_prompt_line2",
-	"_prompt_line3",
-	"_prompt_line4",
-	"_prompt_line5",
-}
-
-// TryBlockContext represents the context for a try block with error boundaries
-type TryBlockContext struct {
-	ID            string // Unique identifier for this try block
-	StartDepth    int    // Stack depth when try block started
-	ErrorCaptured bool   // Whether an error has been captured
-}
-
-// SilentBlockContext represents the context for a silent block with output suppression
-type SilentBlockContext struct {
-	ID         string // Unique identifier for this silent block
-	StartDepth int    // Stack depth when silent block started
-}
-
 // NeuroContext implements the neurotypes.Context interface providing session state management.
 // It maintains variables, message history, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
-	variables        map[string]string
-	history          []neurotypes.Message
-	sessionID        string
-	scriptMetadata   map[string]interface{}
-	testMode         bool
-	testEnvOverrides map[string]string // Test-specific environment variable overrides
+	variables      map[string]string
+	history        []neurotypes.Message
+	sessionID      string
+	scriptMetadata map[string]interface{}
+	testMode       bool
 
 	// Stack-based execution support
-	executionStack     []string             // Execution stack (LIFO order)
-	tryBlocks          []TryBlockContext    // Try block management
-	currentTryDepth    int                  // Current try block depth
-	silentBlocks       []SilentBlockContext // Silent block management
-	currentSilentDepth int                  // Current silent block depth
-	stackMutex         sync.RWMutex         // Protects executionStack, tryBlocks, and silentBlocks
+	stackCtx       StackSubcontext // Delegated stack management
+	variablesMutex sync.RWMutex    // Protects variables map
 
 	// Chat session storage
 	chatSessions    map[string]*neurotypes.ChatSession // Session storage by ID
@@ -80,57 +39,37 @@ type NeuroContext struct {
 	models        map[string]*neurotypes.ModelConfig // Model storage by ID
 	modelNameToID map[string]string                  // Name to ID mapping
 
-	// Provider registry - central source of truth for supported providers
-	supportedProviders  []string          // Supported LLM provider names (lowercase)
-	providerEnvPrefixes []string          // Environment variable prefixes for provider detection
-	modelIDToName       map[string]string // ID to name mapping
+	// Provider registry management
+	providerRegistryCtx ProviderRegistrySubcontext // Delegated provider registry management
+	modelIDToName       map[string]string          // ID to name mapping
 
-	// LLM client storage
-	llmClients map[string]neurotypes.LLMClient // LLM client storage by client ID (provider:hash format)
+	// LLM client management
+	llmClientCtx LLMClientSubcontext // Delegated LLM client management
 
-	// Command registry information
-	registeredCommands map[string]bool                 // Track registered command names for autocomplete
-	commandHelpInfo    map[string]*neurotypes.HelpInfo // Store detailed help info for autocomplete and help system
-	commandMutex       sync.RWMutex                    // Protects registeredCommands and commandHelpInfo maps
-
-	// Default command configuration
-	defaultCommand string // Command to use when input doesn't start with \\
+	// Command registry management
+	commandRegistryCtx CommandRegistrySubcontext // Delegated command registry management
 
 	// Configuration management
-	configMap   map[string]string // Configuration key-value store
-	configMutex sync.RWMutex      // Protects configMap
+	configurationCtx ConfigurationSubcontext // Delegated configuration management
 
 	// Script metadata protection
 	scriptMutex sync.RWMutex // Protects scriptMetadata map
 
 	// Error state management
-	lastStatus      string       // Last command's exit status
-	lastError       string       // Last command's error message
-	currentStatus   string       // Current command's exit status (0 = success, non-zero = error)
-	currentError    string       // Current command's error message
-	errorStateMutex sync.RWMutex // Protects error state fields
-
-	// Read-only command management
-	readOnlyOverrides map[string]bool // Dynamic overrides: true=readonly, false=writable
-	readOnlyMutex     sync.RWMutex    // Protects readOnlyOverrides
+	errorStateCtx ErrorStateSubcontext // Delegated error state management
 }
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
 func New() *NeuroContext {
 	ctx := &NeuroContext{
-		variables:        make(map[string]string),
-		history:          make([]neurotypes.Message, 0),
-		sessionID:        "", // Will be set after we know test mode
-		scriptMetadata:   make(map[string]interface{}),
-		testMode:         false,
-		testEnvOverrides: make(map[string]string),
+		variables:      make(map[string]string),
+		history:        make([]neurotypes.Message, 0),
+		sessionID:      "", // Will be set after we know test mode
+		scriptMetadata: make(map[string]interface{}),
+		testMode:       false,
 
 		// Initialize stack-based execution support
-		executionStack:     make([]string, 0),
-		tryBlocks:          make([]TryBlockContext, 0),
-		currentTryDepth:    0,
-		silentBlocks:       make([]SilentBlockContext, 0),
-		currentSilentDepth: 0,
+		stackCtx: NewStackSubcontext(),
 
 		// Initialize chat session storage
 		chatSessions:    make(map[string]*neurotypes.ChatSession),
@@ -142,31 +81,20 @@ func New() *NeuroContext {
 		modelNameToID: make(map[string]string),
 		modelIDToName: make(map[string]string),
 
-		// Initialize LLM client storage
-		llmClients: make(map[string]neurotypes.LLMClient),
+		// Initialize LLM client management
+		llmClientCtx: NewLLMClientSubcontext(),
 
-		// Initialize provider registry
-		supportedProviders:  []string{"openai", "anthropic", "openrouter", "moonshot", "gemini"},
-		providerEnvPrefixes: []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_", "GOOGLE_"},
+		// Initialize provider registry management
+		providerRegistryCtx: NewProviderRegistrySubcontext(),
 
-		// Initialize command registry information
-		registeredCommands: make(map[string]bool),
-		commandHelpInfo:    make(map[string]*neurotypes.HelpInfo),
+		// Initialize command registry management
+		commandRegistryCtx: NewCommandRegistrySubcontext(),
 
 		// Initialize configuration management
-		configMap: make(map[string]string),
+		configurationCtx: NewConfigurationSubcontext(), // Parent context will be set after construction
 
-		// Initialize read-only command management
-		readOnlyOverrides: make(map[string]bool),
-
-		// Initialize default command
-		defaultCommand: "echo", // Default to echo for development convenience
-
-		// Initialize error state management (start with success state)
-		lastStatus:    "0",
-		lastError:     "",
-		currentStatus: "0",
-		currentError:  "",
+		// Initialize error state management
+		errorStateCtx: NewErrorStateSubcontext(),
 	}
 
 	// Generate initial session ID (will be deterministic if test mode is set later)
@@ -176,6 +104,9 @@ func New() *NeuroContext {
 	_ = ctx.SetSystemVariable("_style", "")
 	_ = ctx.SetSystemVariable("_default_command", "echo")
 	_ = ctx.SetSystemVariable("_completion_mode", "tab")
+
+	// Set up parent context reference for subcontexts
+	ctx.configurationCtx.SetParentContext(ctx)
 
 	return ctx
 }
@@ -201,7 +132,10 @@ func (ctx *NeuroContext) GetVariable(name string) (string, error) {
 		return value, nil
 	}
 
-	// Handle user variables
+	// Handle user variables with mutex protection
+	ctx.variablesMutex.RLock()
+	defer ctx.variablesMutex.RUnlock()
+
 	value, ok := ctx.variables[name]
 
 	if ok {
@@ -221,17 +155,14 @@ func (ctx *NeuroContext) SetVariable(name string, value string) error {
 
 	// For variables with _ prefix, check whitelist
 	if strings.HasPrefix(name, "_") {
-		allowed := false
-		for _, allowedVar := range allowedGlobalVariables {
-			if name == allowedVar {
-				allowed = true
-				break
-			}
-		}
-		if !allowed {
+		if !ctx.configurationCtx.IsAllowedGlobalVariable(name) {
 			return fmt.Errorf("cannot set system variable: %s", name)
 		}
 	}
+
+	// Set variable with mutex protection
+	ctx.variablesMutex.Lock()
+	defer ctx.variablesMutex.Unlock()
 
 	ctx.variables[name] = value
 	return nil
@@ -249,6 +180,10 @@ func (ctx *NeuroContext) SetSystemVariable(name string, value string) error {
 	if !strings.HasPrefix(name, "@") && !strings.HasPrefix(name, "#") && !strings.HasPrefix(name, "_") {
 		return fmt.Errorf("SetSystemVariable can only set system variables (prefixed with @, #, or _), got: %s", name)
 	}
+
+	// Set variable with mutex protection
+	ctx.variablesMutex.Lock()
+	defer ctx.variablesMutex.Unlock()
 
 	ctx.variables[name] = value
 	return nil
@@ -277,6 +212,9 @@ func (ctx *NeuroContext) GetSessionState() neurotypes.SessionState {
 }
 
 func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
+	// Acquire read lock for variables access
+	ctx.variablesMutex.RLock()
+	defer ctx.variablesMutex.RUnlock()
 	// In test mode, return fixed values for consistency
 	if ctx.testMode {
 		switch name {
@@ -293,21 +231,17 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		case "@os":
 			return "test-os", true
 		case "@status":
-			ctx.errorStateMutex.RLock()
-			defer ctx.errorStateMutex.RUnlock()
-			return ctx.currentStatus, true
+			status, _ := ctx.errorStateCtx.GetCurrentErrorState()
+			return status, true
 		case "@error":
-			ctx.errorStateMutex.RLock()
-			defer ctx.errorStateMutex.RUnlock()
-			return ctx.currentError, true
+			_, errorMsg := ctx.errorStateCtx.GetCurrentErrorState()
+			return errorMsg, true
 		case "@last_status":
-			ctx.errorStateMutex.RLock()
-			defer ctx.errorStateMutex.RUnlock()
-			return ctx.lastStatus, true
+			status, _ := ctx.errorStateCtx.GetLastErrorState()
+			return status, true
 		case "@last_error":
-			ctx.errorStateMutex.RLock()
-			defer ctx.errorStateMutex.RUnlock()
-			return ctx.lastError, true
+			_, errorMsg := ctx.errorStateCtx.GetLastErrorState()
+			return errorMsg, true
 		}
 	}
 
@@ -331,21 +265,17 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 	case "@os":
 		return fmt.Sprintf("%s/%s", os.Getenv("GOOS"), os.Getenv("GOARCH")), true
 	case "@status":
-		ctx.errorStateMutex.RLock()
-		defer ctx.errorStateMutex.RUnlock()
-		return ctx.currentStatus, true
+		status, _ := ctx.errorStateCtx.GetCurrentErrorState()
+		return status, true
 	case "@error":
-		ctx.errorStateMutex.RLock()
-		defer ctx.errorStateMutex.RUnlock()
-		return ctx.currentError, true
+		_, errorMsg := ctx.errorStateCtx.GetCurrentErrorState()
+		return errorMsg, true
 	case "@last_status":
-		ctx.errorStateMutex.RLock()
-		defer ctx.errorStateMutex.RUnlock()
-		return ctx.lastStatus, true
+		status, _ := ctx.errorStateCtx.GetLastErrorState()
+		return status, true
 	case "@last_error":
-		ctx.errorStateMutex.RLock()
-		defer ctx.errorStateMutex.RUnlock()
-		return ctx.lastError, true
+		_, errorMsg := ctx.errorStateCtx.GetLastErrorState()
+		return errorMsg, true
 	case "#session_id":
 		// Check if there's a stored chat session ID first
 		value, ok := ctx.variables["#session_id"]
@@ -372,6 +302,20 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		value, ok := ctx.variables["#session_name"]
 		if ok {
 			return value, true
+		}
+		return "", false
+	case "#session_display":
+		// Return formatted session display for prompts
+		sessionName, ok := ctx.variables["#session_name"]
+		if ok && sessionName != "" {
+			return " [" + sessionName + "]", true
+		}
+		return "", false
+	case "#session_display_color":
+		// Return formatted session display for colored prompts
+		sessionName, ok := ctx.variables["#session_name"]
+		if ok && sessionName != "" {
+			return " [{{color:yellow}}" + sessionName + "{{/color}}]", true
 		}
 		return "", false
 	case "#system_prompt":
@@ -479,9 +423,25 @@ func (ctx *NeuroContext) interpolateOnce(text string) string {
 			if varName == "" {
 				stack = append(stack, "${}")
 			} else {
+				// Check for default value syntax: varname:-default
+				var actualVarName, defaultValue string
+				if strings.Contains(varName, ":-") {
+					parts := strings.SplitN(varName, ":-", 2)
+					actualVarName = parts[0]
+					defaultValue = parts[1]
+				} else {
+					actualVarName = varName
+					defaultValue = ""
+				}
+
 				// Get variable value and push to stack
-				value, _ := ctx.GetVariable(varName)
-				stack = append(stack, value)
+				value, err := ctx.GetVariable(actualVarName)
+				if err != nil || value == "" {
+					// Use default value if variable doesn't exist or is empty
+					stack = append(stack, defaultValue)
+				} else {
+					stack = append(stack, value)
+				}
 			}
 			pending = false
 		default:
@@ -531,43 +491,17 @@ func (ctx *NeuroContext) IsTestMode() bool {
 // GetEnv retrieves environment variables, providing test mode appropriate values.
 // In test mode, returns predefined test values. In normal mode, returns os.Getenv().
 func (ctx *NeuroContext) GetEnv(key string) string {
-	if ctx.IsTestMode() {
-		return ctx.getTestEnvValue(key)
-	}
-	return os.Getenv(key)
-}
-
-// getTestEnvValue returns test mode appropriate values for environment variables.
-func (ctx *NeuroContext) getTestEnvValue(key string) string {
-	// Check for test-specific overrides first
-	if value, exists := ctx.testEnvOverrides[key]; exists {
-		return value
-	}
-
-	// Default test values
-	switch key {
-	case "OPENAI_API_KEY":
-		return "test-openai-key"
-	case "ANTHROPIC_API_KEY":
-		return "test-anthropic-key"
-	case "GOOGLE_API_KEY":
-		return "test-google-key"
-	case "EDITOR":
-		return "test-editor"
-	case "GOOS":
-		return "test-os"
-	case "GOARCH":
-		return "test-arch"
-	default:
-		return ""
-	}
+	return ctx.configurationCtx.GetEnv(key)
 }
 
 // GetAllVariables returns all variables including both user variables and computed system variables.
 func (ctx *NeuroContext) GetAllVariables() map[string]string {
 	result := make(map[string]string)
 
-	// Add all stored variables (both user and system variables)
+	// Add all stored variables (both user and system variables) with mutex protection
+	ctx.variablesMutex.RLock()
+	defer ctx.variablesMutex.RUnlock()
+
 	for name, value := range ctx.variables {
 		result[name] = value
 	}
@@ -617,70 +551,16 @@ func (ctx *NeuroContext) SetActiveSessionID(sessionID string) {
 // N=1 is the most recent message, N=2 is the previous message, etc.
 // Returns the message content and an error if the message cannot be retrieved.
 func (ctx *NeuroContext) GetNthRecentMessage(n int) (string, error) {
-	// Handle invalid input
-	if n < 1 {
-		return "", fmt.Errorf("invalid message index %d: must be >= 1", n)
-	}
-
-	// Check if there's an active session
-	if ctx.activeSessionID == "" {
-		return "", fmt.Errorf("no active session")
-	}
-
-	// Get the active session
-	session, exists := ctx.chatSessions[ctx.activeSessionID]
-	if !exists {
-		return "", fmt.Errorf("active session %s not found", ctx.activeSessionID)
-	}
-
-	// Check if we have enough messages
-	messageCount := len(session.Messages)
-	if messageCount == 0 {
-		return "", fmt.Errorf("session has no messages")
-	}
-	if n > messageCount {
-		return "", fmt.Errorf("message index %d out of bounds: session has only %d messages", n, messageCount)
-	}
-
-	// Get the Nth most recent message (1-based indexing)
-	// messages[len-1] is most recent, messages[len-2] is 2nd most recent, etc.
-	messageIndex := messageCount - n
-	return session.Messages[messageIndex].Content, nil
+	// Delegate to session subcontext
+	return NewSessionSubcontext(ctx).GetNthRecentMessage(n)
 }
 
 // GetNthChronologicalMessage returns the Nth message from the active session in chronological order.
 // N=1 is the first message, N=2 is the second message, etc.
 // Returns the message content and an error if the message cannot be retrieved.
 func (ctx *NeuroContext) GetNthChronologicalMessage(n int) (string, error) {
-	// Handle invalid input
-	if n < 1 {
-		return "", fmt.Errorf("invalid message index %d: must be >= 1", n)
-	}
-
-	// Check if there's an active session
-	if ctx.activeSessionID == "" {
-		return "", fmt.Errorf("no active session")
-	}
-
-	// Get the active session
-	session, exists := ctx.chatSessions[ctx.activeSessionID]
-	if !exists {
-		return "", fmt.Errorf("active session %s not found", ctx.activeSessionID)
-	}
-
-	// Check if we have enough messages
-	messageCount := len(session.Messages)
-	if messageCount == 0 {
-		return "", fmt.Errorf("session has no messages")
-	}
-	if n > messageCount {
-		return "", fmt.Errorf("message index %d out of bounds: session has only %d messages", n, messageCount)
-	}
-
-	// Get the Nth chronological message (1-based indexing)
-	// messages[0] is first, messages[1] is second, etc.
-	messageIndex := n - 1
-	return session.Messages[messageIndex].Content, nil
+	// Delegate to session subcontext
+	return NewSessionSubcontext(ctx).GetNthChronologicalMessage(n)
 }
 
 // GetActiveModelID returns the currently active model ID.
@@ -737,319 +617,172 @@ func (ctx *NeuroContext) ModelIDExists(id string) bool {
 
 // GetLLMClient retrieves an LLM client by client ID (provider:hash format)
 func (ctx *NeuroContext) GetLLMClient(clientID string) (neurotypes.LLMClient, bool) {
-	client, exists := ctx.llmClients[clientID]
-	return client, exists
+	return ctx.llmClientCtx.GetClient(clientID)
 }
 
 // SetLLMClient stores an LLM client by client ID (provider:hash format)
 func (ctx *NeuroContext) SetLLMClient(clientID string, client neurotypes.LLMClient) {
-	ctx.llmClients[clientID] = client
+	ctx.llmClientCtx.StoreClient(clientID, client)
 }
 
 // GetLLMClientCount returns the number of cached LLM clients (for testing/debugging)
 func (ctx *NeuroContext) GetLLMClientCount() int {
-	return len(ctx.llmClients)
+	return len(ctx.llmClientCtx.GetAllClients())
 }
 
 // GetAllLLMClients returns a copy of all cached LLM clients (for client lookup)
 func (ctx *NeuroContext) GetAllLLMClients() map[string]neurotypes.LLMClient {
-	clients := make(map[string]neurotypes.LLMClient)
-	for id, client := range ctx.llmClients {
-		clients[id] = client
-	}
-	return clients
+	return ctx.llmClientCtx.GetAllClients()
 }
 
 // ClearLLMClients removes all cached LLM clients (for testing/debugging)
 func (ctx *NeuroContext) ClearLLMClients() {
-	ctx.llmClients = make(map[string]neurotypes.LLMClient)
+	ctx.llmClientCtx.ClearAllClients()
 }
 
 // RegisterCommand registers a command name for autocomplete functionality.
 func (ctx *NeuroContext) RegisterCommand(commandName string) {
-	ctx.commandMutex.Lock()
-	defer ctx.commandMutex.Unlock()
-	ctx.registeredCommands[commandName] = true
+	ctx.commandRegistryCtx.RegisterCommand(commandName)
 }
 
 // RegisterCommandWithInfo registers a command with its metadata for help and autocomplete.
 func (ctx *NeuroContext) RegisterCommandWithInfo(cmd neurotypes.Command) {
-	ctx.commandMutex.Lock()
-	defer ctx.commandMutex.Unlock()
-
-	commandName := cmd.Name()
-	ctx.registeredCommands[commandName] = true
-
-	// Store command help information
-	helpInfo := cmd.HelpInfo()
-	ctx.commandHelpInfo[commandName] = &helpInfo
+	ctx.commandRegistryCtx.RegisterCommandWithInfo(cmd)
 }
 
 // RegisterCommandWithInfoAndType registers a command with its metadata and type.
-func (ctx *NeuroContext) RegisterCommandWithInfoAndType(cmd neurotypes.Command, _ neurotypes.CommandType) {
-	ctx.commandMutex.Lock()
-	defer ctx.commandMutex.Unlock()
-
-	commandName := cmd.Name()
-	ctx.registeredCommands[commandName] = true
-
-	// Store command help information
-	helpInfo := cmd.HelpInfo()
-	ctx.commandHelpInfo[commandName] = &helpInfo
+func (ctx *NeuroContext) RegisterCommandWithInfoAndType(cmd neurotypes.Command, cmdType neurotypes.CommandType) {
+	ctx.commandRegistryCtx.RegisterCommandWithInfoAndType(cmd, cmdType)
 }
 
 // UnregisterCommand removes a command name from the autocomplete registry.
 func (ctx *NeuroContext) UnregisterCommand(commandName string) {
-	ctx.commandMutex.Lock()
-	defer ctx.commandMutex.Unlock()
-	delete(ctx.registeredCommands, commandName)
-	delete(ctx.commandHelpInfo, commandName)
+	ctx.commandRegistryCtx.UnregisterCommand(commandName)
 }
 
 // GetRegisteredCommands returns a list of all registered command names.
 func (ctx *NeuroContext) GetRegisteredCommands() []string {
-	ctx.commandMutex.RLock()
-	defer ctx.commandMutex.RUnlock()
-
-	commands := make([]string, 0, len(ctx.registeredCommands))
-	for commandName := range ctx.registeredCommands {
-		commands = append(commands, commandName)
-	}
-	return commands
+	return ctx.commandRegistryCtx.GetRegisteredCommands()
 }
 
 // IsCommandRegistered checks if a command name is registered.
 func (ctx *NeuroContext) IsCommandRegistered(commandName string) bool {
-	ctx.commandMutex.RLock()
-	defer ctx.commandMutex.RUnlock()
-	return ctx.registeredCommands[commandName]
+	return ctx.commandRegistryCtx.IsCommandRegistered(commandName)
 }
 
 // GetCommandHelpInfo returns the help information for a specific command.
 func (ctx *NeuroContext) GetCommandHelpInfo(commandName string) (*neurotypes.HelpInfo, bool) {
-	ctx.commandMutex.RLock()
-	defer ctx.commandMutex.RUnlock()
-	info, exists := ctx.commandHelpInfo[commandName]
-	return info, exists
+	return ctx.commandRegistryCtx.GetCommandHelpInfo(commandName)
 }
 
 // GetAllCommandHelpInfo returns all registered command help information.
 func (ctx *NeuroContext) GetAllCommandHelpInfo() map[string]*neurotypes.HelpInfo {
-	ctx.commandMutex.RLock()
-	defer ctx.commandMutex.RUnlock()
-
-	result := make(map[string]*neurotypes.HelpInfo)
-	for name, info := range ctx.commandHelpInfo {
-		result[name] = info
-	}
-	return result
+	return ctx.commandRegistryCtx.GetAllCommandHelpInfo()
 }
 
 // Stack operations for stack-based execution engine
 
 // PushCommand adds a single command to the execution stack
 func (ctx *NeuroContext) PushCommand(command string) {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-	ctx.executionStack = append(ctx.executionStack, command)
+	ctx.stackCtx.PushCommand(command)
 }
 
 // PushCommands adds multiple commands to the execution stack
 func (ctx *NeuroContext) PushCommands(commands []string) {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-	ctx.executionStack = append(ctx.executionStack, commands...)
+	ctx.stackCtx.PushCommands(commands)
 }
 
 // PopCommand removes and returns the last command from the stack (LIFO)
 func (ctx *NeuroContext) PopCommand() (string, bool) {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	if len(ctx.executionStack) == 0 {
-		return "", false
-	}
-
-	lastIndex := len(ctx.executionStack) - 1
-	command := ctx.executionStack[lastIndex]
-	ctx.executionStack = ctx.executionStack[:lastIndex]
-	return command, true
+	return ctx.stackCtx.PopCommand()
 }
 
 // PeekCommand returns the next command without removing it from the stack
 func (ctx *NeuroContext) PeekCommand() (string, bool) {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-
-	if len(ctx.executionStack) == 0 {
-		return "", false
-	}
-
-	return ctx.executionStack[len(ctx.executionStack)-1], true
+	return ctx.stackCtx.PeekCommand()
 }
 
 // ClearStack removes all commands from the execution stack
 func (ctx *NeuroContext) ClearStack() {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-	ctx.executionStack = make([]string, 0)
+	ctx.stackCtx.ClearStack()
 }
 
 // GetStackSize returns the number of commands in the execution stack
 func (ctx *NeuroContext) GetStackSize() int {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return len(ctx.executionStack)
+	return ctx.stackCtx.GetStackSize()
 }
 
 // IsStackEmpty returns true if the stack is empty
 func (ctx *NeuroContext) IsStackEmpty() bool {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return len(ctx.executionStack) == 0
+	return ctx.stackCtx.IsStackEmpty()
 }
 
 // PeekStack returns a copy of the execution stack without modifying it
 // Returns the stack in reverse order (top to bottom, LIFO order)
 func (ctx *NeuroContext) PeekStack() []string {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-
-	result := make([]string, len(ctx.executionStack))
-	// Copy in reverse order to show stack from top to bottom
-	for i, cmd := range ctx.executionStack {
-		result[len(ctx.executionStack)-1-i] = cmd
-	}
-	return result
+	return ctx.stackCtx.PeekStack()
 }
 
 // Try block support methods
 
 // PushErrorBoundary pushes error boundary markers for try blocks
 func (ctx *NeuroContext) PushErrorBoundary(tryID string) {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	// Create try block context
-	tryBlock := TryBlockContext{
-		ID:            tryID,
-		StartDepth:    len(ctx.executionStack),
-		ErrorCaptured: false,
-	}
-
-	ctx.tryBlocks = append(ctx.tryBlocks, tryBlock)
-	ctx.currentTryDepth++
+	ctx.stackCtx.PushErrorBoundary(tryID)
 }
 
 // PopErrorBoundary removes the most recent try block context
 func (ctx *NeuroContext) PopErrorBoundary() {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	if len(ctx.tryBlocks) > 0 {
-		ctx.tryBlocks = ctx.tryBlocks[:len(ctx.tryBlocks)-1]
-		ctx.currentTryDepth--
-	}
+	ctx.stackCtx.PopErrorBoundary()
 }
 
 // IsInTryBlock returns true if currently inside a try block
 func (ctx *NeuroContext) IsInTryBlock() bool {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return len(ctx.tryBlocks) > 0
+	return ctx.stackCtx.IsInTryBlock()
 }
 
 // GetCurrentTryID returns the ID of the current try block
 func (ctx *NeuroContext) GetCurrentTryID() string {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-
-	if len(ctx.tryBlocks) == 0 {
-		return ""
-	}
-
-	return ctx.tryBlocks[len(ctx.tryBlocks)-1].ID
+	return ctx.stackCtx.GetCurrentTryID()
 }
 
 // GetCurrentTryDepth returns the current try block depth
 func (ctx *NeuroContext) GetCurrentTryDepth() int {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return ctx.currentTryDepth
+	return ctx.stackCtx.GetCurrentTryDepth()
 }
 
 // SetTryErrorCaptured marks the current try block as having captured an error
 func (ctx *NeuroContext) SetTryErrorCaptured() {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	if len(ctx.tryBlocks) > 0 {
-		ctx.tryBlocks[len(ctx.tryBlocks)-1].ErrorCaptured = true
-	}
+	ctx.stackCtx.SetTryErrorCaptured()
 }
 
 // IsTryErrorCaptured returns true if the current try block has captured an error
 func (ctx *NeuroContext) IsTryErrorCaptured() bool {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-
-	if len(ctx.tryBlocks) == 0 {
-		return false
-	}
-
-	return ctx.tryBlocks[len(ctx.tryBlocks)-1].ErrorCaptured
+	return ctx.stackCtx.IsTryErrorCaptured()
 }
 
 // PushSilentBoundary pushes silent boundary markers for silent blocks
 func (ctx *NeuroContext) PushSilentBoundary(silentID string) {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	// Create silent block context
-	silentBlock := SilentBlockContext{
-		ID:         silentID,
-		StartDepth: len(ctx.executionStack),
-	}
-
-	ctx.silentBlocks = append(ctx.silentBlocks, silentBlock)
-	ctx.currentSilentDepth++
+	ctx.stackCtx.PushSilentBoundary(silentID)
 }
 
 // PopSilentBoundary removes the most recent silent block context
 func (ctx *NeuroContext) PopSilentBoundary() {
-	ctx.stackMutex.Lock()
-	defer ctx.stackMutex.Unlock()
-
-	if len(ctx.silentBlocks) > 0 {
-		ctx.silentBlocks = ctx.silentBlocks[:len(ctx.silentBlocks)-1]
-		ctx.currentSilentDepth--
-	}
+	ctx.stackCtx.PopSilentBoundary()
 }
 
 // IsInSilentBlock returns true if currently inside a silent block
 func (ctx *NeuroContext) IsInSilentBlock() bool {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return len(ctx.silentBlocks) > 0
+	return ctx.stackCtx.IsInSilentBlock()
 }
 
 // GetCurrentSilentID returns the ID of the current silent block
 func (ctx *NeuroContext) GetCurrentSilentID() string {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-
-	if len(ctx.silentBlocks) == 0 {
-		return ""
-	}
-
-	return ctx.silentBlocks[len(ctx.silentBlocks)-1].ID
+	return ctx.stackCtx.GetCurrentSilentID()
 }
 
 // GetCurrentSilentDepth returns the current silent block depth
 func (ctx *NeuroContext) GetCurrentSilentDepth() int {
-	ctx.stackMutex.RLock()
-	defer ctx.stackMutex.RUnlock()
-	return ctx.currentSilentDepth
+	return ctx.stackCtx.GetCurrentSilentDepth()
 }
 
 // GetDefaultCommand returns the default command to use when input doesn't start with \\
@@ -1058,344 +791,140 @@ func (ctx *NeuroContext) GetDefaultCommand() string {
 	if override, exists := ctx.getSystemVariable("_default_command"); exists && override != "" {
 		return override
 	}
-	return ctx.defaultCommand
+	return ctx.configurationCtx.GetDefaultCommand()
 }
 
 // SetDefaultCommand sets the default command to use when input doesn't start with \\
 func (ctx *NeuroContext) SetDefaultCommand(command string) {
-	ctx.defaultCommand = command
+	ctx.configurationCtx.SetDefaultCommand(command)
 	_ = ctx.SetSystemVariable("_default_command", command)
 }
 
 // SetTestEnvOverride sets a test-specific environment variable override.
 // This allows tests to control what GetEnv returns for specific keys without affecting the OS environment.
 func (ctx *NeuroContext) SetTestEnvOverride(key, value string) {
-	ctx.testEnvOverrides[key] = value
+	ctx.configurationCtx.SetTestEnvOverride(key, value)
 }
 
 // SetEnvVariable sets an environment variable, respecting test mode.
 // In test mode, this sets a test environment override.
 // In production mode, this sets an actual OS environment variable.
 func (ctx *NeuroContext) SetEnvVariable(key, value string) error {
-	if ctx.IsTestMode() {
-		// In test mode, set test environment override
-		ctx.SetTestEnvOverride(key, value)
-		return nil
-	}
-
-	// In production mode, set actual OS environment variable
-	return os.Setenv(key, value)
+	return ctx.configurationCtx.SetEnvVariable(key, value)
 }
 
 // GetEnvVariable retrieves an environment variable value, respecting test mode.
 // This is a pure function that only gets the environment variable without side effects.
 func (ctx *NeuroContext) GetEnvVariable(key string) string {
-	return ctx.GetEnv(key)
+	return ctx.configurationCtx.GetEnvVariable(key)
 }
 
 // ClearTestEnvOverride removes a test-specific environment variable override.
 func (ctx *NeuroContext) ClearTestEnvOverride(key string) {
-	delete(ctx.testEnvOverrides, key)
+	ctx.configurationCtx.ClearTestEnvOverride(key)
 }
 
 // ClearAllTestEnvOverrides removes all test-specific environment variable overrides.
 func (ctx *NeuroContext) ClearAllTestEnvOverrides() {
-	ctx.testEnvOverrides = make(map[string]string)
+	ctx.configurationCtx.ClearAllTestEnvOverrides()
 }
 
 // GetTestEnvOverrides returns a copy of all test environment variable overrides.
 func (ctx *NeuroContext) GetTestEnvOverrides() map[string]string {
-	overrides := make(map[string]string)
-	for k, v := range ctx.testEnvOverrides {
-		overrides[k] = v
-	}
-	return overrides
+	return ctx.configurationCtx.GetTestEnvOverrides()
 }
 
 // File system operations for configuration service
 
 // ReadFile reads the contents of a file, supporting test mode isolation.
 func (ctx *NeuroContext) ReadFile(path string) ([]byte, error) {
-	return os.ReadFile(path)
+	return ctx.configurationCtx.ReadFile(path)
 }
 
 // WriteFile writes data to a file with the specified permissions, supporting test mode isolation.
 func (ctx *NeuroContext) WriteFile(path string, data []byte, perm os.FileMode) error {
-	return os.WriteFile(path, data, perm)
+	return ctx.configurationCtx.WriteFile(path, data, perm)
 }
 
 // FileExists checks if a file exists at the given path.
 func (ctx *NeuroContext) FileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
+	return ctx.configurationCtx.FileExists(path)
 }
 
 // GetUserConfigDir returns the user's configuration directory.
 // In test mode, returns a temporary directory to avoid polluting the user's system.
 func (ctx *NeuroContext) GetUserConfigDir() (string, error) {
-	if ctx.testMode {
-		// In test mode, return a predictable test path
-		return "/tmp/neuroshell-test-config", nil
-	}
-
-	// Get XDG config home or fall back to ~/.config
-	configHome := os.Getenv("XDG_CONFIG_HOME")
-	if configHome == "" {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return "", fmt.Errorf("failed to get user home directory: %w", err)
-		}
-		configHome = filepath.Join(homeDir, ".config")
-	}
-
-	return filepath.Join(configHome, "neuroshell"), nil
+	return ctx.configurationCtx.GetUserConfigDir()
 }
 
 // GetWorkingDir returns the current working directory.
 func (ctx *NeuroContext) GetWorkingDir() (string, error) {
-	if ctx.testMode {
-		return "/tmp/neuroshell-test-workdir", nil
-	}
-	return os.Getwd()
+	return ctx.configurationCtx.GetWorkingDir()
 }
 
 // MkdirAll creates a directory path with the specified permissions, including any necessary parents.
 func (ctx *NeuroContext) MkdirAll(path string, perm os.FileMode) error {
-	return os.MkdirAll(path, perm)
+	return ctx.configurationCtx.MkdirAll(path, perm)
 }
 
 // Configuration management methods
 
 // GetConfigMap returns a copy of the configuration map.
 func (ctx *NeuroContext) GetConfigMap() map[string]string {
-	ctx.configMutex.RLock()
-	defer ctx.configMutex.RUnlock()
-
-	result := make(map[string]string)
-	for key, value := range ctx.configMap {
-		result[key] = value
-	}
-	return result
+	return ctx.configurationCtx.GetConfigMap()
 }
 
 // SetConfigMap replaces the entire configuration map.
 func (ctx *NeuroContext) SetConfigMap(configMap map[string]string) {
-	ctx.configMutex.Lock()
-	defer ctx.configMutex.Unlock()
-
-	ctx.configMap = make(map[string]string)
-	for key, value := range configMap {
-		ctx.configMap[key] = value
-	}
+	ctx.configurationCtx.SetConfigMap(configMap)
 }
 
 // GetConfigValue retrieves a configuration value by key.
 func (ctx *NeuroContext) GetConfigValue(key string) (string, bool) {
-	ctx.configMutex.RLock()
-	defer ctx.configMutex.RUnlock()
-
-	value, exists := ctx.configMap[key]
-	return value, exists
+	return ctx.configurationCtx.GetConfigValue(key)
 }
 
 // SetConfigValue sets a configuration value.
 func (ctx *NeuroContext) SetConfigValue(key, value string) {
-	ctx.configMutex.Lock()
-	defer ctx.configMutex.Unlock()
-
-	ctx.configMap[key] = value
+	ctx.configurationCtx.SetConfigValue(key, value)
 }
 
 // Configuration loading methods (Context layer responsibilities)
 
 // LoadDefaults sets up default configuration values.
 func (ctx *NeuroContext) LoadDefaults() error {
-	defaults := map[string]string{
-		"NEURO_LOG_LEVEL": "info",
-		"NEURO_TIMEOUT":   "30s",
-	}
-
-	for key, value := range defaults {
-		ctx.SetConfigValue(key, value)
-	}
-
-	return nil
+	return ctx.configurationCtx.LoadDefaults()
 }
 
 // LoadConfigDotEnv loads .env file from the user's config directory (~/.config/neuroshell/.env).
 func (ctx *NeuroContext) LoadConfigDotEnv() error {
-	configDir, err := ctx.GetUserConfigDir()
-	if err != nil {
-		// Config directory access failure is not fatal
-		return nil
-	}
-
-	envPath := filepath.Join(configDir, ".env")
-	if !ctx.FileExists(envPath) {
-		// Missing config .env file is not an error
-		return nil
-	}
-
-	return ctx.loadDotEnvFile(envPath)
+	return ctx.configurationCtx.LoadConfigDotEnv()
 }
 
 // LoadLocalDotEnv loads .env file from the current working directory.
 func (ctx *NeuroContext) LoadLocalDotEnv() error {
-	workDir, err := ctx.GetWorkingDir()
-	if err != nil {
-		// Working directory access failure is not fatal
-		return nil
-	}
-
-	envPath := filepath.Join(workDir, ".env")
-	if !ctx.FileExists(envPath) {
-		// Missing local .env file is not an error
-		return nil
-	}
-
-	return ctx.loadDotEnvFile(envPath)
+	return ctx.configurationCtx.LoadLocalDotEnv()
 }
 
 // LoadEnvironmentVariables loads specific prefixed environment variables into context configuration map.
 // This has the highest priority and will override all file-based configuration.
 func (ctx *NeuroContext) LoadEnvironmentVariables(prefixes []string) error {
-	// In test mode, check test environment overrides first
-	if ctx.IsTestMode() {
-		testOverrides := ctx.GetTestEnvOverrides()
-		for key, value := range testOverrides {
-			for _, prefix := range prefixes {
-				if strings.HasPrefix(key, prefix) {
-					ctx.SetConfigValue(key, value)
-					break
-				}
-			}
-		}
-	}
-
-	// Then check actual OS environment variables
-	environ := os.Environ()
-	for _, env := range environ {
-		for _, prefix := range prefixes {
-			if strings.HasPrefix(env, prefix) {
-				parts := strings.SplitN(env, "=", 2)
-				if len(parts) == 2 {
-					key := parts[0]
-					// Use context.GetEnv to respect test mode overrides
-					value := ctx.GetEnv(key)
-
-					// Store in configuration map (highest priority)
-					ctx.SetConfigValue(key, value)
-				}
-				break // Found matching prefix, no need to check others
-			}
-		}
-	}
-
-	return nil
-}
-
-// loadDotEnvFile loads a specific .env file and stores all values in context configuration map.
-// This is a private helper method used by LoadConfigDotEnv and LoadLocalDotEnv.
-func (ctx *NeuroContext) loadDotEnvFile(envPath string) error {
-	data, err := ctx.ReadFile(envPath)
-	if err != nil {
-		return fmt.Errorf("failed to read .env file %s: %w", envPath, err)
-	}
-
-	// Parse .env file
-	envMap, err := godotenv.Unmarshal(string(data))
-	if err != nil {
-		return fmt.Errorf("failed to parse .env file %s: %w", envPath, err)
-	}
-
-	// Store all values in context configuration map
-	for key, value := range envMap {
-		ctx.SetConfigValue(key, value)
-	}
-
-	return nil
+	return ctx.configurationCtx.LoadEnvironmentVariables(prefixes)
 }
 
 // LoadEnvironmentVariablesWithPrefix loads OS environment variables with a source prefix.
-// Used by Configuration Service for multi-source API key collection.
 func (ctx *NeuroContext) LoadEnvironmentVariablesWithPrefix(sourcePrefix string) error {
-	// In test mode, only load test environment overrides for clean testing
-	if ctx.IsTestMode() {
-		testOverrides := ctx.GetTestEnvOverrides()
-		for key, value := range testOverrides {
-			prefixedKey := sourcePrefix + key
-			ctx.SetConfigValue(prefixedKey, value)
-		}
-		return nil // Don't load OS environment variables in test mode
-	}
-
-	// Load actual OS environment variables with prefix (production mode only)
-	environ := os.Environ()
-	for _, env := range environ {
-		parts := strings.SplitN(env, "=", 2)
-		if len(parts) == 2 {
-			key := parts[0]
-			value := ctx.GetEnv(key) // Respect test mode overrides
-			prefixedKey := sourcePrefix + key
-			ctx.SetConfigValue(prefixedKey, value)
-		}
-	}
-
-	return nil
+	return ctx.configurationCtx.LoadEnvironmentVariablesWithPrefix(sourcePrefix)
 }
 
 // LoadConfigDotEnvWithPrefix loads config .env file with a source prefix.
-// Used by Configuration Service for multi-source API key collection.
 func (ctx *NeuroContext) LoadConfigDotEnvWithPrefix(sourcePrefix string) error {
-	configDir, err := ctx.GetUserConfigDir()
-	if err != nil {
-		return nil // Config directory access failure is not fatal
-	}
-
-	envPath := filepath.Join(configDir, ".env")
-	if !ctx.FileExists(envPath) {
-		return nil // Missing config .env file is not an error
-	}
-
-	return ctx.loadDotEnvFileWithPrefix(envPath, sourcePrefix)
+	return ctx.configurationCtx.LoadConfigDotEnvWithPrefix(sourcePrefix)
 }
 
 // LoadLocalDotEnvWithPrefix loads local .env file with a source prefix.
-// Used by Configuration Service for multi-source API key collection.
 func (ctx *NeuroContext) LoadLocalDotEnvWithPrefix(sourcePrefix string) error {
-	workDir, err := ctx.GetWorkingDir()
-	if err != nil {
-		return nil // Working directory access failure is not fatal
-	}
-
-	envPath := filepath.Join(workDir, ".env")
-	if !ctx.FileExists(envPath) {
-		return nil // Missing local .env file is not an error
-	}
-
-	return ctx.loadDotEnvFileWithPrefix(envPath, sourcePrefix)
-}
-
-// loadDotEnvFileWithPrefix loads a .env file and stores values with a source prefix.
-func (ctx *NeuroContext) loadDotEnvFileWithPrefix(envPath, sourcePrefix string) error {
-	data, err := ctx.ReadFile(envPath)
-	if err != nil {
-		return fmt.Errorf("failed to read .env file %s: %w", envPath, err)
-	}
-
-	// Parse .env file
-	envMap, err := godotenv.Unmarshal(string(data))
-	if err != nil {
-		return fmt.Errorf("failed to parse .env file %s: %w", envPath, err)
-	}
-
-	// Store all values with source prefix in context configuration map
-	for key, value := range envMap {
-		prefixedKey := sourcePrefix + key
-		ctx.SetConfigValue(prefixedKey, value)
-	}
-
-	return nil
+	return ctx.configurationCtx.LoadLocalDotEnvWithPrefix(sourcePrefix)
 }
 
 // Provider Registry Methods
@@ -1403,31 +932,19 @@ func (ctx *NeuroContext) loadDotEnvFileWithPrefix(envPath, sourcePrefix string) 
 // GetSupportedProviders returns the list of supported LLM provider names.
 // This is the central source of truth for all provider-related functionality.
 func (ctx *NeuroContext) GetSupportedProviders() []string {
-	// Return a copy to prevent external modification
-	result := make([]string, len(ctx.supportedProviders))
-	copy(result, ctx.supportedProviders)
-	return result
+	return ctx.providerRegistryCtx.GetSupportedProviders()
 }
 
 // GetProviderEnvPrefixes returns the list of environment variable prefixes
 // used for loading provider-specific configuration from the environment.
 func (ctx *NeuroContext) GetProviderEnvPrefixes() []string {
-	// Return a copy to prevent external modification
-	result := make([]string, len(ctx.providerEnvPrefixes))
-	copy(result, ctx.providerEnvPrefixes)
-	return result
+	return ctx.providerRegistryCtx.GetProviderEnvPrefixes()
 }
 
 // IsValidProvider checks if a given provider name is supported.
 // Provider comparison is case-insensitive.
 func (ctx *NeuroContext) IsValidProvider(provider string) bool {
-	providerLower := strings.ToLower(provider)
-	for _, supportedProvider := range ctx.supportedProviders {
-		if providerLower == supportedProvider {
-			return true
-		}
-	}
-	return false
+	return ctx.providerRegistryCtx.IsProviderSupported(provider)
 }
 
 // Error state management methods
@@ -1435,71 +952,43 @@ func (ctx *NeuroContext) IsValidProvider(provider string) bool {
 // ResetErrorState resets the current error state to success (0/"") and moves current to last.
 // This should be called before executing a new command.
 func (ctx *NeuroContext) ResetErrorState() {
-	ctx.errorStateMutex.Lock()
-	defer ctx.errorStateMutex.Unlock()
-
-	// Move current error state to last
-	ctx.lastStatus = ctx.currentStatus
-	ctx.lastError = ctx.currentError
-
-	// Reset current state to success
-	ctx.currentStatus = "0"
-	ctx.currentError = ""
+	ctx.errorStateCtx.ResetErrorState()
 }
 
 // SetErrorState sets the current error state based on command execution results.
 // This should be called after command execution with the results.
 func (ctx *NeuroContext) SetErrorState(status string, errorMsg string) {
-	ctx.errorStateMutex.Lock()
-	defer ctx.errorStateMutex.Unlock()
-
-	ctx.currentStatus = status
-	ctx.currentError = errorMsg
+	ctx.errorStateCtx.SetErrorState(status, errorMsg)
 }
 
 // GetCurrentErrorState returns the current error state (thread-safe read).
 func (ctx *NeuroContext) GetCurrentErrorState() (status string, errorMsg string) {
-	ctx.errorStateMutex.RLock()
-	defer ctx.errorStateMutex.RUnlock()
-
-	return ctx.currentStatus, ctx.currentError
+	return ctx.errorStateCtx.GetCurrentErrorState()
 }
 
 // GetLastErrorState returns the last error state (thread-safe read).
 func (ctx *NeuroContext) GetLastErrorState() (status string, errorMsg string) {
-	ctx.errorStateMutex.RLock()
-	defer ctx.errorStateMutex.RUnlock()
-
-	return ctx.lastStatus, ctx.lastError
+	return ctx.errorStateCtx.GetLastErrorState()
 }
 
 // SetCommandReadOnly sets or removes a read-only override for a specific command.
 // This allows dynamic configuration of read-only status at runtime.
 func (ctx *NeuroContext) SetCommandReadOnly(commandName string, readOnly bool) {
-	ctx.readOnlyMutex.Lock()
-	defer ctx.readOnlyMutex.Unlock()
-
-	ctx.readOnlyOverrides[commandName] = readOnly
+	ctx.configurationCtx.SetCommandReadOnly(commandName, readOnly)
 }
 
 // RemoveCommandReadOnlyOverride removes any read-only override for a command,
 // reverting to the command's self-declared IsReadOnly() status.
 func (ctx *NeuroContext) RemoveCommandReadOnlyOverride(commandName string) {
-	ctx.readOnlyMutex.Lock()
-	defer ctx.readOnlyMutex.Unlock()
-
-	delete(ctx.readOnlyOverrides, commandName)
+	ctx.configurationCtx.RemoveCommandReadOnlyOverride(commandName)
 }
 
 // IsCommandReadOnly checks if a command is read-only by considering both
 // the command's self-declared status and any dynamic overrides.
 // Dynamic overrides take precedence over self-declared status.
 func (ctx *NeuroContext) IsCommandReadOnly(cmd neurotypes.Command) bool {
-	ctx.readOnlyMutex.RLock()
-	defer ctx.readOnlyMutex.RUnlock()
-
 	// Check for dynamic override first
-	if override, exists := ctx.readOnlyOverrides[cmd.Name()]; exists {
+	if override, exists := ctx.configurationCtx.IsCommandReadOnlyOverride(cmd.Name()); exists {
 		return override
 	}
 
@@ -1510,13 +999,11 @@ func (ctx *NeuroContext) IsCommandReadOnly(cmd neurotypes.Command) bool {
 // GetReadOnlyOverrides returns a copy of all current read-only overrides.
 // This is useful for configuration services and debugging.
 func (ctx *NeuroContext) GetReadOnlyOverrides() map[string]bool {
-	ctx.readOnlyMutex.RLock()
-	defer ctx.readOnlyMutex.RUnlock()
+	return ctx.configurationCtx.GetReadOnlyOverrides()
+}
 
-	// Return a copy to prevent external modification
-	overrides := make(map[string]bool)
-	for name, readOnly := range ctx.readOnlyOverrides {
-		overrides[name] = readOnly
-	}
-	return overrides
+// ClearAllReadOnlyOverrides removes all read-only overrides.
+// This is useful for testing purposes.
+func (ctx *NeuroContext) ClearAllReadOnlyOverrides() {
+	ctx.configurationCtx.ClearAllReadOnlyOverrides()
 }

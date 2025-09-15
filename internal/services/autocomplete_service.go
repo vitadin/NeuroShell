@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"neuroshell/internal/context"
+	neuroshellcontext "neuroshell/internal/context"
 )
 
 // CompletionItem represents a single completion suggestion with optional description.
@@ -20,7 +20,8 @@ type CompletionItem struct {
 // AutoCompleteService provides intelligent tab completion for NeuroShell commands and syntax.
 // It implements the readline.AutoCompleter interface to integrate with ishell.
 type AutoCompleteService struct {
-	initialized bool
+	initialized        bool
+	commandRegistryCtx neuroshellcontext.CommandRegistrySubcontext
 }
 
 // NewAutoCompleteService creates a new AutoCompleteService instance.
@@ -37,13 +38,19 @@ func (a *AutoCompleteService) Name() string {
 
 // Initialize sets up the AutoCompleteService for operation.
 func (a *AutoCompleteService) Initialize() error {
+	ctx := neuroshellcontext.GetGlobalContext()
+	neuroCtx, ok := ctx.(*neuroshellcontext.NeuroContext)
+	if !ok {
+		return fmt.Errorf("global context is not a NeuroContext")
+	}
+	a.commandRegistryCtx = neuroshellcontext.NewCommandRegistrySubcontextFromContext(neuroCtx)
 	a.initialized = true
 	return nil
 }
 
 // getCompletionMode retrieves the current completion mode from the global context.
 func (a *AutoCompleteService) getCompletionMode() string {
-	globalCtx := context.GetGlobalContext()
+	globalCtx := neuroshellcontext.GetGlobalContext()
 	if globalCtx == nil {
 		return "tab"
 	}
@@ -397,28 +404,21 @@ func (a *AutoCompleteService) getModelNameCompletions(currentWord string) []Comp
 
 // getCommandCompletionItems returns completion items for command names with descriptions.
 func (a *AutoCompleteService) getCommandCompletionItems(prefix string) []CompletionItem {
+	if !a.initialized {
+		return []CompletionItem{}
+	}
+
 	// Remove the \ prefix for matching
 	commandPrefix := strings.TrimPrefix(prefix, "\\")
 
-	// Get all registered commands from global context
-	globalCtx := context.GetGlobalContext()
-	if globalCtx == nil {
-		return []CompletionItem{}
-	}
-
-	neuroCtx, ok := globalCtx.(*context.NeuroContext)
-	if !ok {
-		return []CompletionItem{}
-	}
-
-	commandList := neuroCtx.GetRegisteredCommands()
+	commandList := a.commandRegistryCtx.GetRegisteredCommands()
 
 	var completions []CompletionItem
 	for _, cmdName := range commandList {
 		if strings.HasPrefix(cmdName, commandPrefix) {
 			// Get command description from help info
 			description := ""
-			if helpInfo, exists := neuroCtx.GetCommandHelpInfo(cmdName); exists {
+			if helpInfo, exists := a.commandRegistryCtx.GetCommandHelpInfo(cmdName); exists {
 				description = helpInfo.Description
 			}
 
@@ -441,25 +441,18 @@ func (a *AutoCompleteService) getCommandCompletionItems(prefix string) []Complet
 // getHelpCommandCompletionItems returns command name completion items for use after \help.
 // Unlike getCommandCompletionItems, this returns command names without the backslash prefix.
 func (a *AutoCompleteService) getHelpCommandCompletionItems(prefix string) []CompletionItem {
-	// Get all registered commands from global context
-	globalCtx := context.GetGlobalContext()
-	if globalCtx == nil {
+	if !a.initialized {
 		return []CompletionItem{}
 	}
 
-	neuroCtx, ok := globalCtx.(*context.NeuroContext)
-	if !ok {
-		return []CompletionItem{}
-	}
-
-	commandList := neuroCtx.GetRegisteredCommands()
+	commandList := a.commandRegistryCtx.GetRegisteredCommands()
 
 	var completions []CompletionItem
 	for _, cmdName := range commandList {
 		if strings.HasPrefix(cmdName, prefix) {
 			// Get command description from help info
 			description := ""
-			if helpInfo, exists := neuroCtx.GetCommandHelpInfo(cmdName); exists {
+			if helpInfo, exists := a.commandRegistryCtx.GetCommandHelpInfo(cmdName); exists {
 				description = helpInfo.Description
 			}
 
@@ -496,12 +489,12 @@ func (a *AutoCompleteService) getVariableCompletionItems(prefix string) []Comple
 	}
 
 	// Get all variables from context
-	globalCtx := context.GetGlobalContext()
+	globalCtx := neuroshellcontext.GetGlobalContext()
 	if globalCtx == nil {
 		return make([]CompletionItem, 0)
 	}
 
-	_, ok := globalCtx.(*context.NeuroContext)
+	_, ok := globalCtx.(*neuroshellcontext.NeuroContext)
 	if !ok {
 		return make([]CompletionItem, 0)
 	}
@@ -580,25 +573,18 @@ func (a *AutoCompleteService) getVariableDescription(name, value string) string 
 
 // getOptionCompletionItems returns completion items for command options inside brackets.
 func (a *AutoCompleteService) getOptionCompletionItems(line string, _ int, currentWord string) []CompletionItem {
+	if !a.initialized {
+		return make([]CompletionItem, 0)
+	}
+
 	// Parse the command name from incomplete input
 	commandName := a.extractCommandNameFromLine(line)
 	if commandName == "" {
 		return make([]CompletionItem, 0)
 	}
 
-	// Check if the command exists in the global context
-	globalCtx := context.GetGlobalContext()
-	if globalCtx == nil {
-		return make([]CompletionItem, 0)
-	}
-
-	neuroCtx, ok := globalCtx.(*context.NeuroContext)
-	if !ok {
-		return make([]CompletionItem, 0)
-	}
-
 	// Get command help info from context
-	commandHelpInfo, exists := neuroCtx.GetCommandHelpInfo(commandName)
+	commandHelpInfo, exists := a.commandRegistryCtx.GetCommandHelpInfo(commandName)
 	if !exists {
 		return make([]CompletionItem, 0)
 	}

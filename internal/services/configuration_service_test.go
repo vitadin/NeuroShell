@@ -47,6 +47,7 @@ func TestConfigurationService_Initialize(t *testing.T) {
 func TestConfigurationService_ConfigurationPriority(t *testing.T) {
 	// Test the priority system: env vars > local .env > config .env > defaults
 	ctx := context.NewTestContext()
+	context.SetGlobalContext(ctx)
 
 	// Create temporary directories for test isolation
 	tempConfigDir := "/tmp/neuroshell-test-config"
@@ -87,6 +88,11 @@ ANOTHER_RANDOM_KEY=local-random
 `
 	err = os.WriteFile(filepath.Join(tempWorkDir, ".env"), []byte(localEnvContent), 0644)
 	require.NoError(t, err)
+
+	// Set test working directory to point to our temporary directory
+	neuroCtx := ctx.(*context.NeuroContext)
+	configSubctx := context.NewConfigurationSubcontextFromContext(neuroCtx)
+	configSubctx.SetTestWorkingDir(tempWorkDir)
 
 	// Set environment variable (highest priority) - only prefixed ones will be loaded
 	ctx.SetTestEnvOverride("NEURO_OPENAI_API_KEY", "env-key")
@@ -206,6 +212,7 @@ func TestConfigurationService_GetAPIKey(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.NewTestContext()
+			context.SetGlobalContext(ctx)
 			// Clear any default test environment variables
 			ctx.ClearAllTestEnvOverrides()
 
@@ -229,7 +236,13 @@ func TestConfigurationService_GetAPIKey(t *testing.T) {
 }
 
 func TestConfigurationService_GetConfigValue(t *testing.T) {
-	_ = context.NewTestContext()
+	ctx := context.NewTestContext()
+	context.SetGlobalContext(ctx)
+
+	// Set up test environment variable
+	ctx.SetTestEnvOverride("NEURO_LOG_LEVEL", "info")
+	defer ctx.ClearAllTestEnvOverrides()
+
 	service := NewConfigurationService()
 	err := service.Initialize()
 	require.NoError(t, err)
@@ -321,7 +334,13 @@ func TestConfigurationService_ValidateConfiguration(t *testing.T) {
 }
 
 func TestConfigurationService_GetAllConfigValues(t *testing.T) {
-	_ = context.NewTestContext()
+	ctx := context.NewTestContext()
+	context.SetGlobalContext(ctx)
+
+	// Set up test environment variable
+	ctx.SetTestEnvOverride("NEURO_LOG_LEVEL", "info")
+	defer ctx.ClearAllTestEnvOverrides()
+
 	service := NewConfigurationService()
 	err := service.Initialize()
 	require.NoError(t, err)
@@ -355,6 +374,7 @@ func TestConfigurationService_GetAllConfigValues(t *testing.T) {
 func TestConfigurationService_TestModeIsolation(t *testing.T) {
 	// This test verifies that test mode doesn't pollute the user's actual config
 	ctx := context.NewTestContext()
+	context.SetGlobalContext(ctx)
 	assert.True(t, ctx.IsTestMode(), "Context should be in test mode")
 
 	service := NewConfigurationService()
@@ -373,6 +393,7 @@ func TestConfigurationService_TestModeIsolation(t *testing.T) {
 
 func TestConfigurationService_EnvironmentVariableOverride(t *testing.T) {
 	ctx := context.NewTestContext()
+	context.SetGlobalContext(ctx)
 
 	// Set up test environment variables with proper prefixes
 	ctx.SetTestEnvOverride("NEURO_OVERRIDE_TEST", "env-override-value")
@@ -400,6 +421,7 @@ func TestConfigurationService_EnvironmentVariableOverride(t *testing.T) {
 
 func TestConfigurationService_EnvironmentVariablePrefixFiltering(t *testing.T) {
 	ctx := context.NewTestContext()
+	context.SetGlobalContext(ctx)
 
 	// Set up environment variables - only prefixed ones should be loaded
 	ctx.SetTestEnvOverride("NEURO_SHOULD_LOAD", "loaded")
@@ -447,7 +469,13 @@ func TestConfigurationService_LoadConfiguration(t *testing.T) {
 		_ = os.RemoveAll(tempConfigDir)
 	}()
 
-	_ = context.NewTestContext()
+	ctx := context.NewTestContext()
+	context.SetGlobalContext(ctx)
+
+	// Set up test environment variable
+	ctx.SetTestEnvOverride("NEURO_TIMEOUT", "30s")
+	defer ctx.ClearAllTestEnvOverrides()
+
 	service := NewConfigurationService()
 	err = service.Initialize()
 	require.NoError(t, err)
@@ -461,6 +489,9 @@ func TestConfigurationService_LoadConfiguration(t *testing.T) {
 	envContent := "NEURO_TIMEOUT=120s\nNEURO_NEW_KEY=new-value\n"
 	err = os.WriteFile(filepath.Join(tempConfigDir, ".env"), []byte(envContent), 0644)
 	require.NoError(t, err)
+
+	// Clear environment variable override to test file loading
+	ctx.ClearTestEnvOverride("NEURO_TIMEOUT")
 
 	// Reload configuration
 	err = service.LoadConfiguration()
@@ -478,6 +509,7 @@ func TestConfigurationService_LoadConfiguration(t *testing.T) {
 
 func TestConfigurationService_EnvironmentVariablePrefixMatching(t *testing.T) {
 	ctx := context.NewTestContext()
+	context.SetGlobalContext(ctx)
 
 	// Test all supported prefixes with various environment variables
 	testCases := []struct {
@@ -547,6 +579,7 @@ func TestConfigurationService_EnvironmentVariablePrefixMatching(t *testing.T) {
 
 func TestConfigurationService_AllSupportedPrefixes(t *testing.T) {
 	ctx := context.NewTestContext()
+	context.SetGlobalContext(ctx)
 
 	// Test that all expected prefixes are supported
 	expectedPrefixes := []string{"NEURO_", "OPENAI_", "ANTHROPIC_", "MOONSHOT_", "GOOGLE_"}
@@ -589,6 +622,7 @@ func TestConfigurationService_MoonshotBaseURLExample(t *testing.T) {
 	// This test specifically verifies the example mentioned by the user:
 	// MOONSHOT_BASE_URL should be stored in the config map when present as OS env var
 	ctx := context.NewTestContext()
+	context.SetGlobalContext(ctx)
 
 	// Set the specific example environment variable
 	ctx.SetTestEnvOverride("MOONSHOT_BASE_URL", "https://api.moonshot.cn/v1")
@@ -676,6 +710,7 @@ func TestConfigurationService_GetAllAPIKeys(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.NewTestContext()
+			context.SetGlobalContext(ctx)
 			ctx.ClearAllTestEnvOverrides()
 
 			service := NewConfigurationService()
@@ -717,6 +752,7 @@ func TestConfigurationService_GetAllAPIKeys(t *testing.T) {
 func TestConfigurationService_GetAllAPIKeys_MultipleProviderMatches(t *testing.T) {
 	// Test that configuration service collects variables regardless of provider names
 	ctx := context.NewTestContext()
+	context.SetGlobalContext(ctx)
 	ctx.ClearAllTestEnvOverrides()
 
 	service := NewConfigurationService()
