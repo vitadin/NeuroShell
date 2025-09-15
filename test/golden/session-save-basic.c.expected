@@ -5,7 +5,7 @@ Setting _echo_command = true
 %%> "\\config-path"
 Config Directory: /tmp/neuroshell-test-config (exists)
 Config .env: /tmp/neuroshell-test-config/.env (not found)
-Local .env: <project_path>/.env (loaded)
+Local .env: /tmp/neuroshell-test-workdir/.env (not found)
 %%> "\\session-new[system=\"You are a helpful assistant for testing session-save functionality\"] save_test_session"
 Created session 'save_test_session' (ID: 00000001)
 %%> "\\silent \\session-activate[id=true] 00000001-0000-4000-8000-000000000001"
