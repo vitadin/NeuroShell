@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/user"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -879,52 +878,33 @@ func (ctx *NeuroContext) GetTestEnvOverrides() map[string]string {
 
 // ReadFile reads the contents of a file, supporting test mode isolation.
 func (ctx *NeuroContext) ReadFile(path string) ([]byte, error) {
-	return os.ReadFile(path)
+	return ctx.configurationCtx.ReadFile(path)
 }
 
 // WriteFile writes data to a file with the specified permissions, supporting test mode isolation.
 func (ctx *NeuroContext) WriteFile(path string, data []byte, perm os.FileMode) error {
-	return os.WriteFile(path, data, perm)
+	return ctx.configurationCtx.WriteFile(path, data, perm)
 }
 
 // FileExists checks if a file exists at the given path.
 func (ctx *NeuroContext) FileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
+	return ctx.configurationCtx.FileExists(path)
 }
 
 // GetUserConfigDir returns the user's configuration directory.
 // In test mode, returns a temporary directory to avoid polluting the user's system.
 func (ctx *NeuroContext) GetUserConfigDir() (string, error) {
-	if ctx.testMode {
-		// In test mode, return a predictable test path
-		return "/tmp/neuroshell-test-config", nil
-	}
-
-	// Get XDG config home or fall back to ~/.config
-	configHome := os.Getenv("XDG_CONFIG_HOME")
-	if configHome == "" {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return "", fmt.Errorf("failed to get user home directory: %w", err)
-		}
-		configHome = filepath.Join(homeDir, ".config")
-	}
-
-	return filepath.Join(configHome, "neuroshell"), nil
+	return ctx.configurationCtx.GetUserConfigDir()
 }
 
 // GetWorkingDir returns the current working directory.
 func (ctx *NeuroContext) GetWorkingDir() (string, error) {
-	if ctx.testMode {
-		return "/tmp/neuroshell-test-workdir", nil
-	}
-	return os.Getwd()
+	return ctx.configurationCtx.GetWorkingDir()
 }
 
 // MkdirAll creates a directory path with the specified permissions, including any necessary parents.
 func (ctx *NeuroContext) MkdirAll(path string, perm os.FileMode) error {
-	return os.MkdirAll(path, perm)
+	return ctx.configurationCtx.MkdirAll(path, perm)
 }
 
 // Configuration management methods

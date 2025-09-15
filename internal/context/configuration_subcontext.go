@@ -48,6 +48,9 @@ type ConfigurationSubcontext interface {
 	GetUserConfigDir() (string, error)
 	GetWorkingDir() (string, error)
 	FileExists(path string) bool
+	ReadFile(path string) ([]byte, error)
+	WriteFile(path string, data []byte, perm os.FileMode) error
+	MkdirAll(path string, perm os.FileMode) error
 }
 
 // TestModeProvider interface allows subcontexts to check test mode from parent context
@@ -459,7 +462,7 @@ func (c *configurationSubcontext) GetUserConfigDir() (string, error) {
 }
 
 // GetWorkingDir returns the current working directory.
-// In test mode, returns the test working directory if set.
+// In test mode, returns the test working directory if set, otherwise returns default test path.
 func (c *configurationSubcontext) GetWorkingDir() (string, error) {
 	if c.IsTestMode() {
 		c.testMutex.RLock()
@@ -469,6 +472,8 @@ func (c *configurationSubcontext) GetWorkingDir() (string, error) {
 		if testWorkDir != "" {
 			return testWorkDir, nil
 		}
+		// Return default test working directory if test mode is on but no specific path is set
+		return "/tmp/neuroshell-test-workdir", nil
 	}
 
 	return os.Getwd()
@@ -478,4 +483,19 @@ func (c *configurationSubcontext) GetWorkingDir() (string, error) {
 func (c *configurationSubcontext) FileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+// ReadFile reads the contents of a file, supporting test mode isolation.
+func (c *configurationSubcontext) ReadFile(path string) ([]byte, error) {
+	return os.ReadFile(path)
+}
+
+// WriteFile writes data to a file with the specified permissions, supporting test mode isolation.
+func (c *configurationSubcontext) WriteFile(path string, data []byte, perm os.FileMode) error {
+	return os.WriteFile(path, data, perm)
+}
+
+// MkdirAll creates a directory path with the specified permissions, including any necessary parents.
+func (c *configurationSubcontext) MkdirAll(path string, perm os.FileMode) error {
+	return os.MkdirAll(path, perm)
 }
