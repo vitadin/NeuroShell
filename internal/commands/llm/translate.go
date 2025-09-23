@@ -32,23 +32,21 @@ func (c *TranslateCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the translate command.
 func (c *TranslateCommand) Usage() string {
-	return `\translate[translator=provider, source=lang, target=lang, tone=style] text to translate
+	return `\translate[translator=provider, source=lang, target=lang, instruction="custom instructions"] text to translate
 
 Examples:
   \translate Hello world                                    %% Auto-detect source, translate to system default
   \translate[target=spanish] Hello world                   %% Translate to Spanish
   \translate[source=english, target=french] Hello world    %% Explicit source and target
   \translate[translator=zai] Hello world                   %% Use specific provider
-  \translate[target=japanese, tone=formal] Hello world     %% With tone specification
-  \translate[target=german, tone=casual, context=business] Hello world  %% Business context
+  \translate[target=japanese, instruction="the tone should be formal"] Hello world     %% With custom instructions
+  \translate[target=german, instruction="make it business style"] Hello world  %% Business style instruction
 
 Options:
-  translator - Translation provider (zai, deepl, google) [default: zai]
-  source     - Source language (auto-detect if not specified)
-  target     - Target language [default: english]
-  tone       - Translation tone/style (formal, casual, literary, technical)
-  context    - Additional context for translation (business, medical, legal, casual)
-  preserve   - Elements to preserve (formatting, names, technical_terms)`
+  translator  - Translation provider (zai, deepl, google) [default: zai]
+  source      - Source language (auto-detect if not specified)
+  target      - Target language [default: english]
+  instruction - Custom instructions for translation style, tone, context, etc.`
 }
 
 // HelpInfo returns structured help information for the translate command.
@@ -81,20 +79,8 @@ func (c *TranslateCommand) HelpInfo() neurotypes.HelpInfo {
 				Default:     "english",
 			},
 			{
-				Name:        "tone",
-				Description: "Translation tone/style (formal, casual, literary, technical, conversational)",
-				Required:    false,
-				Type:        "string",
-			},
-			{
-				Name:        "context",
-				Description: "Domain context for specialized translation (business, medical, legal, technical, academic, casual)",
-				Required:    false,
-				Type:        "string",
-			},
-			{
-				Name:        "preserve",
-				Description: "Elements to preserve during translation (formatting, names, technical_terms, urls, numbers)",
+				Name:        "instruction",
+				Description: "Custom instructions for translation style, tone, context, etc.",
 				Required:    false,
 				Type:        "string",
 			},
@@ -113,12 +99,12 @@ func (c *TranslateCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Translate from French to English",
 			},
 			{
-				Command:     `\translate[target=japanese, tone=formal] Please review this document`,
-				Description: "Formal translation to Japanese",
+				Command:     `\translate[target=japanese, instruction="the tone should be formal"] Please review this document`,
+				Description: "Formal translation to Japanese with custom instructions",
 			},
 			{
-				Command:     `\translate[translator=deepl, target=german, context=business] Our quarterly results show growth`,
-				Description: "Business context translation using DeepL",
+				Command:     `\translate[translator=deepl, target=german, instruction="make it business style"] Our quarterly results show growth`,
+				Description: "Business style translation using DeepL",
 			},
 		},
 	}
@@ -141,9 +127,7 @@ func (c *TranslateCommand) Execute(options map[string]string, input string) erro
 	translator := getOption(options, "translator", "zai")
 	source := getOption(options, "source", "auto")
 	target := getOption(options, "target", "english")
-	tone := getOption(options, "tone", "")
-	context := getOption(options, "context", "")
-	preserve := getOption(options, "preserve", "")
+	instruction := getOption(options, "instruction", "")
 
 	// Validate translator
 	validTranslators := map[string]bool{
@@ -160,9 +144,7 @@ func (c *TranslateCommand) Execute(options map[string]string, input string) erro
 		"translator", translator,
 		"source", source,
 		"target", target,
-		"tone", tone,
-		"context", context,
-		"preserve", preserve,
+		"instruction", instruction,
 		"text_length", len(textToTranslate))
 
 	// Create translation configuration
@@ -174,14 +156,8 @@ func (c *TranslateCommand) Execute(options map[string]string, input string) erro
 	}
 
 	// Add optional parameters if specified
-	if tone != "" {
-		translationConfig["tone"] = tone
-	}
-	if context != "" {
-		translationConfig["context"] = context
-	}
-	if preserve != "" {
-		translationConfig["preserve"] = preserve
+	if instruction != "" {
+		translationConfig["instruction"] = instruction
 	}
 
 	// Future: Store configuration in variables for potential command chaining
@@ -191,14 +167,8 @@ func (c *TranslateCommand) Execute(options map[string]string, input string) erro
 	fmt.Printf("🌐 Translation Configuration:\n")
 	fmt.Printf("   Provider: %s\n", translator)
 	fmt.Printf("   Source: %s → Target: %s\n", source, target)
-	if tone != "" {
-		fmt.Printf("   Tone: %s\n", tone)
-	}
-	if context != "" {
-		fmt.Printf("   Context: %s\n", context)
-	}
-	if preserve != "" {
-		fmt.Printf("   Preserve: %s\n", preserve)
+	if instruction != "" {
+		fmt.Printf("   Instruction: %s\n", instruction)
 	}
 	fmt.Printf("   Text: %s\n", textToTranslate)
 	fmt.Printf("\n💡 Translation service integration will be implemented in the next phase.\n")
@@ -207,6 +177,7 @@ func (c *TranslateCommand) Execute(options map[string]string, input string) erro
 		"translator", translator,
 		"source", source,
 		"target", target,
+		"instruction", instruction,
 		"text_length", len(textToTranslate))
 
 	return nil

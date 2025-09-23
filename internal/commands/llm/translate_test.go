@@ -37,7 +37,7 @@ func TestTranslateCommand_Usage(t *testing.T) {
 	assert.Contains(t, usage, "translator=")
 	assert.Contains(t, usage, "source=")
 	assert.Contains(t, usage, "target=")
-	assert.Contains(t, usage, "tone=")
+	assert.Contains(t, usage, "instruction=")
 }
 
 func TestTranslateCommand_HelpInfo(t *testing.T) {
@@ -50,7 +50,7 @@ func TestTranslateCommand_HelpInfo(t *testing.T) {
 	assert.Equal(t, neurotypes.ParseModeKeyValue, helpInfo.ParseMode)
 
 	// Check that all expected options are present
-	expectedOptions := []string{"translator", "source", "target", "tone", "context", "preserve"}
+	expectedOptions := []string{"translator", "source", "target", "instruction"}
 	assert.Len(t, helpInfo.Options, len(expectedOptions))
 
 	optionNames := make([]string, len(helpInfo.Options))
@@ -213,12 +213,10 @@ func TestTranslateCommand_Execute_CustomOptions(t *testing.T) {
 	services.SetGlobalRegistry(testRegistry)
 
 	options := map[string]string{
-		"translator": "deepl",
-		"source":     "french",
-		"target":     "spanish",
-		"tone":       "formal",
-		"context":    "business",
-		"preserve":   "names",
+		"translator":  "deepl",
+		"source":      "french",
+		"target":      "spanish",
+		"instruction": "make it business style and formal",
 	}
 	input := "Bonjour le monde"
 

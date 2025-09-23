@@ -32,6 +32,7 @@ Core Commands:
   \show-stack           - Display the execution stack for development and debugging
   \silent               - Execute commands with stdout output suppressed
   \timer                - Start a visual countdown timer for the specified number of seconds
+  \translate            - Translate text using AI translation services with customizable options
   \try                  - Execute commands with error capture and handling
   \vars                 - List variables with optional filtering
   \write                - Write content to a file with overwrite or append modes

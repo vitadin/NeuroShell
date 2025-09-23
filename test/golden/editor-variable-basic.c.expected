@@ -39,7 +39,7 @@ System Variables:
     #cmd_config-path_desc = Display configuration file paths and their loading status
     #cmd_config-path_parsemode = KeyValue
     #cmd_config-path_usage = \config-path
-    #cmd_count           = 67
+    #cmd_count           = 68
     #cmd_echo-json_desc  = Pretty-print JSON data in readable format
     #cmd_echo-json_parsemode = KeyValue
     #cmd_echo-json_usage = \echo-json[to=var_name, indent=2] json_string
@@ -76,7 +76,7 @@ System Variables:
     #cmd_license_desc    = Display NeuroShell license inf... in system variables (length: 84 chars)
     #cmd_license_parsemode = KeyValue
     #cmd_license_usage   = \license
-    #cmd_list            = anthropic-client-new,assert-eq...y,vars,version,write (length: 824 chars)
+    #cmd_list            = anthropic-client-new,assert-eq...y,vars,version,write (length: 834 chars)
     #cmd_llm-api-activate_desc = Activate an API key for a specific provider
     #cmd_llm-api-activate_parsemode = KeyValue
     #cmd_llm-api-activate_usage = \llm-api-activate[provider=<name>, key=<source.KEY_NAME>]
@@ -206,6 +206,9 @@ System Variables:
     #cmd_timer_desc      = Start a visual countdown timer for the specified number of seconds
     #cmd_timer_parsemode = KeyValue
     #cmd_timer_usage     = \timer seconds
+    #cmd_translate_desc  = Translate text using AI translation services with customizable options
+    #cmd_translate_parsemode = KeyValue
+    #cmd_translate_usage = \translate[translator=provider... tone, context, etc. (length: 988 chars)
     #cmd_try_desc        = Execute commands with error capture and handling
     #cmd_try_parsemode   = Raw
     #cmd_try_usage       = \try command_to_execute
@@ -235,4 +238,4 @@ System Variables:
     _prompt_lines_count  = 1
     _style               = 
 
-Total: 228 variables
+Total: 231 variables
