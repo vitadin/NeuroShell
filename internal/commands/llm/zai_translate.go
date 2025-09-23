@@ -334,12 +334,12 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 	fmt.Printf("Translation: %s\n", translatedText)
 
 	// Store results in variables
-	if err := variableService.(*services.VariableService).Set("_output", translatedText); err != nil {
+	if err := variableService.(*services.VariableService).SetSystemVariable("_output", translatedText); err != nil {
 		logger.Error("Failed to set _output variable", "error", err)
 	}
 
 	if taskID, ok := apiResponse["id"].(string); ok {
-		if err := variableService.(*services.VariableService).Set("_translation_id", taskID); err != nil {
+		if err := variableService.(*services.VariableService).SetSystemVariable("_translation_id", taskID); err != nil {
 			logger.Error("Failed to set _translation_id variable", "error", err)
 		}
 	}
@@ -347,7 +347,7 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 	if source == "auto" {
 		// For auto-detection, we'd need to parse the actual detected language from response
 		// For now, store the original source parameter
-		if err := variableService.(*services.VariableService).Set("_source_detected", source); err != nil {
+		if err := variableService.(*services.VariableService).SetSystemVariable("_source_detected", source); err != nil {
 			logger.Error("Failed to set _source_detected variable", "error", err)
 		}
 	}
@@ -355,7 +355,7 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 	// Store token usage if available
 	if usage, ok := apiResponse["usage"].(map[string]interface{}); ok {
 		if totalTokens, ok := usage["total_tokens"].(float64); ok {
-			if err := variableService.(*services.VariableService).Set("_tokens_used", fmt.Sprintf("%.0f", totalTokens)); err != nil {
+			if err := variableService.(*services.VariableService).SetSystemVariable("_tokens_used", fmt.Sprintf("%.0f", totalTokens)); err != nil {
 				logger.Error("Failed to set _tokens_used variable", "error", err)
 			}
 		}
