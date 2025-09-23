@@ -143,7 +143,7 @@ func (c *ZaiTranslateCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 		},
 		Notes: []string{
-			"Requires ZAI API key: set ZAI_API_KEY environment variable or use \\set[ZAI_API_KEY=key]",
+			"Requires ZAI API key: set Z_DOT_AI_API_KEY or ZAI_API_KEY environment variable",
 			"Supports 40+ languages including specialized variants (zh-TW, en-US, etc.)",
 			"Strategy comparison:",
 			"  • general: Fast, good for most content",
@@ -201,15 +201,13 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 		return fmt.Errorf("failed to get variable service: %w", err)
 	}
 
-	// Try to get API key from environment variables
-	// First try to get from NeuroShell variable system, then from OS environment
-	apiKey, _ := variableService.(*services.VariableService).Get("ZAI_API_KEY")
+	// Get ZAI API key from OS environment variable (try both names)
+	apiKey, _ := variableService.(*services.VariableService).Get("os.Z_DOT_AI_API_KEY")
 	if apiKey == "" {
-		// Try environment variable
-		apiKey = variableService.(*services.VariableService).GetEnv("ZAI_API_KEY")
+		apiKey, _ = variableService.(*services.VariableService).Get("os.ZAI_API_KEY")
 	}
 	if apiKey == "" {
-		return fmt.Errorf("ZAI API key not found. Please set ZAI_API_KEY environment variable or use \\set[ZAI_API_KEY=your_key]")
+		return fmt.Errorf("ZAI API key not found. Please set Z_DOT_AI_API_KEY or ZAI_API_KEY environment variable")
 	}
 
 	logger.Debug("ZAI translation request initiated",
