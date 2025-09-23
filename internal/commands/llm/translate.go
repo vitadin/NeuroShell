@@ -116,6 +116,21 @@ func (c *TranslateCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "Business style translation using DeepL",
 			},
 		},
+		StoredVariables: []neurotypes.HelpStoredVariable{
+			{
+				Name:        "_output",
+				Description: "Translated text result",
+				Type:        "command_output",
+				Example:     "Hello world",
+			},
+		},
+		Notes: []string{
+			"Delegates to specific translation providers based on 'translator' option",
+			"Default provider is ZAI with comprehensive strategy and glossary support",
+			"Auto-detects source language when not specified",
+			"Custom instructions supported for style, tone, and context guidance",
+			"Translation result stored in _output variable for further processing",
+		},
 	}
 }
 

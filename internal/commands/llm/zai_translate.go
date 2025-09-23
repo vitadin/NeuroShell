@@ -37,8 +37,8 @@ func (c *ZaiTranslateCommand) Usage() string {
 	return `\zai-translate[source=lang, target=lang, strategy=type, instruction="hint", glossary="id"] text to translate
 
 Examples:
-  \zai-translate Hello world                                    %% Auto-detect source, translate to Chinese
-  \zai-translate[target=en] 你好世界                            %% Translate to English
+  \zai-translate Hello world                                    %% Auto-detect source, translate to English
+  \zai-translate[target=zh-CN] Hello world                     %% Translate to Chinese
   \zai-translate[source=en, target=ja] Hello world             %% English to Japanese
   \zai-translate[strategy=paraphrase] Hello world              %% Use paraphrase translation
   \zai-translate[strategy=three_step, target=fr] Hello world   %% Multi-step translation to French
@@ -46,7 +46,7 @@ Examples:
 
 Options:
   source      - Source language code (auto, en, zh-CN, ja, etc.) [default: auto]
-  target      - Target language code (zh-CN, en, ja, fr, de, etc.) [default: zh-CN]
+  target      - Target language code (en, zh-CN, ja, fr, de, etc.) [default: en]
   strategy    - Translation strategy (general, paraphrase, two_step, three_step, reflection) [default: general]
   instruction - Translation style or terminology hints for general strategy
   glossary    - Glossary ID for custom terminology`
@@ -69,10 +69,10 @@ func (c *ZaiTranslateCommand) HelpInfo() neurotypes.HelpInfo {
 			},
 			{
 				Name:        "target",
-				Description: "Target language (zh-CN, en, ja, fr, de, es, ru, etc.)",
+				Description: "Target language (en, zh-CN, ja, fr, de, es, ru, etc.)",
 				Required:    false,
 				Type:        "string",
-				Default:     "zh-CN",
+				Default:     "en",
 			},
 			{
 				Name:        "strategy",
@@ -97,11 +97,11 @@ func (c *ZaiTranslateCommand) HelpInfo() neurotypes.HelpInfo {
 		Examples: []neurotypes.HelpExample{
 			{
 				Command:     `\zai-translate Hello, how are you?`,
-				Description: "Basic translation with auto-detection to Chinese",
+				Description: "Basic translation with auto-detection to English",
 			},
 			{
-				Command:     `\zai-translate[target=en] 你好，你好吗？`,
-				Description: "Translate Chinese to English",
+				Command:     `\zai-translate[target=zh-CN] Hello, how are you?`,
+				Description: "Translate English to Chinese",
 			},
 			{
 				Command:     `\zai-translate[source=en, target=ja, strategy=paraphrase] Please help me`,
@@ -178,7 +178,7 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 
 	// Extract and validate options
 	source := getOption(options, "source", "auto")
-	target := getOption(options, "target", "zh-CN")
+	target := getOption(options, "target", "en")
 	strategy := getOption(options, "strategy", "general")
 	instruction := getOption(options, "instruction", "")
 	glossary := getOption(options, "glossary", "")
