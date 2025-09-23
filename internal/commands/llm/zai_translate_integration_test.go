@@ -1,10 +1,8 @@
 package llm
 
 import (
-	"context"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -38,13 +36,6 @@ func skipIfNoAPIKey(t *testing.T) {
 	if apiKey == "" {
 		t.Skip("Skipping integration test: no ZAI API key found")
 	}
-}
-
-// withTimeout creates a test context with 60 second timeout for API calls
-func withTimeout(t *testing.T) context.Context {
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	t.Cleanup(cancel)
-	return ctx
 }
 
 // setupTestEnvironment creates a test environment with required services
@@ -110,9 +101,9 @@ func verifyTranslationVariables(t *testing.T, variableService *services.Variable
 		assert.NoError(t, err)
 		assert.NotEmpty(t, output)
 
-		translationId, err := variableService.Get("_translation_id")
+		translationID, err := variableService.Get("_translation_id")
 		assert.NoError(t, err)
-		assert.NotEmpty(t, translationId)
+		assert.NotEmpty(t, translationID)
 
 		tokensUsed, err := variableService.Get("_tokens_used")
 		assert.NoError(t, err)
@@ -499,8 +490,8 @@ func BenchmarkZaiTranslateIntegration_GeneralStrategy(b *testing.B) {
 
 	cmd := &ZaiTranslateCommand{}
 	options := map[string]string{
-		"source": "en",
-		"target": "zh-CN",
+		"source":   "en",
+		"target":   "zh-CN",
 		"strategy": "general",
 	}
 	input := "Hello, this is a test message for benchmarking."

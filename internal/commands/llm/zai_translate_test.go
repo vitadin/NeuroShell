@@ -392,7 +392,7 @@ func TestZaiTranslateCommand_Execute_LanguageVariablesSetWithInput(t *testing.T)
 	input := "Hello world"
 
 	// Execute command - language variables should be set regardless of success/failure
-	err = cmd.Execute(options, input)
+	_ = cmd.Execute(options, input)
 
 	// Command might succeed with real API keys or fail with mock keys
 	// We don't assert error here since behavior depends on environment
