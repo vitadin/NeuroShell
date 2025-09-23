@@ -116,9 +116,10 @@ func (c *TranslateCommand) Execute(options map[string]string, input string) erro
 		return fmt.Errorf("variable service not available")
 	}
 
-	// Get text to translate
+	// Get text to translate - if empty, show help
 	if strings.TrimSpace(input) == "" {
-		return fmt.Errorf("no text provided for translation")
+		fmt.Printf("Usage: %s\n\n", c.Usage())
+		return nil
 	}
 
 	textToTranslate := strings.TrimSpace(input)
@@ -163,17 +164,22 @@ func (c *TranslateCommand) Execute(options map[string]string, input string) erro
 	// Future: Store configuration in variables for potential command chaining
 	// This will be implemented when the actual translation service is added
 
-	// For now, just output the configuration - actual translation will be implemented later
-	fmt.Printf("🌐 Translation Configuration:\n")
-	fmt.Printf("   Provider: %s\n", translator)
-	fmt.Printf("   Source: %s → Target: %s\n", source, target)
-	if instruction != "" {
-		fmt.Printf("   Instruction: %s\n", instruction)
+	// Placeholder translation output - will be replaced with actual translation
+	fmt.Printf("🌐 Translating (%s → %s", source, target)
+	if translator != "zai" {
+		fmt.Printf(" via %s", translator)
 	}
-	fmt.Printf("   Text: %s\n", textToTranslate)
-	fmt.Printf("\n💡 Translation service integration will be implemented in the next phase.\n")
+	fmt.Printf(")...\n")
 
-	logger.Info("Translation command executed successfully",
+	if instruction != "" {
+		fmt.Printf("📝 Instruction: %s\n", instruction)
+	}
+
+	// This is a placeholder - actual translation will replace this
+	fmt.Printf("\n📄 Original: %s\n", textToTranslate)
+	fmt.Printf("🔄 Translation: [Placeholder - actual translation will appear here]\n")
+
+	logger.Debug("Translation command executed successfully",
 		"translator", translator,
 		"source", source,
 		"target", target,

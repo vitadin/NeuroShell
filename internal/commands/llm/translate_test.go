@@ -113,8 +113,7 @@ func TestTranslateCommand_Execute_NoText(t *testing.T) {
 	input := ""
 
 	err = cmd.Execute(options, input)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "no text provided for translation")
+	assert.NoError(t, err) // Should show help and return successfully
 }
 
 func TestTranslateCommand_Execute_EmptyText(t *testing.T) {
@@ -134,8 +133,7 @@ func TestTranslateCommand_Execute_EmptyText(t *testing.T) {
 	input := "   " // Only whitespace
 
 	err = cmd.Execute(options, input)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "no text provided for translation")
+	assert.NoError(t, err) // Should show help and return successfully for whitespace too
 }
 
 func TestTranslateCommand_Execute_InvalidTranslator(t *testing.T) {
