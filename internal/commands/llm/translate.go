@@ -35,18 +35,27 @@ func (c *TranslateCommand) Usage() string {
 	return `\translate[translator=provider, source=lang, target=lang, instruction="custom instructions"] text to translate
 
 Examples:
-  \translate Hello world                                    %% Auto-detect source, translate to system default
+  \translate Hello world                                    %% Auto-detect source, translate to English (via ZAI)
   \translate[target=spanish] Hello world                   %% Translate to Spanish
   \translate[source=english, target=french] Hello world    %% Explicit source and target
-  \translate[translator=zai] Hello world                   %% Use specific provider
-  \translate[target=japanese, instruction="the tone should be formal"] Hello world     %% With custom instructions
-  \translate[target=german, instruction="make it business style"] Hello world  %% Business style instruction
+  \translate[translator=deepl] Hello world                 %% Use DeepL provider
+  \translate[target=japanese, instruction="formal tone"] Hello world     %% With custom instructions
+  \translate[target=german, instruction="business style"] Hello world    %% Business style instruction
+
+ZAI-specific options (when translator=zai):
+  \translate[strategy=paraphrase] Hello world              %% Use paraphrase strategy
+  \translate[strategy=three_step] Hello world              %% High-quality multi-step translation
+  \translate[glossary="tech_terms"] Hello world            %% Use custom glossary
 
 Options:
   translator  - Translation provider (zai, deepl, google) [default: zai]
   source      - Source language (auto-detect if not specified)
   target      - Target language [default: english]
-  instruction - Custom instructions for translation style, tone, context, etc.`
+  instruction - Custom instructions for translation style, tone, context, etc.
+
+ZAI-only options:
+  strategy    - Translation strategy (general, paraphrase, two_step, three_step, reflection)
+  glossary    - Glossary ID for custom terminology`
 }
 
 // HelpInfo returns structured help information for the translate command.
@@ -148,28 +157,13 @@ func (c *TranslateCommand) Execute(options map[string]string, input string) erro
 		"instruction", instruction,
 		"text_length", len(textToTranslate))
 
-	// Create translation configuration
-	translationConfig := map[string]interface{}{
-		"translator":      translator,
-		"source_language": source,
-		"target_language": target,
-		"text":            textToTranslate,
+	// Delegate to specific translator implementations
+	if translator == "zai" {
+		return c.delegateToZaiTranslate(options, source, target, instruction, textToTranslate)
 	}
 
-	// Add optional parameters if specified
-	if instruction != "" {
-		translationConfig["instruction"] = instruction
-	}
-
-	// Future: Store configuration in variables for potential command chaining
-	// This will be implemented when the actual translation service is added
-
-	// Placeholder translation output - will be replaced with actual translation
-	fmt.Printf("🌐 Translating (%s → %s", source, target)
-	if translator != "zai" {
-		fmt.Printf(" via %s", translator)
-	}
-	fmt.Printf(")...\n")
+	// For other translators (deepl, google), show placeholder for now
+	fmt.Printf("🌐 Translating (%s → %s via %s)...\n", source, target, translator)
 
 	if instruction != "" {
 		fmt.Printf("📝 Instruction: %s\n", instruction)
@@ -177,7 +171,7 @@ func (c *TranslateCommand) Execute(options map[string]string, input string) erro
 
 	// This is a placeholder - actual translation will replace this
 	fmt.Printf("\n📄 Original: %s\n", textToTranslate)
-	fmt.Printf("🔄 Translation: [Placeholder - actual translation will appear here]\n")
+	fmt.Printf("🔄 Translation: [Placeholder - %s translation will be implemented here]\n", translator)
 
 	logger.Debug("Translation command executed successfully",
 		"translator", translator,
@@ -185,6 +179,88 @@ func (c *TranslateCommand) Execute(options map[string]string, input string) erro
 		"target", target,
 		"instruction", instruction,
 		"text_length", len(textToTranslate))
+
+	return nil
+}
+
+// delegateToZaiTranslate delegates translation to the zai-translate command via stack service
+func (c *TranslateCommand) delegateToZaiTranslate(originalOptions map[string]string, source, target, instruction, text string) error {
+	// Get stack service for delegation
+	stackService, err := services.GetGlobalStackService()
+	if err != nil {
+		// Fallback to placeholder if stack service is not available
+		logger.Debug("stack service not available, using placeholder", "error", err)
+		return c.showZaiPlaceholder(source, target, instruction, text)
+	}
+
+	// Build zai-translate command with options
+	command := "\\zai-translate"
+
+	// Map translate options to zai-translate options
+	zaiOptions := make(map[string]string)
+
+	// Map source language
+	zaiOptions["source"] = source
+
+	// Map target language, with conversion for zai defaults
+	if target == "english" {
+		zaiOptions["target"] = "en"
+	} else {
+		zaiOptions["target"] = target
+	}
+
+	// Map instruction to suggestion for general strategy
+	if instruction != "" {
+		zaiOptions["suggestion"] = instruction
+	}
+
+	// Copy any zai-specific options from original
+	zaiSpecificOptions := []string{"strategy", "glossary"}
+	for _, opt := range zaiSpecificOptions {
+		if value, exists := originalOptions[opt]; exists {
+			zaiOptions[opt] = value
+		}
+	}
+
+	// Add options if provided
+	if len(zaiOptions) > 0 {
+		command += "["
+		first := true
+		for key, value := range zaiOptions {
+			if !first {
+				command += ","
+			}
+			command += key + "=" + value
+			first = false
+		}
+		command += "]"
+	}
+
+	// Add the message input
+	command += " " + text
+
+	logger.Debug("Delegating to zai-translate command via stack service",
+		"original_options", originalOptions,
+		"zai_options", zaiOptions,
+		"command", command,
+		"text_length", len(text))
+
+	// Delegate to zai-translate via stack service
+	stackService.PushCommand(command)
+
+	return nil
+}
+
+// showZaiPlaceholder shows placeholder output when zai-translate is not available
+func (c *TranslateCommand) showZaiPlaceholder(source, target, instruction, text string) error {
+	fmt.Printf("🌐 ZAI Translating (%s → %s)...\n", source, target)
+
+	if instruction != "" {
+		fmt.Printf("📝 Instruction: %s\n", instruction)
+	}
+
+	fmt.Printf("\n📄 Original: %s\n", text)
+	fmt.Printf("🔄 Translation: [ZAI translation will be implemented here]\n")
 
 	return nil
 }

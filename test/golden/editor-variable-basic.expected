@@ -39,7 +39,7 @@ System Variables:
     #cmd_config-path_desc = Display configuration file paths and their loading status
     #cmd_config-path_parsemode = KeyValue
     #cmd_config-path_usage = \config-path
-    #cmd_count           = 68
+    #cmd_count           = 69
     #cmd_echo-json_desc  = Pretty-print JSON data in readable format
     #cmd_echo-json_parsemode = KeyValue
     #cmd_echo-json_usage = \echo-json[to=var_name, indent=2] json_string
@@ -76,7 +76,7 @@ System Variables:
     #cmd_license_desc    = Display NeuroShell license inf... in system variables (length: 84 chars)
     #cmd_license_parsemode = KeyValue
     #cmd_license_usage   = \license
-    #cmd_list            = anthropic-client-new,assert-eq...y,vars,version,write (length: 834 chars)
+    #cmd_list            = anthropic-client-new,assert-eq...,write,zai-translate (length: 848 chars)
     #cmd_llm-api-activate_desc = Activate an API key for a specific provider
     #cmd_llm-api-activate_parsemode = KeyValue
     #cmd_llm-api-activate_usage = \llm-api-activate[provider=<name>, key=<source.KEY_NAME>]
@@ -208,7 +208,7 @@ System Variables:
     #cmd_timer_usage     = \timer seconds
     #cmd_translate_desc  = Translate text using AI translation services with customizable options
     #cmd_translate_parsemode = KeyValue
-    #cmd_translate_usage = \translate[translator=provider... tone, context, etc. (length: 988 chars)
+    #cmd_translate_usage = \translate[translator=provider...r custom terminology (length: 1442 chars)
     #cmd_try_desc        = Execute commands with error capture and handling
     #cmd_try_parsemode   = Raw
     #cmd_try_usage       = \try command_to_execute
@@ -221,6 +221,9 @@ System Variables:
     #cmd_write_desc      = Write content to a file with overwrite or append modes
     #cmd_write_parsemode = KeyValue
     #cmd_write_usage     = \write[file=path, mode=append] content
+    #cmd_zai-translate_desc = Translate text using ZAI's general translation API with advanced features
+    #cmd_zai-translate_parsemode = KeyValue
+    #cmd_zai-translate_usage = \zai-translate[source=lang, ta...r custom terminology (length: 1091 chars)
     #message_count       = 0
     #session_id          = session_1609459200
     #system_init_executed = true
@@ -238,4 +241,4 @@ System Variables:
     _prompt_lines_count  = 1
     _style               = 
 
-Total: 231 variables
+Total: 234 variables

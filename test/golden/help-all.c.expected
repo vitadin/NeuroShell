@@ -36,6 +36,7 @@ Core Commands:
   \try                  - Execute commands with error capture and handling
   \vars                 - List variables with optional filtering
   \write                - Write content to a file with overwrite or append modes
+  \zai-translate        - Translate text using ZAI's general translation API with advanced features
 
 Session Management:
     Basic Management:

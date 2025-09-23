@@ -186,8 +186,8 @@ func TestTranslateCommand_Execute_DefaultOptions(t *testing.T) {
 	err = cmd.Execute(options, input)
 	assert.NoError(t, err)
 
-	// Command should execute successfully with default options
-	// Variable setting and actual translation will be implemented in future phases
+	// With default translator=zai, but no zai-translate command available,
+	// it should fall back to placeholder behavior
 }
 
 func TestTranslateCommand_Execute_CustomOptions(t *testing.T) {
@@ -221,8 +221,40 @@ func TestTranslateCommand_Execute_CustomOptions(t *testing.T) {
 	err = cmd.Execute(options, input)
 	assert.NoError(t, err)
 
-	// Command should execute successfully with custom options
-	// Variable setting and actual translation will be implemented in future phases
+	// Command should execute successfully with custom options for non-ZAI translator
+}
+
+func TestTranslateCommand_Execute_ZaiDelegation(t *testing.T) {
+	cmd := &TranslateCommand{}
+
+	// Save current registry and restore after test
+	originalRegistry := services.GetGlobalRegistry()
+	defer services.SetGlobalRegistry(originalRegistry)
+
+	// Set up registry with variable and stack services
+	testRegistry := services.NewRegistry()
+	err := testRegistry.RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+	err = testRegistry.RegisterService(services.NewStackService())
+	require.NoError(t, err)
+
+	// Initialize the services
+	err = testRegistry.InitializeAll()
+	require.NoError(t, err)
+
+	services.SetGlobalRegistry(testRegistry)
+
+	options := map[string]string{
+		"translator": "zai",
+		"source":     "english",
+		"target":     "spanish",
+	}
+	input := "Hello world"
+
+	err = cmd.Execute(options, input)
+	assert.NoError(t, err)
+
+	// Should delegate to zai-translate via stack service
 }
 
 func TestTranslateCommand_Execute_AllSupportedTranslators(t *testing.T) {
