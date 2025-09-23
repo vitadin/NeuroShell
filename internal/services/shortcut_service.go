@@ -124,7 +124,7 @@ func (s *ShortcutService) GetShortcuts() []*Shortcut {
 // handleSaveAllSessions is the default handler for Ctrl+S shortcut
 func (s *ShortcutService) handleSaveAllSessions() error {
 	// Get the chat session service
-	sessionService, err := GetGlobalRegistry().GetService("chatsession")
+	sessionService, err := GetGlobalRegistry().GetService("chat_session")
 	if err != nil {
 		return fmt.Errorf("chat session service not available: %w", err)
 	}

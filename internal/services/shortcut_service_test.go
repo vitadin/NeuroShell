@@ -311,7 +311,7 @@ func TestShortcutService_handleSaveAllSessions_TypeAssertion(t *testing.T) {
 	registry := NewRegistry()
 
 	// Register a service with the right name but wrong type
-	mockService := &MockGenericService{name: "chatsession"}
+	mockService := &MockGenericService{name: "chat_session"}
 	err := registry.RegisterService(mockService)
 	require.NoError(t, err)
 	SetGlobalRegistry(registry)

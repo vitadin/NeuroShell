@@ -329,7 +329,7 @@ func (a *AutoCompleteService) getSessionNameCompletions(currentWord string) []Co
 	var completions []CompletionItem
 
 	// Get chat session service
-	sessionService, err := GetGlobalRegistry().GetService("chatsession")
+	sessionService, err := GetGlobalRegistry().GetService("chat_session")
 	if err != nil {
 		return completions
 	}
