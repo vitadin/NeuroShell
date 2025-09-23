@@ -13,6 +13,7 @@ Output: [OK] autocomplete - available/initialized
 [OK] editor - available/initialized
 [OK] error_management - available/initialized
 [OK] help - available/initialized
+[OK] http_request - available/initialized
 [OK] llm - available/initialized
 [OK] markdown - available/initialized
 [OK] model - available/initialized
@@ -30,7 +31,7 @@ Output: [OK] autocomplete - available/initialized
 %%> "\\echo Failed services: ${_check_failed_services}"
 Failed services:
 %%> "\\echo Total services: ${_check_total_services}"
-Total services: 24
+Total services: 25
 %%> "\\echo Failed count: ${_check_failed_count}"
 Failed count: 0
 %%> "\\check[service=bash, quiet=true]"
