@@ -141,6 +141,18 @@ func (c *ZaiTranslateCommand) HelpInfo() neurotypes.HelpInfo {
 				Type:        "command_output",
 				Example:     "156",
 			},
+			{
+				Name:        "_zai_source_languages",
+				Description: "Supported source languages for ZAI translation",
+				Type:        "command_output",
+				Example:     "auto, en, zh-CN, zh-TW, ja, fr, de, es, ru, it, pt, nl, ko, ar, hi, tr, pl, sv, da, no, fi, cs, sk, hu, ro, bg, hr, sl, et, lv, lt, mt",
+			},
+			{
+				Name:        "_zai_target_languages",
+				Description: "Supported target languages for ZAI translation",
+				Type:        "command_output",
+				Example:     "en, zh-CN, zh-TW, ja, fr, de, es, ru, it, pt, nl, ko, ar, hi, tr, pl, sv, da, no, fi, cs, sk, hu, ro, bg, hr, sl, et, lv, lt, mt",
+			},
 		},
 		Notes: []string{
 			"Requires ZAI API key: set Z_DOT_AI_API_KEY or ZAI_API_KEY environment variable",
@@ -154,6 +166,7 @@ func (c *ZaiTranslateCommand) HelpInfo() neurotypes.HelpInfo {
 			"Instruction parameter works only with 'general' strategy",
 			"Auto-detected source language stored in _source_detected",
 			"Translation cost and token usage stored in _tokens_used",
+			"Supported language lists always available in _zai_source_languages and _zai_target_languages",
 		},
 	}
 }
@@ -166,6 +179,24 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 
 	if !services.GetGlobalRegistry().HasService("http_request") {
 		return fmt.Errorf("http request service not available")
+	}
+
+	// Get variable service
+	variableService, err := services.GetGlobalRegistry().GetService("variable")
+	if err != nil {
+		return fmt.Errorf("failed to get variable service: %w", err)
+	}
+
+	// Set supported language lists (always set these, even if no input provided)
+	supportedSourceLanguages := "auto, en, zh-CN, zh-TW, ja, fr, de, es, ru, it, pt, nl, ko, ar, hi, tr, pl, sv, da, no, fi, cs, sk, hu, ro, bg, hr, sl, et, lv, lt, mt"
+	supportedTargetLanguages := "en, zh-CN, zh-TW, ja, fr, de, es, ru, it, pt, nl, ko, ar, hi, tr, pl, sv, da, no, fi, cs, sk, hu, ro, bg, hr, sl, et, lv, lt, mt"
+
+	if err := variableService.(*services.VariableService).SetSystemVariable("_zai_source_languages", supportedSourceLanguages); err != nil {
+		logger.Error("Failed to set _zai_source_languages variable", "error", err)
+	}
+
+	if err := variableService.(*services.VariableService).SetSystemVariable("_zai_target_languages", supportedTargetLanguages); err != nil {
+		logger.Error("Failed to set _zai_target_languages variable", "error", err)
 	}
 
 	// Get text to translate - if empty, show help
@@ -196,10 +227,6 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 	}
 
 	// Check for ZAI API key
-	variableService, err := services.GetGlobalRegistry().GetService("variable")
-	if err != nil {
-		return fmt.Errorf("failed to get variable service: %w", err)
-	}
 
 	// Get ZAI API key from OS environment variable (try both names)
 	apiKey, _ := variableService.(*services.VariableService).Get("os.Z_DOT_AI_API_KEY")

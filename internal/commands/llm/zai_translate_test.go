@@ -69,7 +69,15 @@ func TestZaiTranslateCommand_HelpInfo(t *testing.T) {
 
 	// Check stored variables
 	assert.NotEmpty(t, helpInfo.StoredVariables)
-	assert.True(t, len(helpInfo.StoredVariables) >= 3, "Should have at least 3 stored variables")
+	assert.True(t, len(helpInfo.StoredVariables) >= 6, "Should have at least 6 stored variables")
+
+	// Check that the new language list variables are present
+	storedVarNames := make([]string, len(helpInfo.StoredVariables))
+	for i, variable := range helpInfo.StoredVariables {
+		storedVarNames[i] = variable.Name
+	}
+	assert.Contains(t, storedVarNames, "_zai_source_languages")
+	assert.Contains(t, storedVarNames, "_zai_target_languages")
 
 	// Check notes
 	assert.NotEmpty(t, helpInfo.Notes)
@@ -270,6 +278,101 @@ func TestZaiTranslateCommand_IsReadOnly(t *testing.T) {
 	assert.False(t, cmd.IsReadOnly(), "ZAI translate command should not be read-only as it sets variables")
 }
 
+func TestZaiTranslateCommand_Execute_LanguageVariablesSetOnEmptyInput(t *testing.T) {
+	cmd := &ZaiTranslateCommand{}
+
+	// Save current registry and restore after test
+	originalRegistry := services.GetGlobalRegistry()
+	defer services.SetGlobalRegistry(originalRegistry)
+
+	// Set up registry with required services
+	testRegistry := services.NewRegistry()
+	err := testRegistry.RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+	err = testRegistry.RegisterService(services.NewHTTPRequestService())
+	require.NoError(t, err)
+	services.SetGlobalRegistry(testRegistry)
+
+	// Initialize services
+	err = testRegistry.InitializeAll()
+	require.NoError(t, err)
+
+	// Get variable service
+	variableService, err := testRegistry.GetService("variable")
+	require.NoError(t, err)
+
+	options := map[string]string{}
+	input := "" // Empty input
+
+	// Execute command with empty input (should show help but set language variables)
+	err = cmd.Execute(options, input)
+	assert.NoError(t, err)
+
+	// Check that language variables were set
+	sourceLanguages, err := variableService.(*services.VariableService).Get("_zai_source_languages")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, sourceLanguages)
+	assert.Contains(t, sourceLanguages, "auto")
+	assert.Contains(t, sourceLanguages, "en")
+	assert.Contains(t, sourceLanguages, "zh-CN")
+
+	targetLanguages, err := variableService.(*services.VariableService).Get("_zai_target_languages")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, targetLanguages)
+	assert.Contains(t, targetLanguages, "en")
+	assert.Contains(t, targetLanguages, "zh-CN")
+	assert.NotContains(t, targetLanguages, "auto") // Target shouldn't contain auto
+}
+
+func TestZaiTranslateCommand_Execute_LanguageVariablesSetWithInput(t *testing.T) {
+	cmd := &ZaiTranslateCommand{}
+
+	// Save current registry and restore after test
+	originalRegistry := services.GetGlobalRegistry()
+	defer services.SetGlobalRegistry(originalRegistry)
+
+	// Set up registry with required services
+	testRegistry := services.NewRegistry()
+	err := testRegistry.RegisterService(services.NewVariableService())
+	require.NoError(t, err)
+	err = testRegistry.RegisterService(services.NewHTTPRequestService())
+	require.NoError(t, err)
+	services.SetGlobalRegistry(testRegistry)
+
+	// Initialize services
+	err = testRegistry.InitializeAll()
+	require.NoError(t, err)
+
+	// Get variable service
+	variableService, err := testRegistry.GetService("variable")
+	require.NoError(t, err)
+
+	// Set a mock API key (this will still fail at HTTP stage, but that's expected)
+	err = variableService.(*services.VariableService).Set("os.ZAI_API_KEY", "test-key")
+	require.NoError(t, err)
+
+	options := map[string]string{}
+	input := "Hello world"
+
+	// Execute command (will fail at HTTP stage, but language variables should still be set)
+	err = cmd.Execute(options, input)
+	assert.Error(t, err) // Expected to fail at HTTP request stage
+
+	// Even though HTTP request failed, language variables should be set
+	sourceLanguages, err := variableService.(*services.VariableService).Get("_zai_source_languages")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, sourceLanguages)
+	assert.Contains(t, sourceLanguages, "auto")
+	assert.Contains(t, sourceLanguages, "en")
+	assert.Contains(t, sourceLanguages, "zh-CN")
+
+	targetLanguages, err := variableService.(*services.VariableService).Get("_zai_target_languages")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, targetLanguages)
+	assert.Contains(t, targetLanguages, "en")
+	assert.Contains(t, targetLanguages, "zh-CN")
+}
+
 func TestZaiTranslateCommand_DefaultOptions(t *testing.T) {
 	// Test that default values are used when options are not provided
 	tests := []struct {
@@ -290,8 +393,8 @@ func TestZaiTranslateCommand_DefaultOptions(t *testing.T) {
 			name:         "default target",
 			options:      map[string]string{},
 			key:          "target",
-			defaultValue: "zh-CN",
-			expected:     "zh-CN",
+			defaultValue: "en",
+			expected:     "en",
 		},
 		{
 			name:         "default strategy",

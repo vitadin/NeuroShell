@@ -49,3 +49,15 @@ Examples:
 %% Formal translation to Japanese with custom instructions
   \translate[translator=deepl, target=german, instruction="make it business style"] Our quarterly results show growth
 %% Business style translation using DeepL
+
+Stored Variables:
+  ${_output} - Translated text result (command_output)
+
+    Example: Hello world
+
+Notes:
+  Delegates to specific translation providers based on 'translator' option
+  Default provider is ZAI with comprehensive strategy and glossary support
+  Auto-detects source language when not specified
+  Custom instructions supported for style, tone, and context guidance
+  Translation result stored in _output variable for further processing
