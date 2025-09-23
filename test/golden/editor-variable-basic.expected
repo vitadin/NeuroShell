@@ -39,7 +39,7 @@ System Variables:
     #cmd_config-path_desc = Display configuration file paths and their loading status
     #cmd_config-path_parsemode = KeyValue
     #cmd_config-path_usage = \config-path
-    #cmd_count           = 69
+    #cmd_count           = 70
     #cmd_echo-json_desc  = Pretty-print JSON data in readable format
     #cmd_echo-json_parsemode = KeyValue
     #cmd_echo-json_usage = \echo-json[to=var_name, indent=2] json_string
@@ -76,7 +76,7 @@ System Variables:
     #cmd_license_desc    = Display NeuroShell license inf... in system variables (length: 84 chars)
     #cmd_license_parsemode = KeyValue
     #cmd_license_usage   = \license
-    #cmd_list            = anthropic-client-new,assert-eq...,write,zai-translate (length: 848 chars)
+    #cmd_list            = anthropic-client-new,assert-eq...,write,zai-translate (length: 862 chars)
     #cmd_llm-api-activate_desc = Activate an API key for a specific provider
     #cmd_llm-api-activate_parsemode = KeyValue
     #cmd_llm-api-activate_usage = \llm-api-activate[provider=<name>, key=<source.KEY_NAME>]
@@ -110,6 +110,9 @@ System Variables:
     #cmd_openai-model-new_desc = Create OpenAI model configurations with reasoning support
     #cmd_openai-model-new_parsemode = KeyValue
     #cmd_openai-model-new_usage = \openai-model-new[catalog_id=<ID>, reasoning_effort=<level>, ...] model_name
+    #cmd_prompt-polish_desc = Optimize and correct English text for better LLM comprehension
+    #cmd_prompt-polish_parsemode = KeyValue
+    #cmd_prompt-polish_usage = \prompt-polish[instruction="custom prompt", model="G5MR"] text to polish
     #cmd_provider-catalog_desc = List available LLM providers from embedded catalog
     #cmd_provider-catalog_parsemode = KeyValue
     #cmd_provider-catalog_usage = \provider-catalog[provider=ope...vider, search=query] (length: 89 chars)
@@ -241,4 +244,4 @@ System Variables:
     _prompt_lines_count  = 1
     _style               = 
 
-Total: 234 variables
+Total: 237 variables

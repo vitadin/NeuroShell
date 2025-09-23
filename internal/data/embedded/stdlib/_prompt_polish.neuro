@@ -1,0 +1,33 @@
+%% Save current session
+\silent \get[_session_id]
+\silent \set[original_session_id="${_session_id}"]
+
+%% Create temp session with polishing system prompt
+\if[condition="${instruction}"] \silent \set[system_prompt="${instruction}"]
+\if-not[condition="${instruction}"] \silent \set[system_prompt="You are a prompt optimization assistant. Correct grammar and typos, improve clarity for LLM processing, but preserve the original meaning and intent exactly. Be concise and avoid unnecessary changes."]
+
+\silent \session-new[system="${system_prompt}"] temp_polish_session
+
+%% Set up model (default G5MR)
+\if[condition="${model}"] \silent \set[target_model="${model}"]
+\if-not[condition="${model}"] \silent \set[target_model="G5MR"]
+
+%% Create model if it doesn't exist and activate it
+\silent \model-new[catalog_id="${target_model}"] polish_model
+\silent \model-activate polish_model
+
+%% Create OpenAI client
+\silent \openai-client-new
+
+%% Add user message to the session
+\silent \session-add-usermsg[session=${_session_id}] ${_1}
+
+%% Make LLM call
+\silent \llm-call[client_id=${_client_id}, session_id=${_session_id}]
+
+%% Cleanup first
+\silent \session-delete temp_polish_session
+\if[condition="${original_session_id}"] \silent \session-activate ${original_session_id}
+
+%% Output the result directly (this becomes _output)
+\echo ${#llm_text_content}
