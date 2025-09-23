@@ -1,6 +1,7 @@
 package llm
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -9,6 +10,22 @@ import (
 
 	"neuroshell/internal/services"
 )
+
+// apiSemaphore limits concurrent API calls to prevent rate limiting
+var apiSemaphore = make(chan struct{}, 3) // Maximum 3 concurrent API calls
+
+// acquireAPISlot blocks until an API slot is available
+func acquireAPISlot(t *testing.T) {
+	select {
+	case apiSemaphore <- struct{}{}:
+		// Got a slot, set up cleanup
+		t.Cleanup(func() {
+			<-apiSemaphore // Release the slot when test completes
+		})
+	case <-context.Background().Done():
+		t.Fatal("Failed to acquire API slot")
+	}
+}
 
 // TestMain checks for API key availability and skips all tests if not available
 func TestMain(m *testing.M) {
@@ -114,6 +131,7 @@ func verifyTranslationVariables(t *testing.T, variableService *services.Variable
 func TestZaiTranslateIntegration_GeneralStrategy_EnglishToChinese(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -143,6 +161,7 @@ func TestZaiTranslateIntegration_GeneralStrategy_EnglishToChinese(t *testing.T) 
 func TestZaiTranslateIntegration_ParaphraseStrategy_EnglishToChinese(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -167,6 +186,7 @@ func TestZaiTranslateIntegration_ParaphraseStrategy_EnglishToChinese(t *testing.
 func TestZaiTranslateIntegration_TwoStepStrategy_EnglishToChinese(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -191,6 +211,7 @@ func TestZaiTranslateIntegration_TwoStepStrategy_EnglishToChinese(t *testing.T) 
 func TestZaiTranslateIntegration_ThreeStepStrategy_EnglishToChinese(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -215,6 +236,7 @@ func TestZaiTranslateIntegration_ThreeStepStrategy_EnglishToChinese(t *testing.T
 func TestZaiTranslateIntegration_ReflectionStrategy_EnglishToChinese(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -239,6 +261,7 @@ func TestZaiTranslateIntegration_ReflectionStrategy_EnglishToChinese(t *testing.
 func TestZaiTranslateIntegration_ChineseToEnglish(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -265,6 +288,7 @@ func TestZaiTranslateIntegration_ChineseToEnglish(t *testing.T) {
 func TestZaiTranslateIntegration_WithFormalInstruction(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -290,6 +314,7 @@ func TestZaiTranslateIntegration_WithFormalInstruction(t *testing.T) {
 func TestZaiTranslateIntegration_WithCasualInstruction(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -315,6 +340,7 @@ func TestZaiTranslateIntegration_WithCasualInstruction(t *testing.T) {
 func TestZaiTranslateIntegration_AutoDetection(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -344,6 +370,7 @@ func TestZaiTranslateIntegration_AutoDetection(t *testing.T) {
 func TestZaiTranslateIntegration_DefaultTargetLanguage(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -385,6 +412,7 @@ func TestZaiTranslateIntegration_EmptyInputSetsLanguageVariables(t *testing.T) {
 func TestZaiTranslateIntegration_TechnicalText(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -410,6 +438,7 @@ func TestZaiTranslateIntegration_TechnicalText(t *testing.T) {
 func TestZaiTranslateIntegration_LiteraryText(t *testing.T) {
 	t.Parallel() // Enable parallel execution
 	skipIfNoAPIKey(t)
+	acquireAPISlot(t) // Limit concurrent API calls
 
 	cmd, variableService, cleanup := setupTestEnvironment(t)
 	defer cleanup()
