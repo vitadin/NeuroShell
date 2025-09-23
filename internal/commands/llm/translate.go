@@ -163,15 +163,15 @@ func (c *TranslateCommand) Execute(options map[string]string, input string) erro
 	}
 
 	// For other translators (deepl, google), show placeholder for now
-	fmt.Printf("🌐 Translating (%s → %s via %s)...\n", source, target, translator)
+	fmt.Printf("Translating (%s → %s via %s)...\n", source, target, translator)
 
 	if instruction != "" {
-		fmt.Printf("📝 Instruction: %s\n", instruction)
+		fmt.Printf("Instruction: %s\n", instruction)
 	}
 
 	// This is a placeholder - actual translation will replace this
-	fmt.Printf("\n📄 Original: %s\n", textToTranslate)
-	fmt.Printf("🔄 Translation: [Placeholder - %s translation will be implemented here]\n", translator)
+	fmt.Printf("\nOriginal: %s\n", textToTranslate)
+	fmt.Printf("Translation: [Placeholder - %s translation will be implemented here]\n", translator)
 
 	logger.Debug("Translation command executed successfully",
 		"translator", translator,
@@ -209,9 +209,9 @@ func (c *TranslateCommand) delegateToZaiTranslate(originalOptions map[string]str
 		zaiOptions["target"] = target
 	}
 
-	// Map instruction to suggestion for general strategy
+	// Map instruction parameter directly
 	if instruction != "" {
-		zaiOptions["suggestion"] = instruction
+		zaiOptions["instruction"] = instruction
 	}
 
 	// Copy any zai-specific options from original
@@ -253,14 +253,14 @@ func (c *TranslateCommand) delegateToZaiTranslate(originalOptions map[string]str
 
 // showZaiPlaceholder shows placeholder output when zai-translate is not available
 func (c *TranslateCommand) showZaiPlaceholder(source, target, instruction, text string) error {
-	fmt.Printf("🌐 ZAI Translating (%s → %s)...\n", source, target)
+	fmt.Printf("ZAI Translating (%s → %s)...\n", source, target)
 
 	if instruction != "" {
-		fmt.Printf("📝 Instruction: %s\n", instruction)
+		fmt.Printf("Instruction: %s\n", instruction)
 	}
 
-	fmt.Printf("\n📄 Original: %s\n", text)
-	fmt.Printf("🔄 Translation: [ZAI translation will be implemented here]\n")
+	fmt.Printf("\nOriginal: %s\n", text)
+	fmt.Printf("Translation: [ZAI translation will be implemented here]\n")
 
 	return nil
 }

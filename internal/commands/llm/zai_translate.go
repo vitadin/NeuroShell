@@ -34,7 +34,7 @@ func (c *ZaiTranslateCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the zai-translate command.
 func (c *ZaiTranslateCommand) Usage() string {
-	return `\zai-translate[source=lang, target=lang, strategy=type, suggestion="hint", glossary="id"] text to translate
+	return `\zai-translate[source=lang, target=lang, strategy=type, instruction="hint", glossary="id"] text to translate
 
 Examples:
   \zai-translate Hello world                                    %% Auto-detect source, translate to Chinese
@@ -42,14 +42,14 @@ Examples:
   \zai-translate[source=en, target=ja] Hello world             %% English to Japanese
   \zai-translate[strategy=paraphrase] Hello world              %% Use paraphrase translation
   \zai-translate[strategy=three_step, target=fr] Hello world   %% Multi-step translation to French
-  \zai-translate[suggestion="formal business tone"] Hello      %% With style guidance
+  \zai-translate[instruction="formal business tone"] Hello     %% With style guidance
 
 Options:
-  source     - Source language code (auto, en, zh-CN, ja, etc.) [default: auto]
-  target     - Target language code (zh-CN, en, ja, fr, de, etc.) [default: zh-CN]
-  strategy   - Translation strategy (general, paraphrase, two_step, three_step, reflection) [default: general]
-  suggestion - Translation style or terminology hints for general strategy
-  glossary   - Glossary ID for custom terminology`
+  source      - Source language code (auto, en, zh-CN, ja, etc.) [default: auto]
+  target      - Target language code (zh-CN, en, ja, fr, de, etc.) [default: zh-CN]
+  strategy    - Translation strategy (general, paraphrase, two_step, three_step, reflection) [default: general]
+  instruction - Translation style or terminology hints for general strategy
+  glossary    - Glossary ID for custom terminology`
 }
 
 // HelpInfo returns structured help information for the zai-translate command.
@@ -82,7 +82,7 @@ func (c *ZaiTranslateCommand) HelpInfo() neurotypes.HelpInfo {
 				Default:     "general",
 			},
 			{
-				Name:        "suggestion",
+				Name:        "instruction",
 				Description: "Style hints for general strategy (e.g., 'formal business tone', 'casual')",
 				Required:    false,
 				Type:        "string",
@@ -112,7 +112,7 @@ func (c *ZaiTranslateCommand) HelpInfo() neurotypes.HelpInfo {
 				Description: "High-quality three-step translation to French",
 			},
 			{
-				Command:     `\zai-translate[suggestion="formal business tone", target=de] Hello colleagues`,
+				Command:     `\zai-translate[instruction="formal business tone", target=de] Hello colleagues`,
 				Description: "Business-style translation to German",
 			},
 		},
@@ -151,7 +151,7 @@ func (c *ZaiTranslateCommand) HelpInfo() neurotypes.HelpInfo {
 			"  • two_step: Better accuracy via intermediate steps",
 			"  • three_step: Highest quality for critical content",
 			"  • reflection: Self-correcting translation",
-			"Suggestion parameter works only with 'general' strategy",
+			"Instruction parameter works only with 'general' strategy",
 			"Auto-detected source language stored in _source_detected",
 			"Translation cost and token usage stored in _tokens_used",
 		},
@@ -180,7 +180,7 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 	source := getOption(options, "source", "auto")
 	target := getOption(options, "target", "zh-CN")
 	strategy := getOption(options, "strategy", "general")
-	suggestion := getOption(options, "suggestion", "")
+	instruction := getOption(options, "instruction", "")
 	glossary := getOption(options, "glossary", "")
 
 	// Validate strategy
@@ -216,7 +216,7 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 		"source", source,
 		"target", target,
 		"strategy", strategy,
-		"suggestion", suggestion,
+		"instruction", instruction,
 		"glossary", glossary,
 		"text_length", len(textToTranslate))
 
@@ -249,10 +249,10 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 	}
 
 	// Add strategy-specific config
-	if strategy == "general" && suggestion != "" {
+	if strategy == "general" && instruction != "" {
 		customVars["strategy_config"] = map[string]interface{}{
 			"general": map[string]interface{}{
-				"suggestion": suggestion,
+				"suggestion": instruction,
 			},
 		}
 	}
@@ -279,17 +279,17 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 	}
 
 	// Display translation status
-	fmt.Printf("🌐 ZAI Translating (%s → %s", source, target)
+	fmt.Printf("ZAI Translating (%s → %s", source, target)
 	if strategy != "general" {
 		fmt.Printf(", %s strategy", strategy)
 	}
 	fmt.Printf(")...\n")
 
-	if suggestion != "" {
-		fmt.Printf("📝 Style guidance: %s\n", suggestion)
+	if instruction != "" {
+		fmt.Printf("Style guidance: %s\n", instruction)
 	}
 
-	fmt.Printf("\n📄 Original: %s\n", textToTranslate)
+	fmt.Printf("\nOriginal: %s\n", textToTranslate)
 
 	// Make HTTP request to ZAI API
 	response, err := httpRequestService.Post("https://api.z.ai/api/v1/agents", string(requestJSON), headers)
@@ -333,7 +333,7 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 	}
 
 	// Display result
-	fmt.Printf("✅ Translation: %s\n", translatedText)
+	fmt.Printf("Translation: %s\n", translatedText)
 
 	// Store results in variables
 	if err := variableService.(*services.VariableService).Set("_output", translatedText); err != nil {

@@ -37,7 +37,7 @@ func TestZaiTranslateCommand_Usage(t *testing.T) {
 	assert.Contains(t, usage, "source=")
 	assert.Contains(t, usage, "target=")
 	assert.Contains(t, usage, "strategy=")
-	assert.Contains(t, usage, "suggestion=")
+	assert.Contains(t, usage, "instruction=")
 	assert.Contains(t, usage, "glossary=")
 }
 
@@ -51,7 +51,7 @@ func TestZaiTranslateCommand_HelpInfo(t *testing.T) {
 	assert.Equal(t, neurotypes.ParseModeKeyValue, helpInfo.ParseMode)
 
 	// Check that all expected options are present
-	expectedOptions := []string{"source", "target", "strategy", "suggestion", "glossary"}
+	expectedOptions := []string{"source", "target", "strategy", "instruction", "glossary"}
 	assert.Len(t, helpInfo.Options, len(expectedOptions))
 
 	optionNames := make([]string, len(helpInfo.Options))

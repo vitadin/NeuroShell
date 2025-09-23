@@ -223,7 +223,7 @@ System Variables:
     #cmd_write_usage     = \write[file=path, mode=append] content
     #cmd_zai-translate_desc = Translate text using ZAI's general translation API with advanced features
     #cmd_zai-translate_parsemode = KeyValue
-    #cmd_zai-translate_usage = \zai-translate[source=lang, ta...r custom terminology (length: 1091 chars)
+    #cmd_zai-translate_usage = \zai-translate[source=lang, ta...r custom terminology (length: 1097 chars)
     #message_count       = 0
     #session_id          = session_1609459200
     #system_init_executed = true
