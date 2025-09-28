@@ -45,7 +45,7 @@ System Variables:
     #cmd_echo-json_usage = \echo-json[to=var_name, indent=2] json_string
     #cmd_echo_desc       = Output text with optional raw mode and variable storage
     #cmd_echo_parsemode  = KeyValue
-    #cmd_echo_usage      = \echo[to=var_name, silent=true, raw=true] message
+    #cmd_echo_usage      = \echo[to=var_name, silent=true, raw=true, display_only=false] message
     #cmd_editor_desc     = Open external editor for composing input
     #cmd_editor_parsemode = KeyValue
     #cmd_editor_usage    = \editor [initial_text]

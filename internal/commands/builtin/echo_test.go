@@ -662,5 +662,232 @@ func setupEchoTestRegistry(t *testing.T, ctx neurotypes.Context) {
 
 // CaptureOutput is now defined in stringprocessing package
 
+func TestEchoCommand_Execute_DisplayOnlyOption(t *testing.T) {
+	cmd := &EchoCommand{}
+	ctx := context.New()
+
+	// Setup test registry with variable service
+	setupEchoTestRegistry(t, ctx)
+
+	tests := []struct {
+		name           string
+		args           map[string]string
+		input          string
+		expectedOutput string
+		shouldStore    bool
+		expectedVar    string
+		expectedValue  string
+		shouldDisplay  bool
+	}{
+		{
+			name:           "display_only=true without to option",
+			args:           map[string]string{"display_only": "true"},
+			input:          "Debug message",
+			expectedOutput: "Debug message\n",
+			shouldStore:    false,
+			expectedVar:    "_output",
+			expectedValue:  "", // Should not be stored
+			shouldDisplay:  true,
+		},
+		{
+			name:           "display_only=true with to option",
+			args:           map[string]string{"display_only": "true", "to": "debug_var"},
+			input:          "Store and display",
+			expectedOutput: "Store and display\n",
+			shouldStore:    true,
+			expectedVar:    "debug_var",
+			expectedValue:  "Store and display",
+			shouldDisplay:  true,
+		},
+		{
+			name:           "display_only=true with silent=true",
+			args:           map[string]string{"display_only": "true", "silent": "true"},
+			input:          "Nothing happens",
+			expectedOutput: "",
+			shouldStore:    false,
+			expectedVar:    "_output",
+			expectedValue:  "", // Should not be stored
+			shouldDisplay:  false,
+		},
+		{
+			name:           "display_only=false (default behavior)",
+			args:           map[string]string{"display_only": "false"},
+			input:          "Normal behavior",
+			expectedOutput: "Normal behavior\n",
+			shouldStore:    true,
+			expectedVar:    "_output",
+			expectedValue:  "Normal behavior",
+			shouldDisplay:  true,
+		},
+		{
+			name:           "display_only=true with raw=true",
+			args:           map[string]string{"display_only": "true", "raw": "true"},
+			input:          "Raw\\ntext",
+			expectedOutput: "Raw\\ntext\n",
+			shouldStore:    false,
+			expectedVar:    "_output",
+			expectedValue:  "", // Should not be stored
+			shouldDisplay:  true,
+		},
+		{
+			name:           "display_only=true with to and silent=false",
+			args:           map[string]string{"display_only": "true", "to": "custom", "silent": "false"},
+			input:          "Display and store",
+			expectedOutput: "Display and store\n",
+			shouldStore:    true,
+			expectedVar:    "custom",
+			expectedValue:  "Display and store",
+			shouldDisplay:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Clear any previous values
+			err := ctx.SetSystemVariable("_output", "")
+			require.NoError(t, err, "Should be able to clear _output variable")
+			if tt.expectedVar != "_output" {
+				if tt.expectedVar[0] == '_' || tt.expectedVar[0] == '#' || tt.expectedVar[0] == '@' {
+					err = ctx.SetSystemVariable(tt.expectedVar, "")
+					require.NoError(t, err, "Should be able to clear %s variable", tt.expectedVar)
+				} else {
+					err = ctx.SetVariable(tt.expectedVar, "")
+					require.NoError(t, err, "Should be able to clear %s variable", tt.expectedVar)
+				}
+			}
+
+			// Capture stdout
+			output := stringprocessing.CaptureOutput(func() {
+				err := cmd.Execute(tt.args, tt.input)
+				assert.NoError(t, err) // Echo never returns errors
+			})
+
+			// Check console output
+			if tt.shouldDisplay {
+				assert.Equal(t, tt.expectedOutput, output)
+			} else {
+				assert.Empty(t, output, "Should not display when silent")
+			}
+
+			// Check variable storage
+			value, err := ctx.GetVariable(tt.expectedVar)
+			if tt.shouldStore {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedValue, value)
+			} else if err == nil {
+				// Variable should either not exist or be empty
+				assert.Equal(t, "", value, "Variable should not be set when not storing")
+			}
+		})
+	}
+}
+
+func TestEchoCommand_Execute_DisplayOnlyInvalidValue(t *testing.T) {
+	cmd := &EchoCommand{}
+	ctx := context.New()
+
+	// Setup test registry with variable service
+	setupEchoTestRegistry(t, ctx)
+
+	args := map[string]string{"display_only": "invalid"}
+	input := "Test message"
+
+	// Capture stdout
+	output := stringprocessing.CaptureOutput(func() {
+		err := cmd.Execute(args, input)
+		assert.NoError(t, err) // Echo never returns errors, uses default value
+	})
+
+	// Should use default display_only=false and behave normally
+	output = strings.TrimSuffix(output, "\n")
+	assert.Equal(t, "Test message", output)
+
+	// Should store in _output as normal
+	value, err := ctx.GetVariable("_output")
+	assert.NoError(t, err)
+	assert.Equal(t, "Test message", value)
+}
+
+func TestEchoCommand_Execute_DisplayOnlyEdgeCases(t *testing.T) {
+	cmd := &EchoCommand{}
+	ctx := context.New()
+
+	// Setup test registry with variable service
+	setupEchoTestRegistry(t, ctx)
+
+	tests := []struct {
+		name           string
+		args           map[string]string
+		input          string
+		expectedOutput string
+		shouldStore    bool
+		expectedVar    string
+		expectedValue  string
+	}{
+		{
+			name:           "display_only=true with empty input",
+			args:           map[string]string{"display_only": "true"},
+			input:          "",
+			expectedOutput: "",
+			shouldStore:    false,
+			expectedVar:    "_output",
+			expectedValue:  "",
+		},
+		{
+			name:           "display_only=true with unicode",
+			args:           map[string]string{"display_only": "true"},
+			input:          "Hello 世界 🌍",
+			expectedOutput: "Hello 世界 🌍\n",
+			shouldStore:    false,
+			expectedVar:    "_output",
+			expectedValue:  "",
+		},
+		{
+			name:           "display_only with all options combined",
+			args:           map[string]string{"display_only": "true", "to": "all_opts", "raw": "true", "silent": "false"},
+			input:          "Complex\\ntest",
+			expectedOutput: "Complex\\ntest\n", // raw=true, silent=false
+			shouldStore:    true,               // to= specified
+			expectedVar:    "all_opts",
+			expectedValue:  "Complex\\ntest",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Clear any previous values
+			err := ctx.SetSystemVariable("_output", "")
+			require.NoError(t, err, "Should be able to clear _output variable")
+			if tt.expectedVar != "_output" {
+				if tt.expectedVar[0] == '_' || tt.expectedVar[0] == '#' || tt.expectedVar[0] == '@' {
+					err = ctx.SetSystemVariable(tt.expectedVar, "")
+					require.NoError(t, err, "Should be able to clear %s variable", tt.expectedVar)
+				} else {
+					err = ctx.SetVariable(tt.expectedVar, "")
+					require.NoError(t, err, "Should be able to clear %s variable", tt.expectedVar)
+				}
+			}
+
+			// Capture stdout
+			output := stringprocessing.CaptureOutput(func() {
+				err := cmd.Execute(tt.args, tt.input)
+				assert.NoError(t, err)
+			})
+
+			assert.Equal(t, tt.expectedOutput, output)
+
+			// Check variable storage
+			value, err := ctx.GetVariable(tt.expectedVar)
+			if tt.shouldStore {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedValue, value)
+			} else if err == nil {
+				// Variable should either not exist or be empty
+				assert.Equal(t, "", value, "Variable should not be set when not storing")
+			}
+		})
+	}
+}
+
 // Interface compliance check
 var _ neurotypes.Command = (*EchoCommand)(nil)
