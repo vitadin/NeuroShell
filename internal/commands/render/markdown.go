@@ -32,7 +32,7 @@ func (c *MarkdownCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the render-markdown command.
 func (c *MarkdownCommand) Usage() string {
-	return "\\render-markdown[raw=true] markdown content to render"
+	return "\\render-markdown[raw=true, display_only=false] markdown content to render"
 }
 
 // HelpInfo returns structured help information for the render-markdown command.
@@ -49,6 +49,13 @@ func (c *MarkdownCommand) HelpInfo() neurotypes.HelpInfo {
 				Required:    false,
 				Type:        "bool",
 				Default:     "true",
+			},
+			{
+				Name:        "display_only",
+				Description: "Only display rendered output to console without storing in _output variable",
+				Required:    false,
+				Type:        "bool",
+				Default:     "false",
 			},
 		},
 		Examples: []neurotypes.HelpExample{
@@ -76,11 +83,15 @@ func (c *MarkdownCommand) HelpInfo() neurotypes.HelpInfo {
 				Command:     "\\render-markdown # Multiline input ...\\n... with continuation markers",
 				Description: "Handle multiline input with continuation markers",
 			},
+			{
+				Command:     "\\render-markdown[display_only=true] **Translation:**\\n\\nHello world",
+				Description: "Display rendered markdown without storing in _output variable",
+			},
 		},
 		StoredVariables: []neurotypes.HelpStoredVariable{
 			{
 				Name:        "_output",
-				Description: "Rendered markdown with ANSI formatting using Glamour",
+				Description: "Rendered markdown with ANSI formatting using Glamour (only when display_only=false)",
 				Type:        "command_output",
 				Example:     "\x1b[1m# Hello World\x1b[0m\n\nThis is \x1b[1mbold\x1b[0m text",
 			},
@@ -93,14 +104,16 @@ func (c *MarkdownCommand) HelpInfo() neurotypes.HelpInfo {
 			"Default raw=true treats \\n as literal characters",
 			"Set raw=false to interpret escape sequences: \\n (newline), \\t (tab), \\r (carriage return), \\\\ (backslash)",
 			"Continuation markers (...) are always processed regardless of raw setting",
+			"When display_only=true, rendered output is shown but _output variable is not modified",
 		},
 	}
 }
 
 // Execute renders markdown content using the MarkdownService.
-// The rendered output is displayed to the console and stored in the _output variable.
+// The rendered output is displayed to the console and optionally stored in the _output variable.
 // Options:
 //   - raw: treat escape sequences as literal characters (default: true)
+//   - display_only: only display without storing in _output variable (default: false)
 func (c *MarkdownCommand) Execute(args map[string]string, input string) error {
 	if input == "" {
 		return fmt.Errorf("Usage: %s", c.Usage())
@@ -117,6 +130,17 @@ func (c *MarkdownCommand) Execute(args map[string]string, input string) error {
 		}
 	}
 
+	// Parse display_only option (default to false for backward compatibility)
+	displayOnlyStr := args["display_only"]
+	displayOnly := false // Default to false (store in _output variable)
+	if displayOnlyStr != "" {
+		var err error
+		displayOnly, err = strconv.ParseBool(displayOnlyStr)
+		if err != nil {
+			return fmt.Errorf("invalid value for display_only option: %s (must be true or false)", displayOnlyStr)
+		}
+	}
+
 	// Get markdown service
 	mdService, err := services.GetGlobalMarkdownService()
 	if err != nil {
@@ -130,16 +154,17 @@ func (c *MarkdownCommand) Execute(args map[string]string, input string) error {
 		return fmt.Errorf("failed to render markdown: %w", err)
 	}
 
-	// Get variable service to store the result
-	variableService, err := services.GetGlobalVariableService()
-	if err != nil {
-		return fmt.Errorf("variable service not available: %w", err)
-	}
+	// Store the rendered output in the _output variable (only if display_only is false)
+	if !displayOnly {
+		variableService, err := services.GetGlobalVariableService()
+		if err != nil {
+			return fmt.Errorf("variable service not available: %w", err)
+		}
 
-	// Store the rendered output in the _output variable
-	err = variableService.SetSystemVariable("_output", rendered)
-	if err != nil {
-		return fmt.Errorf("failed to store rendered output: %w", err)
+		err = variableService.SetSystemVariable("_output", rendered)
+		if err != nil {
+			return fmt.Errorf("failed to store rendered output: %w", err)
+		}
 	}
 
 	// Display the rendered markdown to the console
@@ -149,6 +174,8 @@ func (c *MarkdownCommand) Execute(args map[string]string, input string) error {
 }
 
 // IsReadOnly returns true as the render command doesn't modify system state.
+// Note: When display_only=false, the command does set _output variable, but this is
+// considered part of normal command output behavior, not system state modification.
 func (c *MarkdownCommand) IsReadOnly() bool {
 	return true
 }

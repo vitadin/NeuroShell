@@ -66,6 +66,8 @@ func setupTestEnvironment(t *testing.T) (*ZaiTranslateCommand, *services.Variabl
 	require.NoError(t, err)
 	err = testRegistry.RegisterService(services.NewHTTPRequestService())
 	require.NoError(t, err)
+	err = testRegistry.RegisterService(services.NewStackService())
+	require.NoError(t, err)
 	services.SetGlobalRegistry(testRegistry)
 
 	// Initialize services
@@ -505,6 +507,8 @@ func BenchmarkZaiTranslateIntegration_GeneralStrategy(b *testing.B) {
 	err := testRegistry.RegisterService(services.NewVariableService())
 	require.NoError(b, err)
 	err = testRegistry.RegisterService(services.NewHTTPRequestService())
+	require.NoError(b, err)
+	err = testRegistry.RegisterService(services.NewStackService())
 	require.NoError(b, err)
 	services.SetGlobalRegistry(testRegistry)
 

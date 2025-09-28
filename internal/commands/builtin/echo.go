@@ -31,7 +31,7 @@ func (c *EchoCommand) Description() string {
 
 // Usage returns the syntax and usage examples for the echo command.
 func (c *EchoCommand) Usage() string {
-	return "\\echo[to=var_name, silent=true, raw=true] message"
+	return "\\echo[to=var_name, silent=true, raw=true, display_only=false] message"
 }
 
 // HelpInfo returns structured help information for the echo command.
@@ -39,7 +39,7 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 	return neurotypes.HelpInfo{
 		Command:     c.Name(),
 		Description: c.Description(),
-		Usage:       "\\echo[to=var_name, silent=true, raw=true] message",
+		Usage:       "\\echo[to=var_name, silent=true, raw=true, display_only=false] message",
 		ParseMode:   c.ParseMode(),
 		Options: []neurotypes.HelpOption{
 			{
@@ -59,6 +59,13 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 			{
 				Name:        "raw",
 				Description: "Output string literals without interpreting escape sequences",
+				Required:    false,
+				Type:        "bool",
+				Default:     "false",
+			},
+			{
+				Name:        "display_only",
+				Description: "Only display output without storing in default variable (see Notes for interaction with 'to' and 'silent')",
 				Required:    false,
 				Type:        "bool",
 				Default:     "false",
@@ -85,17 +92,33 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 				Command:     "\\echo[to=formatted, raw=false] Tab:\\tNew line:\\n",
 				Description: "Store formatted text with interpreted escape sequences",
 			},
+			{
+				Command:     "\\echo[display_only=true] Debug: current value is ${value}",
+				Description: "Display interpolated text without storing in any variable",
+			},
+			{
+				Command:     "\\echo[display_only=true, raw=true] Literal:\\ntext",
+				Description: "Display raw text without storage or escape interpretation",
+			},
+			{
+				Command:     "\\echo[display_only=true, to=temp] Store but display only",
+				Description: "Display text and store in 'temp' variable (display_only with 'to' allows storage)",
+			},
+			{
+				Command:     "\\echo[display_only=true, silent=true] Nothing happens",
+				Description: "Neither display nor store (display_only + silent = no action)",
+			},
 		},
 		StoredVariables: []neurotypes.HelpStoredVariable{
 			{
 				Name:        "_output",
-				Description: "Command output (default storage location)",
+				Description: "Command output (default storage location, not used when display_only=true)",
 				Type:        "command_output",
 				Example:     "Hello, World!",
 			},
 			{
 				Name:        "{variable_name}",
-				Description: "Custom variable when using to= option",
+				Description: "Custom variable when using to= option (not used when display_only=true)",
 				Type:        "user_variable",
 				Example:     "greeting = \"Hello ${name}!\"",
 			},
@@ -103,9 +126,14 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 		Notes: []string{
 			"When raw=true, escape sequences like \\n are shown literally",
 			"When raw=false, escape sequences are interpreted (\\n becomes newline)",
-			"Result is always stored in the specified variable (default: _output)",
-			"Use silent=true to suppress console output while still storing result",
+			"Result is stored in the specified variable (default: _output) based on option combinations:",
+			"  • Normal behavior: display + store in variable",
+			"  • silent=true: no display + store in variable",
+			"  • display_only=true: display + no storage (unless 'to' is specified)",
+			"  • display_only=true + to=var: display + store in specified variable",
+			"  • display_only=true + silent=true: no display + no storage",
 			"Variable interpolation is handled by the state machine before echo executes",
+			"Invalid option values are ignored gracefully (echo never fails)",
 		},
 	}
 }
@@ -116,7 +144,17 @@ func (c *EchoCommand) HelpInfo() neurotypes.HelpInfo {
 //   - to: store result in specified variable (default: ${_output})
 //   - silent: suppress console output (default: false)
 //   - raw: output string literals without interpreting escape sequences (default: false)
+//   - display_only: only display without storing in any variable (default: false)
 func (c *EchoCommand) Execute(args map[string]string, input string) error {
+	// Parse display_only option with tolerant default
+	displayOnly := false
+	if displayOnlyStr := args["display_only"]; displayOnlyStr != "" {
+		if parsedDisplayOnly, err := strconv.ParseBool(displayOnlyStr); err == nil {
+			displayOnly = parsedDisplayOnly
+		}
+		// If parsing fails, displayOnly remains false (tolerant default)
+	}
+
 	// Parse options with tolerant defaults (never error)
 	targetVar := args["to"]
 	if targetVar == "" {
@@ -156,21 +194,42 @@ func (c *EchoCommand) Execute(args map[string]string, input string) error {
 		storeMessage = displayMessage
 	}
 
-	// Get variable service - if not available, continue without storing (graceful degradation)
-	if variableService, err := services.GetGlobalVariableService(); err == nil {
-		// Store result in target variable
-		if targetVar == "_output" {
-			// Store in system variable (only for specific system variables)
-			_ = variableService.SetSystemVariable(targetVar, storeMessage)
-		} else {
-			// Store in user variable (including custom variables with _ prefix)
-			_ = variableService.Set(targetVar, storeMessage)
+	// Determine storage behavior based on option combinations
+	shouldStore := true
+	if displayOnly && silent {
+		// display_only=true AND silent=true: no console output and no storage
+		shouldStore = false
+	} else if displayOnly && args["to"] == "" {
+		// display_only=true with no 'to' option: don't store anywhere
+		shouldStore = false
+	}
+	// If display_only=true AND 'to' is specified (but not silent): still store to the specified variable
+
+	// Store result in variable based on computed behavior
+	if shouldStore {
+		// Get variable service - if not available, continue without storing (graceful degradation)
+		if variableService, err := services.GetGlobalVariableService(); err == nil {
+			// Store result in target variable
+			if targetVar == "_output" {
+				// Store in system variable (only for specific system variables)
+				_ = variableService.SetSystemVariable(targetVar, storeMessage)
+			} else {
+				// Store in user variable (including custom variables with _ prefix)
+				_ = variableService.Set(targetVar, storeMessage)
+			}
+			// Ignore storage errors to ensure echo never fails
 		}
-		// Ignore storage errors to ensure echo never fails
 	}
 
-	// Output to console unless silent mode is enabled
-	if !silent {
+	// Determine display behavior based on option combinations
+	shouldDisplay := !silent
+	if displayOnly && silent {
+		// display_only=true AND silent=true: no console output and no storage (above)
+		shouldDisplay = false
+	}
+
+	// Output to console based on computed behavior
+	if shouldDisplay {
 		// Create output printer with optional style injection
 		var styleProvider output.StyleProvider
 		if themeService, err := services.GetGlobalThemeService(); err == nil {
@@ -192,7 +251,7 @@ func (c *EchoCommand) Execute(args map[string]string, input string) error {
 		// For empty strings, print nothing (maintain original behavior)
 	}
 
-	// Echo command never returns errors - it always succeeds
+	// Echo command never returns errors - it always succeeds with graceful degradation
 	return nil
 }
 
