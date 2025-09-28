@@ -181,10 +181,17 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 		return fmt.Errorf("http request service not available")
 	}
 
-	// Get variable service
+	// Get services
 	variableService, err := services.GetGlobalRegistry().GetService("variable")
 	if err != nil {
 		return fmt.Errorf("failed to get variable service: %w", err)
+	}
+
+	// Get stack service for rendering (optional - has fallback)
+	stackService, err := services.GetGlobalRegistry().GetService("stack")
+	if err != nil {
+		logger.Debug("Stack service not available, will use fallback display", "error", err)
+		stackService = nil
 	}
 
 	// Set supported language lists (always set these, even if no input provided)
@@ -314,7 +321,13 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 		fmt.Printf("Style guidance: %s\n", instruction)
 	}
 
-	fmt.Printf("\nOriginal: %s\n", textToTranslate)
+	// Display original text using render-markdown via stack service
+	originalContent := fmt.Sprintf("**Original Text:**\n\n%s", textToTranslate)
+	if stackService == nil {
+		return fmt.Errorf("stack service not available")
+	}
+	renderCommand := "\\render-markdown[display_only=true] " + originalContent
+	stackService.(*services.StackService).PushCommand(renderCommand)
 
 	// Make HTTP request to ZAI API
 	response, err := httpRequestService.Post("https://api.z.ai/api/v1/agents", string(requestJSON), headers)
@@ -357,10 +370,15 @@ func (c *ZaiTranslateCommand) Execute(options map[string]string, input string) e
 		return fmt.Errorf("no text in ZAI API response content")
 	}
 
-	// Display result
-	fmt.Printf("Translation: %s\n", translatedText)
+	// Display translation result using render-markdown via stack service
+	translationContent := fmt.Sprintf("**Translation:**\n\n%s", translatedText)
+	if stackService == nil {
+		return fmt.Errorf("stack service not available")
+	}
+	renderCommand = "\\render-markdown[display_only=true] " + translationContent
+	stackService.(*services.StackService).PushCommand(renderCommand)
 
-	// Store results in variables
+	// Store results in variables - clean text without ANSI formatting
 	if err := variableService.(*services.VariableService).SetSystemVariable("_output", translatedText); err != nil {
 		logger.Error("Failed to set _output variable", "error", err)
 	}

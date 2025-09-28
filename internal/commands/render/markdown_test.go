@@ -419,3 +419,86 @@ func setupMarkdownCommandTestRegistryWithoutVariable(t *testing.T) {
 		context.ResetGlobalContext()
 	})
 }
+
+func TestMarkdownCommand_Execute_DisplayOnlyOption(t *testing.T) {
+	setupMarkdownCommandTestRegistry(t)
+	cmd := &MarkdownCommand{}
+
+	tests := []struct {
+		name         string
+		args         map[string]string
+		input        string
+		expectOutput bool // Whether _output variable should be set
+		description  string
+	}{
+		{
+			name:         "default behavior stores output",
+			args:         map[string]string{},
+			input:        "# Hello World",
+			expectOutput: true,
+			description:  "Default behavior should store rendered output in _output",
+		},
+		{
+			name:         "display_only=false stores output",
+			args:         map[string]string{"display_only": "false"},
+			input:        "# Hello World",
+			expectOutput: true,
+			description:  "display_only=false should store rendered output in _output",
+		},
+		{
+			name:         "display_only=true does not store output",
+			args:         map[string]string{"display_only": "true"},
+			input:        "# Hello World",
+			expectOutput: false,
+			description:  "display_only=true should not store rendered output in _output",
+		},
+		{
+			name:         "display_only=true with complex markdown",
+			args:         map[string]string{"display_only": "true"},
+			input:        "**Original Text:**\n\nHello world",
+			expectOutput: false,
+			description:  "display_only=true should not store output even with complex markdown",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Get variable service to check _output
+			variableService, err := services.GetGlobalVariableService()
+			require.NoError(t, err)
+
+			// Clear any previous _output value
+			err = variableService.SetSystemVariable("_output", "")
+			require.NoError(t, err)
+
+			// Execute the command
+			err = cmd.Execute(tt.args, tt.input)
+			assert.NoError(t, err, tt.description)
+
+			// Check _output variable state
+			outputValue, err := variableService.Get("_output")
+			assert.NoError(t, err)
+
+			if tt.expectOutput {
+				assert.NotEmpty(t, outputValue, "Expected _output to be set but it was empty: %s", tt.description)
+				// Should contain the rendered markdown output
+				assert.Contains(t, outputValue, "Hello World", "Expected markdown content in stored output: %s", tt.description)
+			} else {
+				assert.Empty(t, outputValue, "Expected _output to be empty but it was set: %s", tt.description)
+			}
+		})
+	}
+}
+
+func TestMarkdownCommand_Execute_DisplayOnlyInvalidValue(t *testing.T) {
+	setupMarkdownCommandTestRegistry(t)
+	cmd := &MarkdownCommand{}
+
+	args := map[string]string{"display_only": "invalid"}
+	input := "# Hello World"
+
+	err := cmd.Execute(args, input)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid value for display_only option")
+	assert.Contains(t, err.Error(), "must be true or false")
+}

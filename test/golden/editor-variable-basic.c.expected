@@ -118,7 +118,7 @@ System Variables:
     #cmd_provider-catalog_usage = \provider-catalog[provider=ope...vider, search=query] (length: 89 chars)
     #cmd_render-markdown_desc = Render markdown content to ANSI terminal output using Glamour
     #cmd_render-markdown_parsemode = KeyValue
-    #cmd_render-markdown_usage = \render-markdown[raw=true] markdown content to render
+    #cmd_render-markdown_usage = \render-markdown[raw=true, display_only=false] markdown content to render
     #cmd_render_desc     = Style and highlight text using lipgloss with keyword support
     #cmd_render_parsemode = KeyValue
     #cmd_render_usage    = \render[keywords=[\get,\set], style=bold, theme=dark, to=var] text to render

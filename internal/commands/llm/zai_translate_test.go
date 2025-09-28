@@ -135,6 +135,8 @@ func TestZaiTranslateCommand_Execute_NoText(t *testing.T) {
 	require.NoError(t, err)
 	err = testRegistry.RegisterService(services.NewHTTPRequestService())
 	require.NoError(t, err)
+	err = testRegistry.RegisterService(services.NewStackService())
+	require.NoError(t, err)
 	services.SetGlobalRegistry(testRegistry)
 
 	// Initialize services
@@ -161,6 +163,8 @@ func TestZaiTranslateCommand_Execute_EmptyText(t *testing.T) {
 	require.NoError(t, err)
 	err = testRegistry.RegisterService(services.NewHTTPRequestService())
 	require.NoError(t, err)
+	err = testRegistry.RegisterService(services.NewStackService())
+	require.NoError(t, err)
 	services.SetGlobalRegistry(testRegistry)
 
 	// Initialize services
@@ -186,6 +190,8 @@ func TestZaiTranslateCommand_Execute_InvalidStrategy(t *testing.T) {
 	err := testRegistry.RegisterService(services.NewVariableService())
 	require.NoError(t, err)
 	err = testRegistry.RegisterService(services.NewHTTPRequestService())
+	require.NoError(t, err)
+	err = testRegistry.RegisterService(services.NewStackService())
 	require.NoError(t, err)
 	services.SetGlobalRegistry(testRegistry)
 
@@ -328,6 +334,8 @@ func TestZaiTranslateCommand_Execute_LanguageVariablesSetOnEmptyInput(t *testing
 	require.NoError(t, err)
 	err = testRegistry.RegisterService(services.NewHTTPRequestService())
 	require.NoError(t, err)
+	err = testRegistry.RegisterService(services.NewStackService())
+	require.NoError(t, err)
 	services.SetGlobalRegistry(testRegistry)
 
 	// Initialize services
@@ -373,6 +381,8 @@ func TestZaiTranslateCommand_Execute_LanguageVariablesSetWithInput(t *testing.T)
 	err := testRegistry.RegisterService(services.NewVariableService())
 	require.NoError(t, err)
 	err = testRegistry.RegisterService(services.NewHTTPRequestService())
+	require.NoError(t, err)
+	err = testRegistry.RegisterService(services.NewStackService())
 	require.NoError(t, err)
 	services.SetGlobalRegistry(testRegistry)
 
