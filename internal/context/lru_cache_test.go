@@ -158,7 +158,7 @@ func TestVariableLRUCache_SetPinned(t *testing.T) {
 
 	// Add more items
 	cache.Set("key2", "value2")
-	cache.Set("key3", "value3")  // Should evict key2, not key1
+	cache.Set("key3", "value3") // Should evict key2, not key1
 
 	// key1 should still exist (now pinned)
 	_, exists := cache.Get("key1")
@@ -240,12 +240,12 @@ func TestVariableLRUCache_GetStats(t *testing.T) {
 	// Add regular and pinned variables
 	cache.Set("key1", "value1")
 	cache.Set("key2", "value2")
-	cache.Set("_output", "output_value")  // This is pinned by default
+	cache.Set("_output", "output_value") // This is pinned by default
 
 	stats := cache.GetStats()
 	assert.Equal(t, 3, stats.Size)
 	assert.Equal(t, 10, stats.MaxSize)
-	assert.Equal(t, 1, stats.PinnedCount)  // Only _output is pinned
+	assert.Equal(t, 1, stats.PinnedCount) // Only _output is pinned
 }
 
 func TestVariableLRUCache_LongValues(t *testing.T) {
@@ -264,7 +264,7 @@ func TestVariableLRUCache_LongValues(t *testing.T) {
 	cache.Set("key2", "value2")
 	cache.Set("key3", "value3")
 	cache.Set("key4", "value4")
-	cache.Set("key5", "value5")  // Should evict essay (LRU)
+	cache.Set("key5", "value5") // Should evict essay (LRU)
 
 	_, exists = cache.Get("essay")
 	assert.False(t, exists)
@@ -310,7 +310,7 @@ func TestVariableLRUCache_Concurrent(t *testing.T) {
 	// We check that it's within a reasonable range of the max size
 	// For 10 goroutines x 100 operations = 1000 total, with cache size 100,
 	// we expect some overflow but not too much
-	assert.LessOrEqual(t, cache.Size(), 1000)  // Allow reasonable buffer for concurrent access
+	assert.LessOrEqual(t, cache.Size(), 1000) // Allow reasonable buffer for concurrent access
 }
 
 func TestVariableLRUCache_AllPinnedScenario(t *testing.T) {
@@ -337,7 +337,7 @@ func TestVariableLRUCache_AllPinnedScenario(t *testing.T) {
 	_, exists = cache.Get("key3")
 	assert.True(t, exists)
 
-	assert.Equal(t, 3, cache.Size())  // Exceeds maxSize but that's OK
+	assert.Equal(t, 3, cache.Size()) // Exceeds maxSize but that's OK
 }
 
 func TestVariableLRUCache_EdgeCases(t *testing.T) {

@@ -159,10 +159,10 @@ func BenchmarkVariableLRUCache_RandomAccess(b *testing.B) {
 	}
 
 	// Create deterministic random sequence for reproducible benchmarks
-	rand.Seed(42)
+	rng := rand.New(rand.NewSource(42))
 	keys := make([]string, 1000)
 	for i := range keys {
-		keys[i] = fmt.Sprintf("var_%d", rand.Intn(5000))
+		keys[i] = fmt.Sprintf("var_%d", rng.Intn(5000))
 	}
 
 	b.ResetTimer()
@@ -215,8 +215,8 @@ func BenchmarkVariableLRUCache_PinnedVsUnpinned(b *testing.B) {
 	cache := NewVariableLRUCache(1000)
 
 	// Set up pinned and unpinned variables
-	cache.Set("_output", "pinned_value")           // Automatically pinned
-	cache.Set("regular_var", "unpinned_value")     // Not pinned
+	cache.Set("_output", "pinned_value")       // Automatically pinned
+	cache.Set("regular_var", "unpinned_value") // Not pinned
 	cache.SetPinned("manually_pinned", true)
 	cache.Set("manually_pinned", "manual_pinned_value")
 
@@ -259,13 +259,13 @@ func BenchmarkVariableLRUCache_RealWorldScenario(b *testing.B) {
 
 	// Initialize with system and frequently used variables
 	systemVars := map[string]string{
-		"_output":            "last command output",
-		"_error":            "",
-		"_status":           "0",
-		"_elapsed":          "25ms",
-		"_style":            "modern",
-		"_default_command":  "echo",
-		"_completion_mode":  "tab",
+		"_output":          "last command output",
+		"_error":           "",
+		"_status":          "0",
+		"_elapsed":         "25ms",
+		"_style":           "modern",
+		"_default_command": "echo",
+		"_completion_mode": "tab",
 	}
 
 	for k, v := range systemVars {
@@ -290,13 +290,14 @@ func BenchmarkVariableLRUCache_RealWorldScenario(b *testing.B) {
 		operation := i % 10
 		if operation < 7 { // 70% reads
 			accessType := i % 10
-			if accessType < 5 { // 50% frequent vars
+			switch {
+			case accessType < 5: // 50% frequent vars
 				frequentVars := []string{"_output", "_error", "_status", "1", "2", "3"}
 				cache.Get(frequentVars[i%len(frequentVars)])
-			} else if accessType < 8 { // 30% recent vars
-				recentVar := strconv.Itoa((i%20)+1)
+			case accessType < 8: // 30% recent vars
+				recentVar := strconv.Itoa((i % 20) + 1)
 				cache.Get(recentVar)
-			} else { // 20% random vars
+			default: // 20% random vars
 				randomVar := fmt.Sprintf("user_var_%d", i%5000)
 				cache.Get(randomVar)
 			}

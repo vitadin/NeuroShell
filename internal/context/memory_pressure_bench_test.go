@@ -12,15 +12,15 @@ import (
 // BenchmarkMemoryPressure_UnboundedMap demonstrates memory pressure with simple map
 func BenchmarkMemoryPressure_UnboundedMap(b *testing.B) {
 	scenarios := []struct {
-		name          string
-		numVariables  int
-		valueSize     int
+		name         string
+		numVariables int
+		valueSize    int
 	}{
 		{"10K_vars_small_values", 10000, 100},
 		{"100K_vars_small_values", 100000, 100},
 		{"500K_vars_small_values", 500000, 100},
-		{"10K_vars_large_values", 10000, 10000},    // 10KB per variable
-		{"100K_vars_large_values", 100000, 10000},  // 1GB total data
+		{"10K_vars_large_values", 10000, 10000},   // 10KB per variable
+		{"100K_vars_large_values", 100000, 10000}, // 1GB total data
 	}
 
 	for _, scenario := range scenarios {
@@ -71,10 +71,10 @@ func BenchmarkMemoryPressure_UnboundedMap(b *testing.B) {
 // BenchmarkMemoryPressure_LRUCache demonstrates controlled memory with LRU cache
 func BenchmarkMemoryPressure_LRUCache(b *testing.B) {
 	scenarios := []struct {
-		name          string
-		numVariables  int
-		valueSize     int
-		cacheSize     int
+		name         string
+		numVariables int
+		valueSize    int
+		cacheSize    int
 	}{
 		{"10K_vars_small_values", 10000, 100, 1000},
 		{"100K_vars_small_values", 100000, 100, 1000},
@@ -125,7 +125,6 @@ func BenchmarkMemoryPressure_LRUCache(b *testing.B) {
 
 // BenchmarkMemoryPressure_Comparison directly compares both approaches side by side
 func BenchmarkMemoryPressure_Comparison(b *testing.B) {
-	const numVariables = 50000
 	const valueSize = 1000 // 1KB per variable
 	const cacheSize = 2000
 
