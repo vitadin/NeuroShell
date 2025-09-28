@@ -78,6 +78,10 @@ func InitializeServices(testMode bool) error {
 		return err
 	}
 
+	if err := services.GetGlobalRegistry().RegisterService(services.NewHTTPRequestService()); err != nil {
+		return err
+	}
+
 	if err := services.GetGlobalRegistry().RegisterService(services.NewHelpService()); err != nil {
 		return err
 	}

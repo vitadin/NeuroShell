@@ -17,15 +17,15 @@ import (
 // NeuroContext implements the neurotypes.Context interface providing session state management.
 // It maintains variables, message history, metadata, and chat sessions for NeuroShell sessions.
 type NeuroContext struct {
-	variables      map[string]string
+	variables      *VariableLRUCache // LRU cache for efficient variable storage
 	history        []neurotypes.Message
 	sessionID      string
 	scriptMetadata map[string]interface{}
 	testMode       bool
 
 	// Stack-based execution support
-	stackCtx       StackSubcontext // Delegated stack management
-	variablesMutex sync.RWMutex    // Protects variables map
+	stackCtx StackSubcontext // Delegated stack management
+	// Note: variablesMutex removed - LRU cache has its own thread safety
 
 	// Chat session storage
 	chatSessions    map[string]*neurotypes.ChatSession // Session storage by ID
@@ -62,7 +62,7 @@ type NeuroContext struct {
 // New creates a new NeuroContext with initialized maps and a unique session ID.
 func New() *NeuroContext {
 	ctx := &NeuroContext{
-		variables:      make(map[string]string),
+		variables:      NewVariableLRUCache(10000), // Default cache size of 10,000 variables
 		history:        make([]neurotypes.Message, 0),
 		sessionID:      "", // Will be set after we know test mode
 		scriptMetadata: make(map[string]interface{}),
@@ -132,12 +132,8 @@ func (ctx *NeuroContext) GetVariable(name string) (string, error) {
 		return value, nil
 	}
 
-	// Handle user variables with mutex protection
-	ctx.variablesMutex.RLock()
-	defer ctx.variablesMutex.RUnlock()
-
-	value, ok := ctx.variables[name]
-
+	// Handle user variables using LRU cache
+	value, ok := ctx.variables.Get(name)
 	if ok {
 		return value, nil
 	}
@@ -160,11 +156,8 @@ func (ctx *NeuroContext) SetVariable(name string, value string) error {
 		}
 	}
 
-	// Set variable with mutex protection
-	ctx.variablesMutex.Lock()
-	defer ctx.variablesMutex.Unlock()
-
-	ctx.variables[name] = value
+	// Set variable in LRU cache
+	ctx.variables.Set(name, value)
 	return nil
 }
 
@@ -181,11 +174,8 @@ func (ctx *NeuroContext) SetSystemVariable(name string, value string) error {
 		return fmt.Errorf("SetSystemVariable can only set system variables (prefixed with @, #, or _), got: %s", name)
 	}
 
-	// Set variable with mutex protection
-	ctx.variablesMutex.Lock()
-	defer ctx.variablesMutex.Unlock()
-
-	ctx.variables[name] = value
+	// Set variable in LRU cache
+	ctx.variables.Set(name, value)
 	return nil
 }
 
@@ -204,7 +194,7 @@ func (ctx *NeuroContext) GetSessionState() neurotypes.SessionState {
 	now := testutils.GetCurrentTime(ctx)
 	return neurotypes.SessionState{
 		ID:        ctx.sessionID,
-		Variables: ctx.variables,
+		Variables: ctx.variables.GetAll(),
 		History:   ctx.history,
 		CreatedAt: now, // Deterministic time in test mode
 		UpdatedAt: now,
@@ -212,9 +202,6 @@ func (ctx *NeuroContext) GetSessionState() neurotypes.SessionState {
 }
 
 func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
-	// Acquire read lock for variables access
-	ctx.variablesMutex.RLock()
-	defer ctx.variablesMutex.RUnlock()
 	// In test mode, return fixed values for consistency
 	if ctx.testMode {
 		switch name {
@@ -278,7 +265,7 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		return errorMsg, true
 	case "#session_id":
 		// Check if there's a stored chat session ID first
-		value, ok := ctx.variables["#session_id"]
+		value, ok := ctx.variables.Get("#session_id")
 		if ok {
 			return value, true
 		}
@@ -286,7 +273,7 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		return ctx.sessionID, true
 	case "#message_count":
 		// Check if there's a stored session message count first
-		value, ok := ctx.variables["#message_count"]
+		value, ok := ctx.variables.Get("#message_count")
 		if ok {
 			return value, true
 		}
@@ -299,35 +286,35 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		return "false", true
 	case "#session_name":
 		// Look for stored session name variable
-		value, ok := ctx.variables["#session_name"]
+		value, ok := ctx.variables.Get("#session_name")
 		if ok {
 			return value, true
 		}
 		return "", false
 	case "#session_display":
 		// Return formatted session display for prompts
-		sessionName, ok := ctx.variables["#session_name"]
+		sessionName, ok := ctx.variables.Get("#session_name")
 		if ok && sessionName != "" {
 			return " [" + sessionName + "]", true
 		}
 		return "", false
 	case "#session_display_color":
 		// Return formatted session display for colored prompts
-		sessionName, ok := ctx.variables["#session_name"]
+		sessionName, ok := ctx.variables.Get("#session_name")
 		if ok && sessionName != "" {
 			return " [{{color:yellow}}" + sessionName + "{{/color}}]", true
 		}
 		return "", false
 	case "#system_prompt":
 		// Look for stored system prompt variable
-		value, ok := ctx.variables["#system_prompt"]
+		value, ok := ctx.variables.Get("#system_prompt")
 		if ok {
 			return value, true
 		}
 		return "", false
 	case "#session_created":
 		// Look for stored session creation time variable
-		value, ok := ctx.variables["#session_created"]
+		value, ok := ctx.variables.Get("#session_created")
 		if ok {
 			return value, true
 		}
@@ -496,15 +483,8 @@ func (ctx *NeuroContext) GetEnv(key string) string {
 
 // GetAllVariables returns all variables including both user variables and computed system variables.
 func (ctx *NeuroContext) GetAllVariables() map[string]string {
-	result := make(map[string]string)
-
-	// Add all stored variables (both user and system variables) with mutex protection
-	ctx.variablesMutex.RLock()
-	defer ctx.variablesMutex.RUnlock()
-
-	for name, value := range ctx.variables {
-		result[name] = value
-	}
+	// Get all cached variables from LRU cache
+	result := ctx.variables.GetAll()
 
 	// Add computed system variables
 	systemVars := []string{"@pwd", "@user", "@home", "@date", "@time", "@os", "@status", "@error", "@last_status", "@last_error", "#session_id", "#message_count", "#test_mode"}

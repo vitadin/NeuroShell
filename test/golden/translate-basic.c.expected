@@ -1,0 +1,63 @@
+Command: translate
+
+Description: Translate text using AI translation services with customizable options
+
+Usage: \translate[translator=provider, source=lang, target=lang, instruction="custom instructions"] text to translate
+
+Examples:
+  \translate Hello world                                    %% Auto-detect source, translate to English (via ZAI)
+  \translate[target=spanish] Hello world                   %% Translate to Spanish
+  \translate[source=english, target=french] Hello world    %% Explicit source and target
+  \translate[translator=deepl] Hello world                 %% Use DeepL provider
+  \translate[target=japanese, instruction="formal tone"] Hello world     %% With custom instructions
+  \translate[target=german, instruction="business style"] Hello world    %% Business style instruction
+
+ZAI-specific options (when translator=zai):
+  \translate[strategy=paraphrase] Hello world              %% Use paraphrase strategy
+  \translate[strategy=three_step] Hello world              %% High-quality multi-step translation
+  \translate[glossary="tech_terms"] Hello world            %% Use custom glossary
+
+Options:
+  translator  - Translation provider (zai, deepl, google) [default: zai]
+  source      - Source language (auto-detect if not specified)
+  target      - Target language [default: english]
+  instruction - Custom instructions for translation style, tone, context, etc.
+
+ZAI-only options:
+  strategy    - Translation strategy (general, paraphrase, two_step, three_step, reflection)
+  glossary    - Glossary ID for custom terminology
+
+Parse Mode: Key-Value (supports [key=value] syntax)
+
+Options:
+  translator - Translation service provider (zai, deepl, google) (default: zai)
+
+  source - Source language (auto-detect if not specified) (default: auto)
+
+  target - Target language for translation (default: english)
+
+  instruction - Custom instructions for translation style, tone, context, etc.
+
+Examples:
+  \translate Hello, how are you?
+%% Basic translation to default target language
+  \translate[target=spanish] Hello, how are you?
+%% Translate to Spanish
+  \translate[source=french, target=english] Bonjour, comment allez-vous?
+%% Translate from French to English
+  \translate[target=japanese, instruction="the tone should be formal"] Please review this document
+%% Formal translation to Japanese with custom instructions
+  \translate[translator=deepl, target=german, instruction="make it business style"] Our quarterly results show growth
+%% Business style translation using DeepL
+
+Stored Variables:
+  ${_output} - Translated text result (command_output)
+
+    Example: Hello world
+
+Notes:
+  Delegates to specific translation providers based on 'translator' option
+  Default provider is ZAI with comprehensive strategy and glossary support
+  Auto-detects source language when not specified
+  Custom instructions supported for style, tone, and context guidance
+  Translation result stored in _output variable for further processing

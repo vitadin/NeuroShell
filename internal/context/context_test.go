@@ -24,7 +24,7 @@ func TestNew(t *testing.T) {
 	assert.NotEmpty(t, ctx.sessionID)
 	assert.Contains(t, ctx.sessionID, "session_")
 	assert.False(t, ctx.testMode)
-	assert.Equal(t, 3, len(ctx.variables)) // _style, _default_command, and _completion_mode are initialized by default
+	assert.Equal(t, 3, ctx.variables.Size()) // _style, _default_command, and _completion_mode are initialized by default
 
 	// Verify that _style is initialized to empty string
 	styleValue, err := ctx.GetVariable("_style")
@@ -258,7 +258,7 @@ func TestGetSessionState(t *testing.T) {
 	state := ctx.GetSessionState()
 
 	assert.Equal(t, ctx.sessionID, state.ID)
-	assert.Equal(t, ctx.variables, state.Variables)
+	assert.Equal(t, ctx.variables.GetAll(), state.Variables)
 	assert.Equal(t, ctx.history, state.History)
 	assert.NotZero(t, state.CreatedAt)
 	assert.NotZero(t, state.UpdatedAt)

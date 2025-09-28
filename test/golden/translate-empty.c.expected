@@ -1,0 +1,24 @@
+Usage: \translate[translator=provider, source=lang, target=lang, instruction="custom instructions"] text to translate
+
+Examples:
+  \translate Hello world                                    %% Auto-detect source, translate to English (via ZAI)
+  \translate[target=spanish] Hello world                   %% Translate to Spanish
+  \translate[source=english, target=french] Hello world    %% Explicit source and target
+  \translate[translator=deepl] Hello world                 %% Use DeepL provider
+  \translate[target=japanese, instruction="formal tone"] Hello world     %% With custom instructions
+  \translate[target=german, instruction="business style"] Hello world    %% Business style instruction
+
+ZAI-specific options (when translator=zai):
+  \translate[strategy=paraphrase] Hello world              %% Use paraphrase strategy
+  \translate[strategy=three_step] Hello world              %% High-quality multi-step translation
+  \translate[glossary="tech_terms"] Hello world            %% Use custom glossary
+
+Options:
+  translator  - Translation provider (zai, deepl, google) [default: zai]
+  source      - Source language (auto-detect if not specified)
+  target      - Target language [default: english]
+  instruction - Custom instructions for translation style, tone, context, etc.
+
+ZAI-only options:
+  strategy    - Translation strategy (general, paraphrase, two_step, three_step, reflection)
+  glossary    - Glossary ID for custom terminology

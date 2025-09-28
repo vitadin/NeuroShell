@@ -23,6 +23,7 @@ Core Commands:
   \model-delete         - Delete model configuration by name or ID with smart matching
   \openai-client-new    - Create new OpenAI client with automatic key resolution and reasoning model support
   \openai-model-new     - Create OpenAI model configurations with reasoning support
+  \prompt-polish        - Optimize and correct English text for better LLM comprehension
   \provider-catalog     - List available LLM providers from embedded catalog
   \render-markdown      - Render markdown content to ANSI terminal output using Glamour
   \run                  - Execute a NeuroShell script file
@@ -32,9 +33,11 @@ Core Commands:
   \show-stack           - Display the execution stack for development and debugging
   \silent               - Execute commands with stdout output suppressed
   \timer                - Start a visual countdown timer for the specified number of seconds
+  \translate            - Translate text using AI translation services with customizable options
   \try                  - Execute commands with error capture and handling
   \vars                 - List variables with optional filtering
   \write                - Write content to a file with overwrite or append modes
+  \zai-translate        - Translate text using ZAI's general translation API with advanced features
 
 Session Management:
     Basic Management:

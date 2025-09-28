@@ -12,6 +12,7 @@ Service Status Check:
   [OK] editor               - available/initialized
   [OK] error_management     - available/initialized
   [OK] help                 - available/initialized
+  [OK] http_request         - available/initialized
   [OK] llm                  - available/initialized
   [OK] markdown             - available/initialized
   [OK] model                - available/initialized
@@ -27,4 +28,4 @@ Service Status Check:
   [OK] thinking-renderer    - available/initialized
   [OK] variable             - available/initialized
 
-Summary: 24/24 services healthy
+Summary: 25/25 services healthy
