@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	"github.com/charmbracelet/x/ansi"
 )
 
 // InterpretEscapeSequences converts escape sequences in a string to their actual characters.
@@ -255,4 +257,12 @@ func IntPtr(i int) *int {
 // where fields are defined as *bool to allow for optional/nullable values.
 func BoolPtr(b bool) *bool {
 	return &b
+}
+
+// StripANSIEscapeCodes removes ANSI escape sequences from a string using a mature library.
+// This includes color codes, cursor positioning, and other terminal control sequences.
+// This is useful for cleaning captured output to store as plain text.
+func StripANSIEscapeCodes(input string) string {
+	// Use the charmbracelet/x/ansi library which properly handles all ANSI escape codes
+	return ansi.Strip(input)
 }

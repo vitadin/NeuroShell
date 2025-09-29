@@ -236,7 +236,9 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 					sm.logger.Debug("Output capture failed but continuing safely", "error", r)
 				}
 			}()
-			sm.context.CaptureOutput(capturedOutput)
+			// Strip ANSI escape codes from output before storing to get clean text
+			cleanOutput := stringprocessing.StripANSIEscapeCodes(capturedOutput)
+			sm.context.CaptureOutput(cleanOutput)
 		}()
 
 		// Display the captured output to the user (since we intercepted it)
