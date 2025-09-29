@@ -195,14 +195,20 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 	// Use the state processor to handle the command through the proven pipeline
 	var err error
 	var capturedOutput string
-	if sm.silentHandler.IsInSilentBlock() {
+	switch {
+	case sm.silentHandler.IsInSilentBlock():
 		err = stringprocessing.WithSuppressedOutput(func() error {
 			return sm.stateProcessor.ProcessCommand(rawCommand)
 		})
 		// No output capture in silent blocks
 		capturedOutput = ""
-	} else {
-		// Capture output during command execution for ALL commands (including read-only ones)
+	case sm.shouldSkipOutputCapture(rawCommand):
+		// Some commands like \editor need direct stdout/stdin access and cannot work with output capture
+		err = sm.stateProcessor.ProcessCommand(rawCommand)
+		// No output capture for commands that need direct terminal access
+		capturedOutput = ""
+	default:
+		// Capture output during command execution for most commands (including read-only ones)
 		capturedOutput, err = stringprocessing.WithCapturedOutput(func() error {
 			return sm.stateProcessor.ProcessCommand(rawCommand)
 		})
@@ -302,4 +308,29 @@ func (sm *StackMachine) shouldResetErrorState(rawCommand string) bool {
 	// Use context to check if command is read-only (considers both self-declaration and overrides)
 	// Don't reset error state for read-only commands
 	return !sm.context.IsCommandReadOnly(command)
+}
+
+// shouldSkipOutputCapture determines if output capture should be skipped for a command.
+// Some commands like \editor need direct access to stdout/stdin and cannot work with output capture.
+func (sm *StackMachine) shouldSkipOutputCapture(rawCommand string) bool {
+	// Parse the command to get the command name
+	cmd := strings.TrimSpace(rawCommand)
+	if !strings.HasPrefix(cmd, "\\") {
+		return false // Non-NeuroShell commands can use output capture
+	}
+
+	// Extract command name (everything after \ until first [ or space)
+	cmdName := cmd[1:] // Remove leading \
+	if idx := strings.IndexAny(cmdName, "[ "); idx != -1 {
+		cmdName = cmdName[:idx]
+	}
+
+	// Skip output capture for commands that need direct terminal access
+	switch cmdName {
+	case "editor":
+		// The editor command needs direct stdout/stdin access for external editors
+		return true
+	default:
+		return false
+	}
 }
