@@ -12,7 +12,6 @@ func TestNewOutputCaptureSubcontext(t *testing.T) {
 	assert.NotNil(t, ctx)
 
 	// Initial state should be empty
-	assert.Equal(t, "", ctx.GetCurrentOutput())
 	assert.Equal(t, "", ctx.GetLastOutput())
 }
 
@@ -23,58 +22,27 @@ func TestOutputCaptureSubcontext_CaptureOutput(t *testing.T) {
 	output := "Hello, World!"
 	ctx.CaptureOutput(output)
 
-	// Check current output
-	assert.Equal(t, output, ctx.GetCurrentOutput())
-	// Last output should still be empty
-	assert.Equal(t, "", ctx.GetLastOutput())
+	// Check last output
+	assert.Equal(t, output, ctx.GetLastOutput())
 }
 
-func TestOutputCaptureSubcontext_ResetOutput(t *testing.T) {
+func TestOutputCaptureSubcontext_MultipleCaptures(t *testing.T) {
 	ctx := NewOutputCaptureSubcontext()
 
-	// Set initial output
-	firstOutput := "First command output"
-	ctx.CaptureOutput(firstOutput)
-	assert.Equal(t, firstOutput, ctx.GetCurrentOutput())
-
-	// Reset output (moves current to last)
-	ctx.ResetOutput()
-
-	// Current should be empty, last should have the previous output
-	assert.Equal(t, "", ctx.GetCurrentOutput())
-	assert.Equal(t, firstOutput, ctx.GetLastOutput())
-}
-
-func TestOutputCaptureSubcontext_MultipleCommands(t *testing.T) {
-	ctx := NewOutputCaptureSubcontext()
-
-	// First command
+	// First capture
 	first := "First output"
 	ctx.CaptureOutput(first)
-	assert.Equal(t, first, ctx.GetCurrentOutput())
-	assert.Equal(t, "", ctx.GetLastOutput())
-
-	// Reset for second command
-	ctx.ResetOutput()
-	assert.Equal(t, "", ctx.GetCurrentOutput())
 	assert.Equal(t, first, ctx.GetLastOutput())
 
-	// Second command
+	// Second capture (overwrites the first)
 	second := "Second output"
 	ctx.CaptureOutput(second)
-	assert.Equal(t, second, ctx.GetCurrentOutput())
-	assert.Equal(t, first, ctx.GetLastOutput())
-
-	// Reset for third command
-	ctx.ResetOutput()
-	assert.Equal(t, "", ctx.GetCurrentOutput())
 	assert.Equal(t, second, ctx.GetLastOutput())
 
-	// Third command
+	// Third capture (overwrites the second)
 	third := "Third output"
 	ctx.CaptureOutput(third)
-	assert.Equal(t, third, ctx.GetCurrentOutput())
-	assert.Equal(t, second, ctx.GetLastOutput())
+	assert.Equal(t, third, ctx.GetLastOutput())
 }
 
 func TestOutputCaptureSubcontext_EmptyOutput(t *testing.T) {
@@ -82,11 +50,13 @@ func TestOutputCaptureSubcontext_EmptyOutput(t *testing.T) {
 
 	// Capture empty output
 	ctx.CaptureOutput("")
-	assert.Equal(t, "", ctx.GetCurrentOutput())
+	assert.Equal(t, "", ctx.GetLastOutput())
 
-	// Reset and check
-	ctx.ResetOutput()
-	assert.Equal(t, "", ctx.GetCurrentOutput())
+	// Capture non-empty, then empty again
+	ctx.CaptureOutput("some output")
+	assert.Equal(t, "some output", ctx.GetLastOutput())
+
+	ctx.CaptureOutput("")
 	assert.Equal(t, "", ctx.GetLastOutput())
 }
 
@@ -101,17 +71,13 @@ func TestOutputCaptureSubcontext_ThreadSafety(t *testing.T) {
 	// Test concurrent operations
 	for i := 0; i < numGoroutines; i++ {
 		wg.Add(1)
-		go func(_ int) {
+		go func(id int) {
 			defer wg.Done()
 			for j := 0; j < numOperationsPerGoroutine; j++ {
 				// Mix of operations
-				switch j % 3 {
-				case 0:
-					ctx.ResetOutput()
-				case 1:
-					ctx.CaptureOutput("output")
-				default:
-					_ = ctx.GetCurrentOutput()
+				if j%2 == 0 {
+					ctx.CaptureOutput("output from goroutine " + string(rune(id+'0')))
+				} else {
 					_ = ctx.GetLastOutput()
 				}
 			}
@@ -123,11 +89,9 @@ func TestOutputCaptureSubcontext_ThreadSafety(t *testing.T) {
 
 	// Check that the context is still in a valid state
 	// We can't predict exact values due to race conditions, but operations should not panic
-	current := ctx.GetCurrentOutput()
 	last := ctx.GetLastOutput()
 
 	// Should be able to access without panic (string values are always valid)
-	assert.NotNil(t, current)
 	assert.NotNil(t, last)
 }
 
@@ -142,10 +106,6 @@ func TestOutputCaptureSubcontext_LargeOutput(t *testing.T) {
 	largeOutputStr := string(largeOutput)
 
 	ctx.CaptureOutput(largeOutputStr)
-	assert.Equal(t, largeOutputStr, ctx.GetCurrentOutput())
-
-	ctx.ResetOutput()
-	assert.Equal(t, "", ctx.GetCurrentOutput())
 	assert.Equal(t, largeOutputStr, ctx.GetLastOutput())
 }
 
@@ -163,24 +123,21 @@ func TestNewOutputCaptureSubcontextFromContext(t *testing.T) {
 
 	// Test basic functionality
 	outputCtx.CaptureOutput("test output")
-	assert.Equal(t, "test output", outputCtx.GetCurrentOutput())
-	assert.Equal(t, "test output", neuroCtx.GetCurrentOutput())
+	assert.Equal(t, "test output", outputCtx.GetLastOutput())
+	assert.Equal(t, "test output", neuroCtx.GetLastOutput())
 }
 
 func TestOutputCaptureSubcontext_IntegrationWithNeuroContext(t *testing.T) {
 	ctx := New()
 
 	// Test that NeuroContext methods work correctly
-	assert.Equal(t, "", ctx.GetCurrentOutput())
 	assert.Equal(t, "", ctx.GetLastOutput())
 
 	// Capture output through NeuroContext
 	ctx.CaptureOutput("Hello from NeuroContext")
-	assert.Equal(t, "Hello from NeuroContext", ctx.GetCurrentOutput())
-	assert.Equal(t, "", ctx.GetLastOutput())
-
-	// Reset through NeuroContext
-	ctx.ResetOutput()
-	assert.Equal(t, "", ctx.GetCurrentOutput())
 	assert.Equal(t, "Hello from NeuroContext", ctx.GetLastOutput())
+
+	// Capture new output
+	ctx.CaptureOutput("Second output from NeuroContext")
+	assert.Equal(t, "Second output from NeuroContext", ctx.GetLastOutput())
 }

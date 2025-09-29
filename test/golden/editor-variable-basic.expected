@@ -4,7 +4,6 @@ Variables
 
 System Variables:
   Environment (@):
-    @current_output      = 
     @date                = 2024-01-01
     @error               = 
     @home                = /test/home
@@ -246,4 +245,4 @@ System Variables:
     _prompt_lines_count  = 1
     _style               = 
 
-Total: 239 variables
+Total: 238 variables

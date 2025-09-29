@@ -1,0 +1,23 @@
+%% Test output capture edge cases
+\set[_echo_command="true"]
+
+%% Test 1: Empty output commands
+\set[empty_var=""]
+\get[empty_var]
+
+%% Check capture of empty output
+\get[@last_output]
+
+%% Test 2: Special characters in output
+\set[special="Special chars: \t\n'\"\\"]
+\get[special]
+
+%% Check capture of special characters
+\get[@last_output]
+
+%% Test 3: Unicode content
+\set[unicode="Unicode: 你好 🌍"]
+\get[unicode]
+
+%% Check capture of unicode content
+\get[@last_output]

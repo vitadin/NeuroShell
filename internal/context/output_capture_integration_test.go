@@ -10,11 +10,7 @@ func TestOutputCaptureSystemVariables(t *testing.T) {
 	ctx := New()
 	ctx.SetTestMode(true)
 
-	// Initial state - both variables should be empty
-	currentOutput, err := ctx.GetVariable("@current_output")
-	assert.NoError(t, err)
-	assert.Equal(t, "", currentOutput)
-
+	// Initial state - @last_output should be empty
 	lastOutput, err := ctx.GetVariable("@last_output")
 	assert.NoError(t, err)
 	assert.Equal(t, "", lastOutput)
@@ -23,40 +19,19 @@ func TestOutputCaptureSystemVariables(t *testing.T) {
 	testOutput := "Test command output"
 	ctx.CaptureOutput(testOutput)
 
-	// Check @current_output
-	currentOutput, err = ctx.GetVariable("@current_output")
-	assert.NoError(t, err)
-	assert.Equal(t, testOutput, currentOutput)
-
-	// @last_output should still be empty
-	lastOutput, err = ctx.GetVariable("@last_output")
-	assert.NoError(t, err)
-	assert.Equal(t, "", lastOutput)
-
-	// Reset output (simulating new command)
-	ctx.ResetOutput()
-
-	// @current_output should be empty, @last_output should have previous value
-	currentOutput, err = ctx.GetVariable("@current_output")
-	assert.NoError(t, err)
-	assert.Equal(t, "", currentOutput)
-
+	// @last_output should now have the captured value
 	lastOutput, err = ctx.GetVariable("@last_output")
 	assert.NoError(t, err)
 	assert.Equal(t, testOutput, lastOutput)
 
-	// Capture new output
+	// Capture new output (this overwrites the previous value)
 	newOutput := "New command output"
 	ctx.CaptureOutput(newOutput)
 
-	// Check both variables
-	currentOutput, err = ctx.GetVariable("@current_output")
-	assert.NoError(t, err)
-	assert.Equal(t, newOutput, currentOutput)
-
+	// @last_output should now have the new value
 	lastOutput, err = ctx.GetVariable("@last_output")
 	assert.NoError(t, err)
-	assert.Equal(t, testOutput, lastOutput)
+	assert.Equal(t, newOutput, lastOutput)
 }
 
 func TestOutputCaptureInGetAllVariables(t *testing.T) {
@@ -69,18 +44,8 @@ func TestOutputCaptureInGetAllVariables(t *testing.T) {
 	// Get all variables
 	allVars := ctx.GetAllVariables()
 
-	// Check that output capture variables are included
-	assert.Contains(t, allVars, "@current_output")
+	// Check that @last_output is included
 	assert.Contains(t, allVars, "@last_output")
-
-	assert.Equal(t, "Test output for GetAllVariables", allVars["@current_output"])
-	assert.Equal(t, "", allVars["@last_output"])
-
-	// Reset and check again
-	ctx.ResetOutput()
-	allVars = ctx.GetAllVariables()
-
-	assert.Equal(t, "", allVars["@current_output"])
 	assert.Equal(t, "Test output for GetAllVariables", allVars["@last_output"])
 }
 
@@ -92,13 +57,9 @@ func TestOutputCaptureVariablesInTestMode(t *testing.T) {
 	ctx.CaptureOutput("Test mode output")
 
 	// Should get the captured output
-	value, ok := ctx.getSystemVariable("@current_output")
+	value, ok := ctx.getSystemVariable("@last_output")
 	assert.True(t, ok)
 	assert.Equal(t, "Test mode output", value)
-
-	value, ok = ctx.getSystemVariable("@last_output")
-	assert.True(t, ok)
-	assert.Equal(t, "", value)
 }
 
 func TestOutputCaptureVariablesInProductionMode(t *testing.T) {
@@ -109,13 +70,9 @@ func TestOutputCaptureVariablesInProductionMode(t *testing.T) {
 	ctx.CaptureOutput("Production mode output")
 
 	// Should get the captured output
-	value, ok := ctx.getSystemVariable("@current_output")
+	value, ok := ctx.getSystemVariable("@last_output")
 	assert.True(t, ok)
 	assert.Equal(t, "Production mode output", value)
-
-	value, ok = ctx.getSystemVariable("@last_output")
-	assert.True(t, ok)
-	assert.Equal(t, "", value)
 }
 
 func TestOutputCaptureWithComplexOutput(t *testing.T) {
@@ -127,16 +84,16 @@ func TestOutputCaptureWithComplexOutput(t *testing.T) {
 	ctx.CaptureOutput(complexOutput)
 
 	// Verify through system variables
-	currentOutput, err := ctx.GetVariable("@current_output")
+	lastOutput, err := ctx.GetVariable("@last_output")
 	assert.NoError(t, err)
-	assert.Equal(t, complexOutput, currentOutput)
+	assert.Equal(t, complexOutput, lastOutput)
 
 	// Verify GetAllVariables preserves the content
 	allVars := ctx.GetAllVariables()
-	assert.Equal(t, complexOutput, allVars["@current_output"])
+	assert.Equal(t, complexOutput, allVars["@last_output"])
 }
 
-func TestOutputCaptureMultipleResets(t *testing.T) {
+func TestOutputCaptureMultipleCaptures(t *testing.T) {
 	ctx := New()
 	ctx.SetTestMode(true)
 
@@ -146,30 +103,16 @@ func TestOutputCaptureMultipleResets(t *testing.T) {
 		"Third command output",
 	}
 
-	for i, output := range outputs {
-		// Capture output
+	for _, output := range outputs {
+		// Capture output (this directly sets @last_output)
 		ctx.CaptureOutput(output)
 
-		// Verify current output
-		current, _ := ctx.GetVariable("@current_output")
-		assert.Equal(t, output, current)
-
-		// Verify last output (should be from previous iteration or empty)
+		// Verify last output has the captured value
 		last, _ := ctx.GetVariable("@last_output")
-		if i == 0 {
-			assert.Equal(t, "", last)
-		} else {
-			assert.Equal(t, outputs[i-1], last)
-		}
-
-		// Reset for next iteration
-		ctx.ResetOutput()
+		assert.Equal(t, output, last)
 	}
 
-	// After final reset, current should be empty and last should have the final output
-	current, _ := ctx.GetVariable("@current_output")
-	assert.Equal(t, "", current)
-
+	// After all captures, @last_output should have the final output
 	last, _ := ctx.GetVariable("@last_output")
 	assert.Equal(t, outputs[len(outputs)-1], last)
 }
@@ -192,23 +135,10 @@ func TestOutputCaptureEmptyAndWhitespaceHandling(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Reset to clean state
-			ctx.ResetOutput()
-			ctx.ResetOutput() // Double reset to clear last output
-
 			// Capture the test output
 			ctx.CaptureOutput(tc.output)
 
 			// Verify it's captured exactly as provided
-			current, _ := ctx.GetVariable("@current_output")
-			assert.Equal(t, tc.output, current)
-
-			// Reset and verify it moves to last output correctly
-			ctx.ResetOutput()
-
-			current, _ = ctx.GetVariable("@current_output")
-			assert.Equal(t, "", current)
-
 			last, _ := ctx.GetVariable("@last_output")
 			assert.Equal(t, tc.output, last)
 		})

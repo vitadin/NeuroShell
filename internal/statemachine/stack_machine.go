@@ -187,23 +187,6 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 		}
 	}
 
-	// Reset output capture before processing command (moves current to last, resets current to empty)
-	// Do this for ALL commands to track output history properly
-	// This should never fail - worst case we don't reset but don't affect other components
-	if sm.context != nil {
-		sm.logger.Debug("Resetting output capture before command", "command", rawCommand)
-
-		// Safely reset output - this should never panic or fail
-		func() {
-			defer func() {
-				if r := recover(); r != nil {
-					sm.logger.Debug("Output reset failed but continuing safely", "error", r)
-				}
-			}()
-			sm.context.ResetOutput()
-		}()
-	}
-
 	// Output command line with %%> prefix if echo_commands is enabled and not in silent block
 	if sm.config.EchoCommands && !sm.silentHandler.IsInSilentBlock() {
 		fmt.Printf("%%%%> %q\n", rawCommand)

@@ -1,0 +1,22 @@
+Setting _echo_command = true
+%%> "\\set[empty_var=\"\"]"
+Setting empty_var = 
+%%> "\\get[empty_var]"
+empty_var = 
+%%> "\\get[@last_output]"
+@last_output = empty_var = 
+                           
+%%> "\\set[special=\"Special chars: \\t\\n'\\\"\\\\\"]"
+Setting special = Special chars: \t\n'"\
+%%> "\\get[special]"
+special = Special chars: \t\n'"\
+%%> "\\get[@last_output]"
+@last_output = special = Special chars: \t\n'"\
+                                               
+%%> "\\set[unicode=\"Unicode: 你好 🌍\"]"
+Setting unicode = Unicode: 你好 🌍
+%%> "\\get[unicode]"
+unicode = Unicode: 你好 🌍
+%%> "\\get[@last_output]"
+@last_output = unicode = Unicode: 你好 🌍
+                                         

@@ -235,8 +235,6 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		case "@last_error":
 			_, errorMsg := ctx.errorStateCtx.GetLastErrorState()
 			return errorMsg, true
-		case "@current_output":
-			return ctx.outputCaptureCtx.GetCurrentOutput(), true
 		case "@last_output":
 			return ctx.outputCaptureCtx.GetLastOutput(), true
 		}
@@ -273,8 +271,6 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 	case "@last_error":
 		_, errorMsg := ctx.errorStateCtx.GetLastErrorState()
 		return errorMsg, true
-	case "@current_output":
-		return ctx.outputCaptureCtx.GetCurrentOutput(), true
 	case "@last_output":
 		return ctx.outputCaptureCtx.GetLastOutput(), true
 	case "#session_id":
@@ -501,7 +497,7 @@ func (ctx *NeuroContext) GetAllVariables() map[string]string {
 	result := ctx.variables.GetAll()
 
 	// Add computed system variables
-	systemVars := []string{"@pwd", "@user", "@home", "@date", "@time", "@os", "@status", "@error", "@last_status", "@last_error", "@current_output", "@last_output", "#session_id", "#message_count", "#test_mode"}
+	systemVars := []string{"@pwd", "@user", "@home", "@date", "@time", "@os", "@status", "@error", "@last_status", "@last_error", "@last_output", "#session_id", "#message_count", "#test_mode"}
 	for _, varName := range systemVars {
 		if value, ok := ctx.getSystemVariable(varName); ok {
 			result[varName] = value
@@ -967,21 +963,10 @@ func (ctx *NeuroContext) GetLastErrorState() (status string, errorMsg string) {
 
 // Output capture management methods
 
-// ResetOutput resets the current output to empty and moves current to last.
-// This should be called before executing a new command.
-func (ctx *NeuroContext) ResetOutput() {
-	ctx.outputCaptureCtx.ResetOutput()
-}
-
 // CaptureOutput captures the output from command execution.
 // This should be called during or after command execution with the captured output.
 func (ctx *NeuroContext) CaptureOutput(output string) {
 	ctx.outputCaptureCtx.CaptureOutput(output)
-}
-
-// GetCurrentOutput returns the current command's captured output (thread-safe read).
-func (ctx *NeuroContext) GetCurrentOutput() string {
-	return ctx.outputCaptureCtx.GetCurrentOutput()
 }
 
 // GetLastOutput returns the last command's captured output (thread-safe read).

@@ -1,0 +1,8 @@
+Setting _echo_command = true
+%%> "\\set[test_var=\"hello world\"]"
+Setting test_var = hello world
+%%> "\\get[test_var]"
+test_var = hello world
+%%> "\\get[@last_output]"
+@last_output = test_var = hello world
+                                     

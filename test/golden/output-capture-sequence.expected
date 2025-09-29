@@ -1,0 +1,19 @@
+Setting _echo_command = true
+%%> "\\set[first=\"First value\"]"
+Setting first = First value
+%%> "\\set[second=\"Second value\"]"
+Setting second = Second value
+%%> "\\set[third=\"Third value\"]"
+Setting third = Third value
+%%> "\\get[first]"
+first = First value
+%%> "\\get[second]"
+second = Second value
+%%> "\\get[@last_output]"
+@last_output = second = Second value
+                                    
+%%> "\\get[third]"
+third = Third value
+%%> "\\get[@last_output]"
+@last_output = third = Third value
+                                  

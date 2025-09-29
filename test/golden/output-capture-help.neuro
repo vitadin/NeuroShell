@@ -1,0 +1,14 @@
+%% Test output capture with help commands
+\set[_echo_command="true"]
+
+%% Test help command output capture
+\help[get]
+
+%% Check that help output was captured in @last_output
+\get[@last_output]
+
+%% Test another help command to verify output rotation
+\help[set]
+
+%% Verify that previous help output is now in @last_output
+\get[@last_output]
