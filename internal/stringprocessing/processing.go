@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	"github.com/charmbracelet/x/ansi"
 )
 
 // InterpretEscapeSequences converts escape sequences in a string to their actual characters.
@@ -118,6 +120,51 @@ func CaptureOutput(fn func()) string {
 	return <-outputChan
 }
 
+// WithCapturedOutput captures stdout during function execution and returns both the output and any error.
+// This utility function redirects stdout to capture all output while preserving stderr for errors.
+// It's designed for automatic output capture in the command execution flow.
+func WithCapturedOutput(fn func() error) (string, error) {
+	// Save original stdout
+	oldStdout := os.Stdout
+
+	// Create pipe
+	r, w, err := os.Pipe()
+	if err != nil {
+		return "", err
+	}
+
+	// Redirect stdout to pipe
+	os.Stdout = w
+
+	// Channel to receive output
+	outputChan := make(chan string, 1)
+
+	// Start goroutine to read output
+	go func() {
+		defer close(outputChan)
+		output, _ := io.ReadAll(r)
+		outputChan <- string(output)
+	}()
+
+	// Execute function and capture any error
+	fnErr := fn()
+
+	// Close writer to signal end of writing
+	_ = w.Close()
+
+	// Restore stdout
+	os.Stdout = oldStdout
+
+	// Get captured output (this will block until the goroutine finishes reading)
+	capturedOutput := <-outputChan
+
+	// Close reader after reading is complete
+	_ = r.Close()
+
+	// Return both output and error
+	return capturedOutput, fnErr
+}
+
 // WithSuppressedOutput suppresses stdout during function execution.
 // This utility function redirects stdout to discard all output, preserving stderr for errors.
 // It's designed for the \silent command to suppress all fmt.Print* output globally.
@@ -210,4 +257,12 @@ func IntPtr(i int) *int {
 // where fields are defined as *bool to allow for optional/nullable values.
 func BoolPtr(b bool) *bool {
 	return &b
+}
+
+// StripANSIEscapeCodes removes ANSI escape sequences from a string using a mature library.
+// This includes color codes, cursor positioning, and other terminal control sequences.
+// This is useful for cleaning captured output to store as plain text.
+func StripANSIEscapeCodes(input string) string {
+	// Use the charmbracelet/x/ansi library which properly handles all ANSI escape codes
+	return ansi.Strip(input)
 }

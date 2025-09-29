@@ -1,0 +1,9 @@
+%% Test basic output capture functionality
+\set[_echo_command="true"]
+
+%% Test 1: Basic get command output capture
+\set[test_var="hello world"]
+\get[test_var]
+
+%% Test 2: Check that @last_output contains the previous command's output
+\get[@last_output]

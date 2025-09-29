@@ -1,0 +1,22 @@
+%% Test output capture with multiple commands
+\set[_echo_command="true"]
+
+%% Test sequence of commands to verify output history
+\set[first="First value"]
+\set[second="Second value"]
+\set[third="Third value"]
+
+%% Get first value - this output should be captured
+\get[first]
+
+%% Get second value - first value output should now be in @last_output
+\get[second]
+
+%% Verify the output capture sequence
+\get[@last_output]
+
+%% Get third value
+\get[third]
+
+%% Check that previous output is captured correctly
+\get[@last_output]

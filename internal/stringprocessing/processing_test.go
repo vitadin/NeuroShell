@@ -2,6 +2,7 @@
 package stringprocessing
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -166,6 +167,57 @@ func TestProcessTextForMarkdown(t *testing.T) {
 			assert.Equal(t, tc.expected, result)
 		})
 	}
+}
+
+func TestWithCapturedOutput(t *testing.T) {
+	// Test successful function with output
+	output, err := WithCapturedOutput(func() error {
+		fmt.Print("Hello, World!")
+		return nil
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "Hello, World!", output)
+
+	// Test function with error
+	output, err = WithCapturedOutput(func() error {
+		fmt.Print("Error output")
+		return fmt.Errorf("test error")
+	})
+
+	assert.Error(t, err)
+	assert.Equal(t, "test error", err.Error())
+	assert.Equal(t, "Error output", output)
+
+	// Test function with multiple print statements
+	output, err = WithCapturedOutput(func() error {
+		fmt.Print("Line 1\n")
+		fmt.Print("Line 2\n")
+		fmt.Printf("Formatted %d\n", 42)
+		return nil
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "Line 1\nLine 2\nFormatted 42\n", output)
+
+	// Test function with no output
+	output, err = WithCapturedOutput(func() error {
+		return nil
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "", output)
+
+	// Test function with mixed output types
+	output, err = WithCapturedOutput(func() error {
+		fmt.Print("Print: ")
+		fmt.Println("Println")
+		fmt.Printf("Printf: %s\n", "test")
+		return nil
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "Print: Println\nPrintf: test\n", output)
 }
 
 func TestIsAPIRelated(t *testing.T) {
@@ -396,6 +448,77 @@ func TestIsAPIRelated(t *testing.T) {
 			isAPI, provider := IsAPIRelated(tt.variableName, providers)
 			assert.Equal(t, tt.expectedIsAPI, isAPI, "IsAPIRelated result should match expected")
 			assert.Equal(t, tt.expectedProvider, provider, "detected provider should match expected")
+		})
+	}
+}
+
+func TestStripANSIEscapeCodes(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "basic color codes",
+			input:    "\x1b[31mRed text\x1b[0m and normal text",
+			expected: "Red text and normal text",
+		},
+		{
+			name:     "RGB color codes",
+			input:    "\x1b[38;2;63;185;80mNeuro Shell - Available Commands\x1b[0m",
+			expected: "Neuro Shell - Available Commands",
+		},
+		{
+			name:     "multiple colors",
+			input:    "\x1b[38;2;63;185;80mNeuro Shell\x1b[0m\n\n\x1b[38;2;210;153;34mCore Commands:\x1b[0m",
+			expected: "Neuro Shell\n\nCore Commands:",
+		},
+		{
+			name:     "no ANSI codes",
+			input:    "Plain text without any formatting",
+			expected: "Plain text without any formatting",
+		},
+		{
+			name:     "empty string",
+			input:    "",
+			expected: "",
+		},
+		{
+			name:     "only ANSI codes",
+			input:    "\x1b[31m\x1b[0m",
+			expected: "",
+		},
+		{
+			name:     "complex formatting",
+			input:    "\x1b[1m\x1b[31mBold Red\x1b[0m\x1b[32m Green \x1b[4mUnderlined\x1b[0m",
+			expected: "Bold Red Green Underlined",
+		},
+		{
+			name:     "cursor movement codes",
+			input:    "\x1b[2J\x1b[H\x1b[31mText after clear\x1b[0m",
+			expected: "Text after clear",
+		},
+		{
+			name:     "256 color codes",
+			input:    "\x1b[38;5;196mBright red\x1b[0m text",
+			expected: "Bright red text",
+		},
+		{
+			name:     "background colors",
+			input:    "\x1b[41m\x1b[37mWhite on red\x1b[0m",
+			expected: "White on red",
+		},
+		{
+			name:     "mixed with special characters",
+			input:    "\x1b[31mSpecial chars: !@#$%^&*()\x1b[0m\nUnicode: 你好 🌍",
+			expected: "Special chars: !@#$%^&*()\nUnicode: 你好 🌍",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := StripANSIEscapeCodes(tt.input)
+			assert.Equal(t, tt.expected, result)
 		})
 	}
 }

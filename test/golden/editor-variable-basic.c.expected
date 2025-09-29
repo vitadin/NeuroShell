@@ -8,6 +8,7 @@ System Variables:
     @error               = 
     @home                = /test/home
     @last_error          = 
+    @last_output         = _editor = nano\n
     @last_status         = 0
     @os                  = test-os
     @pwd                 = /test/pwd
@@ -244,4 +245,4 @@ System Variables:
     _prompt_lines_count  = 1
     _style               = 
 
-Total: 237 variables
+Total: 238 variables
