@@ -113,7 +113,7 @@ func TestOCRCommand_extractOptions(t *testing.T) {
 			checkConfig: func(config *OCRConfig) bool {
 				return config.PDFPath == "test.pdf" &&
 					config.APIKey == "test-key" &&
-					config.Model == "meta-llama/Llama-3.2-90B-Vision-Instruct" &&
+					config.Model == "allenai/olmOCR-7B-0825" &&
 					config.MaxTokens == 4500 &&
 					config.Temperature == 0.0 &&
 					config.Pages == "all" &&

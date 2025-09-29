@@ -21,6 +21,7 @@ Core Commands:
   \llm-client-activate  - Activate LLM client by provider catalog ID or specific client ID
   \model-activate       - Set active model by name or ID with smart matching
   \model-delete         - Delete model configuration by name or ID with smart matching
+  \ocr                  - Convert PDF to text/markdown using DeepInfra OCR API
   \openai-client-new    - Create new OpenAI client with automatic key resolution and reasoning model support
   \openai-model-new     - Create OpenAI model configurations with reasoning support
   \prompt-polish        - Optimize and correct English text for better LLM comprehension
