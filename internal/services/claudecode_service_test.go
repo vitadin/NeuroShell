@@ -540,6 +540,18 @@ func setupTestClaudeCodeService(t *testing.T) *ClaudeCodeService {
 	// Mock Claude Code installation and version checks
 	service.isClaudeCodeInstalled = func() bool { return true }
 	service.getClaudeCodeVersion = func() (string, error) { return "1.5.0", nil }
+	// Mock the StartProcess function to avoid trying to start actual claude process in tests
+	service.StartProcess = func(_ InitOptions) error {
+		// Mock successful process start - start a harmless long-running command for health checks
+		// We use 'sleep' which is available on all systems and won't interfere with tests
+		cmd := exec.Command("sleep", "3600") // Sleep for 1 hour, test cleanup will kill it
+		err := cmd.Start()
+		if err != nil {
+			return err
+		}
+		service.process = cmd
+		return nil
+	}
 
 	// Initialize the service
 	err := service.Initialize()
