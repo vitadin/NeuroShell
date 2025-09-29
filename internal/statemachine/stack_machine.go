@@ -224,9 +224,9 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 	}
 
 	// Capture output after command execution and display it to the user
-	// Do this for ALL commands to track output history properly
+	// Skip this for commands that don't produce meaningful output (like \editor)
 	// This should never fail - worst case we store nothing but don't affect other components
-	if sm.context != nil {
+	if sm.context != nil && !sm.shouldSkipOutputCapture(rawCommand) {
 		sm.logger.Debug("Capturing command output", "command", rawCommand, "outputLength", len(capturedOutput))
 
 		// Safely capture output - this should never panic or fail
