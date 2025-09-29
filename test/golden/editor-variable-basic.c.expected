@@ -4,10 +4,12 @@ Variables
 
 System Variables:
   Environment (@):
+    @current_output      = 
     @date                = 2024-01-01
     @error               = 
     @home                = /test/home
     @last_error          = 
+    @last_output         = _editor = nano\n
     @last_status         = 0
     @os                  = test-os
     @pwd                 = /test/pwd
@@ -244,4 +246,4 @@ System Variables:
     _prompt_lines_count  = 1
     _style               = 
 
-Total: 237 variables
+Total: 239 variables

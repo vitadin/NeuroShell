@@ -187,6 +187,23 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 		}
 	}
 
+	// Reset output capture before processing command (moves current to last, resets current to empty)
+	// Do this for ALL commands to track output history properly
+	// This should never fail - worst case we don't reset but don't affect other components
+	if sm.context != nil {
+		sm.logger.Debug("Resetting output capture before command", "command", rawCommand)
+
+		// Safely reset output - this should never panic or fail
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					sm.logger.Debug("Output reset failed but continuing safely", "error", r)
+				}
+			}()
+			sm.context.ResetOutput()
+		}()
+	}
+
 	// Output command line with %%> prefix if echo_commands is enabled and not in silent block
 	if sm.config.EchoCommands && !sm.silentHandler.IsInSilentBlock() {
 		fmt.Printf("%%%%> %q\n", rawCommand)
@@ -194,12 +211,18 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 
 	// Use the state processor to handle the command through the proven pipeline
 	var err error
+	var capturedOutput string
 	if sm.silentHandler.IsInSilentBlock() {
 		err = stringprocessing.WithSuppressedOutput(func() error {
 			return sm.stateProcessor.ProcessCommand(rawCommand)
 		})
+		// No output capture in silent blocks
+		capturedOutput = ""
 	} else {
-		err = sm.stateProcessor.ProcessCommand(rawCommand)
+		// Capture output during command execution for ALL commands (including read-only ones)
+		capturedOutput, err = stringprocessing.WithCapturedOutput(func() error {
+			return sm.stateProcessor.ProcessCommand(rawCommand)
+		})
 	}
 
 	// Set error state based on command execution result
@@ -209,6 +232,26 @@ func (sm *StackMachine) processCommand(rawCommand string) error {
 		if setErr := sm.errorService.SetErrorStateFromCommandResult(err); setErr != nil {
 			sm.logger.Debug("Failed to set error state", "error", setErr)
 		}
+	}
+
+	// Capture output after command execution and display it to the user
+	// Do this for ALL commands to track output history properly
+	// This should never fail - worst case we store nothing but don't affect other components
+	if sm.context != nil {
+		sm.logger.Debug("Capturing command output", "command", rawCommand, "outputLength", len(capturedOutput))
+
+		// Safely capture output - this should never panic or fail
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					sm.logger.Debug("Output capture failed but continuing safely", "error", r)
+				}
+			}()
+			sm.context.CaptureOutput(capturedOutput)
+		}()
+
+		// Display the captured output to the user (since we intercepted it)
+		fmt.Print(capturedOutput)
 	}
 
 	return err

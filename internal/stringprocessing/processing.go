@@ -118,6 +118,51 @@ func CaptureOutput(fn func()) string {
 	return <-outputChan
 }
 
+// WithCapturedOutput captures stdout during function execution and returns both the output and any error.
+// This utility function redirects stdout to capture all output while preserving stderr for errors.
+// It's designed for automatic output capture in the command execution flow.
+func WithCapturedOutput(fn func() error) (string, error) {
+	// Save original stdout
+	oldStdout := os.Stdout
+
+	// Create pipe
+	r, w, err := os.Pipe()
+	if err != nil {
+		return "", err
+	}
+
+	// Redirect stdout to pipe
+	os.Stdout = w
+
+	// Channel to receive output
+	outputChan := make(chan string, 1)
+
+	// Start goroutine to read output
+	go func() {
+		defer close(outputChan)
+		output, _ := io.ReadAll(r)
+		outputChan <- string(output)
+	}()
+
+	// Execute function and capture any error
+	fnErr := fn()
+
+	// Close writer to signal end of writing
+	_ = w.Close()
+
+	// Restore stdout
+	os.Stdout = oldStdout
+
+	// Get captured output (this will block until the goroutine finishes reading)
+	capturedOutput := <-outputChan
+
+	// Close reader after reading is complete
+	_ = r.Close()
+
+	// Return both output and error
+	return capturedOutput, fnErr
+}
+
 // WithSuppressedOutput suppresses stdout during function execution.
 // This utility function redirects stdout to discard all output, preserving stderr for errors.
 // It's designed for the \silent command to suppress all fmt.Print* output globally.

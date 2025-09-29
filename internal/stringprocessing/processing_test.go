@@ -2,6 +2,7 @@
 package stringprocessing
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -166,6 +167,57 @@ func TestProcessTextForMarkdown(t *testing.T) {
 			assert.Equal(t, tc.expected, result)
 		})
 	}
+}
+
+func TestWithCapturedOutput(t *testing.T) {
+	// Test successful function with output
+	output, err := WithCapturedOutput(func() error {
+		fmt.Print("Hello, World!")
+		return nil
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "Hello, World!", output)
+
+	// Test function with error
+	output, err = WithCapturedOutput(func() error {
+		fmt.Print("Error output")
+		return fmt.Errorf("test error")
+	})
+
+	assert.Error(t, err)
+	assert.Equal(t, "test error", err.Error())
+	assert.Equal(t, "Error output", output)
+
+	// Test function with multiple print statements
+	output, err = WithCapturedOutput(func() error {
+		fmt.Print("Line 1\n")
+		fmt.Print("Line 2\n")
+		fmt.Printf("Formatted %d\n", 42)
+		return nil
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "Line 1\nLine 2\nFormatted 42\n", output)
+
+	// Test function with no output
+	output, err = WithCapturedOutput(func() error {
+		return nil
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "", output)
+
+	// Test function with mixed output types
+	output, err = WithCapturedOutput(func() error {
+		fmt.Print("Print: ")
+		fmt.Println("Println")
+		fmt.Printf("Printf: %s\n", "test")
+		return nil
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, "Print: Println\nPrintf: test\n", output)
 }
 
 func TestIsAPIRelated(t *testing.T) {

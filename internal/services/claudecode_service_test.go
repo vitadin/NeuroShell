@@ -3,19 +3,19 @@
 // Test Categories:
 //
 // 1. UNIT TESTS (Mocked) - Always run, CI/CD friendly:
-//    - TestClaudeCodeService_Initialize - tests initialization with mocked CLI detection
-//    - TestClaudeCodeService_CreateSession - tests session management with mocks
-//    - TestClaudeCodeService_JobManagement - tests job handling with mocks
-//    - TestClaudeCodeService_Authentication - tests auth checking with mocks
-//    - All other existing tests that use setupTestClaudeCodeService()
+//   - TestClaudeCodeService_Initialize - tests initialization with mocked CLI detection
+//   - TestClaudeCodeService_CreateSession - tests session management with mocks
+//   - TestClaudeCodeService_JobManagement - tests job handling with mocks
+//   - TestClaudeCodeService_Authentication - tests auth checking with mocks
+//   - All other existing tests that use setupTestClaudeCodeService()
 //
 // 2. INTEGRATION TESTS - Require actual Claude CLI:
-//    - TestClaudeCodeService_ActualCLIDetection - tests real CLI detection
-//    - TestClaudeCodeService_RealCLIIntegration - tests with actual Claude CLI
-//    These tests will be skipped automatically in CI/CD if Claude CLI is not available.
+//   - TestClaudeCodeService_ActualCLIDetection - tests real CLI detection
+//   - TestClaudeCodeService_RealCLIIntegration - tests with actual Claude CLI
+//     These tests will be skipped automatically in CI/CD if Claude CLI is not available.
 //
 // 3. CI/CD SIMULATION TESTS:
-//    - TestClaudeCodeService_CICDSkipBehavior - demonstrates CI/CD behavior
+//   - TestClaudeCodeService_CICDSkipBehavior - demonstrates CI/CD behavior
 //
 // Running Tests:
 //   - `go test ./internal/services/` - runs all tests (skips integration if CLI unavailable)

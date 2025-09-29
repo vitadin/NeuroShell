@@ -57,6 +57,9 @@ type NeuroContext struct {
 
 	// Error state management
 	errorStateCtx ErrorStateSubcontext // Delegated error state management
+
+	// Output capture management
+	outputCaptureCtx OutputCaptureSubcontext // Delegated output capture management
 }
 
 // New creates a new NeuroContext with initialized maps and a unique session ID.
@@ -95,6 +98,9 @@ func New() *NeuroContext {
 
 		// Initialize error state management
 		errorStateCtx: NewErrorStateSubcontext(),
+
+		// Initialize output capture management
+		outputCaptureCtx: NewOutputCaptureSubcontext(),
 	}
 
 	// Generate initial session ID (will be deterministic if test mode is set later)
@@ -229,6 +235,10 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 		case "@last_error":
 			_, errorMsg := ctx.errorStateCtx.GetLastErrorState()
 			return errorMsg, true
+		case "@current_output":
+			return ctx.outputCaptureCtx.GetCurrentOutput(), true
+		case "@last_output":
+			return ctx.outputCaptureCtx.GetLastOutput(), true
 		}
 	}
 
@@ -263,6 +273,10 @@ func (ctx *NeuroContext) getSystemVariable(name string) (string, bool) {
 	case "@last_error":
 		_, errorMsg := ctx.errorStateCtx.GetLastErrorState()
 		return errorMsg, true
+	case "@current_output":
+		return ctx.outputCaptureCtx.GetCurrentOutput(), true
+	case "@last_output":
+		return ctx.outputCaptureCtx.GetLastOutput(), true
 	case "#session_id":
 		// Check if there's a stored chat session ID first
 		value, ok := ctx.variables.Get("#session_id")
@@ -487,7 +501,7 @@ func (ctx *NeuroContext) GetAllVariables() map[string]string {
 	result := ctx.variables.GetAll()
 
 	// Add computed system variables
-	systemVars := []string{"@pwd", "@user", "@home", "@date", "@time", "@os", "@status", "@error", "@last_status", "@last_error", "#session_id", "#message_count", "#test_mode"}
+	systemVars := []string{"@pwd", "@user", "@home", "@date", "@time", "@os", "@status", "@error", "@last_status", "@last_error", "@current_output", "@last_output", "#session_id", "#message_count", "#test_mode"}
 	for _, varName := range systemVars {
 		if value, ok := ctx.getSystemVariable(varName); ok {
 			result[varName] = value
@@ -949,6 +963,30 @@ func (ctx *NeuroContext) GetCurrentErrorState() (status string, errorMsg string)
 // GetLastErrorState returns the last error state (thread-safe read).
 func (ctx *NeuroContext) GetLastErrorState() (status string, errorMsg string) {
 	return ctx.errorStateCtx.GetLastErrorState()
+}
+
+// Output capture management methods
+
+// ResetOutput resets the current output to empty and moves current to last.
+// This should be called before executing a new command.
+func (ctx *NeuroContext) ResetOutput() {
+	ctx.outputCaptureCtx.ResetOutput()
+}
+
+// CaptureOutput captures the output from command execution.
+// This should be called during or after command execution with the captured output.
+func (ctx *NeuroContext) CaptureOutput(output string) {
+	ctx.outputCaptureCtx.CaptureOutput(output)
+}
+
+// GetCurrentOutput returns the current command's captured output (thread-safe read).
+func (ctx *NeuroContext) GetCurrentOutput() string {
+	return ctx.outputCaptureCtx.GetCurrentOutput()
+}
+
+// GetLastOutput returns the last command's captured output (thread-safe read).
+func (ctx *NeuroContext) GetLastOutput() string {
+	return ctx.outputCaptureCtx.GetLastOutput()
 }
 
 // SetCommandReadOnly sets or removes a read-only override for a specific command.
