@@ -43,7 +43,7 @@ Openai Models:
     Last Updated: 2025-08-10
     Description: The o-series of models are trained with reinforcement learning to think before they answer and perform complex reasoning. The o3-pro model uses more compute to think harder and provide consistently better answers.
 %%> "\\model-catalog[search=claude]"
-Model Catalog - Search: 'claude' (5 models):
+Model Catalog - Search: 'claude' (6 models):
 Anthropic Models:
 
   [CO37] Claude 3.7 Opus (claude-3-7-opus-20240229)
@@ -123,8 +123,48 @@ Anthropic Models:
     Version: 2025-05-14
     Last Updated: 2025-08-10
     Description: High intelligence and balanced performance
+
+  [CS45] Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
+    Provider: anthropic (ANC)
+    Context: 200,000 tokens (max output: 64,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $3.00/1M input, $15.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-01-01
+    Extended thinking supported
+    Parameter Notes:
+      • temperature: Must be 1.0 when extended thinking (thinking_budget) is enabled
+      • max_tokens: Must be greater than thinking_budget when extended thinking is enabled
+      • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
+      • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
+      • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-09-29
+    Last Updated: 2025-09-30
+    Description: Best model for complex agents and coding with exceptional capabilities
 %%> "\\model-catalog[search=coding]"
-Model Catalog - Search: 'coding' (5 models):
+Model Catalog - Search: 'coding' (6 models):
+Anthropic Models:
+
+  [CS45] Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
+    Provider: anthropic (ANC)
+    Context: 200,000 tokens (max output: 64,000 tokens)
+    Capabilities: text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking
+    Modalities: text-input, text-output, image-input
+    Pricing: $3.00/1M input, $15.00/1M output tokens
+    Features: streaming, function-calling, structured-outputs, vision
+    Knowledge cutoff: 2025-01-01
+    Extended thinking supported
+    Parameter Notes:
+      • temperature: Must be 1.0 when extended thinking (thinking_budget) is enabled
+      • max_tokens: Must be greater than thinking_budget when extended thinking is enabled
+      • top_p: Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled
+      • top_k: Cannot be used when extended thinking (thinking_budget) is enabled
+      • thinking_budget: When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0
+    Version: 2025-09-29
+    Last Updated: 2025-09-30
+    Description: Best model for complex agents and coding with exceptional capabilities
+
 Openai Models:
 
   [G5C] GPT-5 Chat (gpt-5)

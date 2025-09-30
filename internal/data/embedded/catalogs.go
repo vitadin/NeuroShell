@@ -28,6 +28,11 @@ var Claude37SonnetModelData []byte
 //go:embed models/claude-sonnet-4.yaml
 var ClaudeSonnet4ModelData []byte
 
+// ClaudeSonnet45ModelData contains the embedded Claude Sonnet 4.5 model YAML data.
+//
+//go:embed models/claude-sonnet-4-5.yaml
+var ClaudeSonnet45ModelData []byte
+
 // Claude37OpusModelData contains the embedded Claude 3.7 Opus model YAML data.
 //
 //go:embed models/claude-3-7-opus.yaml
