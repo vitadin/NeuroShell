@@ -40,7 +40,7 @@ System Variables:
     #cmd_config-path_desc = Display configuration file paths and their loading status
     #cmd_config-path_parsemode = KeyValue
     #cmd_config-path_usage = \config-path
-    #cmd_count           = 70
+    #cmd_count           = 71
     #cmd_echo-json_desc  = Pretty-print JSON data in readable format
     #cmd_echo-json_parsemode = KeyValue
     #cmd_echo-json_usage = \echo-json[to=var_name, indent=2] json_string
@@ -77,7 +77,7 @@ System Variables:
     #cmd_license_desc    = Display NeuroShell license inf... in system variables (length: 84 chars)
     #cmd_license_parsemode = KeyValue
     #cmd_license_usage   = \license
-    #cmd_list            = anthropic-client-new,assert-eq...,write,zai-translate (length: 862 chars)
+    #cmd_list            = anthropic-client-new,assert-eq...,write,zai-translate (length: 866 chars)
     #cmd_llm-api-activate_desc = Activate an API key for a specific provider
     #cmd_llm-api-activate_parsemode = KeyValue
     #cmd_llm-api-activate_usage = \llm-api-activate[provider=<name>, key=<source.KEY_NAME>]
@@ -105,6 +105,9 @@ System Variables:
     #cmd_model-status_desc = Display status and details of model configurations
     #cmd_model-status_parsemode = KeyValue
     #cmd_model-status_usage = \model-status[name=model_name,...me|created|provider] (length: 82 chars)
+    #cmd_ocr_desc        = Convert PDF to text/markdown using DeepInfra OCR API
+    #cmd_ocr_parsemode   = KeyValue
+    #cmd_ocr_usage       = \ocr[pdf=path/to/file.pdf, out...ens=4500, pages=1-3] (length: 96 chars)
     #cmd_openai-client-new_desc = Create new OpenAI client with ...soning model support (length: 82 chars)
     #cmd_openai-client-new_parsemode = KeyValue
     #cmd_openai-client-new_usage = \openai-client-new[key=api_key...ew (uses active key) (length: 92 chars)
@@ -245,4 +248,4 @@ System Variables:
     _prompt_lines_count  = 1
     _style               = 
 
-Total: 238 variables
+Total: 241 variables

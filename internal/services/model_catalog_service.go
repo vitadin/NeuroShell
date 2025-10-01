@@ -75,6 +75,12 @@ func (m *ModelCatalogService) GetModelCatalog() ([]neurotypes.ModelCatalogEntry,
 	}
 	allModels = append(allModels, claudeSonnet4Model)
 
+	claudeSonnet45Model, err := m.loadModelFile(embedded.ClaudeSonnet45ModelData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load Claude Sonnet 4.5 model: %w", err)
+	}
+	allModels = append(allModels, claudeSonnet45Model)
+
 	claude37OpusModel, err := m.loadModelFile(embedded.Claude37OpusModelData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load Claude 3.7 Opus model: %w", err)

@@ -1,0 +1,66 @@
+name: claude-sonnet-4-5-20250929
+id: CS45
+display_name: Claude Sonnet 4.5
+provider: anthropic
+provider_catalog_id: ANC
+description: Best model for complex agents and coding with exceptional capabilities
+capabilities: [text, reasoning, analysis, coding, writing, math, visual-reasoning, extended-thinking]
+context_window: 200000
+max_output_tokens: 64000
+knowledge_cutoff: "2025-01-01"
+modalities: [text-input, text-output, image-input]
+pricing:
+  input_per_m_token: 3.00
+  output_per_m_token: 15.00
+features:
+  streaming: true
+  function_calling: true
+  structured_outputs: true
+  vision: true
+  extended_thinking: true
+  multilingual: true
+version: "2025-09-29"
+deprecated: false
+last_updated: "2025-09-30"
+parameters:
+  - name: temperature
+    type: float
+    required: false
+    default: 1.0
+    constraints:
+      min: 0.0
+      max: 1.0
+    description: "Controls randomness (0.0=deterministic, 1.0=creative)"
+    notes: "Must be 1.0 when extended thinking (thinking_budget) is enabled"
+  - name: max_tokens
+    type: int
+    required: false
+    constraints:
+      min: 1
+      max: 64000
+    description: "Maximum output tokens"
+    notes: "Must be greater than thinking_budget when extended thinking is enabled"
+  - name: top_p
+    type: float
+    required: false
+    constraints:
+      min: 0.0
+      max: 1.0
+    description: "Nucleus sampling parameter"
+    notes: "Must be between 0.95-1.0 when extended thinking (thinking_budget) is enabled"
+  - name: top_k
+    type: int
+    required: false
+    constraints:
+      min: 0
+      max: 200
+    description: "Top-k sampling parameter"
+    notes: "Cannot be used when extended thinking (thinking_budget) is enabled"
+  - name: thinking_budget
+    type: int
+    required: false
+    constraints:
+      min: 0
+      max: 24576
+    description: "Extended thinking token budget (0=disabled, -1=dynamic)"
+    notes: "When enabled, temperature must be 1.0, top_k cannot be used, and top_p must be between 0.95-1.0"
